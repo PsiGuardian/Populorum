@@ -2,6 +2,10 @@
 
 Les commandes sont à lancer dans `apps/symfony`, avec PHP 8.4+, les extensions indiquées et `composer install`. DocumentRoot : `public/`, HTTPS en ligne. Les clés, comptes, profils, sessions, sauvegardes et accès CSV restent hors du dossier public et de Git.
 
+La page `/charter` lit les 28 documents embarqués dans `data/charters.json.gz` : le déploiement de `apps/symfony` seul suffit. Après une modification de `CHARTER.md` ou de `docs/translations/*/CHARTER.md` à la racine du dépôt, exécuter `php tools/build-charters.php` dans `apps/symfony` et committer l’archive régénérée. Les tests vérifient son identité avec les sources lisibles.
+
+Si `/charter` échoue en ligne, relever le véritable statut HTTP et consulter les journaux privés de Symfony et de PHP-FPM. Un statut 500 peut être remplacé par une page générique du bundle. Après mise à jour du code et de l’archive, vider le cache de l’environnement réellement utilisé (`php bin/console cache:clear --env=demo` pour la configuration de démonstration) et recharger PHP-FPM si OPcache ne vérifie pas les dates des fichiers. Une véritable 404 nécessite aussi de vérifier `php bin/console debug:router --env=demo` et le renvoi des URL vers `public/index.php` dans le serveur web.
+
 ## Mise à niveau
 
 ```bash

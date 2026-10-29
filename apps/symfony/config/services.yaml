@@ -8,6 +8,9 @@ services:
     App\Service\DemoDatabase:
         arguments:
             $projectDir: '%kernel.project_dir%'
+    App\Service\CharterRepository:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
     App\Controller\DemoController:
         arguments:
             $projectDir: '%kernel.project_dir%'

@@ -8,6 +8,7 @@ use App\Entity\CivicAccount;
 use App\Form\SimulationActionType;
 use App\Service\ActionForms;
 use App\Service\CharterRenderer;
+use App\Service\CharterRepository;
 use App\Service\DemoDatabase;
 use App\Service\SimulationEngine;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -41,6 +42,7 @@ final class DemoController extends AbstractController
         private SimulationEngine $engine,
         private string $projectDir,
         private CharterRenderer $charterRenderer,
+        private CharterRepository $charters,
         private \App\Service\CausalLayout $layout,
         private \Symfony\Contracts\Translation\TranslatorInterface $translator,
         private \App\Service\TerritorialReport $territorialReport,
@@ -264,25 +266,14 @@ final class DemoController extends AbstractController
             );
         }
         if ($view === 'charter') {
-            $locale = (string) $request->query->get('locale', 'fr_FR');
-            $translationsDirectory =
-                dirname($this->projectDir, 2) . '/docs/translations';
-            $locales = array_map(
-                'basename',
-                glob($translationsDirectory . '/*', GLOB_ONLYDIR),
+            $locale = $this->charters->resolveLocale(
+                (string) $request->query->get('locale', 'fr_FR'),
             );
-            if (!in_array($locale, $locales, true)) {
-                $locale = 'fr_FR';
-            }
-            $charterFile =
-                $locale === 'fr_FR'
-                    ? dirname($this->projectDir, 2) . '/CHARTER.md'
-                    : $translationsDirectory . '/' . $locale . '/CHARTER.md';
             $context += [
                 'locale' => $locale,
-                'locales' => $locales,
+                'locales' => $this->charters->locales(),
                 'charterHtml' => $this->charterRenderer->render(
-                    file_get_contents($charterFile),
+                    $this->charters->markdown($locale),
                 ),
             ];
         }
