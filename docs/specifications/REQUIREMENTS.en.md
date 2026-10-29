@@ -304,3 +304,222 @@ Sybil identities, colluding nodes, eclipse attacks, denial of service, invalid s
 
 Each progression depends on testing, audit and documented acceptance.
 
+
+# PART X — SYMFONY 8 ARCHITECTURE
+
+## 53. Technology stack
+
+| Area | Proposed technology |
+| --- | --- |
+| Framework | Symfony 8.1 |
+| Runtime | PHP 8.4 minimum |
+| Database | PostgreSQL; optional PostGIS |
+| ORM/migrations | Doctrine ORM / Doctrine Migrations |
+| Rendering | Twig, HTML5, CSS3, JavaScript |
+| Security | Symfony Security / Validator |
+| Forms | Symfony Form |
+| Translations | Symfony Translation |
+| API/serialization | Symfony controllers / Serializer |
+| Background jobs | Symfony Messenger |
+| Real time | SSE or Mercure |
+| Cache | Symfony Cache; optional Redis |
+| Logging | Monolog, separate business event log |
+| Testing | PHPUnit and Symfony functional tests |
+| Static analysis/style | PHPStan, PHP-CS-Fixer, dependency audit |
+| Mapping | OpenStreetMap and suitable free tools |
+| Deployment | Linux, PHP-FPM, web server, PostgreSQL |
+
+Lock dependencies with explicit versions; regularly review their security status. Document reproducible setup on Arch Linux, preferring packages available from the system package manager where appropriate.
+
+## 54. Modular architecture
+
+Core modules: **Identity**, **Territory**, **Proposal**, **Pathway**, **Consultation**, **Voting**, **Tally**, **Experiment**, **Convergence**, **Transparency**, **Federation**, **Governance**, **Moderation**, **Finance**, plus cross-cutting **Localization** and optional **Assistance**.
+
+Identity controls identity and eligibility; Territory owns geography; Proposal manages revisions; Pathway causal graphs; Consultation schedules and rule sets; Voting ballots; Tally results; Experiment observations; Convergence similarities; Transparency audits; Federation nodes; Governance decisions; Moderation harmful behaviour; Finance resources. Localization and Assistance never take authority over the core voting engine.
+
+Business rules must be independently testable and must not reside solely in HTTP controllers.
+
+## 55. Programming principles
+
+Strict PHP types, object-oriented design, dependency injection, interfaces for critical services, lightweight controllers, independently testable business logic, server-side validation and authorisation, transactions, integrity constraints, audited migrations, event idempotency and presentation/domain separation. JavaScript alone never determines an official stored result; no secret privilege can fabricate votes.
+
+## 56. Database
+
+PostgreSQL stores relational and transactional data. Causal graphs use normalised node/edge relations with documented optional attributes. PostGIS may be used for richer geometry. Index from measured query profiles; use tracked migrations, backups and rollback procedures around destructive change.
+
+## 57. Principal entities
+
+**Territory:** Country, Region, Department, Municipality, MunicipalOffice, TerritoryHistory, TerritoryRelation, TerritorialCompetence.
+
+**Identity:** Citizen, CivicIdentity, EligibilityRecord, TerritorialAffiliation, PublicationConsent, AuthenticationCredential, CitizenPreference.
+
+**Proposals/paths:** Proposal, ProposalRevision, Pathway, PathwayRevision, CausalNode, CausalEdge, Hypothesis, Evidence, Alternative, Forecast, RevisionReason.
+
+**Consultations:** Consultation, ConsultationRuleSet, EligibleParticipant, Vote, VoteRevision, Tally, TallySnapshot, CollectiveDecision.
+
+**Experiments:** Experiment, ExperimentProtocol, Observation, Indicator, ObservationSource, Evaluation, TerritorialAdaptation, TerritorialExclusion.
+
+**Integrity/network:** AuditEvent, IntegrityCheckpoint, DigitalSignature, NetworkNode, NodeAttestation, SyncCheckpoint, IntegrityAlert, IncidentReport.
+
+**Governance:** GovernanceProposal, GovernanceDecision, ModerationCase, Appeal, FinancialEntry, ResourceContribution, TranslationRevision.
+
+## 58. Integrity constraints
+
+Unique territorial identifiers tied to official editions; one active vote per citizen/consultation; immutable proposal-version references and consultation rules; eligibility and timing checks; auditable workflows; revision history; cycle restrictions where a specific acyclic subgraph requires them; consistent financial sums; independently recomputable cryptographic digests.
+
+## 59. API
+
+Versioned endpoints for territories, proposals, paths, causal elements, consultations, results, observations, assessments, proofs, finances and public node status. Authenticated sensitive operations separate from public read endpoints. Document pagination, filtering, rate limits, versioning, errors and compatibility.
+
+## 60. Domain events
+
+ProposalCreated, ProposalRevisionPublished, ConsultationOpened, VoteRecorded, VoteChanged, ConsultationClosed, TallyPublished, ObservationRecorded, ExperimentEvaluated, IntegrityMismatchDetected, IntegrityIncidentConfirmed, NodeDisconnected, PublicCorrectionPublished. Consumers must be idempotent; redelivery cannot duplicate an operation.
+
+# PART XI — USER INTERFACE AND EXPERIENCE
+
+## 61. Visual direction
+
+Contemporary civic identity suggesting dignity, freedom, knowledge, time, experience, community, convergence and transparency. Subtle classical/Stoic references without partisan symbolism. Starting palette: antique gold #C6A667, navy #111D2B, light stone #F2EEE5, white #FFFFFF, balanced green #2F6B59, alert red #B84A4A. Never communicate a state exclusively through colour.
+
+## 62. Home page
+
+Brand, Greek rendering, founding motto, emergent convergence, plain introduction, French map, simulated municipal consultations, path examples, recent documented experiences, expenses, charter and verifier. Display the **fictional experimental status** clearly throughout.
+
+## 63. Main navigation
+
+Home; My territory; Explore municipalities; Proposals; Explain my path; Consultations; Experiments; Emergent convergence; Collective memory; Transparency; Civic infrastructure; Contribute; Founding Charter. Personal dashboard for signed-in citizens.
+
+## 64. Territorial map
+
+Region → department → municipality navigation with local consultations, proposals, experiments, adaptations and territory comparisons. Provide a functionally equivalent accessible text list.
+
+## 65. Path view
+
+Public author where legally allowed, territory, linked proposal, causal tree, revisions, evidence, observations, consequences, associated independent paths and revision actions. Responsive design with a non-graph textual alternative.
+
+## 66. Consultation dashboard
+
+Exact proposal version, plain summary, causal graph, independent alternatives, expected consequences, live votes, provisional/final status, rules, integrity proofs, event history and observations after closure. Unverified assertions must look different from substantiated observations.
+
+## 67. Personal memory
+
+Chronological trail of problem discovery, proposed solution, vote, unexpected consequence, personal revision and new experience. No automatic personal “failure” labels.
+
+## 68. Accessibility
+
+Design for keyboard navigation, screen readers, low vision, reading difficulties, limited mobility, slow networks and older mobile devices. Target **WCAG 2.2 AA** and applicable French RGAA requirements. Essential actions cannot depend exclusively on animation, colours or visual graphs.
+
+# PART XII — LANGUAGES AND ARTIFICIAL INTELLIGENCE
+
+## 69. Languages
+
+Full initial UI in French, with Symfony Translation prepared for the **28 existing documentation locales**: ar_SA, cs_CZ, de_DE, el_GR, en_CA, en_GB, en_IE, en_US, es_ES, fr_FR, hi_IN, hr_HR, hu_HU, id_ID, it_IT, ja_JP, ka_GE, mn_MN, ms_MY, nl_NL, pl_PL, pt_PT, ro_RO, ru_RU, sk_SK, tr_TR, vi_VN, zh_CN. Version translations and enable human review. Warn about any semantic difference from the voting reference text.
+
+## 70. Linguistic reformulations
+
+Variants: plain French, explained administrative language, simplified science, very simple wording, colloquial and documented regional expressions, useful slang and foreign languages. Adapt wording without changing the proposal's substance; identify and review every variant.
+
+## 71. Optional AI assistance
+
+May help explain jargon, structure causal graphs, identify missing information, suggest areas for observation, translate and summarise paths neutrally. Must never vote, rank citizens' worth, silently amend a proposal, invent sources, erase inconvenient hypotheses, issue sanctions alone, fabricate support or make binding public decisions. AI-influenced public content is identified and approved by its author before publication.
+
+## 72. Algorithmic neutrality
+
+Publish the rules governing ordering and recommendation. Prioritise explainable sorting by time, place, theme, status and available evidence. Avoid covert popularity and political-profile ranking. Recommendations, if offered, must be explainable and capable of being disabled.
+
+# PART XIII — SECURITY, PROTECTION AND GOVERNANCE
+
+## 73. Application security
+
+Defend against SQL injection, XSS, CSRF, access-control flaws, tampered requests, privilege escalation, session theft, authentication attacks, replay, double voting, results manipulation, impersonation, leaks, denial of service, vulnerable dependencies and deployment-chain compromise. Verify server authorisation for each sensitive API.
+
+## 74. Authentication
+
+Robust password hashing, appropriate MFA, automated-attempt throttling, session controls, compromised-session revocation, security logs, notifications and secure recovery. Never commit secrets to GitHub.
+
+## 75. Technical administration
+
+Administrators may not secretly create votes, edit results, erase public evidence, alter closed rules, access others' authentication secrets or decide politically for everyone. Separate duties and require independent approvals for critical changes.
+
+## 76. Moderation and coexistence
+
+Address threats, harassment, impersonation, illegal disclosure, proven fraud, automated spam, sabotage and repeated operational disruption. Do not penalise an opinion merely because it is unusual, unpopular or different. Support independent paths and factual evidence checks while respecting people.
+
+## 77. Conduct measures
+
+Warnings, proportionate temporary limits, publication suspension, protection against malicious automation and suspension for sufficiently established misconduct. Every sanction needs a pre-existing rule, documented facts, reasons, limited duration, proportionality, appeal and reconsideration. An isolated allegation never proves fraud.
+
+## 78. Personal-data protection
+
+Named political opinions are **sensitive personal data**. Define controllers, purposes, legal bases, special-category processing conditions, register, notices, consent records where relevant, retention, rectification, erasure, applicable objections, processors, breach response and impact assessment as required. Prepare a DPIA before large-scale real-data deployment. **Do not decentralise identifiable sensitive records until effective legal compliance, including individual rights, has been demonstrated.**
+
+## 79. Technical governance
+
+Separate normal software maintenance from changes to eligibility, counting, public vote disclosure or citizen rights. Sensitive modifications require a documented proposal, rationale, risk assessment, review, tests, governance approval, version publication and rollback plan. No silent democratic rule changes.
+
+# PART XIV — COSTS AND RESOURCES
+
+## 80. Economic principle
+
+Minimise cash expenditure through voluntary contributions **without concealing actual costs**, including equipment, electricity, connectivity, domains, backups, maintenance, replacements, human effort, audits, incidents, accessibility and possible legal expenditure.
+
+## 81. Public financial report
+
+Publish expenditure, contributions, material donations, provided resources, estimated energy, hosting costs, maintenance, trends, legally publishable supporting documents and budget variances. Protect contributors' and suppliers' personal information where required.
+
+## 82. Citizen contributions
+
+Development, translations, audit, documentation, accessibility, testing, volunteer hosting, observation, tools and linguistic review. Contribution never buys a vote or political privilege.
+
+## 83. Licences and intellectual property
+
+Before publishing application code, choose an appropriate free-software licence (consider AGPL for network services), documentation/content licences, open-data reuse rules, contribution policy, author rights and project trademark rules. Publishing this specification **does not itself license future software**.
+
+# PART XV — PERFORMANCE AND QUALITY
+
+## 84. Non-functional objectives
+
+| Measurement | Proposed initial acceptance target |
+| --- | --- |
+| Public API | p95 below 800 ms |
+| Vote recording | p95 below 2 seconds, excluding external verification |
+| Live updates | Under 3 seconds in nominal conditions |
+| Pilot availability | 99.5% over a defined reporting period |
+| Accessibility | WCAG 2.2 AA |
+| Vote uniqueness | No accepted duplicate active votes |
+| Tally | Identical on independent recalculation |
+| Recovery | Documented and successfully tested |
+| Synchronisation | No silent data corruption |
+
+These are targets, **not demonstrated performance claims**. Main pages should remain responsive on typical mobile connections.
+
+## 85. Scalability
+
+Test a few dozen fictional citizens, thousands of synthetic users, tens of thousands of sessions, hundreds of thousands of synthetic identities and greater distributed loads. Consider national-scale populations theoretically without assuming every citizen is simultaneously active or claiming national capacity before representative testing.
+
+## 86. Backups and recovery
+
+Scheduled backups, integrity verification, encryption, suitable separation, restoration drills, disaster recovery, tally reconstruction from verified events, corruption handling, documented recovery objectives and acceptable data-loss thresholds. Extra replicas are not a substitute for backups.
+
+## 87. Observability
+
+Availability, application errors, latency, message queues, databases, synchronisation, integrity logs, resource consumption, backup errors and security events. Telemetry is proportionate and must not become political or behavioural surveillance.
+
+# PART XVI — REFERENCE DEMONSTRATOR
+
+## 88. Initial scenario
+
+Three fictional municipalities, or real municipality names paired exclusively with simulated citizens and data, explore reducing car-related nuisances:
+
+- **Path A — Public shuttles:** presumed car dependence; shuttle service; potential reduced traffic and operating expense; monitor traffic, ridership and cost.
+- **Path B — Cycling infrastructure:** presumed lack of safe short-distance routes; build cycle paths; monitor motorised journeys, road safety and construction costs.
+- **Path C — Rescheduled activity:** presumed concentrated travel peaks; trial voluntary schedule staggering; monitor hourly traffic, satisfaction and disruption.
+
+## 89. Simulation workflow
+
+Create fictional citizens, associate each municipality, build three independent causal paths, open consultations, cast mock votes, display live results, verify signatures and uniqueness, simulate observation periods, introduce an unforeseen effect, allow personal revisions, visualise convergence or divergence, produce municipal assessments and export public evidence. Simulated results must never be passed off as real observations.
+
+## 90. Convergence scenarios
+
+Test **full convergence**, **partial convergence**, **persistent divergence** and **convergence followed by divergence**. None of these outcomes constitutes a judgement about the citizens participating.
+
