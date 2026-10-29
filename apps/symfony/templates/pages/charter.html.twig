@@ -1,1 +1,54 @@
-{% extends 'base.html.twig' %}{% block content %}<div class="page-title"><div><div class="eyebrow">LE POUVOIR APPARTIENT AU PEUPLE</div><h1>La charte fondatrice</h1><p>24 articles pour préserver les chemins libres et la mémoire des conséquences.</p></div></div><div class="charter-motto"><blockquote>« N’impose pas ton chemin.<br>Éclaire le tien, et laisse les conséquences instruire chacun. »</blockquote><span>CONVERGENCE ÉMERGENTE</span></div><section class="panel"><form method="get" action="{{ path('section',{view:'charter'}) }}"><label for="locale">Langue documentaire</label><select id="locale" name="locale">{% for l in locales %}<option value="{{ l }}" {{ locale == l ? 'selected' : '' }}>{{ l == 'fr_FR' ? 'Français — référence' : l }}</option>{% endfor %}</select><button class="button" style="margin-top:12px">Lire cette traduction</button></form><p class="small muted">L’interface est en français. Les traductions ne modifient jamais le texte de référence figé d’un vote. Les textes fondateurs sont conservés dans leur intégralité.</p><article class="charter-text" lang="{{ locale|slice(0,2) }}" dir="{{ locale == 'ar_SA' ? 'rtl' : 'ltr' }}">{% for line in charter|split('\n') %}{% if line starts with '### ' %}<h3>{{ line|slice(4)|replace({'**':''}) }}</h3>{% elseif line starts with '## ' %}<h2>{{ line|slice(3) }}</h2>{% elseif line starts with '# ' %}<h2>{{ line|slice(2) }}</h2>{% elseif line == '---' %}<hr>{% elseif line|trim != '' %}<p>{{ line|replace({'**':'','*':''}) }}</p>{% endif %}{% endfor %}</article></section>{% endblock %}
+{% extends 'base.html.twig' %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                LE POUVOIR APPARTIENT AU PEUPLE
+            </div>
+            <h1>La charte fondatrice</h1>
+            <p>
+                24 articles pour préserver les chemins libres et la mémoire des conséquences.
+            </p>
+        </div>
+    </div>
+    <div class="charter-motto">
+        <blockquote>
+            « N’impose pas ton chemin.<br />Éclaire le tien, et laisse les conséquences instruire chacun. »
+        </blockquote>
+        <span>CONVERGENCE ÉMERGENTE</span>
+    </div>
+    <section class="panel">
+        <form method="get" action="{{ path('section', { view: 'charter' }) }}">
+            <label for="locale">Langue documentaire</label>
+            <select id="locale" name="locale">
+                {% for availableLocale in locales %}
+                    <option value="{{ availableLocale }}" {{ locale == availableLocale ? 'selected' : '' }}>
+                        {{ availableLocale == 'fr_FR' ? 'Français — référence' : availableLocale }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button class="button" style="margin-top:12px">Lire cette traduction</button>
+        </form>
+        <p class="small muted">
+            L’interface est en français. Les traductions ne modifient jamais le texte de référence figé d’un vote. Les
+            textes fondateurs sont conservés dans leur intégralité.
+        </p>
+        <article class="charter-text" lang="{{ locale|slice(0, 2) }}" dir="{{ locale == 'ar_SA' ? 'rtl' : 'ltr' }}">
+            {% for line in charter|split('\n') %}
+                {% if line starts with '### ' %}
+                    <h3>{{ line|slice(4)|replace({ '**': '' }) }}</h3>
+                {% elseif line starts with '## ' %}
+                    <h2>{{ line|slice(3) }}</h2>
+                {% elseif line starts with '# ' %}
+                    <h2>{{ line|slice(2) }}</h2>
+                {% elseif line == '---' %}
+                    <hr />
+                {% elseif (line|trim) != '' %}
+                    <p>
+                        {{ line|replace({ '**': '', '*': '' }) }}
+                    </p>
+                {% endif %}
+            {% endfor %}
+        </article>
+    </section>
+{% endblock %}

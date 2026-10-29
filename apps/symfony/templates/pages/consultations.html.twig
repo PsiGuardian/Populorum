@@ -1,1 +1,180 @@
-{% extends 'base.html.twig' %}{% import 'partials/macros.html.twig' as ui %}{% block content %}<div class="page-title"><div><div class="eyebrow">UNE VOIX PAR IDENTITÉ FICTIVE</div><h1>Les consultations</h1><p>Texte, règles et admissibilité figés avant l’ouverture. Aucun vote n’a d’effet juridique.</p></div></div>{{ ui.filter(view,s,q,territory) }}{% for c in s.consultations %}{% if (selected == '' or selected == c.id) and (territory == 'all' or territory == c.territoryId) and (q == '' or q|lower in c.frozen.title|lower) %}{% set t=c.tally %}<article class="consultation-card"><div class="consultation-main"><div class="row-header">{{ ui.badge(c.status == 'open' ? 'Consultation ouverte' : 'Consultation close',c.status == 'open' ? 'green' : 'gray') }}<span class="small muted">{{ territoryMap[c.territoryId].name }} · version figée {{ c.version }}</span></div><h2>{{ c.frozen.title }}</h2><p>{{ c.frozen.summary }}</p><div class="tally"><div class="vote-bar" role="img" aria-label="{{ t.pour }} pour, {{ t.contre }} contre, {{ t.abstention }} abstentions">{% for choice in ['pour','contre','abstention'] %}<span class="{{ choice }}" style="width:{{ t.total ? t[choice] / t.total * 100 : 0 }}%"></span>{% endfor %}</div><div class="vote-counts"><span><i class="pour"></i>{{ t.pour }} Pour</span><span><i class="contre"></i>{{ t.contre }} Contre</span><span><i class="abstention"></i>{{ t.abstention }} Abstention</span></div><p class="small muted">{{ t.total }} / {{ t.eligible }} personnages · {{ t.participation|round }} % · quorum {{ c.rules.quorum }} %</p></div>{% if c.status == 'open' %}<div class="consultation-actions">{% for choice in ['pour','contre','abstention'] %}{{ ui.action('vote.cast',choice|capitalize,{consultationId:c.id,choice:choice},'button') }}{% endfor %}</div><p class="small muted">Résultats provisoires. <a href="{{ path('section',{view:'consultations',id:c.id}) }}">Actualiser les résultats</a>.</p>{% else %}{{ ui.badge(t.adopted ? 'Adoptée dans la simulation' : 'Non adoptée dans la simulation',t.adopted ? 'green' : 'gray') }}{% endif %}<details><summary>Participations nominatives fictives</summary>{% for v in s.votes|filter(v=>v.consultationId == c.id) %}<p>{{ citizenMap[v.citizenId].name }} — {{ v.choice }} · {{ v.history|length }} révision(s)</p>{% endfor %}</details><details><summary>Texte exact soumis au vote</summary>{% for key,label in {cause:'Cause',consequence:'Conséquence',solution:'Solution',justification:'Justification',indicator:'Indicateur',risk:'Risque',reversibility:'Réversibilité'} %}<h4>{{ label }}</h4><p>{{ c.frozen[key] }}</p>{% endfor %}</details></div><aside class="consultation-rules"><div class="eyebrow">RÈGLES FIGÉES</div><h4>{{ c.rules.majority }}</h4><p>Abstentions : {{ c.rules.abstention }}</p><p>Une voix active par personnage admissible. Changement {{ c.rules.changeAllowed ? 'autorisé avant clôture' : 'interdit' }}.</p><p>{{ c.opensAt|date('d/m/Y H:i') }} → {{ c.closesAt|date('d/m/Y H:i') }}</p><a class="plain" href="{{ path('export',{kind:'consultation',id:c.id}) }}">Exporter pour un recalcul indépendant ↓</a>{% if c.status == 'open' %}{{ ui.action('consultation.close','Clôturer la simulation',{consultationId:c.id},'plain danger') }}{% elseif t.adopted and not s.experiments|filter(e=>e.consultationId == c.id) %}{{ ui.action('experiment.create','Définir un protocole',{consultationId:c.id}) }}{% endif %}</aside></article>{% endif %}{% endfor %}<div class="notice"><p>Les résultats visibles peuvent influencer les choix. Ces consultations sont fictives et distinctes des élections officielles.</p></div>{% endblock %}
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                UNE VOIX PAR IDENTITÉ FICTIVE
+            </div>
+            <h1>Les consultations</h1>
+            <p>
+                Texte, règles et admissibilité figés avant l’ouverture. Aucun vote n’a d’effet juridique.
+            </p>
+        </div>
+    </div>
+    {{ ui.filter(view, state, q, territory) }}
+    {% for consultation in state.consultations %}
+        {% if
+            (selected == '' or selected == consultation.id)
+                and (territory == 'all' or territory == consultation.territoryId)
+                and (q == '' or (q|lower) in (consultation.frozen.title|lower)) %}
+            {% set tally = consultation.tally %}
+            <article class="consultation-card">
+                <div class="consultation-main">
+                    <div class="row-header">
+                        {{
+                            ui.badge(
+                                consultation.status == 'open' ? 'Consultation ouverte' : 'Consultation close',
+                                consultation.status == 'open' ? 'green' : 'gray'
+                            )
+                        }}
+                        <span class="small muted">
+                            {{ territoryMap[consultation.territoryId].name }} · version figée {{ consultation.version }}
+                        </span>
+                    </div>
+                    <h2>{{ consultation.frozen.title }}</h2>
+                    <p>
+                        {{ consultation.frozen.summary }}
+                    </p>
+                    <div class="tally">
+                        <div
+                            class="vote-bar"
+                            role="img"
+                            aria-label="{{ tally.pour }} pour, {{ tally.contre }} contre, {{
+                            tally.abstention
+                            }} abstentions"
+                        >
+                            {% for choice in ['pour', 'contre', 'abstention'] %}
+                                <span
+                                    class="{{ choice }}"
+                                    style="width:{{ tally.total ? tally[choice] / tally.total * 100 : 0 }}%"
+                                >
+
+                                </span>
+                            {% endfor %}
+                        </div>
+                        <div class="vote-counts">
+                            <span>
+                                <i class="pour"></i>
+                                {{ tally.pour }} Pour
+                            </span>
+                            <span>
+                                <i class="contre"></i>
+                                {{ tally.contre }} Contre
+                            </span>
+                            <span>
+                                <i class="abstention"></i>
+                                {{ tally.abstention }} Abstention
+                            </span>
+                        </div>
+                        <p class="small muted">
+                            {{ tally.total }} / {{ tally.eligible }} personnages · {{ tally.participation|round }} % · quorum
+                            {{ consultation.rules.quorum }} %
+                        </p>
+                    </div>
+                    {% if consultation.status == 'open' %}
+                        <div class="consultation-actions">
+                            {% for choice in ['pour', 'contre', 'abstention'] %}
+                                {{
+                                    ui.action(
+                                        'vote.cast',
+                                        choice|capitalize,
+                                        { consultationId: consultation.id, choice: choice },
+                                        'button'
+                                    )
+                                }}
+                            {% endfor %}
+                        </div>
+                        <p class="small muted">
+                            Résultats provisoires. <a
+                                href="{{ path('section', { view: 'consultations', id: consultation.id }) }}"
+                            >
+                                Actualiser les résultats
+                            </a>.
+                        </p>
+                    {% else %}
+                        {{
+                            ui.badge(
+                                tally.adopted ? 'Adoptée dans la simulation' : 'Non adoptée dans la simulation',
+                                tally.adopted ? 'green' : 'gray'
+                            )
+                        }}
+                    {% endif %}
+                    <details>
+                        <summary>
+                            Participations nominatives fictives
+                        </summary>
+                        {% for vote in state.votes|filter(vote => vote.consultationId == consultation.id) %}
+                            <p>
+                                {{ citizenMap[vote.citizenId].name }} — {{ vote.choice }} · {{ vote.history|length }} révision(s)
+                            </p>
+                        {% endfor %}
+                    </details>
+                    <details>
+                        <summary>
+                            Texte exact soumis au vote
+                        </summary>
+                        {% for key, label in {
+                            cause: 'Cause',
+                            consequence: 'Conséquence',
+                            solution: 'Solution',
+                            justification: 'Justification',
+                            indicator: 'Indicateur',
+                            risk: 'Risque',
+                            reversibility: 'Réversibilité'
+                        } %}
+                            <h4>{{ label }}</h4>
+                            <p>
+                                {{ consultation.frozen[key] }}
+                            </p>
+                        {% endfor %}
+                    </details>
+                </div>
+                <aside class="consultation-rules">
+                    <div class="eyebrow">
+                        RÈGLES FIGÉES
+                    </div>
+                    <h4>{{ consultation.rules.majority }}</h4>
+                    <p>
+                        Abstentions : {{ consultation.rules.abstention }}
+                    </p>
+                    <p>
+                        Une voix active par personnage admissible. Changement {{ consultation.rules.changeAllowed
+                            ? 'autorisé avant clôture'
+                            : 'interdit' }}.
+                    </p>
+                    <p>
+                        {{ consultation.opensAt|date('d/m/Y H:i') }} → {{ consultation.closesAt|date('d/m/Y H:i') }}
+                    </p>
+                    <a class="plain" href="{{ path('export', { kind: 'consultation', id: consultation.id }) }}">
+                        Exporter pour un recalcul indépendant ↓
+                    </a>
+                    {% if consultation.status == 'open' %}
+                        {{
+                            ui.action(
+                                'consultation.close',
+                                'Clôturer la simulation',
+                                { consultationId: consultation.id },
+                                'plain danger'
+                            )
+                        }}
+                    {% elseif
+                        tally.adopted
+                            and not state.experiments|filter(
+                                experiment => experiment.consultationId == consultation.id
+                            ) %}
+                        {{
+                            ui.action('experiment.create', 'Définir un protocole', { consultationId: consultation.id })
+                        }}
+                    {% endif %}
+                </aside>
+            </article>
+        {% endif %}
+    {% endfor %}
+    <div class="notice">
+        <p>
+            Les résultats visibles peuvent influencer les choix. Ces consultations sont fictives et distinctes des
+            élections officielles.
+        </p>
+    </div>
+{% endblock %}

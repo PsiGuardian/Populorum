@@ -68,6 +68,9 @@ PASS — Symfony/Twig rend /citizen
 PASS — Symfony/Twig rend /charter
 PASS — Symfony/Twig rend /charter?locale=en_GB
 PASS — Symfony/Twig rend /verify
+PASS — Le filtre territorial conserve la fiche de Paris
+PASS — Le filtre territorial conserve la fiche de Marseille
+PASS — Le filtre territorial conserve la fiche de Le Havre
 PASS — API PHP lit SQLite via Doctrine
 PASS — API n’expose pas de clé privée
 PASS — Profiler refusé sans session Guardian
@@ -94,4 +97,4 @@ PASS — Export public vérifiable après persistance réelle
 PASS — Aucune ville supplémentaire créée par les parcours
 PASS — Intégrité SQLite valide
 PASS — Collecteur public expurge clés, cookies, corps et jetons
-96 contrôles, 0 échec(s).
+99 contrôles, 0 échec(s).

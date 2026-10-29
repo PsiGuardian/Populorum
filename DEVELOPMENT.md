@@ -9,3 +9,5 @@ La version applicative de référence de cette branche se trouve dans **[apps/sy
 - [Contrôles exécutés](apps/symfony/docs/test-results.txt).
 
 La première tentative React/Workers/D1 ne correspondait pas à la pile imposée par le cahier des charges. Elle n’est pas intégrée à cette branche Symfony. Les documents fondateurs et les 28 langues du README existant restent inchangés.
+
+Le [guide de lecture et de style](apps/symfony/docs/CODE_STYLE.md) présente les responsabilités des fichiers, le parcours des mutations et les commandes de contrôle du code.

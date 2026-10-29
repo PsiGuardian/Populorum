@@ -1,1 +1,204 @@
-{% extends 'base.html.twig' %}{% import 'partials/macros.html.twig' as ui %}{% block content %}{% if selected != '' and proposalMap[selected] is defined %}{% set p=proposalMap[selected] %}<a class="plain back" href="{{ path('section',{view:'proposals'}) }}">← Tous les chemins</a><div class="detail-heading">{{ ui.badge('Version ' ~ p.version ~ ' · ' ~ p.status) }}<h1>{{ p.title }}</h1><p>{{ p.summary }}</p><div class="meta">{{ territoryMap[p.territoryId].name }} · {{ citizenMap[p.authorId].name }} · Raisonnement autonome</div></div><div class="detail-layout"><div><div class="causal-summary">{% for key,label in {cause:'Cause',consequence:'Conséquence',solution:'Solution',justification:'Justification'} %}<div><div class="eyebrow">{{ label }}</div><p>{{ p[key] }}</p></div>{% endfor %}</div><h2>L’arbre du raisonnement</h2><p class="muted small">La liste structurée fournit une lecture accessible des douze catégories. Une observation simulée ne démontre pas une causalité.</p><div class="causal-grid">{% for n in p.nodes %}<article class="causal-node {{ n.kind == 'observation' ? 'observed' : '' }}"><div><div class="eyebrow">{{ '%02d'|format(loop.index) }} · {{ n.category }}</div><p>{{ n.content }}</p><small>{{ n.kind == 'observation' ? 'Observation simulée' : 'Hypothèse / prévision' }}</small></div></article>{% endfor %}</div><details class="panel"><summary>Relations explicites</summary>{% for e in p.edges %}<p>{{ e.from }} → {{ e.relation }} → {{ e.to }}</p>{% else %}<p>Les relations entre éléments seront complétées ; leur simple succession ne prouve pas un lien causal.</p>{% endfor %}</details><section class="panel"><h3>Sources et limites</h3>{% for source in p.sources %}<p>{{ source.label }} · {{ source.date }}</p>{% endfor %}<p>Jeu pédagogique : aucun résultat simulé n’est présenté comme un fait réel sur la ville.</p></section><section class="panel"><h3>Versions du chemin</h3>{% for r in p.revisions %}<details><summary>Version {{ r.version }} · {{ r.reason }}</summary><p>{{ r.snapshot.solution }}</p></details>{% else %}<p>Première version. Toute révision significative conservera un motif et une trace.</p>{% endfor %}</section></div><aside class="detail-aside"><section class="panel"><div class="eyebrow">EXPÉRIMENTER AVEC PRUDENCE</div><h3>{{ p.indicator }}</h3><h4>Risques anticipés</h4><p>{{ p.risk }}</p><h4>Retour arrière</h4><p>{{ p.reversibility }}</p>{{ ui.action('proposal.revise','Faire évoluer ce chemin',{proposalId:p.id},'button full') }}{% if p.status == 'draft' %}{{ ui.action('proposal.publish','Publier le brouillon',{proposalId:p.id},'button full') }}{% endif %}{% set open=s.consultations|filter(c=>c.proposalId == p.id and c.status == 'open') %}{% if open %}<a class="button primary full" href="{{ path('section',{view:'consultations',id:open|first.id}) }}">Voir la consultation →</a>{% else %}{{ ui.action('consultation.open','Ouvrir une consultation',{proposalId:p.id},'button primary full') }}{% endif %}</section><section class="panel"><h3>Un autre contexte ?</h3><p>Aucune application automatique dans une autre ville.</p>{{ ui.action('territory.adapt','Adapter ou documenter une exclusion',{proposalId:p.id},'plain') }}</section></aside></div>{% else %}<div class="page-title"><div><div class="eyebrow">DES RAISONNEMENTS AUTONOMES</div><h1>Explorer les chemins</h1><p>Exposer un raisonnement, documenter les causes et rendre visibles les conséquences.</p></div>{{ ui.action('proposal.create','Exposer mon chemin +',{},'button primary') }}</div>{{ ui.filter(view,s,q,territory) }}<div class="cards-grid">{% set found=0 %}{% for p in s.proposals|reverse %}{% if (territory == 'all' or territory == p.territoryId) and (q == '' or q|lower in (p.title ~ p.summary ~ p.theme)|lower) %}{{ ui.card(p,territoryMap) }}{% set found=found+1 %}{% endif %}{% endfor %}{% if not found %}<p class="empty">Aucun chemin ne correspond à ces critères.</p>{% endif %}</div>{% endif %}{% endblock %}
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    {% if selected != '' and proposalMap[selected] is defined %}
+        {% set proposal = proposalMap[selected] %}
+        <a class="plain back" href="{{ path('section', { view: 'proposals' }) }}">← Tous les chemins</a>
+        <div class="detail-heading">
+            {{ ui.badge('Version ' ~ proposal.version ~ ' · ' ~ proposal.status) }}
+            <h1>{{ proposal.title }}</h1>
+            <p>
+                {{ proposal.summary }}
+            </p>
+            <div class="meta">
+                {{ territoryMap[proposal.territoryId].name }} · {{ citizenMap[proposal.authorId].name }} · Raisonnement autonome
+            </div>
+        </div>
+        <div class="detail-layout">
+            <div>
+                <div class="causal-summary">
+                    {% for key, label in {
+                        cause: 'Cause',
+                        consequence: 'Conséquence',
+                        solution: 'Solution',
+                        justification: 'Justification'
+                    } %}
+                        <div>
+                            <div class="eyebrow">
+                                {{ label }}
+                            </div>
+                            <p>
+                                {{ proposal[key] }}
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+                <h2>L’arbre du raisonnement</h2>
+                <p class="muted small">
+                    La liste structurée fournit une lecture accessible des douze catégories. Une observation simulée ne
+                    démontre pas une causalité.
+                </p>
+                <div class="causal-grid">
+                    {% for node in proposal.nodes %}
+                        <article class="causal-node {{ node.kind == 'observation' ? 'observed' : '' }}">
+                            <div>
+                                <div class="eyebrow">
+                                    {{ '%02d'|format(loop.index) }} · {{ node.category }}
+                                </div>
+                                <p>
+                                    {{ node.content }}
+                                </p>
+                                <small>
+                                    {{ node.kind == 'observation' ? 'Observation simulée' : 'Hypothèse / prévision' }}
+                                </small>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+                <details class="panel">
+                    <summary>
+                        Relations explicites
+                    </summary>
+                    {% for experiment in proposal.edges %}
+                        <p>
+                            {{ experiment.from }} → {{ experiment.relation }} → {{ experiment.to }}
+                        </p>
+                    {% else %}
+                        <p>
+                            Les relations entre éléments seront complétées ; leur simple succession ne prouve pas un
+                            lien causal.
+                        </p>
+                    {% endfor %}
+                </details>
+                <section class="panel">
+                    <h3>Sources et limites</h3>
+                    {% for source in proposal.sources %}
+                        <p>
+                            {{ source.label }} · {{ source.date }}
+                        </p>
+                    {% endfor %}
+                    <p>
+                        Jeu pédagogique : aucun résultat simulé n’est présenté comme un fait réel sur la ville.
+                    </p>
+                </section>
+                <section class="panel">
+                    <h3>Versions du chemin</h3>
+                    {% for revision in proposal.revisions %}
+                        <details>
+                            <summary>
+                                Version {{ revision.version }} · {{ revision.reason }}
+                            </summary>
+                            <p>
+                                {{ revision.snapshot.solution }}
+                            </p>
+                        </details>
+                    {% else %}
+                        <p>
+                            Première version. Toute révision significative conservera un motif et une trace.
+                        </p>
+                    {% endfor %}
+                </section>
+            </div>
+            <aside class="detail-aside">
+                <section class="panel">
+                    <div class="eyebrow">
+                        EXPÉRIMENTER AVEC PRUDENCE
+                    </div>
+                    <h3>{{ proposal.indicator }}</h3>
+                    <h4>Risques anticipés</h4>
+                    <p>
+                        {{ proposal.risk }}
+                    </p>
+                    <h4>Retour arrière</h4>
+                    <p>
+                        {{ proposal.reversibility }}
+                    </p>
+                    {{
+                        ui.action(
+                            'proposal.revise',
+                            'Faire évoluer ce chemin',
+                            { proposalId: proposal.id },
+                            'button full'
+                        )
+                    }}
+                    {% if proposal.status == 'draft' %}
+                        {{
+                            ui.action(
+                                'proposal.publish',
+                                'Publier le brouillon',
+                                { proposalId: proposal.id },
+                                'button full'
+                            )
+                        }}
+                    {% endif %}
+                    {% set open =
+                        state.consultations|filter(
+                            consultation => consultation.proposalId == proposal.id and consultation.status == 'open'
+                        )
+                    %}
+                    {% if open %}
+                        <a
+                            class="button primary full"
+                            href="{{ path('section', { view: 'consultations', id: open|first.id }) }}"
+                        >
+                            Voir la consultation →
+                        </a>
+                    {% else %}
+                        {{
+                            ui.action(
+                                'consultation.open',
+                                'Ouvrir une consultation',
+                                { proposalId: proposal.id },
+                                'button primary full'
+                            )
+                        }}
+                    {% endif %}
+                </section>
+                <section class="panel">
+                    <h3>Un autre contexte ?</h3>
+                    <p>
+                        Aucune application automatique dans une autre ville.
+                    </p>
+                    {{
+                        ui.action(
+                            'territory.adapt',
+                            'Adapter ou documenter une exclusion',
+                            { proposalId: proposal.id },
+                            'plain'
+                        )
+                    }}
+                </section>
+            </aside>
+        </div>
+    {% else %}
+        <div class="page-title">
+            <div>
+                <div class="eyebrow">
+                    DES RAISONNEMENTS AUTONOMES
+                </div>
+                <h1>Explorer les chemins</h1>
+                <p>
+                    Exposer un raisonnement, documenter les causes et rendre visibles les conséquences.
+                </p>
+            </div>
+            {{ ui.action('proposal.create', 'Exposer mon chemin +', {}, 'button primary') }}
+        </div>
+        {{ ui.filter(view, state, q, territory) }}
+        <div class="cards-grid">
+            {% set found = 0 %}
+            {% for proposal in state.proposals|reverse %}
+                {% if
+                    (territory == 'all' or territory == proposal.territoryId)
+                        and (q == '' or (q|lower) in ((proposal.title ~ proposal.summary ~ proposal.theme)|lower)) %}
+                    {{ ui.card(proposal, territoryMap) }}
+                    {% set found = found + 1 %}
+                {% endif %}
+            {% endfor %}
+            {% if not found %}
+                <p class="empty">
+                    Aucun chemin ne correspond à ces critères.
+                </p>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

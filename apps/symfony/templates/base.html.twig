@@ -1,3 +1,84 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{% block title %}Démos Kratos · Populorum{% endblock %}</title><meta name="description" content="Simulateur démocratique fictif : chemins libres, expériences et mémoire collective."><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/app.css"></head>
-<body><a class="skip" href="#main">Aller au contenu</a><aside class="sidebar"><a class="brand" href="{{ path('home') }}"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M7 37 24 8 41 37ZM14 37l10-18 10 18M24 8v29"/><circle cx="24" cy="37" r="3"/></svg><span>DÉMOS KRATOS<small>Δῆμος Κράτος</small></span></a><div class="sidebar-label">L’ESPACE CITOYEN</div><nav aria-label="Navigation principale">{% set icons=['◈','⌖','⑂','✓','⚗','⋈','◷','◇','▤','⚖','○','§'] %}{% for key,label in labels %}<a href="{{ key == 'home' ? path('home') : path('section',{view:key}) }}" class="{{ view == key ? 'active' : '' }}" {% if view == key %}aria-current="page"{% endif %}><span aria-hidden="true">{{ icons[loop.index0] }}</span><span>{{ label }}</span></a>{% endfor %}</nav><div class="sidebar-foot"><strong>Un avenir commun.<br>Des chemins libres.</strong><p>Aucune opinion ne mesure<br>la valeur d’une personne.</p><a href="https://github.com/PsiGuardian/Populorum">Projet ouvert ↗</a></div></aside><div class="workspace"><header class="topbar"><div class="crumb"><span>Populorum</span><span aria-hidden="true">›</span><strong>{{ labels[view] }}</strong></div><div class="top-tools"><a class="plain small" href="{{ guardianPath }}">Profiler démo ↗</a><a class="profile-chip" href="{{ path('section',{view:'citizen'}) }}"><span class="avatar">{{ actor.name|first }}</span><span>{{ actor.name }}<small>Personnage fictif</small></span></a></div></header><div class="simulation-banner"><span><i class="live-dot"></i> LABORATOIRE CITOYEN</span><p>Simulation fictive · données et votes sans effet juridique</p><a class="plain small" href="{{ path('section',{view:'charter'}) }}">Comprendre ↗</a></div><main id="main" class="native-page" tabindex="-1">{% for message in app.flashes('success') %}<div role="status" class="alert">{{ message }}</div>{% endfor %}{% block content %}{% endblock %}</main><footer><span>DÉMOS KRATOS / POPULORUM</span><p>Une mémoire pour demain. Des chemins libres aujourd’hui.</p><a class="footer-link" href="{{ path('section',{view:'charter'}) }}">Charte et principes ↗</a></footer></div></body></html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}Démos Kratos · Populorum{% endblock %}</title>
+        <meta name="description" content="Simulateur démocratique fictif : chemins libres, expériences et mémoire collective.">
+        <link rel="icon" href="/favicon.svg">
+        <link rel="stylesheet" href="/app.css">
+    </head>
+    <body>
+        <a class="skip" href="#main">Aller au contenu</a>
+
+        <aside class="sidebar">
+            <a class="brand" href="{{ path('home') }}">
+                <svg viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M7 37 24 8 41 37ZM14 37l10-18 10 18M24 8v29"/>
+                    <circle cx="24" cy="37" r="3"/>
+                </svg>
+                <span>DÉMOS KRATOS<small>Δῆμος Κράτος</small></span>
+            </a>
+
+            <div class="sidebar-label">L’ESPACE CITOYEN</div>
+
+            <nav aria-label="Navigation principale">
+                {% set icons = ['◈', '⌖', '⑂', '✓', '⚗', '⋈', '◷', '◇', '▤', '⚖', '○', '§'] %}
+
+                {% for section, label in labels %}
+                    <a
+                        href="{{ section == 'home' ? path('home') : path('section', {view: section}) }}"
+                        class="{{ view == section ? 'active' : '' }}"
+                        {% if view == section %}aria-current="page"{% endif %}
+                    >
+                        <span aria-hidden="true">{{ icons[loop.index0] }}</span>
+                        <span>{{ label }}</span>
+                    </a>
+                {% endfor %}
+            </nav>
+
+            <div class="sidebar-foot">
+                <strong>Un avenir commun.<br>Des chemins libres.</strong>
+                <p>Aucune opinion ne mesure<br>la valeur d’une personne.</p>
+                <a href="https://github.com/PsiGuardian/Populorum">Projet ouvert ↗</a>
+            </div>
+        </aside>
+
+        <div class="workspace">
+            <header class="topbar">
+                <div class="crumb">
+                    <span>Populorum</span>
+                    <span aria-hidden="true">›</span>
+                    <strong>{{ labels[view] }}</strong>
+                </div>
+                <div class="top-tools">
+                    <a class="plain small" href="{{ guardianPath }}">Profiler démo ↗</a>
+                    <a class="profile-chip" href="{{ path('section', {view: 'citizen'}) }}">
+                        <span class="avatar">{{ actor.name|first }}</span>
+                        <span>{{ actor.name }}<small>Personnage fictif</small></span>
+                    </a>
+                </div>
+            </header>
+
+            <div class="simulation-banner">
+                <span><i class="live-dot"></i> LABORATOIRE CITOYEN</span>
+                <p>Simulation fictive · données et votes sans effet juridique</p>
+                <a class="plain small" href="{{ path('section', {view: 'charter'}) }}">Comprendre ↗</a>
+            </div>
+
+            <main id="main" class="native-page" tabindex="-1">
+                {% for message in app.flashes('success') %}
+                    <div role="status" class="alert">{{ message }}</div>
+                {% endfor %}
+
+                {% block content %}{% endblock %}
+            </main>
+
+            <footer>
+                <span>DÉMOS KRATOS / POPULORUM</span>
+                <p>Une mémoire pour demain. Des chemins libres aujourd’hui.</p>
+                <a class="footer-link" href="{{ path('section', {view: 'charter'}) }}">Charte et principes ↗</a>
+            </footer>
+        </div>
+    </body>
+</html>

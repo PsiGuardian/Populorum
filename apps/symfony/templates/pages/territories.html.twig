@@ -1,1 +1,81 @@
-{% extends 'base.html.twig' %}{% import 'partials/macros.html.twig' as ui %}{% block content %}<div class="page-title"><div><div class="eyebrow">AUTONOMIE LOCALE</div><h1>Les territoires</h1><p>Trois villes réelles. Tous les citoyens, consultations et résultats de ce laboratoire sont fictifs.</p></div></div>{{ ui.filter(view,s,q,territory) }}<div class="territory-explorer"><div class="map-large">{{ ui.map() }}</div><div>{% for t in s.territories %}{% if (territory == 'all' or territory == t.id) and (q == '' or q|lower in t.name|lower or q|lower in t.region|lower or q|lower in t.department|lower) %}<article class="territory-row"><div class="row-header"><h2>{{ t.name }}</h2>{{ ui.badge('Ville réelle · simulation locale') }}</div><p>{{ t.region }} / {{ t.department }}</p><p class="small muted">Code INSEE {{ t.code }} · Référence géographique {{ t.vintage }}</p><a class="plain small" href="{{ t.sourceUrl }}" rel="noreferrer" target="_blank">Source INSEE ↗</a><div class="row-links"><a class="plain" href="{{ path('section',{view:'proposals',territory:t.id}) }}">Chemins locaux →</a><a class="plain" href="{{ path('section',{view:'consultations',territory:t.id}) }}">Consultations →</a><a class="plain" href="{{ path('section',{view:'experiments',territory:t.id}) }}">Bilans →</a></div></article>{% endif %}{% endfor %}</div></div><div class="notice"><p>Le référentiel est volontairement limité à ces trois communes. Les arrondissements de Paris et Marseille ne sont pas des villes supplémentaires dans cette première étape.</p></div>{% for a in s.adaptations %}<article class="panel"><h3>{{ territoryMap[a.territoryId].name }} · {{ a.type }}</h3><p>{{ a.reason }}</p><p>Alternative : {{ a.alternative }}</p><p>Réexamen : {{ a.review }} · Source : {{ a.source }}</p></article>{% endfor %}{% endblock %}
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                AUTONOMIE LOCALE
+            </div>
+            <h1>Les territoires</h1>
+            <p>
+                Trois villes réelles. Tous les citoyens, consultations et résultats de ce laboratoire sont fictifs.
+            </p>
+        </div>
+    </div>
+    {{ ui.filter(view, state, q, territory) }}
+    <div class="territory-explorer">
+        <div class="map-large">
+            {{ ui.map() }}
+        </div>
+        <div>
+            {% for city in state.territories %}
+                {% if
+                    (territory == 'all' or territory == city.id)
+                        and (q == ''
+                        or (q|lower) in (city.name|lower)
+                        or (q|lower) in (city.region|lower)
+                            or (q|lower) in (city.department|lower)) %}
+                    <article class="territory-row">
+                        <div class="row-header">
+                            <h2>{{ city.name }}</h2>
+                            {{ ui.badge('Ville réelle · simulation locale') }}
+                        </div>
+                        <p>
+                            {{ city.region }} / {{ city.department }}
+                        </p>
+                        <p class="small muted">
+                            Code INSEE {{ city.code }} · Référence géographique {{ city.vintage }}
+                        </p>
+                        <a class="plain small" href="{{ city.sourceUrl }}" rel="noreferrer" target="_blank">
+                            Source INSEE ↗
+                        </a>
+                        <div class="row-links">
+                            <a class="plain" href="{{ path('section', { view: 'proposals', territory: city.id }) }}">
+                                Chemins locaux →
+                            </a>
+                            <a
+                                class="plain"
+                                href="{{ path('section', { view: 'consultations', territory: city.id }) }}"
+                            >
+                                Consultations →
+                            </a>
+                            <a class="plain" href="{{ path('section', { view: 'experiments', territory: city.id }) }}">
+                                Bilans →
+                            </a>
+                        </div>
+                    </article>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    <div class="notice">
+        <p>
+            Le référentiel est volontairement limité à ces trois communes. Les arrondissements de Paris et Marseille ne
+            sont pas des villes supplémentaires dans cette première étape.
+        </p>
+    </div>
+    {% for adaptation in state.adaptations %}
+        <article class="panel">
+            <h3>{{ territoryMap[adaptation.territoryId].name }} · {{ adaptation.type }}</h3>
+            <p>
+                {{ adaptation.reason }}
+            </p>
+            <p>
+                Alternative : {{ adaptation.alternative }}
+            </p>
+            <p>
+                Réexamen : {{ adaptation.review }} · Source : {{ adaptation.source }}
+            </p>
+        </article>
+    {% endfor %}
+{% endblock %}

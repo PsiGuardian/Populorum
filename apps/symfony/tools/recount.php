@@ -1,4 +1,33 @@
 <?php
+
 declare(strict_types=1);
-if(!isset($argv[1])){fwrite(STDERR,"Usage : php tools/recount.php consultation.json\n");exit(2);}
-$c=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR);$counts=['pour'=>0,'contre'=>0,'abstention'=>0];$seen=[];foreach($c['votes'] as $v){if(isset($seen[$v['citizenId']])||!in_array($v['citizenId'],$c['eligibleIds'],true)||!isset($counts[$v['choice']]))throw new RuntimeException('Bulletin invalide ou dupliqué.');$seen[$v['citizenId']]=true;$counts[$v['choice']]++;}$total=count($seen);$expressed=$counts['pour']+$counts['contre'];$participation=count($c['eligibleIds'])?$total/count($c['eligibleIds'])*100:0;echo json_encode($counts+['total'=>$total,'expressed'=>$expressed,'participation'=>$participation,'adopted'=>$participation>=$c['rules']['quorum']&&$expressed>0&&$counts['pour']>$counts['contre']],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE)."\n";
+if (!isset($argv[1])) {
+    fwrite(STDERR, "Usage : php tools/recount.php consultation.json\n");
+    exit(2);
+}
+$c = json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
+$counts = ['pour' => 0, 'contre' => 0, 'abstention' => 0];
+$seen = [];
+foreach ($c['votes'] as $v) {
+    if (
+        isset($seen[$v['citizenId']])
+        || !in_array($v['citizenId'], $c['eligibleIds'], true)
+        || !isset($counts[$v['choice']])
+    ) {
+        throw new RuntimeException('Bulletin invalide ou dupliqué.');
+    }
+    $seen[$v['citizenId']] = true;
+    ++$counts[$v['choice']];
+}
+$total = count($seen);
+$expressed = $counts['pour'] + $counts['contre'];
+$participation = count($c['eligibleIds']) ? ($total / count($c['eligibleIds'])) * 100 : 0;
+echo json_encode(
+    $counts + [
+        'total' => $total,
+        'expressed' => $expressed,
+        'participation' => $participation,
+        'adopted' => $participation >= $c['rules']['quorum'] && $expressed > 0 && $counts['pour'] > $counts['contre'],
+    ],
+    JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE,
+) . "\n";

@@ -1,6 +1,6 @@
 {
   "name": "populorum/demos-kratos-demo",
-  "description": "D\u00e9mos Kratos: d\u00e9monstration Symfony et SQLite isol\u00e9e, trois villes et Profiler Shield",
+  "description": "Démos Kratos: démonstration Symfony et SQLite isolée, trois villes et Profiler Shield",
   "type": "project",
   "license": "MIT",
   "require": {
@@ -41,6 +41,11 @@
   "minimum-stability": "stable",
   "prefer-stable": true,
   "scripts": {
-    "test": "@php tests/integration.php"
+    "test": "@php tests/integration.php",
+    "style:check": "@php vendor/bin/php-cs-fixer fix --dry-run --diff",
+    "style:fix": "@php vendor/bin/php-cs-fixer fix"
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.95"
   }
 }

@@ -1,5 +1,74 @@
-{% macro badge(text,tone='gold') %}<span class="badge {{ tone }}"><span></span>{{ text }}</span>{% endmacro %}
-{% macro action(type,label,params={},class='button') %}<a class="{{ class }}" href="{{ path('simulation_action',{type:type}|merge(params)) }}">{{ label }}</a>{% endmacro %}
-{% macro card(p,territoryMap) %}{% set status={draft:'Brouillon',published:'Chemin publié',consultation:'En consultation',experiment:'En expérimentation',result:'Résultat publié'} %}<a class="proposal-card" href="{{ path('section',{view:'proposals',id:p.id}) }}"><div class="card-top"><span class="card-icon" aria-hidden="true">⑂</span>{{ _self.badge(status[p.status] ?? p.status,p.status == 'experiment' ? 'green' : 'gold') }}</div><div class="eyebrow">{{ p.theme }} / {{ territoryMap[p.territoryId].name }}</div><h3>{{ p.title }}</h3><p>{{ p.summary }}</p><div class="card-bottom"><span>{{ p.nodes|length }} éléments · version {{ p.version }}</span><span>↗</span></div></a>{% endmacro %}
-{% macro filter(view,s,q,territory) %}<div class="filter-bar"><form action="{{ path('section',{view:view}) }}" method="get"><input type="search" name="q" value="{{ q }}" placeholder="Un sujet, un territoire, une idée…" aria-label="Rechercher"><select name="territory" aria-label="Filtrer par ville"><option value="all">Toutes les villes</option>{% for t in s.territories %}<option value="{{ t.id }}" {{ territory == t.id ? 'selected' : '' }}>{{ t.name }}</option>{% endfor %}</select><button class="button">Filtrer</button></form></div>{% endmacro %}
-{% macro map() %}<svg class="france-map" viewBox="0 0 420 400" role="img" aria-label="Carte illustrative : Le Havre, Paris et Marseille. Liste textuelle disponible sur la page des territoires."><defs><pattern id="dots" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".7" fill="currentColor" opacity=".25"/></pattern></defs><path d="m110 65 38 4 23-26 42 22 20-8 28 38 32 9 8 34 30 17-18 43 14 36-30 30-10 52-43 13-18 38-45-8-30-31-47-9-1-48-28-30 8-40-47-23-21-35-19-6 4-27 35 6 25-12 27 5Z" fill="url(#dots)" stroke="currentColor" stroke-width="1.2"/>{% for pt in [{x:180,y:115,name:'Paris'},{x:275,y:300,name:'Marseille'},{x:133,y:80,name:'Le Havre'}] %}<circle cx="{{ pt.x }}" cy="{{ pt.y }}" r="14" fill="#c6a667" opacity=".15"/><circle cx="{{ pt.x }}" cy="{{ pt.y }}" r="4" fill="#9c7c40"/><text x="{{ pt.x + 11 }}" y="{{ pt.y + 4 }}">{{ pt.name }}</text>{% endfor %}</svg>{% endmacro %}
+{% macro badge(text, tone = 'gold') %}
+    <span class="badge {{ tone }}"><span></span>{{ text }}</span>
+{% endmacro %}
+
+{% macro action(type, label, params = {}, class = 'button') %}
+    <a class="{{ class }}" href="{{ path('simulation_action', {type: type}|merge(params)) }}">
+        {{ label }}
+    </a>
+{% endmacro %}
+
+{% macro card(proposal, territoryMap) %}
+    {% set statuses = {
+        draft: 'Brouillon',
+        published: 'Chemin publié',
+        consultation: 'En consultation',
+        experiment: 'En expérimentation',
+        result: 'Résultat publié'
+    } %}
+
+    <a class="proposal-card" href="{{ path('section', {view: 'proposals', id: proposal.id}) }}">
+        <div class="card-top">
+            <span class="card-icon" aria-hidden="true">⑂</span>
+            {{ _self.badge(statuses[proposal.status] ?? proposal.status, proposal.status == 'experiment' ? 'green' : 'gold') }}
+        </div>
+        <div class="eyebrow">{{ proposal.theme }} / {{ territoryMap[proposal.territoryId].name }}</div>
+        <h3>{{ proposal.title }}</h3>
+        <p>{{ proposal.summary }}</p>
+        <div class="card-bottom">
+            <span>{{ proposal.nodes|length }} éléments · version {{ proposal.version }}</span>
+            <span>↗</span>
+        </div>
+    </a>
+{% endmacro %}
+
+{% macro filter(view, state, q, territory) %}
+    <div class="filter-bar">
+        <form action="{{ path('section', {view: view}) }}" method="get">
+            <input type="search" name="q" value="{{ q }}" placeholder="Un sujet, un territoire, une idée…" aria-label="Rechercher">
+            <select name="territory" aria-label="Filtrer par ville">
+                <option value="all">Toutes les villes</option>
+                {% for city in state.territories %}
+                    <option value="{{ city.id }}" {{ territory == city.id ? 'selected' : '' }}>{{ city.name }}</option>
+                {% endfor %}
+            </select>
+            <button class="button">Filtrer</button>
+        </form>
+    </div>
+{% endmacro %}
+
+{% macro map() %}
+    {# Une illustration de repérage ; la liste des communes fournit l’alternative textuelle. #}
+    <svg class="france-map" viewBox="0 0 420 400" role="img" aria-label="Carte illustrative : Le Havre, Paris et Marseille. Liste textuelle disponible sur la page des territoires.">
+        <defs>
+            <pattern id="dots" width="12" height="12" patternUnits="userSpaceOnUse">
+                <circle cx="1" cy="1" r=".7" fill="currentColor" opacity=".25"/>
+            </pattern>
+        </defs>
+        <path
+            d="m110 65 38 4 23-26 42 22 20-8 28 38 32 9 8 34 30 17-18 43 14 36-30 30-10 52-43 13-18 38-45-8-30-31-47-9-1-48-28-30 8-40-47-23-21-35-19-6 4-27 35 6 25-12 27 5Z"
+            fill="url(#dots)"
+            stroke="currentColor"
+            stroke-width="1.2"
+        />
+        {% for point in [
+            {x: 180, y: 115, name: 'Paris'},
+            {x: 275, y: 300, name: 'Marseille'},
+            {x: 133, y: 80, name: 'Le Havre'}
+        ] %}
+            <circle cx="{{ point.x }}" cy="{{ point.y }}" r="14" fill="#c6a667" opacity=".15"/>
+            <circle cx="{{ point.x }}" cy="{{ point.y }}" r="4" fill="#9c7c40"/>
+            <text x="{{ point.x + 11 }}" y="{{ point.y + 4 }}">{{ point.name }}</text>
+        {% endfor %}
+    </svg>
+{% endmacro %}

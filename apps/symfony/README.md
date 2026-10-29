@@ -93,3 +93,7 @@ php tools/recount.php populorum-consultation.json
 Les signatures sont celles de l’instance, pas des preuves d’identité civile. Un opérateur possédant sa clé pourrait réécrire l’historique ; une preuve exportée et conservée indépendamment aide à détecter les divergences ultérieures. Le premier jeu de données pédagogique n’est pas signé.
 
 Sources de configuration Arch : [manuel officiel PHP/pacman](https://www.php.net/manual/en/install.unix.pacman.php), [paquet php-sqlite](https://archlinux.org/packages/extra/x86_64/php-sqlite/).
+
+## Lecture et entretien du code
+
+Le [guide des développeurs](docs/CODE_STYLE.md) décrit les responsabilités des fichiers, le trajet d’une action et les conventions de présentation. Pour contrôler ou appliquer le style PHP : `composer style:check` et `composer style:fix`. Ce contrôle fait aussi partie de la CI.

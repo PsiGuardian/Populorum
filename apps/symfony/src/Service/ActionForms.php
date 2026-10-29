@@ -1,31 +1,494 @@
 <?php
+
 declare(strict_types=1);
+
 namespace App\Service;
-final class ActionForms {
- public const TYPES=[
- 'citizen.create'=>['Créer un personnage fictif','citizen',['name'=>'Nom inventé','territoryId'=>'Territoire']],
- 'citizen.consent'=>['Participation nominative fictive','citizen',['consent'=>'checkbox:Je consens à publier les choix de mon personnage dans ma simulation']],
- 'citizen.withdraw'=>['Retirer le consentement fictif','citizen',[]],
- 'citizen.update'=>['Rectifier mon personnage','citizen',['name'=>'Nom inventé','territoryId'=>'Territoire']],
- 'citizen.erase'=>['Effacer le nom fictif','citizen',[]],
- 'proposal.create'=>['Exposer mon chemin','proposals',['title'=>'Titre','territoryId'=>'Territoire','theme'=>'Thème','tags'=>'Thèmes communs, séparés par des virgules','summary'=>'area:Explication en français courant','problem'=>'area:Problème','cause'=>'area:Cause principale supposée','consequence'=>'area:Conséquence','solution'=>'area:Solution à expérimenter','justification'=>'area:Justification','indicator'=>'Indicateur mesurable','forecast'=>'number:Variation attendue en % (hypothèse)','risk'=>'area:Risques anticipés','reversibility'=>'area:Conditions de retour arrière','source'=>'Source pédagogique']],
- 'proposal.publish'=>['Publier le brouillon','proposals',['proposalId'=>'hidden']],
- 'proposal.revise'=>['Faire évoluer mon chemin','proposals',['proposalId'=>'hidden','reason'=>'area:Motif de révision','solution'=>'area:Solution révisée','risk'=>'area:Risques réexaminés']],
- 'territory.adapt'=>['Adapter un chemin à un autre territoire','territories',['proposalId'=>'hidden','territoryId'=>'Territoire','type'=>'choice:adaptation,exclusion','characteristic'=>'area:Caractéristique locale','reason'=>'area:Causes et conséquences locales','source'=>'Source pédagogique','alternative'=>'area:Solution alternative','review'=>'area:Conditions de réexamen']],
- 'consultation.open'=>['Ouvrir une consultation fictive','consultations',['proposalId'=>'hidden','days'=>'number:Durée en jours, de 1 à 365','quorum'=>'number:Quorum, de 0 à 100 %']],
- 'consultation.close'=>['Clôturer cette consultation','consultations',['consultationId'=>'hidden','reason'=>'area:Motif de clôture pédagogique']],
- 'vote.cast'=>['Confirmer un vote fictif','consultations',['consultationId'=>'hidden','choice'=>'choice:pour,contre,abstention']],
- 'experiment.create'=>['Définir un protocole','experiments',['consultationId'=>'hidden','objective'=>'area:Objectif','hypothesis'=>'area:Hypothèse','baseline'=>'number:Valeur initiale','unit'=>'Unité','start'=>'date:Début','end'=>'date:Fin','stop'=>'area:Critère d’arrêt','method'=>'area:Méthode de mesure','limitations'=>'area:Incertitudes et limites']],
- 'observation.add'=>['Ajouter une observation simulée','experiments',['experimentId'=>'hidden','date'=>'date:Date du relevé','value'=>'number:Valeur observée','uncertainty'=>'number:Incertitude ±','source'=>'area:Source et méthode','external'=>'area:Facteurs externes','unexpected'=>'area:Effet imprévu']],
- 'experiment.evaluate'=>['Produire le bilan','experiments',['experimentId'=>'hidden','summary'=>'area:Prévisions, observations, imprévus et limites','decision'=>'choice:continue,revise,stop']],
- 'finance.add'=>['Ajouter une écriture fictive','transparency',['type'=>'choice:expense,contribution','label'=>'Libellé pédagogique','amount'=>'number:Montant en euros','receipt'=>'Référence du justificatif pédagogique']],
- 'governance.propose'=>['Proposer une évolution','governance',['title'=>'Titre de l’évolution','reason'=>'area:Motifs','risk'=>'area:Risques et garanties','rollback'=>'area:Plan de retour arrière']],
- 'governance.approve'=>['Enregistrer un avis indépendant','governance',['governanceId'=>'hidden']],
- 'moderation.report'=>['Documenter un signalement','governance',['objectId'=>'Identifiant concerné','reason'=>'area:Faits, contexte et preuves']],
- 'moderation.appeal'=>['Exercer un recours','governance',['caseId'=>'hidden','reason'=>'area:Motifs du recours et réexamen demandé']],
- 'integrity.alert'=>['Signaler une anomalie','transparency',['reason'=>'area:Anomalie et méthode de reproduction']],
- 'node.configure'=>['Configurer le relais virtuel','infrastructure',['nodeId'=>'hidden','bandwidth'=>'number:Plafond pédagogique en Ko/s (1–1024)','enabled'=>'checkbox:Autoriser le relais virtuel']],
- 'node.sync'=>['Synchroniser une copie virtuelle','infrastructure',['nodeId'=>'hidden']],
- 'resource.add'=>['Décrire une contribution fictive','citizen',['kind'=>'Type de contribution','description'=>'area:Ressource ou aide proposée']],
- ];
+
+/** Titres, destinations et champs des actions : le contrôleur ne dépend pas de positions numériques. */
+final class ActionForms
+{
+    public const TYPES = [
+        'citizen.create' => [
+            'title' => 'Créer un personnage fictif',
+            'view' => 'citizen',
+            'fields' => [
+                'name' => [
+                    'type' => 'text',
+                    'label' => 'Nom inventé',
+                ],
+                'territoryId' => [
+                    'type' => 'territory',
+                    'label' => 'Territoire',
+                ],
+            ],
+        ],
+        'citizen.consent' => [
+            'title' => 'Participation nominative fictive',
+            'view' => 'citizen',
+            'fields' => [
+                'consent' => [
+                    'type' => 'checkbox',
+                    'label' => 'Je consens à publier les choix de mon personnage dans ma simulation',
+                    'required' => true,
+                ],
+            ],
+        ],
+        'citizen.withdraw' => [
+            'title' => 'Retirer le consentement fictif',
+            'view' => 'citizen',
+            'fields' => [],
+        ],
+        'citizen.update' => [
+            'title' => 'Rectifier mon personnage',
+            'view' => 'citizen',
+            'fields' => [
+                'name' => [
+                    'type' => 'text',
+                    'label' => 'Nom inventé',
+                ],
+                'territoryId' => [
+                    'type' => 'territory',
+                    'label' => 'Territoire',
+                ],
+            ],
+        ],
+        'citizen.erase' => [
+            'title' => 'Effacer le nom fictif',
+            'view' => 'citizen',
+            'fields' => [],
+        ],
+        'proposal.create' => [
+            'title' => 'Exposer mon chemin',
+            'view' => 'proposals',
+            'fields' => [
+                'title' => [
+                    'type' => 'text',
+                    'label' => 'Titre',
+                ],
+                'territoryId' => [
+                    'type' => 'territory',
+                    'label' => 'Territoire',
+                ],
+                'theme' => [
+                    'type' => 'text',
+                    'label' => 'Thème',
+                ],
+                'tags' => [
+                    'type' => 'text',
+                    'label' => 'Thèmes communs, séparés par des virgules',
+                ],
+                'summary' => [
+                    'type' => 'textarea',
+                    'label' => 'Explication en français courant',
+                ],
+                'problem' => [
+                    'type' => 'textarea',
+                    'label' => 'Problème',
+                ],
+                'cause' => [
+                    'type' => 'textarea',
+                    'label' => 'Cause principale supposée',
+                ],
+                'consequence' => [
+                    'type' => 'textarea',
+                    'label' => 'Conséquence',
+                ],
+                'solution' => [
+                    'type' => 'textarea',
+                    'label' => 'Solution à expérimenter',
+                ],
+                'justification' => [
+                    'type' => 'textarea',
+                    'label' => 'Justification',
+                ],
+                'indicator' => [
+                    'type' => 'text',
+                    'label' => 'Indicateur mesurable',
+                ],
+                'forecast' => [
+                    'type' => 'number',
+                    'label' => 'Variation attendue en % (hypothèse)',
+                ],
+                'risk' => [
+                    'type' => 'textarea',
+                    'label' => 'Risques anticipés',
+                ],
+                'reversibility' => [
+                    'type' => 'textarea',
+                    'label' => 'Conditions de retour arrière',
+                ],
+                'source' => [
+                    'type' => 'text',
+                    'label' => 'Source pédagogique',
+                ],
+            ],
+        ],
+        'proposal.publish' => [
+            'title' => 'Publier le brouillon',
+            'view' => 'proposals',
+            'fields' => [
+                'proposalId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+            ],
+        ],
+        'proposal.revise' => [
+            'title' => 'Faire évoluer mon chemin',
+            'view' => 'proposals',
+            'fields' => [
+                'proposalId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Motif de révision',
+                ],
+                'solution' => [
+                    'type' => 'textarea',
+                    'label' => 'Solution révisée',
+                ],
+                'risk' => [
+                    'type' => 'textarea',
+                    'label' => 'Risques réexaminés',
+                ],
+            ],
+        ],
+        'territory.adapt' => [
+            'title' => 'Adapter un chemin à un autre territoire',
+            'view' => 'territories',
+            'fields' => [
+                'proposalId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'territoryId' => [
+                    'type' => 'territory',
+                    'label' => 'Territoire',
+                ],
+                'type' => [
+                    'type' => 'choice',
+                    'label' => 'Type',
+                    'choices' => [
+                        'adaptation' => 'adaptation',
+                        'exclusion' => 'exclusion',
+                    ],
+                ],
+                'characteristic' => [
+                    'type' => 'textarea',
+                    'label' => 'Caractéristique locale',
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Causes et conséquences locales',
+                ],
+                'source' => [
+                    'type' => 'text',
+                    'label' => 'Source pédagogique',
+                ],
+                'alternative' => [
+                    'type' => 'textarea',
+                    'label' => 'Solution alternative',
+                ],
+                'review' => [
+                    'type' => 'textarea',
+                    'label' => 'Conditions de réexamen',
+                ],
+            ],
+        ],
+        'consultation.open' => [
+            'title' => 'Ouvrir une consultation fictive',
+            'view' => 'consultations',
+            'fields' => [
+                'proposalId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'days' => [
+                    'type' => 'number',
+                    'label' => 'Durée en jours, de 1 à 365',
+                ],
+                'quorum' => [
+                    'type' => 'number',
+                    'label' => 'Quorum, de 0 à 100 %',
+                ],
+            ],
+        ],
+        'consultation.close' => [
+            'title' => 'Clôturer cette consultation',
+            'view' => 'consultations',
+            'fields' => [
+                'consultationId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Motif de clôture pédagogique',
+                ],
+            ],
+        ],
+        'vote.cast' => [
+            'title' => 'Confirmer un vote fictif',
+            'view' => 'consultations',
+            'fields' => [
+                'consultationId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'choice' => [
+                    'type' => 'choice',
+                    'label' => 'Mon choix fictif',
+                    'choices' => [
+                        'pour' => 'pour',
+                        'contre' => 'contre',
+                        'abstention' => 'abstention',
+                    ],
+                ],
+            ],
+        ],
+        'experiment.create' => [
+            'title' => 'Définir un protocole',
+            'view' => 'experiments',
+            'fields' => [
+                'consultationId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'objective' => [
+                    'type' => 'textarea',
+                    'label' => 'Objectif',
+                ],
+                'hypothesis' => [
+                    'type' => 'textarea',
+                    'label' => 'Hypothèse',
+                ],
+                'baseline' => [
+                    'type' => 'number',
+                    'label' => 'Valeur initiale',
+                ],
+                'unit' => [
+                    'type' => 'text',
+                    'label' => 'Unité',
+                ],
+                'start' => [
+                    'type' => 'date',
+                    'label' => 'Début',
+                ],
+                'end' => [
+                    'type' => 'date',
+                    'label' => 'Fin',
+                ],
+                'stop' => [
+                    'type' => 'textarea',
+                    'label' => 'Critère d’arrêt',
+                ],
+                'method' => [
+                    'type' => 'textarea',
+                    'label' => 'Méthode de mesure',
+                ],
+                'limitations' => [
+                    'type' => 'textarea',
+                    'label' => 'Incertitudes et limites',
+                ],
+            ],
+        ],
+        'observation.add' => [
+            'title' => 'Ajouter une observation simulée',
+            'view' => 'experiments',
+            'fields' => [
+                'experimentId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'date' => [
+                    'type' => 'date',
+                    'label' => 'Date du relevé',
+                ],
+                'value' => [
+                    'type' => 'number',
+                    'label' => 'Valeur observée',
+                ],
+                'uncertainty' => [
+                    'type' => 'number',
+                    'label' => 'Incertitude ±',
+                ],
+                'source' => [
+                    'type' => 'textarea',
+                    'label' => 'Source et méthode',
+                ],
+                'external' => [
+                    'type' => 'textarea',
+                    'label' => 'Facteurs externes',
+                ],
+                'unexpected' => [
+                    'type' => 'textarea',
+                    'label' => 'Effet imprévu',
+                ],
+            ],
+        ],
+        'experiment.evaluate' => [
+            'title' => 'Produire le bilan',
+            'view' => 'experiments',
+            'fields' => [
+                'experimentId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'summary' => [
+                    'type' => 'textarea',
+                    'label' => 'Prévisions, observations, imprévus et limites',
+                ],
+                'decision' => [
+                    'type' => 'choice',
+                    'label' => 'Decision',
+                    'choices' => [
+                        'continue' => 'continue',
+                        'revise' => 'revise',
+                        'stop' => 'stop',
+                    ],
+                ],
+            ],
+        ],
+        'finance.add' => [
+            'title' => 'Ajouter une écriture fictive',
+            'view' => 'transparency',
+            'fields' => [
+                'type' => [
+                    'type' => 'choice',
+                    'label' => 'Type',
+                    'choices' => [
+                        'expense' => 'expense',
+                        'contribution' => 'contribution',
+                    ],
+                ],
+                'label' => [
+                    'type' => 'text',
+                    'label' => 'Libellé pédagogique',
+                ],
+                'amount' => [
+                    'type' => 'number',
+                    'label' => 'Montant en euros',
+                ],
+                'receipt' => [
+                    'type' => 'text',
+                    'label' => 'Référence du justificatif pédagogique',
+                ],
+            ],
+        ],
+        'governance.propose' => [
+            'title' => 'Proposer une évolution',
+            'view' => 'governance',
+            'fields' => [
+                'title' => [
+                    'type' => 'text',
+                    'label' => 'Titre de l’évolution',
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Motifs',
+                ],
+                'risk' => [
+                    'type' => 'textarea',
+                    'label' => 'Risques et garanties',
+                ],
+                'rollback' => [
+                    'type' => 'textarea',
+                    'label' => 'Plan de retour arrière',
+                ],
+            ],
+        ],
+        'governance.approve' => [
+            'title' => 'Enregistrer un avis indépendant',
+            'view' => 'governance',
+            'fields' => [
+                'governanceId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+            ],
+        ],
+        'moderation.report' => [
+            'title' => 'Documenter un signalement',
+            'view' => 'governance',
+            'fields' => [
+                'objectId' => [
+                    'type' => 'text',
+                    'label' => 'Identifiant concerné',
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Faits, contexte et preuves',
+                ],
+            ],
+        ],
+        'moderation.appeal' => [
+            'title' => 'Exercer un recours',
+            'view' => 'governance',
+            'fields' => [
+                'caseId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Motifs du recours et réexamen demandé',
+                ],
+            ],
+        ],
+        'integrity.alert' => [
+            'title' => 'Signaler une anomalie',
+            'view' => 'transparency',
+            'fields' => [
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Anomalie et méthode de reproduction',
+                ],
+            ],
+        ],
+        'node.configure' => [
+            'title' => 'Configurer le relais virtuel',
+            'view' => 'infrastructure',
+            'fields' => [
+                'nodeId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'bandwidth' => [
+                    'type' => 'number',
+                    'label' => 'Plafond pédagogique en Ko/s (1–1024)',
+                ],
+                'enabled' => [
+                    'type' => 'checkbox',
+                    'label' => 'Autoriser le relais virtuel',
+                    'required' => false,
+                ],
+            ],
+        ],
+        'node.sync' => [
+            'title' => 'Synchroniser une copie virtuelle',
+            'view' => 'infrastructure',
+            'fields' => [
+                'nodeId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+            ],
+        ],
+        'resource.add' => [
+            'title' => 'Décrire une contribution fictive',
+            'view' => 'citizen',
+            'fields' => [
+                'kind' => [
+                    'type' => 'text',
+                    'label' => 'Type de contribution',
+                ],
+                'description' => [
+                    'type' => 'textarea',
+                    'label' => 'Ressource ou aide proposée',
+                ],
+            ],
+        ],
+    ];
 }

@@ -22,6 +22,7 @@ jobs:
           coverage: none
       - run: composer install --no-interaction --prefer-dist
       - run: composer validate --strict
+      - run: composer style:check
       - run: php tools/init-demo.php
       - run: php bin/console doctrine:migrations:migrate --no-interaction --env=demo
       - run: php bin/console app:demo:prepare --env=demo

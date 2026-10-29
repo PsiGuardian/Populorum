@@ -1,1 +1,117 @@
-{% extends 'base.html.twig' %}{% import 'partials/macros.html.twig' as ui %}{% block content %}<section class="hero"><div class="hero-copy"><div class="eyebrow"><span class="gold-line"></span>LA DÉMOCRATIE, UN CHEMIN VIVANT</div><h1>Des chemins libres.<br>Un avenir <em>commun.</em></h1><p>Proposer. Expérimenter. Comprendre.<br>Construisons une mémoire des décisions pour éclairer les générations à venir.</p><div class="hero-actions"><a class="button primary" href="{{ path('section',{view:'proposals'}) }}">Explorer les chemins →</a>{{ ui.action('proposal.create','Exposer le mien +',{},'button text-button') }}</div><div class="hero-note"><span class="mini-line"></span>Le pouvoir appartient au peuple.</div></div><div class="hero-art"><div class="art-label"><span class="live-dot"></span> CONVERGENCE ÉMERGENTE</div><svg viewBox="0 0 440 250" aria-hidden="true"><g stroke="#c6a667" fill="none" stroke-width="1.5"><path d="M20 35C135 35 110 125 230 125S340 100 420 100M20 120C120 120 130 125 230 125S350 180 420 180M20 230C120 230 110 125 230 125S320 50 420 50"/></g>{% for xy in [[20,35],[20,120],[20,230],[230,125],[420,100],[420,180],[420,50]] %}<circle cx="{{ xy[0] }}" cy="{{ xy[1] }}" r="13" fill="#c6a667" opacity=".12"/><circle cx="{{ xy[0] }}" cy="{{ xy[1] }}" r="3" fill="#c6a667"/>{% endfor %}<text x="65" y="40">Observer</text><text x="65" y="112">Expérimenter</text><text x="65" y="227">Transmettre</text></svg><p>Nos chemins peuvent se rapprocher.<br><span>Sans jamais devoir se confondre.</span></p><span class="art-index">01 — LE PRINCIPE</span></div></section><div class="stats-grid">{% for stat in [{n:s.territories|length,label:'Villes de référence',view:'territories'},{n:s.proposals|length,label:'Chemins à explorer',view:'proposals'},{n:s.consultations|filter(c=>c.status == 'open')|length,label:'Consultations ouvertes',view:'consultations'},{n:s.experiments|length,label:'Expériences documentées',view:'experiments'}] %}<a class="stat" href="{{ path('section',{view:stat.view}) }}" style="text-decoration:none"><span aria-hidden="true">◇</span><div><strong>{{ '%02d'|format(stat.n) }}</strong><span>{{ stat.label }}</span></div></a>{% endfor %}</div><section class="section"><div class="section-heading"><div><div class="eyebrow">LE RAISONNEMENT EN ACTION</div><h2>Un problème. Plusieurs chemins.</h2></div><a class="plain" href="{{ path('section',{view:'proposals'}) }}">Tous les chemins →</a></div><div class="cards-grid">{% for p in s.proposals|slice(0,3) %}{{ ui.card(p,territoryMap) }}{% endfor %}</div></section><section class="home-bottom"><div class="territory-panel"><div><div class="eyebrow">L’EXPÉRIENCE EST LOCALE</div><h2>Chaque territoire<br>éclaire sa propre voie.</h2><p>Paris, Marseille, Le Havre : trois villes réelles, des expériences entièrement simulées. Aucune mesure ne s’applique automatiquement ailleurs.</p><a class="plain" href="{{ path('section',{view:'territories'}) }}">Explorer les territoires →</a><div class="map-legend">Carte illustrative · pas de données démographiques inventées</div></div>{{ ui.map() }}</div><div class="quote-panel"><div class="eyebrow">NOTRE BOUSSOLE</div><blockquote>« N’impose pas ton chemin. Éclaire le tien, et laisse les conséquences instruire chacun. »</blockquote><a class="plain" href="{{ path('section',{view:'charter'}) }}">Lire la charte fondatrice ↗</a></div></section>{% endblock %}
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    <section class="hero">
+        <div class="hero-copy">
+            <div class="eyebrow">
+                <span class="gold-line"></span>LA DÉMOCRATIE, UN CHEMIN VIVANT
+            </div>
+            <h1>Des chemins libres.<br />Un avenir <em>commun.</em></h1>
+            <p>
+                Proposer. Expérimenter. Comprendre.<br />Construisons une mémoire des décisions pour éclairer les
+                générations à venir.
+            </p>
+            <div class="hero-actions">
+                <a class="button primary" href="{{ path('section', { view: 'proposals' }) }}">Explorer les chemins →</a>
+                {{ ui.action('proposal.create', 'Exposer le mien +', {}, 'button text-button') }}
+            </div>
+            <div class="hero-note">
+                <span class="mini-line"></span>Le pouvoir appartient au peuple.
+            </div>
+        </div>
+        <div class="hero-art">
+            <div class="art-label">
+                <span class="live-dot"></span> CONVERGENCE ÉMERGENTE
+            </div>
+            <svg viewBox="0 0 440 250" aria-hidden="true">
+                <g stroke="#c6a667" fill="none" stroke-width="1.5">
+                    <path
+                        d="M20 35C135 35 110 125 230 125S340 100 420 100M20 120C120 120 130 125 230 125S350 180 420 180M20 230C120 230 110 125 230 125S320 50 420 50"
+                    />
+                </g>
+                {% for coordinates in [[20, 35], [20, 120], [20, 230], [230, 125], [420, 100], [420, 180], [420, 50]] %}
+                    <circle cx="{{ coordinates[0] }}" cy="{{ coordinates[1] }}" r="13" fill="#c6a667" opacity=".12" />
+                    <circle cx="{{ coordinates[0] }}" cy="{{ coordinates[1] }}" r="3" fill="#c6a667" />
+                {% endfor %}
+                <text x="65" y="40">
+                    Observer
+                </text>
+                <text x="65" y="112">
+                    Expérimenter
+                </text>
+                <text x="65" y="227">
+                    Transmettre
+                </text>
+            </svg>
+            <p>
+                Nos chemins peuvent se rapprocher.<br />
+                <span>Sans jamais devoir se confondre.</span>
+            </p>
+            <span class="art-index">01 — LE PRINCIPE</span>
+        </div>
+    </section>
+    <div class="stats-grid">
+        {% for stat in [
+            { count: state.territories|length, label: 'Villes de référence', view: 'territories' },
+            { count: state.proposals|length, label: 'Chemins à explorer', view: 'proposals' },
+            {
+                count: state.consultations|filter(consultation => consultation.status == 'open')|length,
+                label: 'Consultations ouvertes',
+                view: 'consultations'
+            },
+            { count: state.experiments|length, label: 'Expériences documentées', view: 'experiments' }
+        ] %}
+            <a class="stat" href="{{ path('section', { view: stat.view }) }}" style="text-decoration:none">
+                <span aria-hidden="true">◇</span>
+                <div>
+                    <strong>{{ '%02d'|format(stat.count) }}</strong>
+                    <span>{{ stat.label }}</span>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+    <section class="section">
+        <div class="section-heading">
+            <div>
+                <div class="eyebrow">
+                    LE RAISONNEMENT EN ACTION
+                </div>
+                <h2>Un problème. Plusieurs chemins.</h2>
+            </div>
+            <a class="plain" href="{{ path('section', { view: 'proposals' }) }}">Tous les chemins →</a>
+        </div>
+        <div class="cards-grid">
+            {% for proposal in state.proposals|slice(0, 3) %}
+                {{ ui.card(proposal, territoryMap) }}
+            {% endfor %}
+        </div>
+    </section>
+    <section class="home-bottom">
+        <div class="territory-panel">
+            <div>
+                <div class="eyebrow">
+                    L’EXPÉRIENCE EST LOCALE
+                </div>
+                <h2>Chaque territoire<br />éclaire sa propre voie.</h2>
+                <p>
+                    Paris, Marseille, Le Havre : trois villes réelles, des expériences entièrement simulées. Aucune
+                    mesure ne s’applique automatiquement ailleurs.
+                </p>
+                <a class="plain" href="{{ path('section', { view: 'territories' }) }}">Explorer les territoires →</a>
+                <div class="map-legend">
+                    Carte illustrative · pas de données démographiques inventées
+                </div>
+            </div>
+            {{ ui.map() }}
+        </div>
+        <div class="quote-panel">
+            <div class="eyebrow">
+                NOTRE BOUSSOLE
+            </div>
+            <blockquote>
+                « N’impose pas ton chemin. Éclaire le tien, et laisse les conséquences instruire chacun. »
+            </blockquote>
+            <a class="plain" href="{{ path('section', { view: 'charter' }) }}">Lire la charte fondatrice ↗</a>
+        </div>
+    </section>
+{% endblock %}

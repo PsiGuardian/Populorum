@@ -1,1 +1,48 @@
-{% extends 'base.html.twig' %}{% import 'partials/macros.html.twig' as ui %}{% block content %}<div class="page-title"><div><div class="eyebrow">TRANSMETTRE SANS FIGER LA PENSÉE</div><h1>La mémoire collective</h1><p>Le vote exprime un choix situé ; l’observation permet de le réexaminer.</p></div><a class="button" href="{{ path('export',{kind:'memory'}) }}">Exporter la mémoire ↓</a></div>{{ ui.filter(view,s,q,territory) }}<div class="timeline">{% for e in s.events|reverse %}{% if q == '' or q|lower in (e.type ~ e.object)|lower %}<article><div class="timeline-dot"></div><span class="eyebrow">{{ e.at|date('d/m/Y H:i') }} · {{ e.type }}</span><h3>{{ e.object }}</h3><p class="small muted">{{ citizenMap[e.payload.actorId].name ?? 'Opération de simulation' }} · Trace signée et vérifiable</p></article>{% endif %}{% endfor %}{% for p in s.proposals %}{% if (territory == 'all' or territory == p.territoryId) and (q == '' or q|lower in p.title|lower) %}<article><div class="timeline-dot"></div><span class="eyebrow">{{ p.createdAt|date('d/m/Y') }} · Chemin initial</span><h3>{{ p.title }}</h3><a class="plain" href="{{ path('section',{view:'proposals',id:p.id}) }}">Consulter le chemin →</a><p class="small muted">État pédagogique initial : données simulées, sans jugement sur la personne.</p></article>{% endif %}{% endfor %}</div>{% endblock %}
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                TRANSMETTRE SANS FIGER LA PENSÉE
+            </div>
+            <h1>La mémoire collective</h1>
+            <p>
+                Le vote exprime un choix situé ; l’observation permet de le réexaminer.
+            </p>
+        </div>
+        <a class="button" href="{{ path('export', { kind: 'memory' }) }}">Exporter la mémoire ↓</a>
+    </div>
+    {{ ui.filter(view, state, q, territory) }}
+    <div class="timeline">
+        {% for auditEvent in state.events|reverse %}
+            {% if q == '' or (q|lower) in ((auditEvent.type ~ auditEvent.object)|lower) %}
+                <article>
+                    <div class="timeline-dot"></div>
+                    <span class="eyebrow">{{ auditEvent.at|date('d/m/Y H:i') }} · {{ auditEvent.type }}</span>
+                    <h3>{{ auditEvent.object }}</h3>
+                    <p class="small muted">
+                        {{ citizenMap[auditEvent.payload.actorId].name ?? 'Opération de simulation' }} · Trace signée et vérifiable
+                    </p>
+                </article>
+            {% endif %}
+        {% endfor %}
+        {% for proposal in state.proposals %}
+            {% if
+                (territory == 'all' or territory == proposal.territoryId)
+                    and (q == '' or (q|lower) in (proposal.title|lower)) %}
+                <article>
+                    <div class="timeline-dot"></div>
+                    <span class="eyebrow">{{ proposal.createdAt|date('d/m/Y') }} · Chemin initial</span>
+                    <h3>{{ proposal.title }}</h3>
+                    <a class="plain" href="{{ path('section', { view: 'proposals', id: proposal.id }) }}">
+                        Consulter le chemin →
+                    </a>
+                    <p class="small muted">
+                        État pédagogique initial : données simulées, sans jugement sur la personne.
+                    </p>
+                </article>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endblock %}

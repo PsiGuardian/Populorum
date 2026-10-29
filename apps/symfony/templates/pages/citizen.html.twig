@@ -1,1 +1,92 @@
-{% extends 'base.html.twig' %}{% import 'partials/macros.html.twig' as ui %}{% block content %}<div class="page-title"><div><div class="eyebrow">EXPLORER À SON RYTHME</div><h1>Prendre part à l’expérience</h1><p>Votre navigateur dispose de sa propre simulation, conservée côté serveur dans SQLite. Il ne s’agit pas d’un registre d’identités civiles.</p></div></div><div class="two-columns"><section class="panel"><h2>Votre personnage actif</h2><form method="post" action="{{ path('persona') }}" class="citizen-select"><input type="hidden" name="_token" value="{{ csrf_token('persona') }}"><label for="citizen">Personnage</label><select name="citizen" id="citizen">{% for c in s.citizens %}<option value="{{ c.id }}" {{ c.id == actor.id ? 'selected' : '' }}>{{ c.name }} — {{ territoryMap[c.territoryId].name }}</option>{% endfor %}</select><button class="button">Choisir</button></form><p>{{ actor.name }} · {{ territoryMap[actor.territoryId].name }}</p>{{ ui.badge(actor.consent ? 'Publication nominative fictive consentie' : 'Consentement non donné',actor.consent ? 'green' : 'gray') }}<div class="action-links">{{ ui.action('citizen.create','Créer un personnage') }}{{ ui.action('citizen.update','Rectifier mon personnage') }}{% if actor.consent %}{{ ui.action('citizen.withdraw','Retirer le consentement fictif',{},'plain') }}{% else %}{{ ui.action('citizen.consent','Définir le consentement fictif') }}{% endif %}{{ ui.action('citizen.erase','Effacer le nom fictif',{},'plain danger') }}<a class="plain" href="{{ path('export',{kind:'citizen'}) }}">Exporter le personnage ↓</a></div></section><section class="panel"><h2>Contribuer au bien commun</h2><p>Documentation, traduction, accessibilité, observation ou développement : aucune contribution n’achète une voix.</p>{{ ui.action('resource.add','Décrire une contribution fictive +',{},'button primary') }}{% for r in s.resources %}<p><strong>{{ r.kind }}</strong> — {{ r.description }}</p>{% endfor %}<hr><a class="plain" href="https://github.com/PsiGuardian/Populorum">Consulter le dépôt ↗</a><p class="small muted">L’accès Guardian au profiler est indépendant de ce personnage. Son compte public de démonstration ne donne aucun privilège de vote.</p></section></div><section class="panel section"><h2>Comprendre les mots</h2><div class="glossary">{% for word,meaning in {'Chemin':'Un raisonnement autonome : ce que je constate, ce que je suppose et ce que je propose.','Quorum':'La part minimale des personnes admissibles qui doivent participer.','Exprimés':'Les voix pour et contre ; les abstentions sont comptées à part.','Convergence':'Des chemins se rapprochent librement sans obligation d’accord.','Empreinte':'Un résumé cryptographique qui aide à détecter une modification.','Causalité':'Un lien de cause à effet à examiner ; une succession ne suffit pas à le démontrer.'} %}<div><h4>{{ word }}</h4><p>{{ meaning }}</p></div>{% endfor %}</div></section>{% endblock %}
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                EXPLORER À SON RYTHME
+            </div>
+            <h1>Prendre part à l’expérience</h1>
+            <p>
+                Votre navigateur dispose de sa propre simulation, conservée côté serveur dans SQLite. Il ne s’agit pas
+                d’un registre d’identités civiles.
+            </p>
+        </div>
+    </div>
+    <div class="two-columns">
+        <section class="panel">
+            <h2>Votre personnage actif</h2>
+            <form method="post" action="{{ path('persona') }}" class="citizen-select">
+                <input type="hidden" name="_token" value="{{ csrf_token('persona') }}" />
+                <label for="citizen">Personnage</label>
+                <select name="citizen" id="citizen">
+                    {% for citizen in state.citizens %}
+                        <option value="{{ citizen.id }}" {{ citizen.id == actor.id ? 'selected' : '' }}>
+                            {{ citizen.name }} — {{ territoryMap[citizen.territoryId].name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button class="button">Choisir</button>
+            </form>
+            <p>
+                {{ actor.name }} · {{ territoryMap[actor.territoryId].name }}
+            </p>
+            {{
+                ui.badge(
+                    actor.consent ? 'Publication nominative fictive consentie' : 'Consentement non donné',
+                    actor.consent ? 'green' : 'gray'
+                )
+            }}
+            <div class="action-links">
+                {{ ui.action('citizen.create', 'Créer un personnage') }}
+                {{ ui.action('citizen.update', 'Rectifier mon personnage') }}
+                {% if actor.consent %}
+                    {{ ui.action('citizen.withdraw', 'Retirer le consentement fictif', {}, 'plain') }}
+                {% else %}
+                    {{ ui.action('citizen.consent', 'Définir le consentement fictif') }}
+                {% endif %}
+                {{ ui.action('citizen.erase', 'Effacer le nom fictif', {}, 'plain danger') }}
+                <a class="plain" href="{{ path('export', { kind: 'citizen' }) }}">Exporter le personnage ↓</a>
+            </div>
+        </section>
+        <section class="panel">
+            <h2>Contribuer au bien commun</h2>
+            <p>
+                Documentation, traduction, accessibilité, observation ou développement : aucune contribution n’achète
+                une voix.
+            </p>
+            {{ ui.action('resource.add', 'Décrire une contribution fictive +', {}, 'button primary') }}
+            {% for contribution in state.resources %}
+                <p>
+                    <strong>{{ contribution.kind }}</strong> — {{ contribution.description }}
+                </p>
+            {% endfor %}
+            <hr />
+            <a class="plain" href="https://github.com/PsiGuardian/Populorum">Consulter le dépôt ↗</a>
+            <p class="small muted">
+                L’accès Guardian au profiler est indépendant de ce personnage. Son compte public de démonstration ne
+                donne aucun privilège de vote.
+            </p>
+        </section>
+    </div>
+    <section class="panel section">
+        <h2>Comprendre les mots</h2>
+        <div class="glossary">
+            {% for word, meaning in {
+                Chemin: 'Un raisonnement autonome : ce que je constate, ce que je suppose et ce que je propose.',
+                Quorum: 'La part minimale des personnes admissibles qui doivent participer.',
+                'Exprimés': 'Les voix pour et contre ; les abstentions sont comptées à part.',
+                Convergence: 'Des chemins se rapprochent librement sans obligation d’accord.',
+                Empreinte: 'Un résumé cryptographique qui aide à détecter une modification.',
+                'Causalité': 'Un lien de cause à effet à examiner ; une succession ne suffit pas à le démontrer.'
+            } %}
+                <div>
+                    <h4>{{ word }}</h4>
+                    <p>
+                        {{ meaning }}
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}
