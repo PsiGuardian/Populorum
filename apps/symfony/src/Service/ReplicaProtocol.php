@@ -28,6 +28,7 @@ final class ReplicaProtocol
         'publicKey',
         'ruleSets',
         'preferences',
+        'mentalSimulation',
     ];
 
     public function __construct(private SimulationEngine $engine)

@@ -59,7 +59,7 @@ try {
     $report = [
         'date' => gmdate('c'),
         'php' => PHP_VERSION,
-        'scope' => 'Séquentiel local HttpKernel chaud ; 300 personnages / 27 propositions / SQLite. Exclut réseau HTTP, concurrence, PHP-FPM et télémétrie réelle.',
+        'scope' => 'Séquentiel local HttpKernel chaud ; 300 personnages évolutifs / 27 propositions / 2700 votes avec historique / SQLite. Exclut réseau HTTP, concurrence, PHP-FPM et télémétrie réelle.',
         'api' => $measure(100, $call),
     ];
     $workspace = $database->workspace('benchmark');
@@ -82,13 +82,21 @@ try {
             $engine,
             $database,
         ): void {
+            $id = $paris[$number++]['id'];
+            $previous = array_values(
+                array_filter(
+                    $state['votes'],
+                    static fn (array $vote): bool => $vote['citizenId'] ===
+                        $id && $vote['consultationId'] === 'c1',
+                ),
+            )[0];
             $state = $engine->apply(
                 $state,
                 'vote.cast',
                 [
-                    'citizenId' => $paris[$number++]['id'],
+                    'citizenId' => $id,
                     'consultationId' => 'c1',
-                    'choice' => 'pour',
+                    'choice' => $previous['choice'] === 'pour' ? 'contre' : 'pour',
                 ],
                 bin2hex(random_bytes(16)),
             );

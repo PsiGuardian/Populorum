@@ -18,14 +18,14 @@ final class DemoDatabase
 
     public function seed(): array
     {
+        $reference = ($_SERVER['POPULORUM_SCENARIO'] ?? '') === 'reference';
+        $contents = file_get_contents(
+            $this->projectDir .
+                '/data/' .
+                ($reference ? 'reference-scenario.json' : 'scenario.json.gz'),
+        );
         $state = json_decode(
-            file_get_contents(
-                $this->projectDir .
-                    '/data/' .
-                    (($_SERVER['POPULORUM_SCENARIO'] ?? '') === 'reference'
-                        ? 'reference-scenario.json'
-                        : 'scenario.json'),
-            ),
+            $reference ? $contents : gzdecode($contents),
             true,
             512,
             JSON_THROW_ON_ERROR,
@@ -97,8 +97,10 @@ final class DemoDatabase
         if (!$row) {
             $state = $this->seed();
             if (
-                ($state['preferences']['dataset'] ?? '') ===
-                'municipal-2026-v1'
+                str_starts_with(
+                    $state['preferences']['dataset'] ?? '',
+                    'municipal-2026-v',
+                )
             ) {
                 $state = new SimulationEngine()->initializeFixture($state);
             }

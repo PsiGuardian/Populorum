@@ -148,6 +148,49 @@ final class ApplicationCompletionTest extends TestCase
         );
     }
 
+    public function testCharacterPortraitAndAllTwelveAnswersAreAccessible(): void
+    {
+        $_SERVER['POPULORUM_SCENARIO'] = '';
+        $this->session->set('simulation_owner', 'mental-portrait-test');
+        $portrait = $this->request('/characters/u1?consultation=c1');
+        self::assertSame(200, $portrait->getStatusCode());
+        self::assertStringContainsString(
+            'Mes neuf décisions locales',
+            $portrait->getContent(),
+        );
+        $response = $this->request(
+            '/characters/u1?consultation=c1&round=0&format=json',
+        );
+        self::assertSame(200, $response->getStatusCode());
+        $data = json_decode(
+            $response->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        self::assertCount(12, $data['reasoning']);
+        self::assertSame(0, $data['round']);
+        self::assertSame('u1', $data['citizenId']);
+        self::assertStringNotContainsString(
+            'PRIVATE KEY',
+            $response->getContent(),
+        );
+        self::assertSame(
+            404,
+            $this->request(
+                '/characters/u1?consultation=c10&format=json',
+            )->getStatusCode(),
+        );
+        self::assertSame(
+            404,
+            $this->request('/characters/u1?round=99')->getStatusCode(),
+        );
+        self::assertSame(
+            404,
+            $this->request('/characters/unknown')->getStatusCode(),
+        );
+    }
+
     public function testStoredMarkupIsEscapedAndDoesNotBecomeExecutable(): void
     {
         $workspace = $this->store->workspace(
@@ -398,7 +441,9 @@ final class ApplicationCompletionTest extends TestCase
         self::assertSame(200, $login->getStatusCode());
         $document = new DOMDocument();
         @$document->loadHTML($login->getContent());
-        $token = (new DOMXPath($document))->evaluate('string(//input[@name="_csrf_token"]/@value)');
+        $token = new DOMXPath($document)->evaluate(
+            'string(//input[@name="_csrf_token"]/@value)',
+        );
         self::assertNotSame('', $token);
         $response = $this->request('/citizen/login', 'POST', [
             '_username' => 'contract-user',

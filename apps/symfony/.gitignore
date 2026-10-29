@@ -5,3 +5,6 @@
 /.env.local
 /.env.*.local
 /auth.json
+
+# Vue JSON développée reproductible ; la fixture compacte sans perte est versionnée.
+/data/scenario.json

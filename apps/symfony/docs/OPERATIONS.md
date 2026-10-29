@@ -80,3 +80,9 @@ Journaux privés tournants `var/log/application.log` et `var/log/security.log`, 
 Les nouvelles sessions reçoivent 300 personnages fictifs. Les sessions existantes sont conservées ; le bouton « Ouvrir un nouveau laboratoire » dans Participer crée un nouvel espace isolé. Le journal initial est signé avec une clé propre à cet espace, générée côté serveur. Le sélecteur de personnages concerne uniquement les espaces anonymes de simulation.
 
 Sur Linux, le serveur intégré de PHP doit disposer de plusieurs travailleurs pour tester le SSE sans bloquer les navigations : `PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:5412 -t public`. La production utilise PHP-FPM ou un serveur adapté, jamais ce serveur de développement. Les sessions sont stockées sous `var/sessions/<environnement>` ; aucune dépendance à un répertoire système PHP préexistant.
+
+## Profils narratifs et millésime 0.4
+
+La fixture par défaut est `data/scenario.json.gz`, décompressée en mémoire à la création d’un laboratoire. `php tools/build-municipal-fixtures.php` la reconstruit, écrit les 2 700 dossiers complets dans `data/citizen-deliberations.ndjson.gz` et produit une copie JSON développée locale. PHP doit fournir zlib. Aucun changement de schéma SQL n’est nécessaire pour ce lot ; le snapshot et les projections incluent les nouveaux attributs JSON.
+
+Les espaces anciens restent conservés. Créer un nouveau laboratoire depuis Participer pour disposer des profils ; ne pas écraser une base existante. Une évolution du modèle devra conserver son ancienne version pour que les anciennes empreintes restent vérifiables. Les détails sont dans [FICTIONAL_MINDS.md](FICTIONAL_MINDS.md).

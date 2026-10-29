@@ -106,6 +106,98 @@ final class DemoController extends AbstractController
         ];
     }
 
+    #[Route('/characters/{id}', name: 'fictional_character', methods: ['GET'])]
+    public function character(
+        Request $request,
+        string $id,
+        \App\Service\MentalSimulation $simulation,
+    ): Response {
+        $context = $this->context($request, 'citizen');
+        $character = $context['citizenMap'][$id] ?? null;
+        if (!$character || !isset($character['mind'])) {
+            throw $this->createNotFoundException('Profil fictif introuvable dans ce laboratoire.');
+        }
+        $votes = array_values(
+            array_filter(
+                $context['state']['votes'],
+                static fn (array $vote): bool => $vote['citizenId'] === $id,
+            ),
+        );
+        $selected = $request->query->getString(
+            'consultation',
+            $votes[0]['consultationId'] ?? '',
+        );
+        $vote = null;
+        foreach ($votes as $item) {
+            if ($item['consultationId'] === $selected) {
+                $vote = $item;
+                break;
+            }
+        }
+        $round = $request->query->has('round')
+            ? filter_var($request->query->get('round'), FILTER_VALIDATE_INT)
+            : null;
+        if (
+            $round === false
+            || ($round !== null
+                && ($round < 0
+                    || $round > \App\Service\MentalSimulation::MAX_ROUND))
+        ) {
+            throw $this->createNotFoundException('Tour introuvable.');
+        }
+        $dossier = null;
+        if ($vote && (isset($vote['deliberation']) || $round !== null)) {
+            try {
+                $dossier = $simulation->dossier(
+                    $context['state'],
+                    $vote,
+                    $round,
+                );
+            } catch (\DomainException $error) {
+                throw $this->createNotFoundException($error->getMessage());
+            }
+        }
+        if ($request->query->get('format') === 'json') {
+            if (!$dossier) {
+                throw $this->createNotFoundException('Ce choix manuel n’a pas de raisonnement automatique.');
+            }
+
+            return $this->json(
+                $dossier,
+                headers: ['Cache-Control' => 'no-store'],
+            );
+        }
+        $rounds = [];
+        if ($vote) {
+            foreach ($vote['history'] as $entry) {
+                if (isset($entry['deliberation'])) {
+                    $rounds[] = $entry['deliberation']['round'];
+                }
+            }
+            if (isset($vote['deliberation'])) {
+                $rounds[] = $vote['deliberation']['round'];
+            }
+        }
+
+        return $this->render(
+            'pages/character.html.twig',
+            $context + [
+                'character' => $character,
+                'voice' => $simulation->voice($character),
+                'priorities' => \App\Service\FictionalMind::PRIORITIES,
+                'characterVotes' => $votes,
+                'consultationMap' => array_column(
+                    $context['state']['consultations'],
+                    null,
+                    'id',
+                ),
+                'dossier' => $dossier,
+                'selectedVote' => $vote,
+                'rounds' => array_values(array_unique($rounds)),
+            ],
+        );
+    }
+
     #[Route(
         '/demo/new-workspace',
         name: 'demo_new_workspace',

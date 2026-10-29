@@ -30,7 +30,7 @@ final class MunicipalFixtureBuilder
         ) {
             $state[$collection] = [];
         }
-        $state['preferences']['dataset'] = 'municipal-2026-v1';
+        $state['preferences']['dataset'] = 'municipal-2026-v2';
         $state['preferences']['notice'] =
             '300 personnages, choix et résultats entièrement fictifs ; aucun sondage ni effet juridique. Sources publiques datées séparées des hypothèses.';
         $sources = array_column($read('research/sources.json'), null, 'id');
@@ -82,61 +82,51 @@ final class MunicipalFixtureBuilder
                     $cityCitizens[$index],
                     $cityIndex * 9 + $index + 1,
                 );
-                // Une consultation ouverte pour participer ; une clôturée pour explorer un protocole fictif.
-                if (in_array($index, [0, 3], true)) {
-                    $closed = $index === 3;
-                    $proposal['status'] = $closed
-                        ? 'experiment'
-                        : 'consultation';
-                    $consultation = [
-                        'id' => 'c' . (count($state['consultations']) + 1),
-                        'proposalId' => $proposal['id'],
-                        'territoryId' => $territory['id'],
-                        'version' => 1,
-                        'frozen' => $proposal,
-                        'rules' => [
-                            'quorum' => 50,
-                            'majority' => 'Majorité stricte des exprimés ; égalité = non adoptée',
-                            'changeAllowed' => true,
-                            'abstention' => 'Participe au quorum sans suffrage exprimé',
-                        ],
-                        'eligibleIds' => $cityCitizens,
-                        'opensAt' => '2026-10-01T00:00:00Z',
-                        'closesAt' => $closed
-                            ? '2026-10-20T00:00:00Z'
-                            : '2027-10-29T00:00:00Z',
-                        'status' => $closed ? 'closed' : 'open',
-                        'simulated' => true,
-                    ];
-                    $state['consultations'][] = $consultation;
-                    if ($closed) {
-                        foreach (
-                            array_slice($cityCitizens, 0, 70) as $voteIndex => $citizenId
-                        ) {
-                            $state['votes'][] = [
-                                'id' => 'v' . (count($state['votes']) + 1),
-                                'consultationId' => $consultation['id'],
-                                'citizenId' => $citizenId,
-                                'choice' => $voteIndex < 45
-                                        ? 'pour'
-                                        : ($voteIndex < 60
-                                            ? 'contre'
-                                            : 'abstention'),
-                                'at' => '2026-10-10T12:00:00Z',
-                                'history' => [],
-                                'simulated' => true,
-                            ];
-                        }
-                        $state['experiments'][] = $this->experiment(
-                            $proposal,
-                            $consultation['id'],
-                            $cityIndex + 1,
-                            $definition['unit'],
-                        );
-                    }
-                }
+                $proposal['status'] = 'consultation';
+                $state['consultations'][] = [
+                    'id' => 'c' . ($cityIndex * 9 + $index + 1),
+                    'proposalId' => $proposal['id'],
+                    'territoryId' => $territory['id'],
+                    'version' => 1,
+                    'frozen' => $proposal,
+                    'rules' => [
+                        'quorum' => 50,
+                        'majority' => 'Majorité stricte des exprimés ; égalité = non adoptée',
+                        'changeAllowed' => true,
+                        'abstention' => 'Participe au quorum sans suffrage exprimé',
+                    ],
+                    'eligibleIds' => $cityCitizens,
+                    'opensAt' => '2026-10-01T00:00:00Z',
+                    'closesAt' => '2027-10-29T00:00:00Z',
+                    'status' => 'open',
+                    'simulated' => true,
+                ];
                 $state['proposals'][] = $proposal;
             }
+        }
+        $state = new MentalSimulation()->initialize($state);
+        // Trois pilotes ne sont ouverts que si les choix narratifs aboutissent réellement à une adoption.
+        foreach ([3, 12, 21] as $consultationIndex) {
+            $consultation = &$state['consultations'][$consultationIndex];
+            $consultation['status'] = 'closed';
+            $consultation['closesAt'] = '2026-10-20T00:00:00Z';
+            if (
+                new SimulationEngine()->tally($consultation, $state['votes'])[
+                    'adopted'
+                ]
+            ) {
+                $proposal = &$state['proposals'][$consultationIndex];
+                $proposal['status'] = 'experiment';
+                $definition = $definitions[$consultationIndex];
+                $state['experiments'][] = $this->experiment(
+                    $consultation['frozen'],
+                    $consultation['id'],
+                    count($state['experiments']) + 1,
+                    $definition['unit'],
+                );
+                unset($proposal);
+            }
+            unset($consultation);
         }
         $state['keyPair'] = null;
 

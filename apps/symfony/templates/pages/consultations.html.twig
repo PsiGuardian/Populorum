@@ -159,7 +159,23 @@
                             <p>
                                 {{ citizenMap[vote.citizenId].name }} — {{
                                     vote.choice
-                                }} · {{ vote.history|length }} révision(s)
+                                }} · {{ vote.history|length }} révision(s){% if
+                                    citizenMap[vote.citizenId].mind is defined %}
+                                    <a
+                                        href="{{
+                                        path(
+                                            'fictional_character',
+                                            {
+                                                id: vote.citizenId,
+                                                consultation: consultation.id
+                                            }
+                                        )
+                                        }}"
+                                    >
+                                        Lire les douze réponses et leur
+                                        évolution
+                                    </a>
+                                {% endif %}
                             </p>
                         {% endfor %}
                     </details>

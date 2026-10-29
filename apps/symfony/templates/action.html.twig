@@ -1,5 +1,13 @@
 {% extends 'base.html.twig' %}
 {% block content %}
+    {% if type == 'simulation.advance' %}
+        <p class="notice">
+            Ce tour applique de nouveaux retours entièrement inventés aux
+            profils du laboratoire et recalcule leurs votes automatiques
+            admissibles. Les décisions closes, les choix repris manuellement,
+            les anciennes réponses et le texte soumis au vote sont conservés.
+        </p>
+    {% endif %}
     <section class="form-shell">
         <div class="eyebrow">
             SIMULATION · AUCUN EFFET JURIDIQUE

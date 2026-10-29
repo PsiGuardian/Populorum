@@ -28,6 +28,51 @@
             </p>
         </div>
     </div>
+    {% if state.mentalSimulation is defined %}
+        <section class="panel">
+            <h2>Les personnages apprennent et hésitent</h2>
+            <p>
+                Tour {{ state.mentalSimulation.round }} sur {{
+                    state.mentalSimulation.maxRound
+                }} : 300 voix narratives, neuf votes locaux par personnage, douze
+                réponses par proposition. Les retours sont entièrement inventés.
+            </p><a
+                class="button"
+                href="{{
+                path(
+                    'fictional_character',
+                    {
+                        id: actor.id
+                    }
+                )
+                }}"
+            >
+                Mon portrait, mes raisonnements et leurs versions
+            </a>
+            {% if
+                state.mentalSimulation.round
+                    >= state.mentalSimulation.maxRound %}
+                <p>
+                    Les huit tours sont terminés. Les portraits et leurs
+                    historiques restent consultables.
+                </p>
+            {% elseif (actor.role|default('citizen')) == 'governor' %}
+                {{
+                    ui.action(
+                        'simulation.advance',
+                        'Jouer le prochain tour fictif'
+                    )
+                }}
+            {% else %}
+                <p class="muted small">
+                    Pour jouer le prochain tour, choisissez un personnage de
+                    gouvernance fictive, par exemple Personnage Paris 004 (u10).
+                    Le tour ne modifie ni les votes clos ni les choix repris
+                    manuellement.
+                </p>
+            {% endif %}
+        </section>
+    {% endif %}
     <div class="two-columns">
         <section class="panel">
             <h2>Votre personnage actif</h2>

@@ -15,12 +15,22 @@ final class MunicipalFixturesTest extends TestCase
             dirname(__DIR__) . '/data',
         );
         self::assertSame(
-            $state,
-            json_decode(
-                file_get_contents(dirname(__DIR__) . '/data/scenario.json'),
-                true,
-                512,
-                JSON_THROW_ON_ERROR,
+            hash('sha256', json_encode($state, JSON_THROW_ON_ERROR)),
+            hash(
+                'sha256',
+                json_encode(
+                    json_decode(
+                        gzdecode(
+                            file_get_contents(
+                                dirname(__DIR__) . '/data/scenario.json.gz',
+                            ),
+                        ),
+                        true,
+                        512,
+                        JSON_THROW_ON_ERROR,
+                    ),
+                    JSON_THROW_ON_ERROR,
+                ),
             ),
         );
         self::assertCount(
@@ -77,7 +87,7 @@ final class MunicipalFixturesTest extends TestCase
             self::assertArrayNotHasKey($key, $uniqueVotes);
             $uniqueVotes[$key] = true;
         }
-        self::assertCount(210, $uniqueVotes);
+        self::assertCount(2700, $uniqueVotes);
         $engine = new SimulationEngine();
         $sealed = $engine->initializeFixture($state);
         self::assertTrue(

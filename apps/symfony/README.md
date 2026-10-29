@@ -115,4 +115,10 @@ composer style:check
 php bin/console doctrine:schema:validate --env=demo
 ```
 
-Les scénarios historiques à neuf personnages sont conservés dans `data/reference-scenario.json` pour les régressions. Les nouveaux laboratoires utilisent `data/scenario.json`. Un laboratoire déjà créé ne change jamais de population ou de texte voté au chargement d’une mise à jour.
+Les scénarios historiques à neuf personnages sont conservés dans `data/reference-scenario.json` pour les régressions. Les nouveaux laboratoires utilisent `data/scenario.json.gz` (JSON complet compressé sans perte). Un laboratoire déjà créé ne change jamais de population ou de texte voté au chargement d’une mise à jour.
+
+## Personnages évolutifs — lot 0.4
+
+Chaque personnage a un portrait, des priorités, une manière de s’exprimer et une réaction propre aux erreurs et aux retours d’expérience fictifs. Les 300 personnages votent sur les neuf projets de leur ville : 2 700 votes, chacun accompagné de douze réponses, soit 32 400 réponses courantes. Trois tours sont conservés ; les suivants se déclenchent depuis Participer avec un personnage de gouvernance fictive. Les votes clos et les choix manuels sont préservés.
+
+Voir [le modèle narratif, les archives et les tests](docs/FICTIONAL_MINDS.md). Ouvrir un nouveau laboratoire pour charger ce millésime ; une session existante ne change pas de données silencieusement. Les choix ne représentent pas les opinions des habitants réels.

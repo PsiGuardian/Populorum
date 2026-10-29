@@ -35,3 +35,9 @@ Les formulaires et l’API partagent un plafond initial de 120 écritures/minute
 ## Compatibilité
 
 Versionner une rupture de schéma dans une future API v2. Les ajouts de champs ne changent pas les règles d’une consultation figée. Les messages Messenger contiennent uniquement scénario et événement ; ils ne sont pas un second canal de vote.
+
+## Dossiers narratifs des personnages fictifs
+
+`GET /characters/{id}?consultation=c1&round=0&format=json` restitue les douze réponses correspondant à un vote, à la version figée de la proposition et au profil historique. L’empreinte est vérifiée avant restitution. Le personnage, le tour ou la consultation introuvables renvoient 404. Le format HTML est le défaut.
+
+`POST /api/v1/actions/simulation.advance` suit le contrat CSRF/CAS/anti-rejeu normal, sans champ métier supplémentaire. Un personnage de gouvernance fictive et un laboratoire compatible sont nécessaires. Le serveur avance un seul tour, dans la limite de huit. Votes clos, choix manuels et historiques sont préservés. Voir [FICTIONAL_MINDS.md](FICTIONAL_MINDS.md).

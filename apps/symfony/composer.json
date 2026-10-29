@@ -30,7 +30,8 @@
     "symfony/validator": "8.1.*",
     "symfony/web-profiler-bundle": "8.1.*",
     "symfony/yaml": "8.1.*",
-    "ext-simplexml": "*"
+    "ext-simplexml": "*",
+    "ext-zlib": "*"
   },
   "repositories": [
     {

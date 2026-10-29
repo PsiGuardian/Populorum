@@ -374,7 +374,7 @@ final class SimulationEngine
         $this->recordAuditEvent(
             $state,
             'fixture.created',
-            'municipal-2026-v1',
+            $state['preferences']['dataset'] ?? 'municipal-fixture',
             [],
         );
 
@@ -1305,10 +1305,15 @@ final class SimulationEngine
                 if ($vote['choice'] === $choice) {
                     $this->fail('Ce choix est déjà actif.', 409);
                 }
-                $vote['history'][] = [
-                    'choice' => $vote['choice'],
-                    'at' => $vote['at'],
-                ];
+                $vote['history'][] =
+                    [
+                        'choice' => $vote['choice'],
+                        'at' => $vote['at'],
+                    ] +
+                    (isset($vote['deliberation'])
+                        ? ['deliberation' => $vote['deliberation']]
+                        : []);
+                unset($vote['deliberation']);
                 $vote['choice'] = $choice;
                 $vote['at'] = $this->currentTimestamp();
                 $existingVoteChanged = true;

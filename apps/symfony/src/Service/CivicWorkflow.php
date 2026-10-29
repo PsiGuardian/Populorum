@@ -61,6 +61,7 @@ final class CivicWorkflow
         array $actor,
     ): string {
         return match ($type) {
+            'simulation.advance' => $this->advanceSimulation($state, $actor),
             'territory.revise' => $this->reviseAdaptation(
                 $state,
                 $payload,
@@ -97,6 +98,16 @@ final class CivicWorkflow
             ),
             default => throw new \DomainException('Opération inconnue.', 404),
         };
+    }
+
+    private function advanceSimulation(array &$state, array $actor): string
+    {
+        $this->role($actor, ['governor']);
+        if (empty($actor['fictional']) || empty($state['simulation'])) {
+            throw new \DomainException('Opération réservée au laboratoire fictif.', 403);
+        }
+
+        return new MentalSimulation()->advance($state);
     }
 
     private function reviseAdaptation(

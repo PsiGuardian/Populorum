@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="vendor/autoload.php" cacheDirectory="var/phpunit" colors="true" failOnWarning="true" failOnRisky="true">
-    <testsuites><testsuite name="Domain completion"><file>tests/MunicipalFixturesTest.php</file><file>tests/DomainCompletionTest.php</file><file>tests/ApplicationCompletionTest.php</file><file>tests/ReplicaTransportTest.php</file></testsuite></testsuites>
+    <testsuites><testsuite name="Domain completion"><file>tests/MunicipalFixturesTest.php</file><file>tests/FictionalMindTest.php</file><file>tests/DomainCompletionTest.php</file><file>tests/ApplicationCompletionTest.php</file><file>tests/ReplicaTransportTest.php</file></testsuite></testsuites>
 </phpunit>

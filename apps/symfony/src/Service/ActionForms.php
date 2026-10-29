@@ -8,6 +8,11 @@ namespace App\Service;
 final class ActionForms
 {
     public const TYPES = [
+        'simulation.advance' => [
+            'title' => 'Faire évoluer les personnages fictifs',
+            'view' => 'citizen',
+            'fields' => [],
+        ],
         'proposal.transition' => [
             'title' => 'Faire évoluer l’état du chemin',
             'view' => 'proposals',
