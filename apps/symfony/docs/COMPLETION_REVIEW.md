@@ -9,7 +9,7 @@ Le lot complète les principaux parcours du démonstrateur Symfony/SQLite et ajo
 | Régressions métier/HTTP | 99 contrôles réussis | `tests/integration.php`, scénario historique isolé |
 | Corrections et charte multilingue | 64 contrôles réussis | `tests/corrections.php`, 28 chartes, catégories, révisions et exports |
 | Sondes du cahier des charges | 12 contrôles réussis | `tests/requirements-audit.php` |
-| Contrats supplémentaires | 32 tests / 1 704 assertions, zéro échec | PHPUnit : DomainCompletionTest, ApplicationCompletionTest, ReplicaTransportTest, MunicipalFixturesTest |
+| Contrats supplémentaires | 32 tests / 1 705 assertions, zéro échec | PHPUnit : DomainCompletionTest, ApplicationCompletionTest, ReplicaTransportTest, MunicipalFixturesTest |
 | Analyse statique | PHPStan niveau 5 sans erreur | `composer analyse` |
 | Syntaxe et modèle | 17 templates Twig valides, mapping et base synchronisés | `lint:twig`, `doctrine:schema:validate` |
 | Dépendances | Aucune alerte connue ni paquet abandonné signalé | `composer audit --locked`, 29 octobre 2026 ; le bundle VCS demeure figé |
@@ -17,6 +17,8 @@ Le lot complète les principaux parcours du démonstrateur Symfony/SQLite et ajo
 | Parcours navigateur natif | Charte, filtre communal, détail d’un chemin, vote enregistré | Aperçu PHP réel, pas de maquette HTML ; captures ci-dessous |
 | Clavier | Lien d’évitement vers main ; choix et confirmation d’un vote | Parcours manuel ciblé, pas d’audit RGAA complet |
 | Charge locale | p95 lecture API 27,349 ms ; vote + transaction 28,898 ms | 100 lectures / 50 écritures séquentielles, 300 personnages ; [mesures](benchmark-results.json), `tools/benchmark.php` |
+
+Le test de connexion lit le jeton CSRF dans le DOM et ne dépend pas des espaces ou retours à la ligne du template. La suite a été rejouée après reconstruction du cache Symfony.
 
 Ces 207 contrôles/tests ont des granularités différentes ; le nombre d’assertions ne mesure pas un pourcentage de conformité. La mesure de performance exclut réseau, concurrence et déploiement PHP-FPM. Les sauvegardes restaurées et copies corrompues sont exercées dans les tests ; le test HTTPS lance deux récepteurs logiques et un vrai serveur TLS local avec CA de test vérifiée. L’arrêt et la reprise sont testés. Le plafond de débit est mesuré sur un flux mémoire contrôlé, pas sur une connexion Internet résidentielle.
 

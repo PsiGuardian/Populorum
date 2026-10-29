@@ -395,16 +395,15 @@ final class ApplicationCompletionTest extends TestCase
             'enabled' => 1,
         ]);
         $login = $this->request('/citizen/login');
-        preg_match(
-            '/name="_csrf_token" value="([^"]+)"/',
-            $login->getContent(),
-            $matches,
-        );
-        self::assertArrayHasKey(1, $matches);
+        self::assertSame(200, $login->getStatusCode());
+        $document = new DOMDocument();
+        @$document->loadHTML($login->getContent());
+        $token = (new DOMXPath($document))->evaluate('string(//input[@name="_csrf_token"]/@value)');
+        self::assertNotSame('', $token);
         $response = $this->request('/citizen/login', 'POST', [
             '_username' => 'contract-user',
             '_password' => 'CONTRACT-ONLY-SECRET-2026',
-            '_csrf_token' => html_entity_decode($matches[1]),
+            '_csrf_token' => $token,
         ]);
         self::assertTrue($response->isRedirect());
         $session = $this->apiSession();
