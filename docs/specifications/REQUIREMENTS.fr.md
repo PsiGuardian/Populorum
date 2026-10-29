@@ -519,3 +519,278 @@ Créer plusieurs citoyens fictifs, les rattacher aux communes, présenter trois 
 
 Tester **convergence complète**, **convergence partielle**, **absence de convergence** et **convergence suivie de divergence**. L'interface doit montrer qu'aucun de ces scénarios ne condamne une personne.
 
+
+# PARTIE XVII — MATRICE DE RECETTE FONCTIONNELLE
+
+La matrice suivante constitue la première batterie de **68 scénarios vérifiables**. Les résultats des tests ne sont pas prétendus réussis : ils doivent être réellement exécutés et consignés pendant la réalisation.
+
+## 91. Scénarios de validation
+
+### A. Référentiel territorial
+
+
+**DK-001** — Importer le référentiel INSEE 2026 et contrôler l'intégrité des identifiants territoriaux.
+
+**DK-002** — Vérifier le bon rattachement d'une commune.
+
+**DK-003** — Importer un nouveau millésime en préservant l'historique.
+
+**DK-004** — Gérer arrondissements municipaux et communes déléguées.
+
+**DK-005** — Empêcher l'application automatique ailleurs d'une proposition locale.
+
+**DK-006** — Permettre une reprise volontaire d'une proposition par une autre commune.
+
+**DK-007** — Justifier et historiser une exclusion ou adaptation territoriale.
+
+**DK-008** — Empêcher qu'un changement de commune permette de voter deux fois.
+
+### B. Identité et droits
+
+
+**DK-009** — Créer un citoyen fictif avec identité civique unique.
+
+**DK-010** — Refuser une identité dupliquée dans une consultation.
+
+**DK-011** — Autoriser la lecture publique sans connexion.
+
+**DK-012** — Empêcher le vote d'un visiteur non admissible.
+
+**DK-013** — Vérifier que l'administration technique ne confère aucune voix supplémentaire.
+
+**DK-014** — Contrôler le consentement à la participation nominative expérimentale.
+
+**DK-015** — Vérifier rectification et effacement selon le droit applicable.
+
+**DK-016** — Exclure toute donnée secrète et tout justificatif privé des exports publics.
+
+### C. Chemins et propositions
+
+
+**DK-017** — Créer un chemin autonome.
+
+**DK-018** — Enregistrer les douze catégories de l'arbre causal.
+
+**DK-019** — Distinguer hypothèse et cause observée.
+
+**DK-020** — Empêcher l'ouverture au vote d'une proposition incomplète.
+
+**DK-021** — Attacher une source à une observation.
+
+**DK-022** — Réviser un chemin en préservant les versions accessibles légalement.
+
+**DK-023** — Afficher des chemins indépendants sans classement de valeur des personnes.
+
+**DK-024** — Enregistrer une conséquence imprévue avec sa date.
+
+### D. Consultations et votes
+
+
+**DK-025** — Ouvrir une consultation avec texte et règles figés.
+
+**DK-026** — Enregistrer une voix POUR.
+
+**DK-027** — Enregistrer une voix CONTRE.
+
+**DK-028** — Enregistrer une ABSTENTION.
+
+**DK-029** — Refuser une seconde voix active du même citoyen.
+
+**DK-030** — Autoriser le changement de vote prévu sans double comptage.
+
+**DK-031** — Refuser tout vote après clôture.
+
+**DK-032** — Refuser une modification silencieuse du texte soumis au vote.
+
+**DK-033** — Vérifier les calculs de majorité et de quorum.
+
+**DK-034** — Gérer une consultation sans voix sans erreur de division.
+
+**DK-035** — Afficher les résultats actualisés et leur caractère provisoire.
+
+**DK-036** — Recalculer indépendamment un décompte à l'identique.
+
+### E. Observations et convergence
+
+
+**DK-037** — Lier une expérience à la bonne consultation clôturée.
+
+**DK-038** — Définir les indicateurs avant l'observation.
+
+**DK-039** — Ajouter des résultats simulés explicitement étiquetés.
+
+**DK-040** — Distinguer prévision, observation et interprétation causale.
+
+**DK-041** — Repérer une convergence partielle de chemins.
+
+**DK-042** — Présenter une divergence persistante sans la qualifier d'échec personnel.
+
+**DK-043** — Retracer la révision d'un chemin après une observation.
+
+**DK-044** — Produire un bilan territorial avec sources et périodes.
+
+### F. Sécurité et intégrité
+
+
+**DK-045** — Rejeter la modification d'un vote par un utilisateur non autorisé.
+
+**DK-046** — Détecter la modification d'un contenu après empreinte.
+
+**DK-047** — Détecter la rupture d'une chaîne de journaux.
+
+**DK-048** — Refuser le rejeu d'une opération critique.
+
+**DK-049** — Tester les protections contre les injections et le XSS.
+
+**DK-050** — Tester les contrôles d'accès sur toutes les API sensibles.
+
+**DK-051** — Créer une alerte d'intégrité depuis un signalement.
+
+**DK-052** — Empêcher qu'un signalement isolé suspende automatiquement un innocent.
+
+### G. Réseau distribué
+
+
+**DK-053** — Synchroniser deux copies publiques compatibles.
+
+**DK-054** — Détecter une divergence entre deux nœuds.
+
+**DK-055** — Refuser un événement sans signature lorsque celle-ci est obligatoire.
+
+**DK-056** — Reprendre la synchronisation après déconnexion.
+
+**DK-057** — Respecter les plafonds configurés de bande passante.
+
+**DK-058** — Arrêter immédiatement le relais volontaire sur demande.
+
+**DK-059** — Empêcher la transmission de données privées non autorisées à un nœud public.
+
+**DK-060** — Restaurer un nœud vérificateur depuis une copie saine.
+
+### H. Accessibilité, gouvernance et finances
+
+
+**DK-061** — Utiliser les opérations essentielles au clavier.
+
+**DK-062** — Fournir une alternative textuelle à l'arbre causal.
+
+**DK-063** — Consulter l'explication simple et le glossaire.
+
+**DK-064** — Vérifier qu'une traduction n'altère pas le texte de référence soumis au vote.
+
+**DK-065** — Enregistrer une dépense avec montant et justificatif cohérents.
+
+**DK-066** — Consulter les ressources et coûts publiables.
+
+**DK-067** — Exiger la procédure de gouvernance pour modifier les règles démocratiques.
+
+**DK-068** — Exercer un recours contre une mesure de modération ou une sanction.
+
+
+## 91 bis. Conditions de validation
+
+Chaque exécution devra préciser : identifiant, version, préconditions, jeu d'entrée, procédure, résultat attendu, résultat constaté, preuves, statut (réussi, échoué, bloqué, non exécuté) et incident éventuel. Un affichage à l'écran ne prouve pas le fonctionnement du moteur métier. Prévoir cas normaux, limites et adversariaux.
+
+# PARTIE XVIII — PLAN DE RÉALISATION
+
+## 92. Phase 0 — Fondation documentaire
+
+Livrables : charte, présent cahier des charges, glossaire, règles simulées, analyse initiale de risques, architecture, plan de tests et décisions de conception. **Recette :** identifier et résoudre les contradictions entre charte, vote, droits et contraintes techniques.
+
+## 93. Phase 1 — Socle Symfony
+
+Livrables : Symfony 8.1, PHP 8.4, PostgreSQL, Doctrine, migrations, authentification, interface, référentiel territorial et tests initiaux. **Recette :** installation reproductible et démarrage sur Arch Linux.
+
+## 94. Phase 2 — Citoyens et chemins
+
+Comptes fictifs, communes, éditeur causal, versions, observations, sources et interface de consultation. **Recette :** créer un chemin complet et le faire évoluer sans perte historique illicite.
+
+## 95. Phase 3 — Consultations
+
+Propositions, règles, admissibilité, vote, décompte, actualisation, clôture, publication et audit. **Recette :** aucune double voix, résultat recalculable.
+
+## 96. Phase 4 — Expériences et convergence
+
+Protocoles, indicateurs, observations, bilans, comparaisons, visualisations et révisions. **Recette :** convergence, divergence et effets inattendus correctement représentés.
+
+## 97. Phase 5 — Transparence cryptographique
+
+Journal, signatures, empreintes, points de contrôle, exports, vérificateur indépendant, alertes. **Recette :** toute falsification dans le périmètre du modèle d'intégrité est détectable.
+
+## 98. Phase 6 — Infrastructure distribuée
+
+Synchronisation, agent volontaire, limites de bande passante, réplication autorisée, détection, reprise et simulation de réseau. **Recette :** copies cohérentes ou divergences signalées malgré les pannes prévues.
+
+## 99. Phase 7 — Préparation d'une expérimentation publique
+
+Préalables : examen juridique, AIPD le cas échéant, audits de sécurité et de vote, accessibilité, gouvernance, recours, coûts, limites de responsabilité, partenariats éventuels. **Aucune date de consultation publique réelle n'est fixée.**
+
+# PARTIE XIX — CRITÈRES D'ACCEPTATION GÉNÉRAUX
+
+## 100. Acceptation du démonstrateur
+
+Le pilote peut être déclaré fonctionnel si : application et migrations exécutables ; données territoriales cohérentes ; comptes fictifs ; chemins et versions ; règles de consultation immuables ; vote unique et admissible ; résultat recalculable ; observations sourcées ; convergence sans jugement ; journal d'intégrité ; protection des données ; interface accessible ; tests critiques exécutés ; distinction explicite entre simulation et effet juridique.
+
+## 101. Critères bloquants
+
+Échec bloquant si plusieurs voix actives par personne, modification non autorisée d'un résultat, changement silencieux du texte soumis au vote, simulation présentée comme réalité, privilège de vote caché, modification de journal indétectable dans le modèle prévu, fuite de données privées, sanction automatique depuis un signalement isolé, application territoriale indue, traitement sensible réel sans cadre légal, dépendance à une IA externe pour un acte essentiel, ou calcul non publiquement reproductible.
+
+## 102. Évolutivité
+
+Sans reconstruction globale : nouveaux territoires, langues, catégories causales, observations, visualisations, règles versionnées, nœuds, gouvernance, migration de fournisseur et fédération. Les droits et garanties fondamentales restent applicables.
+
+# PARTIE XX — DÉCISIONS À FORMALISER
+
+## 103. Arbitrages structurants
+
+| Référence | Décision à formaliser avant ouverture réelle |
+| --- | --- |
+| DC-01 | Préciser la participation nominative publique, consentements et retrait |
+| DC-02 | Choisir les méthodes de vérification d'identité |
+| DC-03 | Définir l'éligibilité territoriale et les changements de commune |
+| DC-04 | Arrêter quorum, majorité et règles de simulation |
+| DC-05 | Définir les conditions de changement d'un vote |
+| DC-06 | Définir la gouvernance collégiale des règles |
+| DC-07 | Définir des critères de convergence sans noter les personnes |
+| DC-08 | Séparer données publiables, vérifiables et protégées |
+| DC-09 | Définir autorités, consensus et responsabilité des nœuds |
+| DC-10 | Définir comptabilité et statut des contributions |
+| DC-11 | Choisir les licences du code et des contenus |
+| DC-12 | Identifier les responsables juridiques de chaque traitement |
+
+Aucun de ces points ne doit être laissé à une valeur secrète du code.
+
+# PARTIE XXI — RÉFÉRENCES ET TRAÇABILITÉ
+
+## 104. Documents de référence
+
+- [Charte fondatrice, français, 24 articles](../../CHARTER.md).
+- [Symfony — Versions et maintenance](https://symfony.com/releases).
+- [Symfony 8.1](https://symfony.com/releases/8.1).
+- [INSEE — Code officiel géographique 2026](https://www.insee.fr/fr/information/8740222).
+- [Code général des collectivités territoriales — L2121-29](https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006389895).
+- [Code électoral — L59](https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006353163).
+- [CNIL — Données sensibles](https://www.cnil.fr/fr/definition/donnee-sensible).
+- [CNIL — Analyse d'impact](https://www.cnil.fr/fr/ce-quil-faut-savoir-sur-lanalyse-dimpact-relative-la-protection-des-donnees-aipd).
+- [CNIL — Droits des électeurs](https://www.cnil.fr/fr/respecter-les-droits-des-electeurs-sur-leurs-donnees-personnelles).
+
+Les références sont à revérifier à chaque mise à jour du document ; le présent texte ne constitue pas une consultation juridique.
+
+## 105. Gestion des versions
+
+Toute version comporte date, numéro, changements, exigences ajoutées/modifiées/supprimées, décisions motivantes, conséquences, impacts techniques et juridiques et nouveaux tests. Les choix passés ne sont jamais effacés sans explication. La publication d'un texte ne vaut pas autorisation de mettre le dispositif réel en production.
+
+# DÉCLARATION DE CLÔTURE
+
+Démos Kratos n'est pas destiné à devenir une simple plateforme de sondages ou une compétition entre opinions. Le vote exprime une décision à un instant ; l'observation permet d'en examiner les conséquences ; la mémoire conserve les leçons ; la convergence émergente permet à des chemins de se rapprocher librement.
+
+**Que nul ne possède le chemin d'autrui. Que nul ne soit réduit à ses erreurs. Que chaque conséquence puisse instruire chacun. Que la mémoire commune éclaire les décisions futures.**
+
+**DÉMOS KRATOS — Δῆμος Κράτος — Le pouvoir appartient au peuple**
+
+> « N'impose pas ton chemin. Éclaire le tien, et laisse les conséquences instruire chacun. »
+
+---
+
+**Fin du cahier des charges — Version 1.0.**  
+**Statut :** Proposition de conception fictive ; aucune mise en production publique réelle approuvée.
