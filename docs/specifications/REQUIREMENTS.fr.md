@@ -262,3 +262,260 @@ Un outil ouvert permet de récupérer les données publiables, vérifier signatu
 
 États : **signalement non vérifié**, **divergence reproductible**, **incident de sécurité**, **fraude démontrée**. Une seule alerte peut ouvrir une enquête mais ne suffit jamais à établir une culpabilité. Les divergences affectant le résultat doivent faire l'objet d'une information publique proportionnée.
 
+
+# PARTIE IX — INFRASTRUCTURE DISTRIBUÉE
+
+## 45. Vision
+
+Le projet doit pouvoir évoluer vers un réseau de serveurs volontaires, limitant la dépendance à un opérateur unique et permettant la vérification indépendante. Cette évolution reste expérimentale ; la distribution ne garantit pas automatiquement l'intégrité.
+
+## 46. Types de nœuds
+
+**Consultation** (pages publiques), **relais** (événements autorisés), **miroir** (copie vérifiable), **auditeur** (recalcul indépendant), **applicatif** (services autorisés), **autorité d'éligibilité** (droits de participation sous gouvernance explicite). Un nœud bénévole ne devient jamais de fait une autorité de vote.
+
+## 47. Partage volontaire de bande passante
+
+Agent facultatif avec plafonds par défaut proposés : **50 % de la capacité montante autorisée lorsque la connexion semble inutilisée**, **10 % lorsqu'elle est utilisée**. Ce sont des plafonds configurables, pas des quotas imposés ; l'usage personnel a toujours priorité. Les mesures de disponibilité sont approximatives et doivent être conservatrices.
+
+## 48. Contrôle de l'agent volontaire
+
+Activation/désactivation, pause immédiate, débit maximal, volume mensuel, plages horaires, désactivation sur connexion limitée, batterie ou température excessive, statut, historique technique, version, politique de mise à jour et révocation. Ne pas observer la navigation personnelle pour estimer la bande passante.
+
+## 49. Données répliquées
+
+Données publiques admissibles : propositions, résultats publiables, preuves, résumés de journal, référentiels territoriaux, observations licites et ressources statiques. Jamais de réplication automatique de mots de passe, justificatifs, adresses privées, clés, journaux privés ou opinions sensibles nominatives sans fondement et garanties juridiques.
+
+## 50. Résilience
+
+Tester déconnexion, panne de serveur, copie corrompue, désynchronisation, événement invalide, rejeu, saturation, indisponibilité centrale et divergence de protocole. Définir explicitement consensus et autorités avant toute utilisation sensible.
+
+## 51. Risques spécifiques
+
+Modéliser attaques Sybil, collusion de nœuds, attaque d'éclipse, déni de service, fausses signatures, clé compromise, partition réseau, fausse date, modification avant signature, censure, fuite de données et incompatibilité des versions. Réduire l'exposition des nœuds volontaires.
+
+## 52. Stratégie de déploiement
+
+**A :** serveur unique, journal vérifiable.  
+**B :** miroirs publics indépendants.  
+**C :** nœuds volontaires de réplication et vérification.  
+**D :** fédération avec consensus et gouvernance.  
+**E :** tests à grande échelle.
+
+Chaque étape exige tests, audits et documentation avant passage à la suivante.
+
+# PARTIE X — ARCHITECTURE SYMFONY 8
+
+## 53. Pile technique
+
+| Domaine | Technologie proposée |
+| --- | --- |
+| Framework | Symfony 8.1 |
+| Runtime | PHP 8.4 minimum |
+| Données | PostgreSQL ; PostGIS éventuel |
+| ORM/migrations | Doctrine ORM / Doctrine Migrations |
+| Rendu | Twig, HTML5, CSS3, JavaScript |
+| Sécurité | Symfony Security / Validator |
+| Formulaires | Symfony Form |
+| Traduction | Symfony Translation |
+| Sérialisation/API | Contrôleurs Symfony / Serializer |
+| Asynchrone | Symfony Messenger |
+| Temps réel | SSE ou Mercure |
+| Cache | Cache Symfony, Redis optionnel |
+| Logs | Monolog, journal métier séparé |
+| Tests | PHPUnit et tests fonctionnels |
+| Qualité | PHPStan, PHP-CS-Fixer, contrôle des dépendances |
+| Carte | OpenStreetMap et composants libres |
+| Déploiement | Linux, PHP-FPM, serveur web et PostgreSQL |
+
+Les dépendances sont figées dans des fichiers de verrouillage et mises à jour avec revue de sécurité. Une installation reproductible sur Arch Linux devra être documentée, en privilégiant les paquets système disponibles.
+
+## 54. Architecture modulaire
+
+Quatorze modules métier : **Identity**, **Territory**, **Proposal**, **Pathway**, **Consultation**, **Voting**, **Tally**, **Experiment**, **Convergence**, **Transparency**, **Federation**, **Governance**, **Moderation**, **Finance**, ainsi qu'un composant transversal **Localization** et une assistance facultative **Assistance**. Dans le plan de déploiement, Localization et Assistance peuvent être regroupés comme services transversaux. Les règles métier ne sont pas codées dans les seuls contrôleurs HTTP.
+
+Responsabilités : Identity (identité et éligibilité), Territory (référentiels), Proposal (versions), Pathway (graphes), Consultation (règles et dates), Voting (bulletins), Tally (comptage), Experiment (observations), Convergence (comparaisons), Transparency (preuves), Federation (nœuds), Governance (décisions et recours), Moderation (comportements) et Finance (ressources). Localization/Assistance sont indépendants du moteur de vote.
+
+## 55. Principes de programmation
+
+PHP typé strict, POO, injection de dépendances, interfaces, contrôleurs légers, logique métier testable, validations serveur, autorisations systématiques, transactions, contraintes d'intégrité, migrations, idempotence et séparation du rendu. Aucun résultat ne dépend de JavaScript seul et aucun privilège caché ne permet de falsifier un vote.
+
+## 56. Base de données
+
+PostgreSQL stocke les entités transactionnelles. Graphes causaux via relations normalisées ; attributs complémentaires documentés ; géométrie étendue via PostGIS si utile. Index fondés sur les requêtes réelles, migrations suivies, sauvegardes et procédures de retour arrière pour opérations destructives.
+
+## 57. Entités principales
+
+**Territoires :** Country, Region, Department, Municipality, MunicipalOffice, TerritoryHistory, TerritoryRelation, TerritorialCompetence.
+
+**Identités :** Citizen, CivicIdentity, EligibilityRecord, TerritorialAffiliation, PublicationConsent, AuthenticationCredential, CitizenPreference.
+
+**Chemins/propositions :** Proposal, ProposalRevision, Pathway, PathwayRevision, CausalNode, CausalEdge, Hypothesis, Evidence, Alternative, Forecast, RevisionReason.
+
+**Consultations :** Consultation, ConsultationRuleSet, EligibleParticipant, Vote, VoteRevision, Tally, TallySnapshot, CollectiveDecision.
+
+**Expériences :** Experiment, ExperimentProtocol, Observation, Indicator, ObservationSource, Evaluation, TerritorialAdaptation, TerritorialExclusion.
+
+**Intégrité/réseau :** AuditEvent, IntegrityCheckpoint, DigitalSignature, NetworkNode, NodeAttestation, SyncCheckpoint, IntegrityAlert, IncidentReport.
+
+**Gouvernance :** GovernanceProposal, GovernanceDecision, ModerationCase, Appeal, FinancialEntry, ResourceContribution, TranslationRevision.
+
+## 58. Contraintes d'intégrité
+
+Unicité territoriale avec millésime, une voix active par citoyen/consultation, vote associé à la version figée, admissibilité vérifiée, période valide, règles non rétroactives, transitions auditables, historiques de révision, contrôles des cycles lorsque le sous-graphe l'impose, sommes financières cohérentes et preuves cryptographiques recalculables.
+
+## 59. API
+
+API versionnée pour territoires, propositions, chemins, graphes, consultations, résultats, observations, bilans, preuves, finances et état des nœuds. Opérations sensibles protégées et séparées des routes publiques. Documenter pagination, filtres, quotas, sérialisation, versionnement, erreurs et politique de compatibilité.
+
+## 60. Événements métier
+
+Événements : ProposalCreated, ProposalRevisionPublished, ConsultationOpened, VoteRecorded, VoteChanged, ConsultationClosed, TallyPublished, ObservationRecorded, ExperimentEvaluated, IntegrityMismatchDetected, IntegrityIncidentConfirmed, NodeDisconnected, PublicCorrectionPublished. Consommateurs idempotents pour éviter les doubles traitements.
+
+# PARTIE XI — INTERFACE ET EXPÉRIENCE UTILISATEUR
+
+## 61. Direction artistique
+
+Identité civique contemporaine inspirant dignité, liberté, connaissance, temps, expérience, collectivité, convergence et transparence ; références antiques discrètes, sans symbole partisan. Palette initiale : or #C6A667, bleu nuit #111D2B, pierre #F2EEE5, blanc #FFFFFF, vert #2F6B59, rouge d'alerte #B84A4A. La couleur ne doit jamais être l'unique indicateur.
+
+## 62. Page d'accueil
+
+Titre, traduction grecque, devise, convergence émergente, présentation courte, carte de France, communes et consultations simulées, chemins, expériences documentées, coûts, charte et vérificateur public. **Mention constante du caractère fictif et expérimental**.
+
+## 63. Navigation principale
+
+Accueil ; Mon territoire ; Explorer les communes ; Propositions ; Exposer mon chemin ; Consultations ; Expériences ; Convergence émergente ; Mémoire collective ; Transparence ; Infrastructure citoyenne ; Participer ; Charte. Espace citoyen pour les fonctions privées.
+
+## 64. Carte territoriale
+
+Navigation région → département → commune, consultations, propositions, expériences, adaptations locales et comparaisons territoriales. Une liste textuelle accessible fournit des fonctions équivalentes.
+
+## 65. Affichage d'un chemin
+
+Auteur public si légal, territoire, proposition, graphe causal, versions, sources, observations, conséquences, chemins autonomes voisins, révision. Responsive téléphone/tablette/ordinateur et lecture accessible sans graphe.
+
+## 66. Tableau de bord de consultation
+
+Version exacte, résumé courant, arbre causal, autres chemins, attentes, votes actualisés, statut du dépouillement, règles, preuves, événements et observations après clôture. Une affirmation non vérifiée est visuellement distinguée d'un constat.
+
+## 67. Mémoire personnelle
+
+Frise chronologique : découverte d'un problème, proposition, vote, conséquence imprévue, révision et nouvelle expérience. La plateforme ne qualifie jamais automatiquement une étape d'échec moral personnel.
+
+## 68. Accessibilité
+
+Concevoir pour clavier, lecteur d'écran, basse vision, difficultés de lecture, limitations motrices, connexions lentes et anciens téléphones. Cible **WCAG 2.2 AA** et exigences RGAA applicables. Aucun acte essentiel ne dépend exclusivement d'une animation, couleur ou représentation graphique.
+
+# PARTIE XII — LANGUES ET INTELLIGENCE ARTIFICIELLE
+
+## 69. Langues
+
+Interface principale en français. Architecture Symfony Translation prête pour les **28 locales documentaires** (ar_SA, cs_CZ, de_DE, el_GR, en_CA, en_GB, en_IE, en_US, es_ES, fr_FR, hi_IN, hr_HR, hu_HU, id_ID, it_IT, ja_JP, ka_GE, mn_MN, ms_MY, nl_NL, pl_PL, pt_PT, ro_RO, ru_RU, sk_SK, tr_TR, vi_VN, zh_CN). Traductions versionnées, relecture humaine, avertissement en cas d'écart avec le texte soumis au vote.
+
+## 70. Reformulations linguistiques
+
+Niveaux : français courant, administratif expliqué, scientifique vulgarisé, très simple, familier, expressions régionales, argot utile, autres langues. Chaque variante doit rester fidèle au contenu original et être identifiable.
+
+## 71. Assistance facultative par IA
+
+Peut aider à expliquer les termes, structurer l'arbre, relever les éléments manquants, proposer des catégories à observer, traduire et résumer. Ne peut voter, classer la valeur des citoyens, modifier un texte sans validation, inventer des sources, effacer silencieusement une hypothèse, sanctionner seule, fabriquer de faux soutiens ou prendre une décision publique. Toute aide déterminante est déclarée et validée avant publication.
+
+## 72. Neutralité algorithmique
+
+Rendre les tris explicites : date, lieu, thème, état, disponibilité des données. Éviter que la popularité ou le profilage politique déterminent secrètement l'accès aux propositions. Les recommandations, si proposées, doivent être explicables et désactivables.
+
+# PARTIE XIII — SÉCURITÉ, PROTECTION ET GOUVERNANCE
+
+## 73. Sécurité applicative
+
+Protéger contre SQLi, XSS, CSRF, erreurs de contrôle d'accès, falsification des requêtes, élévation de privilèges, vol de session, attaques d'authentification, rejeu, double vote, falsification des résultats, usurpation, fuite de données, déni de service, composants vulnérables et compromission de déploiement. Vérifier les autorisations côté serveur sur chaque API.
+
+## 74. Authentification
+
+Hachage robuste, MFA adaptée, protection contre les tentatives automatisées, sessions maîtrisées, révocation, audit, notification d'incident et récupération sécurisée. Les secrets ne sont pas stockés dans GitHub.
+
+## 75. Administration technique
+
+Un administrateur ne peut pas créer des votes non déclarés dans une consultation réelle, modifier directement les résultats, effacer des preuves discrètement, changer des règles closes, lire les secrets des comptes ni agir politiquement au nom du peuple. Les actions sensibles exigent des contrôles séparés et parfois plusieurs validations indépendantes.
+
+## 76. Modération et coexistence
+
+Intervenir sur menaces, harcèlement, usurpation, divulgation illégale, fraude démontrée, spam, sabotage et perturbations répétées. Aucune sanction uniquement parce qu'une opinion est étrange, minoritaire ou différente. Favoriser les chemins autonomes ; accepter les vérifications des faits sans juger la personne.
+
+## 77. Sanctions de comportement
+
+Avertissement, restrictions proportionnées, suspension temporaire de publication, mesure contre automatisation malveillante ou suspension après faits établis. Chaque mesure comporte règle préexistante, faits, motifs, durée, proportionnalité, recours et réexamen. Un signalement isolé n'établit jamais une fraude.
+
+## 78. Protection des données
+
+Les opinions politiques nominatives constituent des **données sensibles**. Définir le responsable, finalités, bases légales, condition spéciale de traitement, registre, information, consentements lorsque requis, conservation, rectification, effacement, opposition le cas échéant, sous-traitance, gestion des violations et analyse d'impact si nécessaire. Préparer une AIPD avant déploiement réel à grande échelle. **Ne pas décentraliser les données nominatives sensibles avant démonstration de la conformité des droits des personnes.**
+
+## 79. Gouvernance technique
+
+Séparer maintenance ordinaire et modifications touchant éligibilité, calculs, publication des choix ou droits. Exiger proposition documentée, justification, risques, revue, tests, approbation selon gouvernance, publication de version et plan de retour arrière. Pas de changement démocratique silencieux.
+
+# PARTIE XIV — COÛTS ET RESSOURCES
+
+## 80. Principe économique
+
+Minimiser les dépenses monétaires par les contributions volontaires **sans cacher les coûts réels** : matériel, courant, connectivité, domaine, sauvegardes, maintenance, remplacement, temps humain, audit, incidents, accessibilité et frais éventuels.
+
+## 81. Rapport financier public
+
+Publier dépenses, contributions, apports matériels, ressources offertes, énergie estimée, services, maintenance, évolution des coûts, justificatifs licites et écarts budgétaires. Respecter les données personnelles des contributeurs et fournisseurs.
+
+## 82. Contribution citoyenne
+
+Développement, traduction, audit, documentation, accessibilité, tests, hébergement volontaire, observation, amélioration d'outils, relecture. Aucune contribution n'achète une voix ou un privilège politique.
+
+## 83. Licence et propriété intellectuelle
+
+Choisir avant publication du logiciel : licence libre (AGPL à étudier pour les services), licence des documents et contenus, règles de réutilisation des données, droits des auteurs, contributions et politique de marques. La mise en ligne du cahier des charges **ne fixe pas à elle seule la licence du futur logiciel**.
+
+# PARTIE XV — PERFORMANCES ET QUALITÉ
+
+## 84. Objectifs non fonctionnels
+
+| Mesure | Cible initiale, à valider par banc d'essai |
+| --- | --- |
+| API publique | p95 inférieur à 800 ms |
+| Enregistrement de vote | p95 inférieur à 2 s hors vérification externe |
+| Actualisation temps réel | Moins de 3 s en conditions nominales |
+| Disponibilité pilote | 99,5 % sur période précisée |
+| Accessibilité | WCAG 2.2 AA |
+| Unicité des voix | Aucune duplication acceptée |
+| Décompte | Recalcul identique |
+| Restauration | Procédure prouvée par un test |
+| Synchronisation | Aucune corruption silencieuse |
+
+Ces objectifs ne décrivent pas des performances déjà obtenues. Les pages principales devront être rapides sur connexion mobile courante.
+
+## 85. Scalabilité
+
+Tests : dizaines de citoyens fictifs ; milliers d'utilisateurs simulés ; dizaines de milliers de sessions ; centaines de milliers d'identités de test ; charges plus fortes réparties territorialement. Étudier les dizaines de millions d'identités théoriques sans présumer de simultanéité ni déclarer une capacité nationale sans preuves.
+
+## 86. Sauvegarde et restauration
+
+Automatisation, contrôle d'intégrité, chiffrement, séparation physique/logique appropriée, tests de restauration, reprise après sinistre, reconstruction de résultats depuis événements, gestion de corruption, objectifs de perte et délai de reprise documentés. Plusieurs nœuds ne remplacent pas les sauvegardes.
+
+## 87. Observabilité
+
+Disponibilité, erreurs, latence, files de messages, état des bases, synchronisation, journal d'intégrité, ressources, sauvegardes, incidents. La télémétrie doit rester proportionnée, sans surveillance politique comportementale.
+
+# PARTIE XVI — DÉMONSTRATEUR DE RÉFÉRENCE
+
+## 88. Scénario initial
+
+Trois communes fictives — ou communes réelles associées exclusivement à des identités et données simulées — examinent les nuisances automobiles :
+
+- **Chemin A — Navettes publiques :** cause supposée, dépendance automobile ; mesure, navettes ; bénéfices, circulation réduite ; coûts, fonctionnement ; indicateurs, trafic/fréquentation/coût.
+- **Chemin B — Infrastructures cyclables :** cause supposée, manque de parcours sécurisés ; mesure, voies cyclables ; effets, trajets motorisés et travaux ; indicateurs, déplacements/sécurité/coût.
+- **Chemin C — Réorganisation des horaires :** cause supposée, pics concentrés ; mesure, étalement volontaire ; effets, pics modifiés et contraintes d'organisation ; indicateurs, trafic horaire/satisfaction/perturbations.
+
+## 89. Déroulement de la simulation
+
+Créer plusieurs citoyens fictifs, les rattacher aux communes, présenter trois chemins et leurs causes, ouvrir les consultations, enregistrer des votes fictifs, afficher les résultats, contrôler signatures et unicité, simuler les observations, introduire un imprévu, réviser un chemin, visualiser les rapprochements, produire les bilans et exporter preuves/données publiques. Aucun résultat simulé n'est décrit comme fait réel.
+
+## 90. Scénarios de convergence
+
+Tester **convergence complète**, **convergence partielle**, **absence de convergence** et **convergence suivie de divergence**. L'interface doit montrer qu'aucun de ces scénarios ne condamne une personne.
+
