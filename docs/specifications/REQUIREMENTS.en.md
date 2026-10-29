@@ -523,3 +523,271 @@ Create fictional citizens, associate each municipality, build three independent 
 
 Test **full convergence**, **partial convergence**, **persistent divergence** and **convergence followed by divergence**. None of these outcomes constitutes a judgement about the citizens participating.
 
+
+# PART XVII — FUNCTIONAL ACCEPTANCE MATRIX
+
+The following **68 verification scenarios** are initial requirements. Tests have not yet been executed or passed.
+
+## 91. Validation scenarios
+
+### A. Territorial references
+
+**DK-001** — Import the 2026 INSEE reference and verify territorial identifiers.
+
+**DK-002** — Verify that each municipality belongs to the correct administrative territory.
+
+**DK-003** — Import a new geographic edition without erasing historical affiliations.
+
+**DK-004** — Handle municipal districts and delegated communes.
+
+**DK-005** — Prevent a strictly local proposal from applying automatically elsewhere.
+
+**DK-006** — Allow another municipality to voluntarily adopt a proposal for examination.
+
+**DK-007** — Record and explain territorial exclusions and adaptations.
+
+**DK-008** — Prevent a change of municipality from granting two votes.
+
+### B. Identity and rights
+
+**DK-009** — Create a fictional citizen with a unique civic identity.
+
+**DK-010** — Reject a duplicate civic identity during a consultation.
+
+**DK-011** — Allow visitors to read public information without signing in.
+
+**DK-012** — Prevent an ineligible visitor from voting.
+
+**DK-013** — Verify that technical administration gives no additional voting power.
+
+**DK-014** — Check consent to voluntary named experimental participation.
+
+**DK-015** — Exercise lawful correction and erasure rights.
+
+**DK-016** — Keep all secrets and private identity documents out of public exports.
+
+### C. Paths and proposals
+
+**DK-017** — Create an independent path.
+
+**DK-018** — Record all twelve causal-tree categories.
+
+**DK-019** — Distinguish hypotheses from observed causes.
+
+**DK-020** — Prevent voting on an incomplete mandatory proposal.
+
+**DK-021** — Attach a source to an observation.
+
+**DK-022** — Revise a path without improperly destroying its lawful version history.
+
+**DK-023** — Display independent paths without ranking people's worth.
+
+**DK-024** — Record an unforeseen consequence with its date.
+
+### D. Consultations and votes
+
+**DK-025** — Open a consultation with frozen wording and rule set.
+
+**DK-026** — Record a FOR vote.
+
+**DK-027** — Record an AGAINST vote.
+
+**DK-028** — Record an ABSTAIN vote.
+
+**DK-029** — Reject a second active vote by the same citizen.
+
+**DK-030** — Apply a permitted vote change without counting the citizen twice.
+
+**DK-031** — Reject votes after the consultation closes.
+
+**DK-032** — Reject silent alterations to a proposal on which voting has begun.
+
+**DK-033** — Verify majority and quorum calculations.
+
+**DK-034** — Handle an empty consultation without a division error.
+
+**DK-035** — Display refreshed results labelled provisional where appropriate.
+
+**DK-036** — Independently recompute the same tally.
+
+### E. Observations and convergence
+
+**DK-037** — Link an experiment to the correct closed consultation.
+
+**DK-038** — Define indicators before the observation period.
+
+**DK-039** — Add clearly labelled synthetic observations.
+
+**DK-040** — Distinguish predictions, observations and causal interpretation.
+
+**DK-041** — Identify partial convergence between independent paths.
+
+**DK-042** — Present persistent divergence without labelling citizens failures.
+
+**DK-043** — Trace a revised personal path after a new observation.
+
+**DK-044** — Produce a territorial assessment with evidence sources and periods.
+
+### F. Security and integrity
+
+**DK-045** — Reject unauthorised editing of another person's vote.
+
+**DK-046** — Detect content alteration after digest creation.
+
+**DK-047** — Detect a break in a chained audit log.
+
+**DK-048** — Reject replay of an already processed critical operation.
+
+**DK-049** — Test defences against injection and cross-site scripting.
+
+**DK-050** — Verify authorisation across every sensitive API.
+
+**DK-051** — Create an integrity alert from a reported anomaly.
+
+**DK-052** — Prevent an unverified allegation from automatically suspending an innocent citizen.
+
+### G. Distributed network
+
+**DK-053** — Synchronise two compatible public data copies.
+
+**DK-054** — Detect divergence between two nodes.
+
+**DK-055** — Reject unsigned events where signatures are mandatory.
+
+**DK-056** — Resume synchronisation after a disconnection.
+
+**DK-057** — Respect configured bandwidth ceilings.
+
+**DK-058** — Immediately stop a volunteer relay on request.
+
+**DK-059** — Prevent unauthorised private records from reaching a public node.
+
+**DK-060** — Restore a verifier node from an intact copy.
+
+### H. Accessibility, governance and finance
+
+**DK-061** — Perform essential operations using only the keyboard.
+
+**DK-062** — Provide a textual equivalent of the causal graph.
+
+**DK-063** — Read the plain-language explanation and glossary.
+
+**DK-064** — Ensure that translations do not silently alter the voting reference version.
+
+**DK-065** — Record an expense with consistent amount and supporting record.
+
+**DK-066** — Inspect lawfully publishable costs and resources.
+
+**DK-067** — Require governance procedure for changes to democratic rules.
+
+**DK-068** — Appeal a moderation restriction or sanction.
+
+
+## 91 bis. Test acceptance procedure
+
+Each execution record contains test ID, application version, preconditions, input fixture, steps, expected result, actual result, evidence, status (passed, failed, blocked or not run) and incident reference. Presence of a UI screen does not prove the business function works. Cover normal, boundary and adversarial cases.
+
+# PART XVIII — DELIVERY ROADMAP
+
+## 92. Phase 0 — Documentary foundation
+
+Deliverables: founding charter, this specification, glossary, experimental democratic rules, initial risk analysis, reference architecture, test plan and design-decision records. **Acceptance:** resolve material contradictions between charter, voting mechanics, individual rights and technical requirements.
+
+## 93. Phase 1 — Symfony foundation
+
+Deliverables: Symfony 8.1, PHP 8.4, PostgreSQL, Doctrine, migrations, authentication, general interface, geographic reference and startup tests. **Acceptance:** reproducible installation and startup on Arch Linux.
+
+## 94. Phase 2 — Citizens and paths
+
+Fictional accounts, municipal records, causal editor, revisions, observations, supporting evidence and path browser. **Acceptance:** create a complete path and revise it without unlawfully losing its recorded history.
+
+## 95. Phase 3 — Consultations
+
+Proposals, rule sets, eligibility, voting, counting, live updates, closure, results and audit. **Acceptance:** no duplicate active votes; independently reproducible results.
+
+## 96. Phase 4 — Experiments and convergence
+
+Experimental protocols, indicators, observations, assessments, comparisons, convergence visualisations and revisions. **Acceptance:** correctly present convergence, divergence and unforeseen effects.
+
+## 97. Phase 5 — Cryptographic transparency
+
+Event journal, signatures, hashes, checkpoints, exports, independent verifier and integrity alerts. **Acceptance:** tampering within the integrity model is detectable by an independent verifier.
+
+## 98. Phase 6 — Distributed infrastructure
+
+Node synchronisation, volunteer relay agent, bandwidth controls, authorised replication, discrepancy detection, recovery and network simulator. **Acceptance:** consistent data or explicit discrepancy reporting despite the defined test incidents.
+
+## 99. Phase 7 — Preparation for a public experiment
+
+Prerequisites: legal review, DPIA when applicable, security and vote-integrity audits, accessibility verification, governance, appeals, cost reporting, responsibility boundaries and potential local-government partnerships. **No opening date for real-world public consultation is set.**
+
+# PART XIX — GENERAL ACCEPTANCE CRITERIA
+
+## 100. Demonstrator acceptance
+
+The pilot may be described as functional when: application/migrations work; geographic references are coherent; fictional accounts exist; causal paths are versioned; consultations have immutable rule sets; voting is unique and eligible; independent recount matches; observations are sourced; convergence never judges people's worth; integrity journals work; private records are protected; the interface is accessible; critical tests have been run; and the distinction between simulations and legal effects is explicit.
+
+## 101. Blocking failures
+
+Block acceptance if: more than one active vote per person; unauthorised changes to results; undisclosed edits to a live proposal; fictional data misrepresented as real; hidden administrator voting privilege; undetectable log tampering within the defined model; leak of private data; automatic sanction based on a single allegation; unauthorised cross-territorial application; real sensitive processing without legal conditions; essential activities dependent on external AI; or tally algorithms that cannot be independently reproduced.
+
+## 102. Extensibility
+
+Support new territories, languages, causal categories, observation types, visualisations, versioned consultation rules, federation nodes, governance models, provider migration and distributed architecture without a total rewrite. Founding rights and guarantees continue to apply.
+
+# PART XX — DESIGN DECISIONS TO FORMALISE
+
+## 103. Structural decisions
+
+| Reference | Decision needed before real public operation |
+| --- | --- |
+| DC-01 | Exact scope of public named participation, consent and later rights |
+| DC-02 | Civic identity verification mechanism |
+| DC-03 | Territorial eligibility and changes of municipality |
+| DC-04 | Default simulated quorum, majority and decision rules |
+| DC-05 | Rules for changing a vote before closure |
+| DC-06 | Collegial governance for democratic rule changes |
+| DC-07 | Convergence criteria without personal scoring |
+| DC-08 | Separating publishable, verifiable and protected information |
+| DC-09 | Federation authorities, consensus and node responsibilities |
+| DC-10 | Accounting and volunteer contribution status |
+| DC-11 | Licences for software and content |
+| DC-12 | Controllers and other legal responsibilities |
+
+None of these choices may be implemented as an undisclosed configuration value.
+
+# PART XXI — REFERENCES AND TRACEABILITY
+
+## 104. References
+
+- [Founding Charter — French, 24 articles](../../CHARTER.md).
+- [French requirements — authoritative text](REQUIREMENTS.fr.md).
+- [Symfony release and maintenance policy](https://symfony.com/releases).
+- [Symfony 8.1](https://symfony.com/releases/8.1).
+- [INSEE — Official Geographic Code 2026](https://www.insee.fr/fr/information/8740222).
+- [French local-government legislation — Article L2121-29](https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006389895).
+- [French Electoral Code — Article L59](https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006353163).
+- [CNIL — Sensitive data](https://www.cnil.fr/fr/definition/donnee-sensible).
+- [CNIL — Data protection impact assessments](https://www.cnil.fr/fr/ce-quil-faut-savoir-sur-lanalyse-dimpact-relative-la-protection-des-donnees-aipd).
+- [CNIL — Voter personal-data rights](https://www.cnil.fr/fr/respecter-les-droits-des-electeurs-sur-leurs-donnees-personnelles).
+
+Review sources for currency at each revision. This specification is not legal advice.
+
+## 105. Document version management
+
+Each future release records version, date, changes, requirements added/modified/removed, reasons, consequences, technical and legal impact, and tests to revise. Previous decisions cannot disappear without explanation. Publishing documentation does not authorise real-world operation.
+
+# CLOSING DECLARATION
+
+Démos Kratos must not become merely another polling platform or competition between opinions. A vote expresses a decision at a moment in time; observation examines consequences; collective memory preserves lessons; emergent convergence allows independent paths to approach each other freely.
+
+**Let no one own another person's path. Let no one be reduced to their mistakes. Let every consequence teach, and let collective memory illuminate future decisions.**
+
+**DÉMOS KRATOS — Δῆμος Κράτος — Power belongs to the people**
+
+> “Do not impose your path. Illuminate your own, and let the consequences teach everyone.”
+
+---
+
+**End of requirements specification — Version 1.0.**  
+**Status:** Fictional design proposal; no real public production deployment has been approved.
