@@ -1,0 +1,11 @@
+<?php
+declare(strict_types=1);
+namespace App\Service;
+use Doctrine\DBAL\Connection;
+final class DemoDatabase {
+ public function __construct(private Connection $connection,private string $projectDir){}
+ public function seed():array{$s=json_decode(file_get_contents($this->projectDir.'/data/scenario.json'),true,512,JSON_THROW_ON_ERROR);$rows=$this->connection->fetchAllAssociative('SELECT * FROM municipalities ORDER BY CASE code WHEN \'75056\' THEN 1 WHEN \'13055\' THEN 2 ELSE 3 END');if(count($rows)!==3)throw new \RuntimeException('Exécutez la préparation de la base de démonstration.');$s['territories']=array_map(fn($r,$i)=>['id'=>'t'.($i+1),'name'=>$r['name'],'code'=>$r['code'],'region'=>$r['region'],'department'=>$r['department'],'vintage'=>(int)$r['vintage'],'sourceUrl'=>$r['source_url'],'fictional'=>false,'history'=>[]],$rows,array_keys($rows));$s['keyPair']=null;return $s;}
+ public function workspace(string $owner):array{$row=$this->connection->fetchAssociative('SELECT revision,state FROM simulations WHERE id=?',[$owner]);if(!$row){$s=$this->seed();$this->connection->executeStatement('INSERT OR IGNORE INTO simulations (id,revision,state,updated_at) VALUES (?,0,?,?)',[$owner,json_encode($s,JSON_THROW_ON_ERROR),gmdate('c')]);$row=$this->connection->fetchAssociative('SELECT revision,state FROM simulations WHERE id=?',[$owner]);}return ['revision'=>(int)$row['revision'],'state'=>json_decode($row['state'],true,512,JSON_THROW_ON_ERROR)];}
+ public function save(string $owner,int $revision,array $state):void{$n=$this->connection->executeStatement('UPDATE simulations SET state=?,revision=revision+1,updated_at=? WHERE id=? AND revision=?',[json_encode($state,JSON_THROW_ON_ERROR),gmdate('c'),$owner,$revision]);if($n!==1)throw new \DomainException('Écriture concurrente détectée : rechargez avant de recommencer.',409);}
+ public function importCities():int{$cities=json_decode(file_get_contents($this->projectDir.'/data/cities.json'),true,512,JSON_THROW_ON_ERROR);$count=0;foreach($cities as $c)$count+=$this->connection->executeStatement('INSERT OR IGNORE INTO municipalities (code,name,region,department,vintage,source_url) VALUES (?,?,?,?,?,?)',[$c['code'],$c['name'],$c['region'],$c['department'],$c['vintage'],$c['sourceUrl']]);return $count;}
+}

@@ -1,0 +1,5 @@
+framework:
+    form: true
+    csrf_protection: true
+    validation:
+        email_validation_mode: html5

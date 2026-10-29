@@ -1,0 +1,97 @@
+PASS — Exactement les trois villes demandées
+PASS — Codes communaux INSEE cohérents
+PASS — Neuf personnages fictifs initiaux
+PASS — Douze catégories causales
+PASS — Observation et hypothèse distinctes
+PASS — Vote sans consentement refusé
+PASS — Vote hors territoire refusé
+PASS — Personnage inconnu refusé
+PASS — Vote pour enregistré
+PASS — Signature et état vérifiés pour pour
+PASS — Vote contre enregistré
+PASS — Signature et état vérifiés pour contre
+PASS — Vote abstention enregistré
+PASS — Signature et état vérifiés pour abstention
+PASS — Changement sans double comptage
+PASS — Égalité non adoptée
+PASS — Vote identique refusé
+PASS — Historique de changement conservé
+PASS — Clés privées et anti-rejeu exclus des exports
+PASS — Aucune clé privée dans le JSON public
+PASS — Falsification de l’état détectée
+PASS — Rupture de chaîne détectée
+PASS — Fausse signature détectée
+PASS — Mutation d’un état corrompu interdite
+PASS — Rejeu refusé
+PASS — Texte gelé non révisable
+PASS — Révision par un autre auteur refusée
+PASS — Version précédente conservée
+PASS — Signature stable après sérialisation JSON
+PASS — Texte figé à l’ouverture
+PASS — Admissibilité locale figée
+PASS — Consultation incomplète refusée
+PASS — Vote après clôture refusé
+PASS — Consultation vide sans division par zéro
+PASS — Changement territorial différé durant vote ouvert
+PASS — Création d’un personnage
+PASS — Personnage dupliqué refusé
+PASS — Retrait de consentement enregistré
+PASS — Vote après retrait de consentement refusé
+PASS — Rectification vers un nom fictif existant refusée
+PASS — Effacement du nom fictif
+PASS — Observation explicitement simulée
+PASS — Imprévu daté et conservé
+PASS — Observation par non-local refusée
+PASS — Observation hors période refusée
+PASS — Observation sans source refusée
+PASS — Montant financier en centimes
+PASS — Montant à trois décimales refusé
+PASS — Signalement sans sanction automatique
+PASS — Recours enregistré
+PASS — Auto-approbation interdite
+PASS — Deux avis indépendants
+PASS — Gouvernance sans mutation rétroactive des règles
+PASS — Relais arrêté ne synchronise pas
+PASS — Point de contrôle public virtuel
+PASS — Symfony/Twig rend /
+PASS — Symfony/Twig rend /territories
+PASS — Symfony/Twig rend /proposals
+PASS — Symfony/Twig rend /proposals?id=p1
+PASS — Symfony/Twig rend /consultations
+PASS — Symfony/Twig rend /experiments
+PASS — Symfony/Twig rend /convergence
+PASS — Symfony/Twig rend /memory
+PASS — Symfony/Twig rend /transparency
+PASS — Symfony/Twig rend /infrastructure
+PASS — Symfony/Twig rend /governance
+PASS — Symfony/Twig rend /citizen
+PASS — Symfony/Twig rend /charter
+PASS — Symfony/Twig rend /charter?locale=en_GB
+PASS — Symfony/Twig rend /verify
+PASS — API PHP lit SQLite via Doctrine
+PASS — API n’expose pas de clé privée
+PASS — Profiler refusé sans session Guardian
+PASS — Toolbar refusée sans session Guardian
+PASS — Pas de collecte ni toolbar pour le visiteur
+PASS — Portail réel du bundle installé
+PASS — CSRF de connexion Guardian présent
+PASS — Connexion Guardian publique fonctionnelle
+PASS — Collecte Symfony autorisée après connexion Guardian
+PASS — Index du profiler accessible après connexion
+PASS — Rapport natif du profiler consultable
+PASS — Mot de passe partagé non modifiable à distance
+PASS — Règles du bundle non modifiables par le compte public
+PASS — Connexion web de l’opérateur privée interdite sur la démo
+PASS — PHPInfo fermé même au compte de démo
+PASS — Changement de personnage sans CSRF refusé
+PASS — Formulaire Symfony natif accessible
+PASS — Formulaire CSRF validé et état persisté
+PASS — Consentement relu depuis SQLite
+PASS — Soumission périmée refusée par verrouillage optimiste
+PASS — Formulaire au CSRF invalide refusé
+PASS — Export de preuve téléchargeable
+PASS — Export public vérifiable après persistance réelle
+PASS — Aucune ville supplémentaire créée par les parcours
+PASS — Intégrité SQLite valide
+PASS — Collecteur public expurge clés, cookies, corps et jetons
+96 contrôles, 0 échec(s).

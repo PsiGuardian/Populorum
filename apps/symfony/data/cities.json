@@ -1,0 +1,5 @@
+[
+ {"id":"t1","name":"Paris","code":"75056","region":"Île-de-France","department":"Paris","vintage":2026,"sourceUrl":"https://www.insee.fr/fr/metadonnees/geographie/commune/75056-paris","fictional":false,"history":[]},
+ {"id":"t2","name":"Marseille","code":"13055","region":"Provence-Alpes-Côte d’Azur","department":"Bouches-du-Rhône","vintage":2026,"sourceUrl":"https://www.insee.fr/fr/metadonnees/geographie/commune/13055-marseille","fictional":false,"history":[]},
+ {"id":"t3","name":"Le Havre","code":"76351","region":"Normandie","department":"Seine-Maritime","vintage":2026,"sourceUrl":"https://www.insee.fr/fr/metadonnees/geographie/commune/76351-le-havre","fictional":false,"history":[]}
+]

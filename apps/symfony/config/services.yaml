@@ -1,0 +1,19 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+    App\:
+        resource: '../src/'
+        exclude: ['../src/Kernel.php','../src/Entity/','../src/DependencyInjection/','../src/DataCollector/']
+    App\Service\DemoDatabase:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+    App\Command\DemoSetupCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+    App\Controller\DemoController:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+    OmegaGuardian\ProfilerShield\Storage\FileStore: '@omega_guardian.store'
+    OmegaGuardian\ProfilerShield\Security\Accounts: '@omega_guardian.accounts'
+    OmegaGuardian\ProfilerShield\Security\Settings: '@omega_guardian.settings'

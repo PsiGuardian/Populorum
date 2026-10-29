@@ -1,0 +1,868 @@
+{
+  "schemaVersion": 2,
+  "simulation": true,
+  "territories": [
+    {
+      "id": "t1",
+      "name": "Paris",
+      "code": "75056",
+      "region": "Île-de-France",
+      "department": "Paris",
+      "vintage": 2026,
+      "sourceUrl": "https://www.insee.fr/fr/metadonnees/geographie/commune/75056-paris",
+      "fictional": false,
+      "history": []
+    },
+    {
+      "id": "t2",
+      "name": "Marseille",
+      "code": "13055",
+      "region": "Provence-Alpes-Côte d’Azur",
+      "department": "Bouches-du-Rhône",
+      "vintage": 2026,
+      "sourceUrl": "https://www.insee.fr/fr/metadonnees/geographie/commune/13055-marseille",
+      "fictional": false,
+      "history": []
+    },
+    {
+      "id": "t3",
+      "name": "Le Havre",
+      "code": "76351",
+      "region": "Normandie",
+      "department": "Seine-Maritime",
+      "vintage": 2026,
+      "sourceUrl": "https://www.insee.fr/fr/metadonnees/geographie/commune/76351-le-havre",
+      "fictional": false,
+      "history": []
+    }
+  ],
+  "citizens": [
+    {
+      "id": "u1",
+      "name": "Camille · fictif",
+      "territoryId": "t1",
+      "consent": false,
+      "role": "citizen",
+      "suspended": false,
+      "history": []
+    },
+    {
+      "id": "u2",
+      "name": "Alex · fictif",
+      "territoryId": "t1",
+      "consent": false,
+      "role": "citizen",
+      "suspended": false,
+      "history": []
+    },
+    {
+      "id": "u3",
+      "name": "Sacha · fictif",
+      "territoryId": "t1",
+      "consent": false,
+      "role": "citizen",
+      "suspended": false,
+      "history": []
+    },
+    {
+      "id": "u4",
+      "name": "Lou · fictif",
+      "territoryId": "t2",
+      "consent": false,
+      "role": "citizen",
+      "suspended": false,
+      "history": []
+    },
+    {
+      "id": "u5",
+      "name": "Charlie · fictif",
+      "territoryId": "t2",
+      "consent": false,
+      "role": "citizen",
+      "suspended": false,
+      "history": []
+    },
+    {
+      "id": "u6",
+      "name": "Noa · fictif",
+      "territoryId": "t2",
+      "consent": false,
+      "role": "citizen",
+      "suspended": false,
+      "history": []
+    },
+    {
+      "id": "u7",
+      "name": "Robin · fictif",
+      "territoryId": "t3",
+      "consent": false,
+      "role": "citizen",
+      "suspended": false,
+      "history": []
+    },
+    {
+      "id": "u8",
+      "name": "Morgan · fictif",
+      "territoryId": "t3",
+      "consent": false,
+      "role": "citizen",
+      "suspended": false,
+      "history": []
+    },
+    {
+      "id": "u9",
+      "name": "Alix · fictif",
+      "territoryId": "t3",
+      "consent": false,
+      "role": "citizen",
+      "suspended": false,
+      "history": []
+    }
+  ],
+  "proposals": [
+    {
+      "id": "p1",
+      "title": "Une navette pour relier nos lieux de vie",
+      "territoryId": "t1",
+      "authorId": "u1",
+      "theme": "Mobilités",
+      "summary": "Relier le centre, les commerces et les quartiers par une navette partagée.",
+      "problem": "Les déplacements courts reposent sur la voiture individuelle.",
+      "cause": "Les alternatives aux trajets individuels sont peu accessibles.",
+      "consequence": "Le trafic se concentre à proximité des écoles et des commerces.",
+      "solution": "Expérimenter une navette électrique matin et soir pendant douze semaines.",
+      "justification": "Observer la fréquentation et le trafic avant de prolonger la mesure.",
+      "indicator": "Véhicules par heure à l’entrée du centre",
+      "risk": "Une fréquentation insuffisante pourrait augmenter le coût par trajet.",
+      "reversibility": "Arrêt de la location et retour aux horaires précédents.",
+      "status": "consultation",
+      "version": 1,
+      "tags": [
+        "trafic",
+        "accessibilité",
+        "transport collectif"
+      ],
+      "forecast": -20,
+      "createdAt": "2026-10-29T08:00:00.000Z",
+      "sources": [
+        {
+          "label": "Jeu pédagogique de mobilité — données entièrement simulées",
+          "url": "",
+          "date": "2026-10-29"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "n0",
+          "category": "Problème",
+          "kind": "hypothesis",
+          "content": "Les déplacements courts reposent sur la voiture individuelle."
+        },
+        {
+          "id": "n1",
+          "category": "Cause directe",
+          "kind": "hypothesis",
+          "content": "Les alternatives aux trajets individuels sont peu accessibles."
+        },
+        {
+          "id": "n2",
+          "category": "Cause indirecte",
+          "kind": "hypothesis",
+          "content": "Organisation du territoire"
+        },
+        {
+          "id": "n3",
+          "category": "Cause probable",
+          "kind": "hypothesis",
+          "content": "Dépendance aux déplacements individuels"
+        },
+        {
+          "id": "n4",
+          "category": "Cause observée",
+          "kind": "observation",
+          "content": "Comptage pédagogique : 120 véhicules/heure"
+        },
+        {
+          "id": "n5",
+          "category": "Solution proposée",
+          "kind": "hypothesis",
+          "content": "Expérimenter une navette électrique matin et soir pendant douze semaines."
+        },
+        {
+          "id": "n6",
+          "category": "Conséquence favorable probable",
+          "kind": "hypothesis",
+          "content": "Réduire les pics de circulation"
+        },
+        {
+          "id": "n7",
+          "category": "Conséquence défavorable probable",
+          "kind": "hypothesis",
+          "content": "Une fréquentation insuffisante pourrait augmenter le coût par trajet."
+        },
+        {
+          "id": "n8",
+          "category": "Conséquence observable",
+          "kind": "hypothesis",
+          "content": "Véhicules par heure à l’entrée du centre"
+        },
+        {
+          "id": "n9",
+          "category": "Conséquence imprévue",
+          "kind": "hypothesis",
+          "content": "À documenter pendant l’expérience"
+        },
+        {
+          "id": "n10",
+          "category": "Solution alternative",
+          "kind": "hypothesis",
+          "content": "Combiner plusieurs modes de déplacement"
+        },
+        {
+          "id": "n11",
+          "category": "Révision",
+          "kind": "hypothesis",
+          "content": "Version initiale du chemin"
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n0",
+          "relation": "contribue à"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "relation": "produit potentiellement"
+        }
+      ],
+      "revisions": []
+    },
+    {
+      "id": "p2",
+      "title": "Des itinéraires cyclables au quotidien",
+      "territoryId": "t2",
+      "authorId": "u4",
+      "theme": "Mobilités",
+      "summary": "Relier les quartiers aux équipements par des parcours cyclables sécurisés.",
+      "problem": "Les trajets courts à vélo restent difficiles.",
+      "cause": "Les itinéraires sont discontinus et les croisements peu lisibles.",
+      "consequence": "Les habitants utilisent leur voiture pour de petits déplacements.",
+      "solution": "Tester des pistes temporaires et du stationnement vélo pendant douze semaines.",
+      "justification": "Mesurer les déplacements, la sécurité et les coûts d’aménagement.",
+      "indicator": "Véhicules par heure à l’entrée du centre",
+      "risk": "Des travaux peuvent déplacer le trafic vers les rues voisines.",
+      "reversibility": "Retrait des aménagements temporaires.",
+      "status": "experiment",
+      "version": 1,
+      "tags": [
+        "trafic",
+        "sécurité",
+        "vélo"
+      ],
+      "forecast": -15,
+      "createdAt": "2026-10-29T08:00:00.000Z",
+      "sources": [
+        {
+          "label": "Jeu pédagogique de mobilité — données entièrement simulées",
+          "url": "",
+          "date": "2026-10-29"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "n0",
+          "category": "Problème",
+          "kind": "hypothesis",
+          "content": "Les trajets courts à vélo restent difficiles."
+        },
+        {
+          "id": "n1",
+          "category": "Cause directe",
+          "kind": "hypothesis",
+          "content": "Les itinéraires sont discontinus et les croisements peu lisibles."
+        },
+        {
+          "id": "n2",
+          "category": "Cause indirecte",
+          "kind": "hypothesis",
+          "content": "Organisation du territoire"
+        },
+        {
+          "id": "n3",
+          "category": "Cause probable",
+          "kind": "hypothesis",
+          "content": "Dépendance aux déplacements individuels"
+        },
+        {
+          "id": "n4",
+          "category": "Cause observée",
+          "kind": "observation",
+          "content": "Comptage pédagogique : 120 véhicules/heure"
+        },
+        {
+          "id": "n5",
+          "category": "Solution proposée",
+          "kind": "hypothesis",
+          "content": "Tester des pistes temporaires et du stationnement vélo pendant douze semaines."
+        },
+        {
+          "id": "n6",
+          "category": "Conséquence favorable probable",
+          "kind": "hypothesis",
+          "content": "Réduire les pics de circulation"
+        },
+        {
+          "id": "n7",
+          "category": "Conséquence défavorable probable",
+          "kind": "hypothesis",
+          "content": "Des travaux peuvent déplacer le trafic vers les rues voisines."
+        },
+        {
+          "id": "n8",
+          "category": "Conséquence observable",
+          "kind": "hypothesis",
+          "content": "Véhicules par heure à l’entrée du centre"
+        },
+        {
+          "id": "n9",
+          "category": "Conséquence imprévue",
+          "kind": "hypothesis",
+          "content": "À documenter pendant l’expérience"
+        },
+        {
+          "id": "n10",
+          "category": "Solution alternative",
+          "kind": "hypothesis",
+          "content": "Combiner plusieurs modes de déplacement"
+        },
+        {
+          "id": "n11",
+          "category": "Révision",
+          "kind": "hypothesis",
+          "content": "Version initiale du chemin"
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n0",
+          "relation": "contribue à"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "relation": "produit potentiellement"
+        }
+      ],
+      "revisions": []
+    },
+    {
+      "id": "p3",
+      "title": "Des horaires souples, des rues plus calmes",
+      "territoryId": "t3",
+      "authorId": "u7",
+      "theme": "Vie locale",
+      "summary": "Étaler volontairement les horaires pour réduire les pics de circulation.",
+      "problem": "La circulation se concentre sur deux créneaux très courts.",
+      "cause": "Les prises de poste et les entrées scolaires se superposent.",
+      "consequence": "Des embouteillages apparaissent malgré un trafic quotidien modéré.",
+      "solution": "Proposer des horaires décalés aux structures volontaires.",
+      "justification": "Comparer le trafic horaire et les contraintes vécues.",
+      "indicator": "Véhicules par heure à l’entrée du centre",
+      "risk": "La coordination familiale peut devenir plus difficile.",
+      "reversibility": "Retour volontaire aux horaires habituels.",
+      "status": "published",
+      "version": 1,
+      "tags": [
+        "trafic",
+        "horaires",
+        "organisation"
+      ],
+      "forecast": -10,
+      "createdAt": "2026-10-29T08:00:00.000Z",
+      "sources": [
+        {
+          "label": "Jeu pédagogique de mobilité — données entièrement simulées",
+          "url": "",
+          "date": "2026-10-29"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "n0",
+          "category": "Problème",
+          "kind": "hypothesis",
+          "content": "La circulation se concentre sur deux créneaux très courts."
+        },
+        {
+          "id": "n1",
+          "category": "Cause directe",
+          "kind": "hypothesis",
+          "content": "Les prises de poste et les entrées scolaires se superposent."
+        },
+        {
+          "id": "n2",
+          "category": "Cause indirecte",
+          "kind": "hypothesis",
+          "content": "Organisation du territoire"
+        },
+        {
+          "id": "n3",
+          "category": "Cause probable",
+          "kind": "hypothesis",
+          "content": "Dépendance aux déplacements individuels"
+        },
+        {
+          "id": "n4",
+          "category": "Cause observée",
+          "kind": "observation",
+          "content": "Comptage pédagogique : 120 véhicules/heure"
+        },
+        {
+          "id": "n5",
+          "category": "Solution proposée",
+          "kind": "hypothesis",
+          "content": "Proposer des horaires décalés aux structures volontaires."
+        },
+        {
+          "id": "n6",
+          "category": "Conséquence favorable probable",
+          "kind": "hypothesis",
+          "content": "Réduire les pics de circulation"
+        },
+        {
+          "id": "n7",
+          "category": "Conséquence défavorable probable",
+          "kind": "hypothesis",
+          "content": "La coordination familiale peut devenir plus difficile."
+        },
+        {
+          "id": "n8",
+          "category": "Conséquence observable",
+          "kind": "hypothesis",
+          "content": "Véhicules par heure à l’entrée du centre"
+        },
+        {
+          "id": "n9",
+          "category": "Conséquence imprévue",
+          "kind": "hypothesis",
+          "content": "À documenter pendant l’expérience"
+        },
+        {
+          "id": "n10",
+          "category": "Solution alternative",
+          "kind": "hypothesis",
+          "content": "Combiner plusieurs modes de déplacement"
+        },
+        {
+          "id": "n11",
+          "category": "Révision",
+          "kind": "hypothesis",
+          "content": "Version initiale du chemin"
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n0",
+          "relation": "contribue à"
+        },
+        {
+          "from": "n5",
+          "to": "n6",
+          "relation": "produit potentiellement"
+        }
+      ],
+      "revisions": []
+    }
+  ],
+  "consultations": [
+    {
+      "id": "c1",
+      "proposalId": "p1",
+      "territoryId": "t1",
+      "version": 1,
+      "frozen": {
+        "id": "p1",
+        "title": "Une navette pour relier nos lieux de vie",
+        "territoryId": "t1",
+        "authorId": "u1",
+        "theme": "Mobilités",
+        "summary": "Relier le centre, les commerces et les quartiers par une navette partagée.",
+        "problem": "Les déplacements courts reposent sur la voiture individuelle.",
+        "cause": "Les alternatives aux trajets individuels sont peu accessibles.",
+        "consequence": "Le trafic se concentre à proximité des écoles et des commerces.",
+        "solution": "Expérimenter une navette électrique matin et soir pendant douze semaines.",
+        "justification": "Observer la fréquentation et le trafic avant de prolonger la mesure.",
+        "indicator": "Véhicules par heure à l’entrée du centre",
+        "risk": "Une fréquentation insuffisante pourrait augmenter le coût par trajet.",
+        "reversibility": "Arrêt de la location et retour aux horaires précédents.",
+        "status": "consultation",
+        "version": 1,
+        "tags": [
+          "trafic",
+          "accessibilité",
+          "transport collectif"
+        ],
+        "forecast": -20,
+        "createdAt": "2026-10-29T08:00:00.000Z",
+        "sources": [
+          {
+            "label": "Jeu pédagogique de mobilité — données entièrement simulées",
+            "url": "",
+            "date": "2026-10-29"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "n0",
+            "category": "Problème",
+            "kind": "hypothesis",
+            "content": "Les déplacements courts reposent sur la voiture individuelle."
+          },
+          {
+            "id": "n1",
+            "category": "Cause directe",
+            "kind": "hypothesis",
+            "content": "Les alternatives aux trajets individuels sont peu accessibles."
+          },
+          {
+            "id": "n2",
+            "category": "Cause indirecte",
+            "kind": "hypothesis",
+            "content": "Organisation du territoire"
+          },
+          {
+            "id": "n3",
+            "category": "Cause probable",
+            "kind": "hypothesis",
+            "content": "Dépendance aux déplacements individuels"
+          },
+          {
+            "id": "n4",
+            "category": "Cause observée",
+            "kind": "observation",
+            "content": "Comptage pédagogique : 120 véhicules/heure"
+          },
+          {
+            "id": "n5",
+            "category": "Solution proposée",
+            "kind": "hypothesis",
+            "content": "Expérimenter une navette électrique matin et soir pendant douze semaines."
+          },
+          {
+            "id": "n6",
+            "category": "Conséquence favorable probable",
+            "kind": "hypothesis",
+            "content": "Réduire les pics de circulation"
+          },
+          {
+            "id": "n7",
+            "category": "Conséquence défavorable probable",
+            "kind": "hypothesis",
+            "content": "Une fréquentation insuffisante pourrait augmenter le coût par trajet."
+          },
+          {
+            "id": "n8",
+            "category": "Conséquence observable",
+            "kind": "hypothesis",
+            "content": "Véhicules par heure à l’entrée du centre"
+          },
+          {
+            "id": "n9",
+            "category": "Conséquence imprévue",
+            "kind": "hypothesis",
+            "content": "À documenter pendant l’expérience"
+          },
+          {
+            "id": "n10",
+            "category": "Solution alternative",
+            "kind": "hypothesis",
+            "content": "Combiner plusieurs modes de déplacement"
+          },
+          {
+            "id": "n11",
+            "category": "Révision",
+            "kind": "hypothesis",
+            "content": "Version initiale du chemin"
+          }
+        ],
+        "edges": [
+          {
+            "from": "n1",
+            "to": "n0",
+            "relation": "contribue à"
+          },
+          {
+            "from": "n5",
+            "to": "n6",
+            "relation": "produit potentiellement"
+          }
+        ],
+        "revisions": []
+      },
+      "rules": {
+        "quorum": 50,
+        "majority": "Majorité stricte des exprimés ; égalité = non adoptée",
+        "changeAllowed": true,
+        "abstention": "Compte dans la participation, pas dans les exprimés"
+      },
+      "eligibleIds": [
+        "u1",
+        "u2",
+        "u3"
+      ],
+      "opensAt": "2026-10-29T00:00:00.000Z",
+      "closesAt": "2027-10-29T00:00:00.000Z",
+      "status": "open"
+    },
+    {
+      "id": "c2",
+      "proposalId": "p2",
+      "territoryId": "t2",
+      "version": 1,
+      "frozen": {
+        "id": "p2",
+        "title": "Des itinéraires cyclables au quotidien",
+        "territoryId": "t2",
+        "authorId": "u4",
+        "theme": "Mobilités",
+        "summary": "Relier les quartiers aux équipements par des parcours cyclables sécurisés.",
+        "problem": "Les trajets courts à vélo restent difficiles.",
+        "cause": "Les itinéraires sont discontinus et les croisements peu lisibles.",
+        "consequence": "Les habitants utilisent leur voiture pour de petits déplacements.",
+        "solution": "Tester des pistes temporaires et du stationnement vélo pendant douze semaines.",
+        "justification": "Mesurer les déplacements, la sécurité et les coûts d’aménagement.",
+        "indicator": "Véhicules par heure à l’entrée du centre",
+        "risk": "Des travaux peuvent déplacer le trafic vers les rues voisines.",
+        "reversibility": "Retrait des aménagements temporaires.",
+        "status": "experiment",
+        "version": 1,
+        "tags": [
+          "trafic",
+          "sécurité",
+          "vélo"
+        ],
+        "forecast": -15,
+        "createdAt": "2026-10-29T08:00:00.000Z",
+        "sources": [
+          {
+            "label": "Jeu pédagogique de mobilité — données entièrement simulées",
+            "url": "",
+            "date": "2026-10-29"
+          }
+        ],
+        "nodes": [
+          {
+            "id": "n0",
+            "category": "Problème",
+            "kind": "hypothesis",
+            "content": "Les trajets courts à vélo restent difficiles."
+          },
+          {
+            "id": "n1",
+            "category": "Cause directe",
+            "kind": "hypothesis",
+            "content": "Les itinéraires sont discontinus et les croisements peu lisibles."
+          },
+          {
+            "id": "n2",
+            "category": "Cause indirecte",
+            "kind": "hypothesis",
+            "content": "Organisation du territoire"
+          },
+          {
+            "id": "n3",
+            "category": "Cause probable",
+            "kind": "hypothesis",
+            "content": "Dépendance aux déplacements individuels"
+          },
+          {
+            "id": "n4",
+            "category": "Cause observée",
+            "kind": "observation",
+            "content": "Comptage pédagogique : 120 véhicules/heure"
+          },
+          {
+            "id": "n5",
+            "category": "Solution proposée",
+            "kind": "hypothesis",
+            "content": "Tester des pistes temporaires et du stationnement vélo pendant douze semaines."
+          },
+          {
+            "id": "n6",
+            "category": "Conséquence favorable probable",
+            "kind": "hypothesis",
+            "content": "Réduire les pics de circulation"
+          },
+          {
+            "id": "n7",
+            "category": "Conséquence défavorable probable",
+            "kind": "hypothesis",
+            "content": "Des travaux peuvent déplacer le trafic vers les rues voisines."
+          },
+          {
+            "id": "n8",
+            "category": "Conséquence observable",
+            "kind": "hypothesis",
+            "content": "Véhicules par heure à l’entrée du centre"
+          },
+          {
+            "id": "n9",
+            "category": "Conséquence imprévue",
+            "kind": "hypothesis",
+            "content": "À documenter pendant l’expérience"
+          },
+          {
+            "id": "n10",
+            "category": "Solution alternative",
+            "kind": "hypothesis",
+            "content": "Combiner plusieurs modes de déplacement"
+          },
+          {
+            "id": "n11",
+            "category": "Révision",
+            "kind": "hypothesis",
+            "content": "Version initiale du chemin"
+          }
+        ],
+        "edges": [
+          {
+            "from": "n1",
+            "to": "n0",
+            "relation": "contribue à"
+          },
+          {
+            "from": "n5",
+            "to": "n6",
+            "relation": "produit potentiellement"
+          }
+        ],
+        "revisions": []
+      },
+      "rules": {
+        "quorum": 50,
+        "majority": "Majorité stricte des exprimés ; égalité = non adoptée",
+        "changeAllowed": true,
+        "abstention": "Compte dans la participation, pas dans les exprimés"
+      },
+      "eligibleIds": [
+        "u4",
+        "u5",
+        "u6"
+      ],
+      "opensAt": "2026-10-01T00:00:00.000Z",
+      "closesAt": "2026-10-28T00:00:00.000Z",
+      "status": "closed"
+    }
+  ],
+  "votes": [
+    {
+      "id": "v1",
+      "consultationId": "c1",
+      "citizenId": "u2",
+      "choice": "pour",
+      "at": "2026-10-29T09:00:00.000Z",
+      "history": []
+    },
+    {
+      "id": "v2",
+      "consultationId": "c2",
+      "citizenId": "u5",
+      "choice": "pour",
+      "at": "2026-10-27T09:00:00.000Z",
+      "history": []
+    },
+    {
+      "id": "v3",
+      "consultationId": "c2",
+      "citizenId": "u6",
+      "choice": "pour",
+      "at": "2026-10-27T09:00:00.000Z",
+      "history": []
+    }
+  ],
+  "experiments": [
+    {
+      "id": "e1",
+      "consultationId": "c2",
+      "proposalId": "p2",
+      "territoryId": "t2",
+      "objective": "Observer la circulation et les déplacements à vélo",
+      "hypothesis": "Des parcours continus peuvent réduire le trafic local.",
+      "baseline": 120,
+      "unit": "véhicules / heure",
+      "indicator": "Véhicules par heure à l’entrée du centre",
+      "start": "2026-10-29",
+      "end": "2027-01-21",
+      "stop": "Accident ou hausse du trafic supérieure à 20 %",
+      "method": "Comptages pédagogiques à heures fixes",
+      "limitations": "Données fictives ; facteurs saisonniers non contrôlés.",
+      "status": "running",
+      "observations": [
+        {
+          "id": "o1",
+          "date": "2026-10-29",
+          "baseline": 120,
+          "value": 105,
+          "source": "Jeu de données pédagogique, relevé simulé n° 1",
+          "uncertainty": 5,
+          "external": "Météo douce simulée",
+          "unexpected": "Report de circulation sur une rue voisine",
+          "simulated": true
+        }
+      ]
+    }
+  ],
+  "adaptations": [],
+  "finance": [
+    {
+      "id": "f1",
+      "type": "expense",
+      "label": "Location de la navette — budget pédagogique",
+      "cents": 180000,
+      "receipt": "SIM-BUDGET-001",
+      "date": "2026-10-29",
+      "simulated": true
+    },
+    {
+      "id": "f2",
+      "type": "contribution",
+      "label": "Temps de documentation offert — valorisation fictive",
+      "cents": 60000,
+      "receipt": "SIM-TEMPS-001",
+      "date": "2026-10-29",
+      "simulated": true
+    }
+  ],
+  "governance": [],
+  "cases": [],
+  "appeals": [],
+  "alerts": [],
+  "resources": [],
+  "nodes": [
+    {
+      "id": "node1",
+      "name": "Relais des Rives",
+      "status": "stopped",
+      "bandwidth": 128,
+      "checkpoint": null
+    },
+    {
+      "id": "node2",
+      "name": "Relais des Plateaux",
+      "status": "stopped",
+      "bandwidth": 64,
+      "checkpoint": null
+    }
+  ],
+  "events": [],
+  "operations": [],
+  "preferences": {
+    "locale": "fr_FR",
+    "simple": false,
+    "recommendations": false
+  }
+}
