@@ -1,0 +1,80 @@
+{
+    "date": "2026-10-29",
+    "scope": "Sondes complémentaires ; ne couvre pas les 68 scénarios complets.",
+    "checks": 12,
+    "failed": 7,
+    "results": [
+        {
+            "id": "AUD-01",
+            "requirement": "§21 : enregistrer un brouillon incomplet",
+            "passed": false,
+            "detail": "DomainException : Texte attendu : 4 à 3000 caractères."
+        },
+        {
+            "id": "AUD-02",
+            "requirement": "§16 : ajouter une catégorie causale sans perdre les précédentes",
+            "passed": false,
+            "detail": "Exigence non satisfaite sur ce cas."
+        },
+        {
+            "id": "AUD-03",
+            "requirement": "§18 : enregistrer des relations causales typées",
+            "passed": false,
+            "detail": "Exigence non satisfaite sur ce cas."
+        },
+        {
+            "id": "AUD-04",
+            "requirement": "§19 : réviser aussi le problème et la cause",
+            "passed": false,
+            "detail": "Exigence non satisfaite sur ce cas."
+        },
+        {
+            "id": "AUD-05",
+            "requirement": "§13 : effacer un nom jusque dans les exports de journal",
+            "passed": false,
+            "detail": "Exigence non satisfaite sur ce cas."
+        },
+        {
+            "id": "AUD-06",
+            "requirement": "§33 et §40 : conserver les versions des bilans",
+            "passed": false,
+            "detail": "Exigence non satisfaite sur ce cas."
+        },
+        {
+            "id": "AUD-07",
+            "requirement": "§28 : statut définitif cohérent après échéance",
+            "passed": false,
+            "detail": "Exigence non satisfaite sur ce cas."
+        },
+        {
+            "id": "AUD-08",
+            "requirement": "DK-036 : recalcul indépendant identique",
+            "passed": true,
+            "detail": "Exigence satisfaite sur ce cas."
+        },
+        {
+            "id": "AUD-09",
+            "requirement": "DK-006 : reprise locale sans consultation automatique",
+            "passed": true,
+            "detail": "Exigence satisfaite sur ce cas."
+        },
+        {
+            "id": "AUD-10",
+            "requirement": "DK-051 : signalement d’intégrité non confirmé par défaut",
+            "passed": true,
+            "detail": "Exigence satisfaite sur ce cas."
+        },
+        {
+            "id": "AUD-11",
+            "requirement": "DK-055 : refuser une signature supprimée",
+            "passed": true,
+            "detail": "Exigence satisfaite sur ce cas."
+        },
+        {
+            "id": "AUD-12",
+            "requirement": "§24 : conserver le texte figé après une révision postérieure",
+            "passed": true,
+            "detail": "Exigence satisfaite sur ce cas."
+        }
+    ]
+}

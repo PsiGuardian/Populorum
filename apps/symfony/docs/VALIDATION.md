@@ -18,3 +18,9 @@ Ces résultats ne sont pas un audit exhaustif de sécurité, d’accessibilité 
 Le refactoring de lisibilité conserve les états métier : 24 actions ont été comparées à la version précédente, avec des états identiques après normalisation des identifiants et horodatages générés. Leurs signatures restent valides. La suite permanente compte désormais 99 contrôles, dont trois vérifications des fiches territoriales filtrées.
 
 Les 23 fichiers PHP du périmètre de style respectent la configuration PHP CS Fixer ; `composer style:check` ne détecte aucun écart. Ce contrôle est ajouté à GitHub Actions. Les templates Twig et le CSS sont développés et indentés ; le catalogue des champs et les méthodes métier portent des noms explicites. Aucun format de base SQLite, export ou preuve cryptographique n’est migré par cette intervention.
+
+## Audit de couverture du 29 octobre 2026
+
+Nouvelle exécution : 99 contrôles de non-régression réussis. L’[audit complet des rubriques et des 68 scénarios](REQUIREMENTS_AUDIT.md) identifie 31 scénarios validés dans la démo, 28 partiels, 4 absents, 2 non vérifiés et 3 différés par le périmètre accepté. Ces catégories ne mesurent pas un pourcentage de code terminé.
+
+Douze sondes complémentaires ont réellement été exécutées : cinq satisfaites et sept écarts. Les [résultats bruts](requirements-audit-results.json) et le [script](../tests/requirements-audit.php) sont versionnés. Ces sondes portent notamment sur les brouillons, l’extension causale, les relations, les révisions, les noms anciens dans les exports et les bilans. Les nuances de bilan tracé dans le journal et de clôture manuelle après échéance sont expliquées dans l’audit. Aucun écart fonctionnel n’est corrigé par cet ajout documentaire.

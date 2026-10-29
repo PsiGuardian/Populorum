@@ -97,3 +97,9 @@ Sources de configuration Arch : [manuel officiel PHP/pacman](https://www.php.net
 ## Lecture et entretien du code
 
 Le [guide des développeurs](docs/CODE_STYLE.md) décrit les responsabilités des fichiers, le trajet d’une action et les conventions de présentation. Pour contrôler ou appliquer le style PHP : `composer style:check` et `composer style:fix`. Ce contrôle fait aussi partie de la CI.
+
+## Couverture du cahier des charges
+
+L’[audit des exigences](docs/REQUIREMENTS_AUDIT.md) compare toutes les rubriques et les 68 scénarios au code, distingue les fonctions partielles et contient les preuves des écarts reproduits. Les 99 contrôles de non-régression ne valent pas validation du cahier complet.
+
+La commande `php tests/requirements-audit.php` est un audit complémentaire : elle retourne volontairement un code non nul tant que des exigences restent insatisfaites. Son résultat courant est conservé dans `docs/requirements-audit-results.json`. Elle n’est pas ajoutée à la CI de non-régression comme si tous ces écarts étaient déjà corrigés.
