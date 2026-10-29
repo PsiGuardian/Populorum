@@ -1,7 +1,7 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — El poder pertenece al pueblo
 
-**CARTA FUNDACIONAL — Versión 1.0 — 29 de octubre de 2026**
+**CARTA FUNDACIONAL — Versión 1.1 — 29 de octubre de 2026**
 
 *«Que nadie sea condenado por pensar de otro modo. Que simplemente se le invite a explicar su camino, para que cada persona pueda aprender de las consecuencias de sus propias decisiones».*
 
@@ -73,7 +73,12 @@ El lenguaje ha de ser accesible. Cada propuesta incluirá una explicación en fr
 ## TÍTULO IV — DECISIÓN COLECTIVA
 
 ### Artículo 11 — Derecho a votar
-Cada persona habilitada tiene un voto: a favor, en contra o abstención. Antes de abrir una consulta se publicarán los requisitos, duración, recuento, quórum cuando corresponda y criterios de decisión. Crear cuentas o utilizar dispositivos adicionales no concede votos extra.
+
+Cada ciudadano admisible puede explicar su razonamiento y expresar A FAVOR, EN CONTRA o ABSTENCIÓN. Para la adopción, cada familia declarada y admisible cuenta como máximo con un voto, independientemente de su tamaño.
+
+La decisión familiar sigue la mayoría estricta de las posiciones A FAVOR y EN CONTRA de sus participantes. El empate o solo abstenciones produce una abstención familiar; sin participantes, la familia no participa. El cuórum y la mayoría se calculan por familias.
+
+La pertenencia familiar y las reglas se publican y fijan antes de abrir la consulta. Nadie pertenece a dos familias en la misma consulta. Esta regla experimental no modifica consultas históricas. Los grupos ficticios son declarados, nunca deducidos del apellido.
 
 ### Artículo 12 — Transparencia de las participaciones
 Para sus consultas experimentales, Démos Kratos adopta la participación nominal voluntaria. Antes de votar se informa de que la identidad pública, la elección y los motivos pueden ser accesibles. Se requieren garantías legales adecuadas, especialmente respecto al consentimiento y a los datos personales. Quien no participe nominalmente mantiene el derecho a consultar propuestas y resultados. Estas consultas no son elecciones oficiales ni sustituyen el secreto del voto exigido por ley.
@@ -133,7 +138,7 @@ No fundamos Démos Kratos para señalar quién tiene razón o quién se equivoca
 ---
 
 **Estado:** Carta fundacional propuesta para una democracia participativa experimental.  
-**Versión:** 1.0 · **Fecha:** 29 de octubre de 2026.  
+**Versión:** 1.1 · **Fecha:** 29 de octubre de 2026.\
 **Territorio inicial:** Francia · **Principio central:** Convergencia emergente.  
 **Naturaleza:** Proyecto libre, colaborativo, público y experimental.
 

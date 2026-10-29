@@ -1,6 +1,6 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — A hatalom a népé
-**ALAPÍTÓ OKIRAT — 1.0 verzió — 2026. október 29.**
+**ALAPÍTÓ OKIRAT — 1.1 verzió — 2026. október 29.**
 
 *„Senkit ne ítéljenek el azért, mert másként gondolkodik. Csupán kérjék meg, hogy magyarázza el saját útját, hogy mindenki tanulhasson saját döntéseinek következményeiből.”*
 
@@ -57,7 +57,13 @@ Minden javaslathoz egyszerű francia nyelvű magyarázat tartozik, amely köznye
 
 ## IV. CÍM — KÖZÖS DÖNTÉSHOZATAL
 ### 11. cikk — Szavazati jog
-Minden jogosultnak egy szavazata van: igen, nem vagy tartózkodás. A részvételi feltételeket, időtartamot, számlálást, esetleges kvórumot és döntési szabályokat előre közzé kell tenni. Több fiók vagy eszköz nem ad további szavazatot.
+
+Minden jogosult polgár ismertetheti érvelését, és IGEN, NEM vagy TARTÓZKODÁS álláspontot adhat. Az elfogadásnál azonban minden bejelentett jogosult család legfeljebb egy szavazatot jelent, létszámától függetlenül.
+
+A család döntését a részt vevő tagok IGEN és NEM álláspontjainak szigorú többsége adja. Döntetlen vagy csak tartózkodás családi tartózkodást jelent; résztvevő nélkül a család nem vesz részt. A kvórum és a többség családokra vonatkozik.
+
+A tagságot és a szabályokat nyitás előtt közzéteszik és rögzítik. Egy személy egy konzultációban csak egy családhoz tartozhat. A korábbi konzultációk megtartják szabályaikat. A fiktív csoportokat nem nevekből következtetjük ki.
+
 ### 12. cikk — Nyilvános részvétel
 A kísérleti konzultációkon a névvel való részvétel önkéntes. Előzetesen tájékoztatni kell arról, hogy nyilvános személyazonosság, választás és indoklás hozzáférhető lehet. Megfelelő jogi biztosítékok, így hozzájárulás és adatvédelem szükséges. Aki nem szavaz névvel, továbbra is olvashatja a nyilvános javaslatokat és eredményeket. Ez nem hivatalos választás; a törvényes szavazati titkosság fennmarad.
 ### 13. cikk — Területi önállóság
@@ -100,6 +106,6 @@ A Démos Kratost nem azért alapítjuk, hogy eldöntsük, kinek van igaza. Minde
 
 *„Ne erőltesd másra az utadat. Világítsd meg a sajátodat, és hagyd, hogy a következmények tanítsanak mindenkit.”*
 
-**Állapot:** Javasolt alapító okirat · **Verzió:** 1.0 · **Dátum:** 2026. október 29. · **Első terület:** Franciaország · **Elv:** Kialakuló konvergencia · **Jelleg:** Szabad, közösségi, nyilvános és kísérleti projekt.
+**Állapot:** Javasolt alapító okirat · **Verzió:** 1.1 · **Dátum:** 2026. október 29. · **Első terület:** Franciaország · **Elv:** Kialakuló konvergencia · **Jelleg:** Szabad, közösségi, nyilvános és kísérleti projekt.
 
 > Munkafordítás. Eltérés esetén a [francia eredeti](../../../CHARTER.md) az irányadó.

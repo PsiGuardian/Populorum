@@ -1,6 +1,6 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Władza należy do ludu
-**KARTA ZAŁOŻYCIELSKA — Wersja 1.0 — 29 października 2026 r.**
+**KARTA ZAŁOŻYCIELSKA — Wersja 1.1 — 29 października 2026 r.**
 
 *„Niech nikt nie będzie potępiany za to, że myśli inaczej. Niech zostanie jedynie zaproszony do wyjaśnienia swojej drogi, aby każdy mógł uczyć się z konsekwencji własnych decyzji”.*
 
@@ -57,7 +57,13 @@ Każda propozycja zawiera opis prostym francuskim, który można uzupełnić ję
 
 ## TYTUŁ IV — DECYZJA ZBIOROWA
 ### Artykuł 11 — Prawo głosu
-Każdy uprawniony ma jeden głos: za, przeciw lub wstrzymanie. Warunki, czas trwania, liczenie, ewentualne kworum i kryteria decyzji podaje się wcześniej. Dodatkowe konta lub urządzenia nie zwiększają liczby głosów.
+
+Każdy uprawniony obywatel może przedstawić rozumowanie i wybrać ZA, PRZECIW lub WSTRZYMANIE SIĘ. Przy przyjęciu propozycji każda zadeklarowana uprawniona rodzina ma jednak najwyżej jeden głos, niezależnie od liczebności.
+
+Decyzja rodziny wynika ze ścisłej większości stanowisk ZA i PRZECIW uczestniczących członków. Remis albo same wstrzymania oznaczają wstrzymanie rodziny; bez uczestników rodzina nie uczestniczy. Kworum i większość liczy się według rodzin.
+
+Przynależność i zasady publikuje się i zamraża przed otwarciem. Jedna osoba należy tylko do jednej rodziny w danej konsultacji. Historyczne konsultacje zachowują swoje zasady. Fikcyjnych grup nie ustala się na podstawie nazwisk.
+
 ### Artykuł 12 — Jawność uczestnictwa
 W konsultacjach eksperymentalnych udział pod nazwiskiem jest dobrowolny. Przed głosowaniem wiadomo, że publiczna tożsamość, wybór i uzasadnienie mogą być widoczne. Wymaga to gwarancji prawnych, zwłaszcza zgody i ochrony danych. Nieuczestniczenie imienne nie ogranicza dostępu do propozycji i wyników. To nie są wybory urzędowe i nie zastępują prawnego wymogu tajności głosowania.
 ### Artykuł 13 — Samodzielność terytorialna
@@ -100,6 +106,6 @@ Nie tworzymy Démos Kratos, by wskazać, kto ma rację. Każdy ma oświetlać w�
 
 *„Nie narzucaj swojej drogi. Oświetl własną i pozwól, by konsekwencje uczyły wszystkich”.*
 
-**Status:** Propozycja karty założycielskiej · **Wersja:** 1.0 · **Data:** 29 października 2026 · **Terytorium początkowe:** Francja · **Zasada:** Wyłaniająca się zbieżność · **Charakter:** Projekt wolny, wspólny, publiczny i eksperymentalny.
+**Status:** Propozycja karty założycielskiej · **Wersja:** 1.1 · **Data:** 29 października 2026 · **Terytorium początkowe:** Francja · **Zasada:** Wyłaniająca się zbieżność · **Charakter:** Projekt wolny, wspólny, publiczny i eksperymentalny.
 
 > Tłumaczenie robocze. W razie rozbieżności należy sprawdzić [oryginał francuski](../../../CHARTER.md).

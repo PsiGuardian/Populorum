@@ -98,6 +98,19 @@
             </details>
         </section>
     </div>
+    {% if character.familyId is defined %}
+        <section class="panel">
+            <h2>Ma famille fictive</h2>
+            <p>
+                Groupe déclaré : {{
+                    character.familyLabel|default(character.familyId)
+                }}. Je garde mon expression individuelle, mais ma famille ne
+                peut apporter qu’une seule voix d’adoption à une consultation.
+                Le rattachement et la règle utilisés sont ceux qui ont été figés
+                à l’ouverture.
+            </p>
+        </section>
+    {% endif %}
     <h2>Mes neuf décisions locales</h2>
     <p>
         Chaque décision garde ses douze réponses et ses versions. Les
@@ -129,6 +142,16 @@
         </ul>
     </div>
     {% if selectedVote %}
+        {% set electoral = consultationMap[selectedVote.consultationId].tally %}
+        {% if electoral.unit == 'family' %}
+            <p class="notice">
+                Le choix ci-dessous est individuel. Le résultat d’adoption
+                compte les familles : {{ electoral.pour }} POUR, {{
+                    electoral.contre
+                }} CONTRE et {{ electoral.abstention }} abstentions familiales. Chaque
+                famille pèse au maximum une voix.
+            </p>
+        {% endif %}
         <h2>{{ consultationMap[selectedVote.consultationId].frozen.title }}</h2>
         {% if rounds %}
             <nav aria-label="Étapes du raisonnement">

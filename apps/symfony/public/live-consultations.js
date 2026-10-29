@@ -21,9 +21,25 @@ if (cards.length && "EventSource" in window) {
                 if (bar)
                     bar.style.width = `${consultation.tally.total ? (100 * consultation.tally[choice]) / consultation.tally.total : 0}%`;
             }
+            const unit =
+                consultation.tally.unit === "family"
+                    ? "familles"
+                    : "personnages";
+            const summary = card.querySelector("[data-electoral-summary]");
+            if (summary)
+                summary.textContent = `${consultation.tally.total} / ${consultation.tally.eligible} ${unit} · ${consultation.tally.participation.toFixed(1)} % de participation · quorum ${summary.dataset.quorum} %`;
+            const individual = card.querySelector("[data-individual-summary]");
+            if (individual)
+                individual.textContent = `Opinions individuelles : ${consultation.tally.individual.pour} POUR, ${consultation.tally.individual.contre} CONTRE, ${consultation.tally.individual.abstention} ABSTENTIONS. Elles restent distinctes du suffrage familial.`;
+            const accessibleBar = card.querySelector(".vote-bar");
+            if (accessibleBar)
+                accessibleBar.setAttribute(
+                    "aria-label",
+                    `${consultation.tally.pour} pour, ${consultation.tally.contre} contre, ${consultation.tally.abstention} abstentions ; unité : ${unit}`,
+                );
             const notice = card.querySelector("[data-live-status]");
             if (notice)
-                notice.textContent = `Décompte actualisé : ${consultation.tally.total} participations. État : ${consultation.tally.phase}.`;
+                notice.textContent = `Décompte actualisé : ${consultation.tally.total} ${unit} participantes. État : ${consultation.tally.phase}.`;
             if (consultation.tally.phase !== "open") {
                 card.querySelectorAll(".consultation-actions a").forEach(
                     (link) => {

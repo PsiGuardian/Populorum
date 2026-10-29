@@ -1,18 +1,18 @@
 {
-    "date": "2026-10-29T12:44:15+00:00",
+    "date": "2026-10-29T16:01:02+00:00",
     "php": "8.4.5",
     "scope": "Séquentiel local HttpKernel chaud ; 300 personnages évolutifs \/ 27 propositions \/ 2700 votes avec historique \/ SQLite. Exclut réseau HTTP, concurrence, PHP-FPM et télémétrie réelle.",
     "api": {
         "samples": 100,
-        "medianMs": 61.556,
-        "p95Ms": 89.272,
-        "maxMs": 101.8
+        "medianMs": 102.397,
+        "p95Ms": 217.396,
+        "maxMs": 455.598
     },
     "voteAndTransactionalProjection": {
         "samples": 50,
-        "medianMs": 248.466,
-        "p95Ms": 306.237,
-        "maxMs": 320.383
+        "medianMs": 388.672,
+        "p95Ms": 950.679,
+        "maxMs": 1097.609
     },
-    "peakMemoryBytes": 64503808
+    "peakMemoryBytes": 64610304
 }

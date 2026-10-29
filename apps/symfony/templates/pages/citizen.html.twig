@@ -216,8 +216,14 @@
         <div class="glossary">
             {% for word, meaning in {
                 Chemin: 'Un raisonnement autonome : ce que je constate, ce que je suppose et ce que je propose.',
-                Quorum: 'La part minimale des personnes admissibles qui doivent participer.',
-                'Exprimés': 'Les voix pour et contre ; les abstentions sont comptées à part.',
+                Quorum: (state.preferences.votingUnit|default('individual'))
+                    == 'family'
+                    ? 'La part minimale des familles admissibles qui doivent participer.'
+                    : 'La part minimale des personnes admissibles qui doivent participer.',
+                'Exprimés': (state.preferences.votingUnit|default('individual'))
+                    == 'family'
+                    ? 'Les familles POUR et CONTRE ; les abstentions familiales participent au quorum, hors exprimés.'
+                    : 'Les voix pour et contre ; les abstentions sont comptées à part.',
                 Convergence: 'Des chemins se rapprochent librement sans obligation d’accord.',
                 Empreinte: 'Un résumé cryptographique qui aide à détecter une modification.',
                 'Causalité': 'Un lien de cause à effet à examiner ; une succession ne suffit pas à le démontrer.'

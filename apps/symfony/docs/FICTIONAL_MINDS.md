@@ -50,3 +50,7 @@ Lecture publique JSON dans son laboratoire : `/characters/u1?consultation=c1&rou
 Les tests contrôlent les 2 700 dossiers et leurs douze rubriques, leur correspondance exacte avec l’archive, les neuf décisions locales par personnage, les trois choix possibles, les douze voix, des réactions différentes au même contre-indice, les anciens textes, la détection de falsification, les votes clos/manuels, le contrôle de rôle, la limite de huit tours et les signatures. Le portrait et l’export JSON sont testés par Symfony HttpKernel. La recette navigateur a exercé le passage effectif du tour 2 au tour 3 et la consultation des tours antérieurs.
 
 Cette simulation ne prétend pas reproduire toute la complexité d’une personne réelle : fatigue, relations sociales, mémoire sélective et évolution des priorités pourraient former de nouveaux modèles, à définir et tester explicitement.
+
+## Adoption familiale — amendement 0.5
+
+Les 2 700 choix narratifs sont des positions individuelles. Leur nombre ne constitue pas le nombre de voix d’adoption : chaque famille fictive pèse au maximum une voix. Le calcul familial n’oblige aucun personnage à changer de raisonnement. Profils, erreurs, styles et historiques restent individuels. Voir [FAMILY_SUFFRAGE.md](FAMILY_SUFFRAGE.md).

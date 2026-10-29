@@ -1,6 +1,6 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Quyền lực thuộc về nhân dân
-**HIẾN CHƯƠNG SÁNG LẬP — Phiên bản 1.0 — 29 tháng 10 năm 2026**
+**HIẾN CHƯƠNG SÁNG LẬP — Phiên bản 1.1 — 29 tháng 10 năm 2026**
 
 *“Không ai phải bị lên án chỉ vì suy nghĩ khác biệt. Hãy chỉ mời mỗi người giải thích con đường của mình, để mọi người có thể học từ hậu quả của chính những quyết định mình đưa ra.”*
 
@@ -57,7 +57,13 @@ Các khẳng định thực tế nên có nguồn; giả thuyết phải đượ
 
 ## PHẦN IV — QUYẾT ĐỊNH TẬP THỂ
 ### Điều 11 — Quyền biểu quyết
-Mỗi công dân hợp lệ có một phiếu: thuận, chống hoặc bỏ phiếu trắng. Điều kiện, thời gian, cách kiểm, tỷ lệ tham gia tối thiểu nếu có và tiêu chí quyết định được công bố trước. Nhiều tài khoản hay thiết bị không tạo thêm phiếu.
+
+Mỗi công dân đủ điều kiện có thể trình bày lập luận và chọn TÁN THÀNH, PHẢN ĐỐI hoặc KHÔNG BIỂU QUYẾT. Tuy nhiên, khi thông qua đề xuất, mỗi gia đình đã khai báo và đủ điều kiện chỉ được tính tối đa một phiếu, bất kể số thành viên.
+
+Lựa chọn của gia đình theo đa số tuyệt đối giữa các ý kiến TÁN THÀNH và PHẢN ĐỐI đã thể hiện. Hòa hoặc chỉ có ý kiến không biểu quyết thì gia đình không biểu quyết; không có người tham gia thì gia đình không tham gia. Túc số và đa số được tính theo gia đình.
+
+Thành viên và quy tắc được công bố, cố định trước khi mở. Mỗi người chỉ thuộc một gia đình trong cùng cuộc tham vấn. Các cuộc tham vấn trước giữ nguyên quy tắc. Nhóm hư cấu được khai báo, không suy ra từ tên.
+
 ### Điều 12 — Minh bạch tham gia
 Việc tham gia công khai danh tính trong các cuộc tham vấn thử nghiệm là tự nguyện. Trước khi bỏ phiếu, người tham gia được báo rằng danh tính công khai, lựa chọn và lý do có thể hiển thị. Cần đảm bảo pháp lý về đồng ý và dữ liệu cá nhân. Người không biểu quyết công khai vẫn được đọc các đề xuất, kết quả công khai. Đây không phải bầu cử chính thức và không thay thế quy định bỏ phiếu kín.
 ### Điều 13 — Tự chủ địa phương
@@ -100,6 +106,6 @@ Chúng tôi không lập Démos Kratos để chọn ai đúng ai sai. Mỗi ngư
 
 *“Đừng áp đặt con đường của mình. Hãy soi sáng con đường ấy và để những hậu quả dạy cho mỗi người.”*
 
-**Trạng thái:** Bản đề xuất hiến chương · **Phiên bản:** 1.0 · **Ngày:** 29/10/2026 · **Nơi thử nghiệm ban đầu:** Pháp · **Nguyên tắc:** Hội tụ tự phát · **Tính chất:** Tự do, hợp tác, công khai và thử nghiệm.
+**Trạng thái:** Bản đề xuất hiến chương · **Phiên bản:** 1.1 · **Ngày:** 29/10/2026 · **Nơi thử nghiệm ban đầu:** Pháp · **Nguyên tắc:** Hội tụ tự phát · **Tính chất:** Tự do, hợp tác, công khai và thử nghiệm.
 
 > Bản dịch làm việc. Nếu có khác biệt, xem [bản gốc tiếng Pháp](../../../CHARTER.md).

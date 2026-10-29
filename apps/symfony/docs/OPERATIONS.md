@@ -86,3 +86,7 @@ Sur Linux, le serveur intégré de PHP doit disposer de plusieurs travailleurs p
 La fixture par défaut est `data/scenario.json.gz`, décompressée en mémoire à la création d’un laboratoire. `php tools/build-municipal-fixtures.php` la reconstruit, écrit les 2 700 dossiers complets dans `data/citizen-deliberations.ndjson.gz` et produit une copie JSON développée locale. PHP doit fournir zlib. Aucun changement de schéma SQL n’est nécessaire pour ce lot ; le snapshot et les projections incluent les nouveaux attributs JSON.
 
 Les espaces anciens restent conservés. Créer un nouveau laboratoire depuis Participer pour disposer des profils ; ne pas écraser une base existante. Une évolution du modèle devra conserver son ancienne version pour que les anciennes empreintes restent vérifiables. Les détails sont dans [FICTIONAL_MINDS.md](FICTIONAL_MINDS.md).
+
+## Millésime 0.5 : suffrage familial
+
+Ouvrir un laboratoire neuf pour les familles fictives et les nouvelles règles de consultation. Les espaces précédents restent lisibles avec leur unité de suffrage figée. Ne pas modifier les rattachements d’une consultation existante pour convertir son résultat. Pour un changement de rattachement déclaré, préparer un nouveau millésime ou une nouvelle consultation sous une procédure explicite. Voir [FAMILY_SUFFRAGE.md](FAMILY_SUFFRAGE.md).

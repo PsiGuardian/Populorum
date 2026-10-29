@@ -1,7 +1,7 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — O poder pertence ao povo
 
-**CARTA FUNDADORA — Versão 1.0 — 29 de outubro de 2026**
+**CARTA FUNDADORA — Versão 1.1 — 29 de outubro de 2026**
 
 *«Que ninguém seja condenado por pensar de forma diferente. Que seja apenas convidado a explicar o seu caminho, para que todos possam aprender com as consequências das suas próprias decisões.»*
 
@@ -72,7 +72,12 @@ A linguagem deve ser acessível. Cada proposta terá uma explicação em francê
 ## TÍTULO IV — DECISÃO COLETIVA
 
 ### Artigo 11 — Direito de voto
-Cada participante elegível tem um voto: a favor, contra ou abstenção. Antes da consulta publicam-se critérios de elegibilidade, prazo, apuramento, eventual quórum e regras de decisão. Várias contas ou aparelhos não dão votos adicionais.
+
+Cada cidadão elegível pode expor o seu raciocínio e escolher A FAVOR, CONTRA ou ABSTENÇÃO. Para a adoção, cada família declarada e elegível conta no máximo um voto, independentemente da sua dimensão.
+
+A decisão familiar segue a maioria estrita das posições A FAVOR e CONTRA dos participantes. Empate ou apenas abstenções produz uma abstenção familiar; sem participantes, a família não participa. Quórum e maioria são calculados por famílias.
+
+A pertença familiar e as regras são publicadas e fixadas antes da abertura. Cada pessoa pertence a uma só família por consulta. As consultas históricas conservam as suas regras. Os grupos fictícios são declarados, nunca inferidos do apelido.
 
 ### Artigo 12 — Transparência da participação
 Nas consultas experimentais, a participação nominal é voluntária. Antes de votar, informa-se que identidade pública, escolha e justificações podem ficar acessíveis. Exigem-se garantias legais, incluindo consentimento e proteção de dados. A recusa de votar nominalmente não impede o acesso a propostas e resultados. Estas consultas não são eleições oficiais nem substituem o segredo de voto legalmente exigido.
@@ -132,7 +137,7 @@ Não fundamos Démos Kratos para determinar quem tem razão ou está errado, mas
 ---
 
 **Estado:** Carta proposta para um sistema experimental de democracia participativa.  
-**Versão:** 1.0 · **Data:** 29 de outubro de 2026.  
+**Versão:** 1.1 · **Data:** 29 de outubro de 2026.\
 **Território inicial:** França · **Princípio central:** Convergência emergente.  
 **Natureza:** Projeto livre, colaborativo, público e experimental.
 

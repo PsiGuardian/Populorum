@@ -152,6 +152,28 @@ final class ApplicationCompletionTest extends TestCase
     {
         $_SERVER['POPULORUM_SCENARIO'] = '';
         $this->session->set('simulation_owner', 'mental-portrait-test');
+        $results = json_decode(
+            $this->request('/api/v1/results?limit=1')->getContent(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        self::assertSame('family', $results['data'][0]['tally']['unit']);
+        self::assertSame(
+            100,
+            $results['data'][0]['tally']['individual']['total'],
+        );
+        self::assertLessThan(100, $results['data'][0]['tally']['total']);
+        self::assertStringContainsString(
+            'une famille compte au maximum une voix',
+            preg_replace(
+                "/\s+/u",
+                ' ',
+                strip_tags(
+                    $this->request('/consultations?id=c1')->getContent(),
+                ),
+            ),
+        );
         $portrait = $this->request('/characters/u1?consultation=c1');
         self::assertSame(200, $portrait->getStatusCode());
         self::assertStringContainsString(

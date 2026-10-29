@@ -34,7 +34,7 @@ Permettre des décisions communes sans imposer l'uniformité des pensées, par q
 
 ## 3. Principes non négociables
 
-- **P-01 — Égalité civique :** une seule voix par personne admissible et par consultation.
+- **P-01 — Expression individuelle, suffrage familial :** chaque citoyen admissible peut raisonner et exprimer un choix ; chaque famille déclarée et admissible compte au maximum une voix d’adoption par consultation, indépendamment de sa taille.
 - **P-02 — Liberté de pensée :** aucun chemin intellectuel imposé.
 - **P-03 — Non-jugement :** aucune hiérarchie de valeur entre personnes selon leurs opinions.
 - **P-04 — Autonomie des chemins :** proposer son raisonnement plutôt que chercher à contredire personnellement autrui.
@@ -182,11 +182,11 @@ Identifiant, commune, proposition et version, période, règles d'admission, vé
 
 ## 26. Vote citoyen
 
-Trois options : **POUR**, **CONTRE**, **ABSTENTION**. Le vote n'évalue pas moralement les personnes. Le citoyen peut exposer son chemin en complément. L'absence de justification écrite ne rend pas arbitrairement un vote nul. Les critères d'admissibilité sont antérieurs à la consultation.
+Trois prises de position individuelles : **POUR**, **CONTRE**, **ABSTENTION**. Elles restent consultables avec leur raisonnement, mais ne constituent pas chacune une voix d’adoption. Chaque famille déclarée et admissible pèse au maximum une voix : majorité stricte des POUR et CONTRE de ses membres participants ; égalité ou seules abstentions = abstention familiale ; aucun participant = famille non participante. Le quorum et la majorité finale portent sur les familles. Les rattachements sont figés à l’ouverture ; une personne ne peut appartenir à deux familles pour le même scrutin. Les groupes ne sont pas inférés à partir des noms. Le vote n'évalue pas moralement les personnes. Le citoyen peut exposer son chemin en complément. L'absence de justification écrite ne rend pas arbitrairement un vote nul. Les critères d'admissibilité sont antérieurs à la consultation.
 
 ## 27. Modification du vote
 
-Si les règles l'autorisent, un vote peut être changé tant que la consultation est ouverte, avec historique audité et **une seule voix active**. Après clôture, aucun changement du dépouillement historique ; les évolutions ultérieures de position sont traitées dans le chemin personnel ou une nouvelle consultation.
+Si les règles l'autorisent, un vote peut être changé tant que la consultation est ouverte, avec historique audité et **une seule prise de position active par citoyen et au maximum une voix d’adoption par famille**. Après clôture, aucun changement du dépouillement historique ; les évolutions ultérieures de position sont traitées dans le chemin personnel ou une nouvelle consultation.
 
 ## 28. Résultats en temps réel
 
@@ -194,7 +194,7 @@ Afficher nombres POUR, CONTRE, ABSTENTION, participants, éligibles lorsque mesu
 
 ## 29. Calcul des résultats
 
-Le moteur applique sans intervention discrétionnaire les règles publiées : exprimés, abstentions, majorité, quorum, égalités et participation. Gérer les consultations vides sans division par zéro. Permettre le recalcul indépendant. Une rectification ou annulation suit une procédure publiquement traçable.
+Le moteur distingue les opinions individuelles du résultat familial d’adoption ; il publie les deux décomptes et applique sans intervention discrétionnaire les règles publiées : exprimés, abstentions, majorité, quorum, égalités et participation. Gérer les consultations vides sans division par zéro. Permettre le recalcul indépendant. Une rectification ou annulation suit une procédure publiquement traçable.
 
 # PARTIE VI — EXPÉRIMENTATION ET CONSÉQUENCES
 
@@ -361,7 +361,7 @@ PostgreSQL stocke les entités transactionnelles. Graphes causaux via relations 
 
 ## 58. Contraintes d'intégrité
 
-Unicité territoriale avec millésime, une voix active par citoyen/consultation, vote associé à la version figée, admissibilité vérifiée, période valide, règles non rétroactives, transitions auditables, historiques de révision, contrôles des cycles lorsque le sous-graphe l'impose, sommes financières cohérentes et preuves cryptographiques recalculables.
+Unicité territoriale avec millésime, une prise de position active par citoyen/consultation, une seule famille figée par citoyen, au plus une voix d’adoption par famille, vote associé à la version figée, admissibilité vérifiée, période valide, règles non rétroactives, transitions auditables, historiques de révision, contrôles des cycles lorsque le sous-graphe l'impose, sommes financières cohérentes et preuves cryptographiques recalculables.
 
 ## 59. API
 
@@ -794,3 +794,7 @@ Démos Kratos n'est pas destiné à devenir une simple plateforme de sondages ou
 
 **Fin du cahier des charges — Version 1.0.**  
 **Statut :** Proposition de conception fictive ; aucune mise en production publique réelle approuvée.
+
+## Amendement expérimental du 29 octobre 2026 — suffrage familial
+
+La règle familiale est versionnée et s’applique au nouveau millésime. Les consultations historiques conservent leurs règles figées ; aucun résultat déjà proclamé n’est recalculé silencieusement. Le périmètre d’une famille est déclaré dans les fixtures. La vérification de rattachements pour des personnes réelles reste hors de cette simulation.

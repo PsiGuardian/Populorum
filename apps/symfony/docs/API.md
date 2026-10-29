@@ -41,3 +41,7 @@ Versionner une rupture de schéma dans une future API v2. Les ajouts de champs n
 `GET /characters/{id}?consultation=c1&round=0&format=json` restitue les douze réponses correspondant à un vote, à la version figée de la proposition et au profil historique. L’empreinte est vérifiée avant restitution. Le personnage, le tour ou la consultation introuvables renvoient 404. Le format HTML est le défaut.
 
 `POST /api/v1/actions/simulation.advance` suit le contrat CSRF/CAS/anti-rejeu normal, sans champ métier supplémentaire. Un personnage de gouvernance fictive et un laboratoire compatible sont nécessaires. Le serveur avance un seul tour, dans la limite de huit. Votes clos, choix manuels et historiques sont préservés. Voir [FICTIONAL_MINDS.md](FICTIONAL_MINDS.md).
+
+## Unités de suffrage
+
+Un résultat contient `tally.unit` (`family` ou unité individuelle historique). Pour `family`, les champs POUR/CONTRE/abstention, total, admissibles, participation et adoption portent sur les familles ; `tally.individual` conserve les opinions personnelles, dont les opinions sans famille admissible. `tally.families` détaille les agrégations. L’export de consultation comprend les rattachements figés `eligibleFamilies` et la version de règle `family-majority-1`. Ces champs sont définis côté serveur à l’ouverture ; un client ne peut pas choisir librement ses rattachements dans une requête de vote.

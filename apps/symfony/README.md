@@ -122,3 +122,9 @@ Les scénarios historiques à neuf personnages sont conservés dans `data/refere
 Chaque personnage a un portrait, des priorités, une manière de s’exprimer et une réaction propre aux erreurs et aux retours d’expérience fictifs. Les 300 personnages votent sur les neuf projets de leur ville : 2 700 votes, chacun accompagné de douze réponses, soit 32 400 réponses courantes. Trois tours sont conservés ; les suivants se déclenchent depuis Participer avec un personnage de gouvernance fictive. Les votes clos et les choix manuels sont préservés.
 
 Voir [le modèle narratif, les archives et les tests](docs/FICTIONAL_MINDS.md). Ouvrir un nouveau laboratoire pour charger ce millésime ; une session existante ne change pas de données silencieusement. Les choix ne représentent pas les opinions des habitants réels.
+
+## Suffrage familial — lot 0.5
+
+Chaque personnage conserve son opinion et ses douze réponses. Pour l’adoption, chaque famille fictive déclarée compte au maximum une voix, quelle que soit sa taille. Le résultat familial et les opinions individuelles sont affichés séparément. Majorité des POUR/CONTRE au sein de la famille ; égalité ou seules abstentions = abstention familiale ; quorum calculé sur les familles. Rattachements et règle sont figés à l’ouverture. Voir [la règle, ses exemples et ses tests](docs/FAMILY_SUFFRAGE.md).
+
+La charte 1.1 et ses 28 versions documentaires portent l’amendement. Les anciennes consultations gardent leurs règles ; ouvrir un nouveau laboratoire pour tester le nouveau millésime.

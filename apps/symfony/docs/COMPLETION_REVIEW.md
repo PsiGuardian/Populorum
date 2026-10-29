@@ -1,3 +1,5 @@
+> Mise à jour 0.5 : expression individuelle séparée du suffrage familial, membres et règle figés, charte 1.1 dans les 28 langues. Voir [FAMILY_SUFFRAGE.md](FAMILY_SUFFRAGE.md).
+
 > Mise à jour 0.4 : profils évolutifs et 2 700 votes raisonnés, [modèle et recette](FICTIONAL_MINDS.md). La validation courante ci-dessous inclut ce lot.
 
 # Revue d’achèvement du lot 0.3 — 29 octobre 2026
@@ -11,18 +13,20 @@ Le lot complète les principaux parcours du démonstrateur Symfony/SQLite et ajo
 | Régressions métier/HTTP | 99 contrôles réussis | `tests/integration.php`, scénario historique isolé |
 | Corrections et charte multilingue | 64 contrôles réussis | `tests/corrections.php`, 28 chartes, catégories, révisions et exports |
 | Sondes du cahier des charges | 12 contrôles réussis | `tests/requirements-audit.php` |
-| Contrats supplémentaires | 38 tests / 51 650 assertions, zéro échec | PHPUnit : DomainCompletionTest, ApplicationCompletionTest, ReplicaTransportTest, MunicipalFixturesTest et FictionalMindTest |
+| Contrats supplémentaires | 46 tests / 51 981 assertions, zéro échec | PHPUnit : DomainCompletionTest, ApplicationCompletionTest, ReplicaTransportTest, MunicipalFixturesTest FictionalMindTest et FamilySuffrageTest |
 | Analyse statique | PHPStan niveau 5 sans erreur | `composer analyse` |
 | Syntaxe et modèle | 18 templates Twig valides, mapping et base synchronisés | `lint:twig`, `doctrine:schema:validate` |
 | Dépendances | Aucune alerte connue ni paquet abandonné signalé | `composer audit --locked`, 29 octobre 2026 ; le bundle VCS demeure figé |
 | Lisibilité | PHP développé sur plusieurs lignes et conventions Symfony | `composer style:check` |
 | Parcours navigateur natif | Charte, filtre communal, détail d’un chemin, vote enregistré | Aperçu PHP réel, pas de maquette HTML ; captures ci-dessous |
 | Clavier | Lien d’évitement vers main ; choix et confirmation d’un vote | Parcours manuel ciblé, pas d’audit RGAA complet |
-| Charge locale | p95 lecture API 89,272 ms ; vote + transaction 306,237 ms | 100 lectures / 50 écritures séquentielles, 300 profils / 2 700 votes historisés ; [mesures](benchmark-results.json), `tools/benchmark.php` |
+| Charge locale | p95 lecture API 217,396 ms ; vote + transaction 950,679 ms | 100 lectures / 50 écritures séquentielles, 300 profils / 2 700 votes historisés ; [mesures](benchmark-results.json), `tools/benchmark.php` |
 
 Le test de connexion lit le jeton CSRF dans le DOM et ne dépend pas des espaces ou retours à la ligne du template. La suite a été rejouée après reconstruction du cache Symfony.
 
-Ces 213 contrôles/tests ont des granularités différentes ; le nombre d’assertions ne mesure pas un pourcentage de conformité. La mesure de performance exclut réseau, concurrence et déploiement PHP-FPM. Les sauvegardes restaurées et copies corrompues sont exercées dans les tests ; le test HTTPS lance deux récepteurs logiques et un vrai serveur TLS local avec CA de test vérifiée. L’arrêt et la reprise sont testés. Le plafond de débit est mesuré sur un flux mémoire contrôlé, pas sur une connexion Internet résidentielle.
+La mesure 0.5 a été exécutée avec des validations locales concomitantes ; elle n’est pas une mesure isolée ni une preuve de respect des objectifs non fonctionnels. Les mesures antérieures sont conservées pour contexte.
+
+Ces 221 contrôles/tests ont des granularités différentes ; le nombre d’assertions ne mesure pas un pourcentage de conformité. La mesure de performance exclut réseau, concurrence et déploiement PHP-FPM. Les sauvegardes restaurées et copies corrompues sont exercées dans les tests ; le test HTTPS lance deux récepteurs logiques et un vrai serveur TLS local avec CA de test vérifiée. L’arrêt et la reprise sont testés. Le plafond de débit est mesuré sur un flux mémoire contrôlé, pas sur une connexion Internet résidentielle.
 
 Le serveur PHP mono-processus bloque les autres requêtes pendant un flux SSE ; pour la recette locale Linux, employer `PHP_CLI_SERVER_WORKERS=4 php -S 127.0.0.1:5412 -t public`. En ligne, PHP-FPM doit disposer de travailleurs suffisants ; prévoir un diffuseur spécialisé pour une fréquentation élevée. Aucun objectif de disponibilité ou de montée en charge nationale n’est validé ici.
 

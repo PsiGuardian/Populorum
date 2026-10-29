@@ -397,20 +397,38 @@ final class SimulationEngine
 
     public function tally(array $consultation, array $votes): array
     {
-        $counts = ['pour' => 0, 'contre' => 0, 'abstention' => 0];
-        foreach ($votes as $vote) {
-            if ($vote['consultationId'] === $consultation['id']) {
-                ++$counts[$vote['choice']];
+        $unit = $consultation['rules']['votingUnit'] ?? 'individual';
+        if (!in_array($unit, ['individual', 'family'], true)) {
+            throw new \DomainException('Unité de suffrage inconnue.', 409);
+        }
+        $family =
+            $unit === 'family'
+                ? new FamilySuffrage()->count($consultation, $votes)
+                : null;
+        $counts = $family['counts'] ?? [
+            'pour' => 0,
+            'contre' => 0,
+            'abstention' => 0,
+        ];
+        if (!$family) {
+            foreach ($votes as $vote) {
+                if ($vote['consultationId'] === $consultation['id']) {
+                    ++$counts[$vote['choice']];
+                }
             }
         }
         $total = array_sum($counts);
-        $eligibleCount = count($consultation['eligibleIds']);
+        $eligibleCount =
+            $family['eligible'] ?? count($consultation['eligibleIds']);
         $participation = $eligibleCount ? ($total / $eligibleCount) * 100 : 0;
         $expressedCount = $counts['pour'] + $counts['contre'];
 
         return $counts + [
             'total' => $total,
             'eligible' => $eligibleCount,
+            'unit' => $family ? 'family' : 'individual',
+            'families' => $family['families'] ?? [],
+            'individual' => $family['individual'] ?? $counts + ['total' => $total],
             'expressed' => $expressedCount,
             'participation' => $participation,
             'quorumReached' => $participation >= $consultation['rules']['quorum'],
@@ -1256,6 +1274,23 @@ final class SimulationEngine
             ),
             'status' => 'open',
         ];
+        if (($state['preferences']['votingUnit'] ?? '') === 'family') {
+            $index = array_key_last($state['consultations']);
+            $state['consultations'][$index]['rules']['votingUnit'] = 'family';
+            $state['consultations'][$index]['rules']['familyAggregation'] =
+                FamilySuffrage::VERSION;
+            $state['consultations'][$index]['rules']['majority'] =
+                'Majorité stricte des familles exprimant POUR ou CONTRE ; égalité = non adoptée';
+            $state['consultations'][$index]['rules']['abstention'] =
+                'Familles abstentionnistes dans le quorum, hors familles exprimées';
+            $state['consultations'][$index][
+                'eligibleFamilies'
+            ] = new FamilySuffrage()->freeze(
+                $state['citizens'],
+                $state['consultations'][$index]['eligibleIds'],
+                $proposal['territoryId'],
+            );
+        }
         $state['proposals'][$proposalIndex]['status'] = 'consultation';
 
         return $objectId;

@@ -1,6 +1,6 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Kuasa milik rakyat
-**PIAGAM PENGASASAN — Versi 1.0 — 29 Oktober 2026**
+**PIAGAM PENGASASAN — Versi 1.1 — 29 Oktober 2026**
 
 *“Jangan ada sesiapa dihukum kerana berfikir secara berbeza. Jemputlah setiap orang menerangkan jalannya supaya semua dapat belajar daripada akibat keputusan sendiri.”*
 
@@ -57,7 +57,13 @@ Cadangan mengandungi penerangan bahasa Perancis mudah, dengan tambahan bahasa ha
 
 ## BAHAGIAN IV — KEPUTUSAN BERSAMA
 ### Perkara 11 — Hak mengundi
-Setiap peserta layak mempunyai satu undi: menyokong, menentang atau berkecuali. Syarat, tempoh, pengiraan, kuorum jika ada dan kriteria diumumkan awal. Akaun dan peranti tambahan tidak memberikan undi tambahan.
+
+Setiap warga yang layak boleh menjelaskan alasan dan memilih SETUJU, MENENTANG atau BERKECUALI. Namun bagi penerimaan cadangan, setiap keluarga yang diisytiharkan dan layak mempunyai paling banyak satu undi, tanpa mengira saiznya.
+
+Pilihan keluarga mengikut majoriti ketat pendirian SETUJU dan MENENTANG ahli yang mengambil bahagian. Seri atau hanya berkecuali menghasilkan satu pengecualian keluarga; tanpa peserta keluarga tidak mengambil bahagian. Kuorum dan majoriti dikira mengikut keluarga.
+
+Keahlian dan aturan diumumkan serta dibekukan sebelum pembukaan. Seseorang hanya tergolong dalam satu keluarga bagi perundingan yang sama. Perundingan lama mengekalkan aturan. Kumpulan rekaan diisytiharkan, bukan disimpulkan daripada nama.
+
 ### Perkara 12 — Ketelusan penyertaan
 Bagi perundingan percubaan, penyertaan dengan nama sebenar adalah sukarela. Sebelum mengundi, peserta dimaklumkan bahawa identiti awam, pilihan dan alasan boleh diketahui orang lain. Perlindungan undang-undang diperlukan, termasuk persetujuan dan data peribadi. Tidak mengundi dengan nama tidak menghilangkan hak melihat cadangan dan keputusan awam. Ini bukan pilihan raya rasmi dan tidak menggantikan kerahsiaan undi yang ditetapkan undang-undang.
 ### Perkara 13 — Autonomi wilayah
@@ -100,6 +106,6 @@ Kami tidak mengasaskan Démos Kratos untuk memilih siapa betul atau salah. Kami 
 
 *“Jangan paksa orang lain mengikut jalanmu. Terangi jalanmu sendiri dan biarkan akibatnya mengajar semua.”*
 
-**Status:** Cadangan piagam pengasasan · **Versi:** 1.0 · **Tarikh:** 29 Oktober 2026 · **Wilayah permulaan:** Perancis · **Prinsip:** Penumpuan emergen · **Sifat:** Projek bebas, kerjasama, awam dan percubaan.
+**Status:** Cadangan piagam pengasasan · **Versi:** 1.1 · **Tarikh:** 29 Oktober 2026 · **Wilayah permulaan:** Perancis · **Prinsip:** Penumpuan emergen · **Sifat:** Projek bebas, kerjasama, awam dan percubaan.
 
 > Terjemahan kerja. Jika terdapat perbezaan, rujuk [teks asal bahasa Perancis](../../../CHARTER.md).

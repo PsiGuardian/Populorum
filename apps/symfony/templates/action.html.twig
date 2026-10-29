@@ -1,5 +1,15 @@
 {% extends 'base.html.twig' %}
 {% block content %}
+    {% if
+        type == 'vote.cast'
+            and (state.preferences.votingUnit|default('individual'))
+                == 'family' %}
+        <p class="notice">
+            Vous enregistrez une prise de position individuelle. Elle participe
+            à la décision de votre famille, qui ne peut représenter qu’une voix
+            dans le résultat d’adoption, quelle que soit sa taille.
+        </p>
+    {% endif %}
     {% if type == 'simulation.advance' %}
         <p class="notice">
             Ce tour applique de nouveaux retours entièrement inventés aux
@@ -41,9 +51,13 @@
             <div class="notice">
                 <p>
                     Le nom fictif et le choix seront visibles dans votre
-                    simulation. Une seule voix active sera comptée. Le
-                    consentement préalable est requis depuis Participer. La
-                    justification écrite n’est pas obligatoire.
+                    simulation. Une seule prise de position active sera
+                    conservée.{% if
+                        (state.preferences.votingUnit|default('individual'))
+                            == 'family' %}Le résultat d’adoption comptera au
+                    maximum une voix par famille.{% endif %}Le consentement
+                    préalable est requis depuis Participer. La justification
+                    écrite n’est pas obligatoire.
                 </p>
             </div>
         {% elseif type == 'citizen.erase' %}
@@ -64,9 +78,19 @@
         {% elseif type == 'consultation.open' %}
             <div class="notice">
                 <p>
-                    Majorité stricte des exprimés, abstentions dans la
-                    participation, égalité non adoptée. Les règles et le texte
-                    sont figés à l’ouverture.
+                    {% if
+                        (state.preferences.votingUnit|default('individual'))
+                            == 'family' %}
+                        Suffrage familial : majorité des POUR/CONTRE au sein de
+                        chaque famille, égalité = abstention familiale. Au
+                        maximum une voix par famille ; quorum et majorité
+                        d’adoption calculés sur les familles. Rattachements et
+                        règle figés à l’ouverture.
+                    {% else %}
+                        Majorité stricte des exprimés, abstentions dans la
+                        participation, égalité non adoptée. Les règles et le
+                        texte sont figés à l’ouverture.
+                    {% endif %}
                 </p>
             </div>
         {% endif %}

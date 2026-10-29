@@ -30,7 +30,8 @@ final class MunicipalFixtureBuilder
         ) {
             $state[$collection] = [];
         }
-        $state['preferences']['dataset'] = 'municipal-2026-v2';
+        $state['preferences']['dataset'] = 'municipal-2026-v3';
+        $state['preferences']['votingUnit'] = 'family';
         $state['preferences']['notice'] =
             '300 personnages, choix et résultats entièrement fictifs ; aucun sondage ni effet juridique. Sources publiques datées séparées des hypothèses.';
         $sources = array_column($read('research/sources.json'), null, 'id');
@@ -38,12 +39,21 @@ final class MunicipalFixtureBuilder
         $nextCitizen = 10;
         foreach ($state['territories'] as $cityIndex => $territory) {
             $cityCitizens = [];
+            $familyNumber = 0;
+            $remaining = 0;
             for ($position = 1; $position <= 100; ++$position) {
                 $id =
                     'u' .
                     ($position <= 3
                         ? $cityIndex * 3 + $position
                         : $nextCitizen++);
+                if ($remaining === 0) {
+                    $remaining = [1, 2, 3, 4, 5, 6, 7][
+                        ($familyNumber + $cityIndex) % 7
+                    ];
+                    ++$familyNumber;
+                }
+                --$remaining;
                 $cityCitizens[] = $id;
                 $state['citizens'][] = [
                     'id' => $id,
@@ -53,6 +63,12 @@ final class MunicipalFixtureBuilder
                         $position,
                     ),
                     'territoryId' => $territory['id'],
+                    'familyId' => $territory['id'] . '_family_' . $familyNumber,
+                    'familyLabel' => sprintf(
+                        'Famille fictive %s %02d',
+                        $territory['name'],
+                        $familyNumber,
+                    ),
                     'consent' => true,
                     'role' => [
                         2 => 'conciliator',
@@ -104,6 +120,21 @@ final class MunicipalFixtureBuilder
                 $state['proposals'][] = $proposal;
             }
         }
+        foreach ($state['consultations'] as &$consultation) {
+            $consultation['rules']['votingUnit'] = 'family';
+            $consultation['rules']['familyAggregation'] =
+                FamilySuffrage::VERSION;
+            $consultation['rules']['majority'] =
+                'Majorité stricte des familles exprimant POUR ou CONTRE ; égalité = non adoptée';
+            $consultation['rules']['abstention'] =
+                'Familles abstentionnistes dans le quorum, hors familles exprimées';
+            $consultation['eligibleFamilies'] = new FamilySuffrage()->freeze(
+                $state['citizens'],
+                $consultation['eligibleIds'],
+                $consultation['territoryId'],
+            );
+        }
+        unset($consultation);
         $state = new MentalSimulation()->initialize($state);
         // Trois pilotes ne sont ouverts que si les choix narratifs aboutissent réellement à une adoption.
         foreach ([3, 12, 21] as $consultationIndex) {
