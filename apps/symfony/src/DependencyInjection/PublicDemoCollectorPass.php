@@ -14,9 +14,20 @@ final class PublicDemoCollectorPass implements CompilerPassInterface
         if ($container->hasDefinition('data_collector.request')) {
             $container
                 ->getDefinition('data_collector.request')
-                ->setClass(\App\DataCollector\PublicDemoRequestCollector::class);
+                ->setClass(
+                    \App\DataCollector\PublicDemoRequestCollector::class,
+                );
         }
-        foreach (['data_collector.form', 'data_collector.doctrine', 'data_collector.exception'] as $id) {
+        foreach (
+            [
+                'data_collector.form',
+                'data_collector.doctrine',
+                'data_collector.exception',
+                'data_collector.security',
+                'data_collector.logger',
+                'data_collector.messenger',
+            ] as $id
+        ) {
             if ($container->hasDefinition($id)) {
                 $container->getDefinition($id)->clearTag('data_collector');
             }

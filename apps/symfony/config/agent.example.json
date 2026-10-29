@@ -1,0 +1,15 @@
+{
+  "enabled": false,
+  "url": "https://VOTRE-DOMAINE/api/v1/replica",
+  "directory": "/var/lib/populorum-agent",
+  "authority": "REMPLACER_PAR_L_EMPREINTE_PUBLIEE_APRES_VERIFICATION_INDEPENDANTE",
+  "maxBytesPerSecond": 16384,
+  "authorizedUplinkBytesPerSecond": 163840,
+  "activePercent": 10,
+  "monthlyBytes": 100000000,
+  "maxCopyBytes": 10000000,
+  "hours": [0, 24],
+  "metered": false,
+  "batteryLow": false,
+  "temperatureExcessive": false
+}

@@ -8,12 +8,31 @@
             </div>
             <h1>Des chemins libres.<br />Un avenir <em>commun.</em></h1>
             <p>
-                Proposer. Expérimenter. Comprendre.<br />Construisons une mémoire des décisions pour éclairer les
-                générations à venir.
+                Proposer. Expérimenter. Comprendre.<br />Construisons une
+                mémoire des décisions pour éclairer les générations à venir.
             </p>
             <div class="hero-actions">
-                <a class="button primary" href="{{ path('section', { view: 'proposals' }) }}">Explorer les chemins →</a>
-                {{ ui.action('proposal.create', 'Exposer le mien +', {}, 'button text-button') }}
+                <a
+                    class="button primary"
+                    href="{{
+                    path(
+                        'section',
+                        {
+                            view: 'proposals'
+                        }
+                    )
+                    }}"
+                >
+                    Explorer les chemins →
+                </a>
+                {{
+                    ui.action(
+                        'proposal.create',
+                        'Exposer le mien +',
+                        {},
+                        'button text-button'
+                    )
+                }}
             </div>
             <div class="hero-note">
                 <span class="mini-line"></span>Le pouvoir appartient au peuple.
@@ -29,9 +48,28 @@
                         d="M20 35C135 35 110 125 230 125S340 100 420 100M20 120C120 120 130 125 230 125S350 180 420 180M20 230C120 230 110 125 230 125S320 50 420 50"
                     />
                 </g>
-                {% for coordinates in [[20, 35], [20, 120], [20, 230], [230, 125], [420, 100], [420, 180], [420, 50]] %}
-                    <circle cx="{{ coordinates[0] }}" cy="{{ coordinates[1] }}" r="13" fill="#c6a667" opacity=".12" />
-                    <circle cx="{{ coordinates[0] }}" cy="{{ coordinates[1] }}" r="3" fill="#c6a667" />
+                {% for coordinates in [
+                    [20, 35],
+                    [20, 120],
+                    [20, 230],
+                    [230, 125],
+                    [420, 100],
+                    [420, 180],
+                    [420, 50]
+                ] %}
+                    <circle
+                        cx="{{ coordinates[0] }}"
+                        cy="{{ coordinates[1] }}"
+                        r="13"
+                        fill="#c6a667"
+                        opacity=".12"
+                    />
+                    <circle
+                        cx="{{ coordinates[0] }}"
+                        cy="{{ coordinates[1] }}"
+                        r="3"
+                        fill="#c6a667"
+                    />
                 {% endfor %}
                 <text x="65" y="40">
                     Observer
@@ -52,16 +90,41 @@
     </section>
     <div class="stats-grid">
         {% for stat in [
-            { count: state.territories|length, label: 'Villes de référence', view: 'territories' },
-            { count: state.proposals|length, label: 'Chemins à explorer', view: 'proposals' },
             {
-                count: state.consultations|filter(consultation => consultation.status == 'open')|length,
+                count: state.territories|length,
+                label: 'Villes de référence',
+                view: 'territories'
+            },
+            {
+                count: state.proposals|length,
+                label: 'Chemins à explorer',
+                view: 'proposals'
+            },
+            {
+                count: state.consultations
+                    |filter(consultation => consultation.status == 'open')
+                    |length,
                 label: 'Consultations ouvertes',
                 view: 'consultations'
             },
-            { count: state.experiments|length, label: 'Expériences documentées', view: 'experiments' }
+            {
+                count: state.experiments|length,
+                label: 'Expériences documentées',
+                view: 'experiments'
+            }
         ] %}
-            <a class="stat" href="{{ path('section', { view: stat.view }) }}" style="text-decoration:none">
+            <a
+                class="stat"
+                href="{{
+                path(
+                    'section',
+                    {
+                        view: stat.view
+                    }
+                )
+                }}"
+                style="text-decoration:none"
+            >
                 <span aria-hidden="true">◇</span>
                 <div>
                     <strong>{{ '%02d'|format(stat.count) }}</strong>
@@ -78,7 +141,19 @@
                 </div>
                 <h2>Un problème. Plusieurs chemins.</h2>
             </div>
-            <a class="plain" href="{{ path('section', { view: 'proposals' }) }}">Tous les chemins →</a>
+            <a
+                class="plain"
+                href="{{
+                path(
+                    'section',
+                    {
+                        view: 'proposals'
+                    }
+                )
+                }}"
+            >
+                Tous les chemins →
+            </a>
         </div>
         <div class="cards-grid">
             {% for proposal in state.proposals|slice(0, 3) %}
@@ -94,10 +169,23 @@
                 </div>
                 <h2>Chaque territoire<br />éclaire sa propre voie.</h2>
                 <p>
-                    Paris, Marseille, Le Havre : trois villes réelles, des expériences entièrement simulées. Aucune
-                    mesure ne s’applique automatiquement ailleurs.
+                    Paris, Marseille, Le Havre : trois villes réelles, des
+                    expériences entièrement simulées. Aucune mesure ne
+                    s’applique automatiquement ailleurs.
                 </p>
-                <a class="plain" href="{{ path('section', { view: 'territories' }) }}">Explorer les territoires →</a>
+                <a
+                    class="plain"
+                    href="{{
+                    path(
+                        'section',
+                        {
+                            view: 'territories'
+                        }
+                    )
+                    }}"
+                >
+                    Explorer les territoires →
+                </a>
                 <div class="map-legend">
                     Carte illustrative · pas de données démographiques inventées
                 </div>
@@ -109,9 +197,22 @@
                 NOTRE BOUSSOLE
             </div>
             <blockquote>
-                « N’impose pas ton chemin. Éclaire le tien, et laisse les conséquences instruire chacun. »
+                « N’impose pas ton chemin. Éclaire le tien, et laisse les
+                conséquences instruire chacun. »
             </blockquote>
-            <a class="plain" href="{{ path('section', { view: 'charter' }) }}">Lire la charte fondatrice ↗</a>
+            <a
+                class="plain"
+                href="{{
+                path(
+                    'section',
+                    {
+                        view: 'charter'
+                    }
+                )
+                }}"
+            >
+                Lire la charte fondatrice ↗
+            </a>
         </div>
     </section>
 {% endblock %}

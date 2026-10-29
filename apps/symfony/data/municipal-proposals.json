@@ -1,0 +1,485 @@
+{
+  "version": "2026-10-29",
+  "simulation": true,
+  "notice": "Propositions expérimentales sans effet juridique. Les faits documentaires sont cités ; causes, solutions et résultats attendus restent des hypothèses de simulation.",
+  "proposals": [
+    {
+      "city": "Paris",
+      "title": "Présence de proximité sur les cheminements fréquentés",
+      "problem": "Les usagers doivent pouvoir demander une aide de proximité sur les parcours fréquentés.",
+      "cause": "Une présence peu lisible aux horaires sensibles pourrait retarder l’orientation et la médiation.",
+      "solution": "Tester six mois de patrouilles pédestres de proximité et de points d’information annoncés, coordonnés avec la préfecture de police, sans contrôle discriminatoire.",
+      "indicator": "Délai médian d’orientation vers un service compétent",
+      "unit": "minutes",
+      "documentedContext": "La Ville décrit des missions municipales de proximité, prévention et sécurité routière.",
+      "sourceRefs": [
+        "ssmsi",
+        "paris-police"
+      ],
+      "scope": "Commune, avec coordination de la préfecture de police ; aucune compétence judiciaire nouvelle.",
+      "priorityRank": 1,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Paris",
+      "title": "Accueil confidentiel et orientation des victimes",
+      "problem": "Une victime peut hésiter à demander de l’aide ou ne pas identifier le bon interlocuteur.",
+      "cause": "La fragmentation des points d’accueil pourrait allonger le délai d’accès aux dispositifs existants.",
+      "solution": "Expérimenter des permanences d’orientation formées et confidentielles, sans registre public des victimes ni collecte d’opinions politiques.",
+      "indicator": "Délai d’obtention d’un premier rendez-vous d’orientation",
+      "unit": "jours",
+      "documentedContext": "Les services de l’État présentent un accueil parisien spécialisé pour les victimes vulnérables.",
+      "sourceRefs": [
+        "ssmsi",
+        "paris-victims"
+      ],
+      "scope": "Commune et associations conventionnées ; plaintes et enquêtes relèvent des autorités compétentes.",
+      "priorityRank": 1,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Paris",
+      "title": "Médiation et continuité des services lors des grands rassemblements",
+      "problem": "Les riverains et commerçants ont besoin d’information et d’orientation après des perturbations de l’espace public.",
+      "cause": "Une coordination insuffisante des informations pourrait aggraver les difficultés, sans expliquer à elle seule les violences.",
+      "solution": "Préparer un protocole municipal d’information, de médiation et d’aide aux démarches pour les commerces, articulé aux décisions préfectorales et respectant le droit de manifester.",
+      "indicator": "Délai de réponse aux demandes d’accompagnement",
+      "unit": "heures",
+      "documentedContext": "Un article du 19 octobre rapporte des inquiétudes touristiques après des violences ; ce constat médiatique n’est pas un taux de criminalité.",
+      "sourceRefs": [
+        "paris-media",
+        "paris-police",
+        "legal-state"
+      ],
+      "scope": "Appui municipal ; maintien de l’ordre sous les autorités de l’État, sans interdiction générale ni nouvelle sanction.",
+      "priorityRank": 1,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Paris",
+      "title": "Traversées sûres autour des écoles",
+      "problem": "Les traversées et accès scolaires doivent rester sûrs, y compris pour les personnes à mobilité réduite.",
+      "cause": "Des conflits d’usage entre déplacements motorisés et piétons pourraient créer des difficultés aux entrées scolaires.",
+      "solution": "Tester des fermetures horaires réversibles, une médiation des accès et un contrôle de l’accessibilité avant chaque aménagement.",
+      "indicator": "Traversées problématiques pour 100 passages simulés",
+      "unit": "événements pédagogiques / 100 passages",
+      "documentedContext": "Des opérations parisiennes de rues aux écoles intègrent déjà des adaptations de voirie et d’accessibilité.",
+      "sourceRefs": [
+        "paris-schools",
+        "paris-works"
+      ],
+      "scope": "Gestion de voirie et police de circulation selon les compétences locales ; accès de secours maintenus.",
+      "priorityRank": 2,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Paris",
+      "title": "Ombre et confort d’été dans les écoles",
+      "problem": "Les équipements scolaires doivent disposer de solutions adaptées aux épisodes de chaleur.",
+      "cause": "L’exposition solaire et l’inertie des bâtiments pourraient limiter le confort d’été.",
+      "solution": "Comparer ombrage extérieur, ventilation adaptée et espaces rafraîchis dans un petit nombre d’équipements, avec suivi thermique et énergétique.",
+      "indicator": "Heures de dépassement d’un seuil de confort défini au protocole",
+      "unit": "heures",
+      "documentedContext": "La Ville a annoncé un programme d’adaptation des établissements après les épisodes chauds de l’été 2026.",
+      "sourceRefs": [
+        "paris-heat"
+      ],
+      "scope": "Patrimoine municipal ; normes sanitaires et sécurité vérifiées avant travaux.",
+      "priorityRank": 2,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Paris",
+      "title": "Parcours de fraîcheur accessibles et information de proximité",
+      "problem": "Les personnes qui se déplacent à pied peuvent manquer d’information sur les lieux frais accessibles.",
+      "cause": "La dispersion des informations pourrait réduire l’usage des lieux existants.",
+      "solution": "Tester un itinéraire accessible reliant des lieux frais municipaux et des points d’eau contrôlés, avec information papier et numérique et sans géolocalisation individuelle.",
+      "indicator": "Durée de marche entre deux points de repos accessibles",
+      "unit": "minutes",
+      "documentedContext": "Le programme parisien d’adaptation climatique prévoit plusieurs leviers de rafraîchissement urbain.",
+      "sourceRefs": [
+        "paris-heat",
+        "paris-schools"
+      ],
+      "scope": "Équipements et information municipaux ; partenaires sollicités pour les équipements non municipaux.",
+      "priorityRank": 3,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Paris",
+      "title": "Permanences sur les droits locatifs et les loyers",
+      "problem": "Les ménages peuvent avoir des difficultés à comprendre les règles applicables à leur bail.",
+      "cause": "Un accès tardif à l’information pourrait retarder les démarches utiles.",
+      "solution": "Tester des permanences neutres d’information et d’orientation vers les organismes compétents ; vérifier de nouveau le cadre légal après le 24 novembre 2026.",
+      "indicator": "Délai d’orientation vers un interlocuteur juridique compétent",
+      "unit": "jours",
+      "documentedContext": "La page municipale précise le calendrier exceptionnel du cadre de loyers de référence en 2026.",
+      "sourceRefs": [
+        "paris-rents"
+      ],
+      "scope": "Information et compétences déléguées dans leur période de validité ; aucune fixation municipale autonome des loyers nationaux.",
+      "priorityRank": 3,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Paris",
+      "title": "Orientation sur les meublés touristiques et le logement permanent",
+      "problem": "Les habitants et propriétaires doivent pouvoir distinguer obligations administratives, droit privé et services compétents.",
+      "cause": "Des signalements mal orientés pourraient ralentir l’examen des situations.",
+      "solution": "Créer un parcours d’information et de signalement confidentiel avec contrôle contradictoire et publication de statistiques agrégées de traitement.",
+      "indicator": "Part des demandes orientées correctement au premier contact",
+      "unit": "pourcentage",
+      "documentedContext": "Paris publie des obligations administratives spécifiques aux meublés touristiques et précise les limites de son intervention.",
+      "sourceRefs": [
+        "paris-tourism"
+      ],
+      "scope": "Compétences administratives municipales et services habilités ; données privées exclues du registre public.",
+      "priorityRank": 3,
+      "forecast": 20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Paris",
+      "title": "Cheminements accessibles pendant les chantiers de voirie",
+      "problem": "Un chantier peut modifier les accès piétons, les livraisons et la circulation des secours.",
+      "cause": "Une signalisation ou une information insuffisante pourrait rendre les itinéraires difficiles.",
+      "solution": "Tester un contrôle hebdomadaire des cheminements temporaires accessibles et un tableau public des corrections, sans publier de données personnelles des plaignants.",
+      "indicator": "Délai de correction d’un obstacle confirmé sur un cheminement",
+      "unit": "heures",
+      "documentedContext": "La Ville publie des adaptations de circulation et d’accès liées aux chantiers de voirie.",
+      "sourceRefs": [
+        "paris-works"
+      ],
+      "scope": "Gestionnaire de voirie compétent, accessibilité et coordination des secours.",
+      "priorityRank": 3,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Marseille",
+      "title": "Médiation de proximité autour des équipements publics",
+      "problem": "Les usagers d’équipements publics doivent pouvoir solliciter une médiation et une orientation sûres.",
+      "cause": "Une coordination insuffisante des acteurs pourrait laisser certaines situations sans réponse adaptée.",
+      "solution": "Expérimenter des équipes de médiation à horaires publiés autour d’équipements volontaires, en lien avec le cadre local de prévention, sans assimiler habitants et délinquants.",
+      "indicator": "Délai de prise en charge d’une demande de médiation",
+      "unit": "heures",
+      "documentedContext": "Marseille inscrit sa prévention dans un cadre de coopération entre maire, préfet et procureur.",
+      "sourceRefs": [
+        "ssmsi",
+        "marseille-prevention",
+        "marseille-media"
+      ],
+      "scope": "Prévention municipale et partenaires ; enquêtes et poursuites restent de la compétence de l’État.",
+      "priorityRank": 1,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Marseille",
+      "title": "Protection et orientation des jeunes exposés aux pressions",
+      "problem": "Un jeune ou sa famille doit pouvoir demander de l’aide face à une pression sans s’exposer publiquement.",
+      "cause": "La méconnaissance des relais de protection pourrait retarder l’accompagnement.",
+      "solution": "Tester des permanences confidentielles associant prévention spécialisée, professionnels compétents et familles volontaires, sans score individuel de risque ni fichier public.",
+      "indicator": "Délai d’accès à un accompagnement approprié",
+      "unit": "jours",
+      "documentedContext": "Les actions locales de prévention et la couverture des trafics justifient d’examiner des dispositifs de protection, sans inférer un risque individuel.",
+      "sourceRefs": [
+        "marseille-prevention",
+        "marseille-media"
+      ],
+      "scope": "Prévention et orientation municipales ; protection de l’enfance et justice selon leurs compétences propres.",
+      "priorityRank": 1,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Marseille",
+      "title": "Lieux d’accueil sûrs et information nocturne",
+      "problem": "Une personne confrontée à un harcèlement peut avoir besoin d’un lieu d’accueil rapidement identifiable.",
+      "cause": "Un manque de formation ou de visibilité des points d’accueil pourrait retarder la mise à l’abri.",
+      "solution": "Tester un réseau volontaire de lieux d’accueil formés, des informations papier et un suivi agrégé, sans rendre obligatoire une application de géolocalisation.",
+      "indicator": "Délai d’orientation vers un accueil formé",
+      "unit": "minutes",
+      "documentedContext": "La Région Sud présente à Marseille des lieux d’accueil et une formation associée au dispositif UMAY.",
+      "sourceRefs": [
+        "ssmsi",
+        "marseille-safeplaces",
+        "marseille-safety"
+      ],
+      "scope": "Conventionnement et formation ; appels et interventions relèvent des services compétents.",
+      "priorityRank": 1,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Marseille",
+      "title": "Traversées accompagnées et rues des enfants",
+      "problem": "Les entrées scolaires doivent être accessibles et limiter les conflits entre véhicules et piétons.",
+      "cause": "La simultanéité des flux pourrait augmenter les difficultés de traversée.",
+      "solution": "Comparer des traversées accompagnées et des fermetures horaires réversibles, avec maintien des accès de secours et bilan avec les familles.",
+      "indicator": "Traversées problématiques pour 100 passages simulés",
+      "unit": "événements pédagogiques / 100 passages",
+      "documentedContext": "La rentrée 2026 présente des dispositifs marseillais de sécurisation des abords scolaires et des rues des enfants.",
+      "sourceRefs": [
+        "marseille-schools"
+      ],
+      "scope": "Commune et gestionnaires de voirie concernés ; coordination métropolitaine si nécessaire.",
+      "priorityRank": 2,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Marseille",
+      "title": "Signalements d’habitat dangereux et suivi contradictoire",
+      "problem": "Un signalement de danger dans un logement doit être orienté et instruit sans délai évitable.",
+      "cause": "Une transmission incomplète entre services pourrait retarder le diagnostic ou l’accompagnement.",
+      "solution": "Tester un accusé de réception suivi, une orientation claire et un tableau agrégé des étapes, avec examen contradictoire et accompagnement des occupants.",
+      "indicator": "Délai entre signalement recevable et première évaluation",
+      "unit": "jours",
+      "documentedContext": "La Ville décrit des contrôles, mises en sécurité et accompagnements en coopération avec l’État et la Métropole.",
+      "sourceRefs": [
+        "marseille-housing"
+      ],
+      "scope": "Sécurité des immeubles et délégations effectives ; permis de louer métropolitain, droits des occupants préservés.",
+      "priorityRank": 2,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Marseille",
+      "title": "Cours ombragées et confort thermique scolaire",
+      "problem": "Les bâtiments et cours scolaires doivent rester utilisables lors des fortes chaleurs.",
+      "cause": "L’exposition solaire pourrait rendre insuffisantes certaines solutions temporaires.",
+      "solution": "Comparer ombrage, ventilation et végétalisation selon des indicateurs fixés à l’avance, avec consultation des équipes et contrôle de maintenance.",
+      "indicator": "Heures d’inconfort thermique selon le protocole",
+      "unit": "heures",
+      "documentedContext": "La rentrée 2026 présente des travaux scolaires et un volet canicule.",
+      "sourceRefs": [
+        "marseille-schools"
+      ],
+      "scope": "Patrimoine scolaire municipal ; respect des normes et capacités d’entretien.",
+      "priorityRank": 2,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Marseille",
+      "title": "Accès effectif aux services périscolaires et à la restauration",
+      "problem": "Une famille peut renoncer à un service faute d’information ou de démarche accessible.",
+      "cause": "La complexité des inscriptions pourrait limiter l’accès aux dispositifs déjà ouverts.",
+      "solution": "Tester un guichet d’accompagnement aux inscriptions et une information accessible, sans modifier les critères légaux d’attribution et sans données familiales dans le registre public.",
+      "indicator": "Demandes complètes orientées au premier rendez-vous",
+      "unit": "pourcentage",
+      "documentedContext": "La Ville décrit des aides scolaires, la restauration et des études surveillées à la rentrée 2026.",
+      "sourceRefs": [
+        "marseille-schools"
+      ],
+      "scope": "Services scolaires municipaux, sous réserve des capacités, règles de financement et protection des dossiers.",
+      "priorityRank": 3,
+      "forecast": 15,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Marseille",
+      "title": "Parcours accessibles vers les services publics",
+      "problem": "Les personnes à pied ou à mobilité réduite doivent disposer d’itinéraires continus vers les services.",
+      "cause": "Des obstacles de voirie ou une information fragmentée pourraient rendre certains déplacements difficiles.",
+      "solution": "Expérimenter des audits de cheminements avec les usagers et une programmation publique des petites corrections, en lien avec les gestionnaires compétents.",
+      "indicator": "Délai de correction d’un obstacle confirmé",
+      "unit": "jours",
+      "documentedContext": "La prévention municipale comprend un volet de sécurité routière ; la sécurisation des accès scolaires est documentée.",
+      "sourceRefs": [
+        "marseille-prevention",
+        "marseille-schools"
+      ],
+      "scope": "Gestionnaires de voirie et Métropole selon les voies ; aucun pouvoir municipal sur la tarification régionale.",
+      "priorityRank": 3,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Marseille",
+      "title": "Prévention des incendies dans les équipements municipaux",
+      "problem": "Les usagers d’un équipement doivent connaître les consignes et disposer d’issues utilisables.",
+      "cause": "Une signalétique vieillissante ou des exercices insuffisants pourraient retarder une évacuation.",
+      "solution": "Tester une revue des consignes, des accès et des exercices dans des équipements volontaires, avec expertise des services de secours compétents.",
+      "indicator": "Temps d’évacuation d’un exercice annoncé et encadré",
+      "unit": "minutes",
+      "documentedContext": "Le portail municipal présente les services du Bataillon de marins-pompiers et les responsabilités de prévention.",
+      "sourceRefs": [
+        "marseille-safety"
+      ],
+      "scope": "Bâtiments municipaux et autorités de sécurité compétentes ; aucune substitution aux contrôles réglementaires.",
+      "priorityRank": 2,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Le Havre",
+      "title": "Appui confidentiel face aux pressions autour du port",
+      "problem": "Un salarié ou sa famille doit pouvoir demander une aide confidentielle face à une pression ou une menace.",
+      "cause": "La crainte d’exposition pourrait retarder le recours aux dispositifs compétents.",
+      "solution": "Tester un parcours d’orientation volontaire vers des acteurs habilités, avec information claire et sans recueil public de noms de victimes ou de suspects.",
+      "indicator": "Délai d’orientation confidentielle vers un service compétent",
+      "unit": "heures",
+      "documentedContext": "La presse décrit des pressions liées aux trafics dans les métiers portuaires ; les autorités présentent une coopération de sûreté.",
+      "sourceRefs": [
+        "havre-media",
+        "havre-port",
+        "ssmsi"
+      ],
+      "scope": "Appui et prévention municipaux, employeurs et partenaires habilités ; sûreté portuaire, douanes et enquêtes hors pouvoir municipal autonome.",
+      "priorityRank": 1,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Le Havre",
+      "title": "Orientation des signalements de fret vers les autorités compétentes",
+      "problem": "Un signalement de vol de fret doit être adressé au bon interlocuteur sans divulgation publique de renseignements sensibles.",
+      "cause": "Un circuit mal compris pourrait retarder l’exploitation utile de l’information.",
+      "solution": "Évaluer un support d’orientation vers les dispositifs existants de l’État et des acteurs portuaires ; ne créer aucun registre public opérationnel de marchandises ou d’informateurs.",
+      "indicator": "Part des demandes orientées vers le service compétent",
+      "unit": "pourcentage",
+      "documentedContext": "La préfecture décrit la centralisation des signalements et un groupe judiciaire dédié au fret.",
+      "sourceRefs": [
+        "havre-freight",
+        "havre-port"
+      ],
+      "scope": "État, autorité judiciaire et port pour les opérations ; la commune propose un appui d’information seulement.",
+      "priorityRank": 1,
+      "forecast": 20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Le Havre",
+      "title": "Médiation de soirée et accueil des victimes",
+      "problem": "Une personne dans l’espace public nocturne peut avoir besoin d’information, de médiation ou d’orientation.",
+      "cause": "Une mauvaise articulation entre intervenants pourrait retarder une réponse appropriée.",
+      "solution": "Tester une médiation de soirée et des points d’information identifiables, avec protocoles d’orientation et bilan public uniquement agrégé.",
+      "indicator": "Délai d’orientation d’une demande recevable",
+      "unit": "minutes",
+      "documentedContext": "La Ville présente une police municipale permanente et des dispositifs de tranquillité et de vie nocturne.",
+      "sourceRefs": [
+        "havre-safety",
+        "ssmsi"
+      ],
+      "scope": "Prévention municipale et articulation avec la police nationale ; aucune nouvelle sanction pénale.",
+      "priorityRank": 1,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Le Havre",
+      "title": "Cheminements sûrs pendant les travaux de la ligne C",
+      "problem": "Les travaux doivent préserver les déplacements à pied, les accès aux commerces et les traversées.",
+      "cause": "Les changements de circulation pourraient accroître les difficultés d’orientation.",
+      "solution": "Tester une revue hebdomadaire des itinéraires temporaires avec les usagers, des corrections réversibles et une information lisible sur les phases du chantier.",
+      "indicator": "Traversées problématiques pour 100 passages simulés",
+      "unit": "événements pédagogiques / 100 passages",
+      "documentedContext": "La Ville annonce des adaptations de circulation liées aux phases du chantier de la ligne C en 2026.",
+      "sourceRefs": [
+        "havre-tram"
+      ],
+      "scope": "Communauté urbaine, maîtrise d’ouvrage du tramway et commune selon les voies concernées.",
+      "priorityRank": 2,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Le Havre",
+      "title": "Exercices d’alerte accessibles face aux inondations",
+      "problem": "Les habitants et équipements exposés doivent comprendre les consignes adaptées à leur secteur.",
+      "cause": "Une information peu accessible pourrait retarder l’adoption de bons réflexes.",
+      "solution": "Tester des exercices annoncés, des supports accessibles et un recensement volontaire des besoins d’assistance, sans carte publique des personnes vulnérables.",
+      "indicator": "Délai de compréhension et de confirmation d’une consigne test",
+      "unit": "minutes",
+      "documentedContext": "Les sources municipales et intercommunales décrivent des risques d’inondation, de ruissellement et de submersion.",
+      "sourceRefs": [
+        "havre-flood",
+        "havre-alerts"
+      ],
+      "scope": "Plan communal de sauvegarde et compétences de prévention articulées avec l’État et la Communauté urbaine.",
+      "priorityRank": 2,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Le Havre",
+      "title": "Suivi énergétique de bâtiments publics pilotes",
+      "problem": "Les dépenses d’énergie des équipements publics doivent être compréhensibles et les travaux évaluables.",
+      "cause": "L’absence de mesure comparable pourrait masquer des économies ou des effets de report.",
+      "solution": "Comparer des réglages et travaux réversibles sur quelques bâtiments, avec correction des effets météo et maintien du confort des usagers.",
+      "indicator": "Consommation corrigée des conditions météo par mètre carré",
+      "unit": "kWh par mètre carré",
+      "documentedContext": "Le plan climat intercommunal prévoit rénovation énergétique et suivi des consommations publiques.",
+      "sourceRefs": [
+        "havre-climate"
+      ],
+      "scope": "Propriétaires publics des équipements ; marchés et financements soumis aux règles applicables.",
+      "priorityRank": 3,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Le Havre",
+      "title": "Orientation habitat et rénovation du centre ancien",
+      "problem": "Un occupant ou propriétaire peut avoir besoin d’un parcours clair pour signaler une difficulté et identifier les aides adaptées.",
+      "cause": "La fragmentation des interlocuteurs pourrait allonger l’accès à un diagnostic approprié.",
+      "solution": "Tester une permanence d’orientation, un suivi volontaire des démarches et des statistiques anonymisées de délais, sans rendre publics les dossiers des logements.",
+      "indicator": "Délai d’orientation vers un diagnostic compétent",
+      "unit": "jours",
+      "documentedContext": "La Ville présente des opérations dans le centre ancien et le plan climat mentionne la rénovation du logement.",
+      "sourceRefs": [
+        "havre-projects",
+        "havre-climate"
+      ],
+      "scope": "Commune, intercommunalité et opérateurs de l’habitat selon les compétences et conventions.",
+      "priorityRank": 3,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Le Havre",
+      "title": "Continuités piétonnes et cyclables vers les transports",
+      "problem": "Les parcours actifs doivent rester lisibles et continus entre quartiers et transports.",
+      "cause": "Des ruptures de parcours ou des points de conflit pourraient limiter les déplacements actifs.",
+      "solution": "Tester des corrections de continuité identifiées avec les usagers, sans retirer un accès essentiel avant validation de la solution de remplacement.",
+      "indicator": "Points de rupture confirmés sur un parcours pilote",
+      "unit": "nombre",
+      "documentedContext": "Le plan climat intercommunal prévoit transports collectifs, marche et aménagements cyclables.",
+      "sourceRefs": [
+        "havre-climate",
+        "havre-tram"
+      ],
+      "scope": "Gestionnaires de voirie et Communauté urbaine ; concertation et accessibilité obligatoires.",
+      "priorityRank": 3,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    },
+    {
+      "city": "Le Havre",
+      "title": "Suivi public et prudent du littoral de Dollemard",
+      "problem": "Une opération de traitement de déchets littoraux doit pouvoir être suivie sans banaliser les risques du site.",
+      "cause": "Des informations dispersées pourraient réduire la compréhension des choix et de leurs effets.",
+      "solution": "Évaluer un tableau documentaire public de l’avancement, des mesures environnementales agrégées et des décisions ; aucune intervention citoyenne sur une zone dangereuse.",
+      "indicator": "Délai de publication d’un résultat validé du suivi",
+      "unit": "jours",
+      "documentedContext": "La Ville présente un chantier-test de nettoyage des anciennes décharges de Dollemard.",
+      "sourceRefs": [
+        "havre-projects"
+      ],
+      "scope": "Gestionnaires du site et autorités environnementales ; respect des autorisations et absence d’accès non autorisé.",
+      "priorityRank": 3,
+      "forecast": -20,
+      "alternative": "Renforcer les dispositifs existants sans créer de nouveau programme."
+    }
+  ]
+}

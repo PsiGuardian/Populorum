@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>
+            Connexion citoyenne fictive
+        </title>
+        <link rel="stylesheet" href="/app.css" />
+    </head>
+    <body>
+        <main class="form-shell" style="margin:3rem auto">
+            <h1>Connexion au laboratoire partagé</h1>
+            <p>
+                Comptes de personnages fictifs uniquement. Le compte Guardian
+                des diagnostics reste indépendant.
+            </p>
+            {% if error %}
+                <p role="alert">
+                    Connexion refusée. Vérifiez vos identifiants ou réessayez
+                    plus tard.
+                </p>
+            {% endif %}
+            <form
+                method="post"
+                action="{{ path('citizen_login') }}"
+                class="panel"
+            >
+                <label for="username">Identifiant</label><input
+                    id="username"
+                    name="_username"
+                    value="{{ lastUsername }}"
+                    required
+                    autocomplete="username"
+                />
+                <label for="password">Mot de passe</label><input
+                    id="password"
+                    name="_password"
+                    type="password"
+                    required
+                    autocomplete="current-password"
+                />
+                <input
+                    type="hidden"
+                    name="_csrf_token"
+                    value="{{ csrf_token('authenticate') }}"
+                />
+                <button class="button primary">Se connecter</button>
+            </form>
+            <a href="/">Lire sans compte</a>
+        </main>
+    </body>
+</html>

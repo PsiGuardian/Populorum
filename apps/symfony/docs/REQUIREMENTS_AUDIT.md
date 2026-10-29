@@ -1,3 +1,5 @@
+> Audit historique du socle 0.2 : pour les modifications et preuves du lot courant, lire [COMPLETION_REVIEW.md](COMPLETION_REVIEW.md). Les nombres ci-dessous ne sont pas une mesure actuelle de complétude.
+
 # Audit initial de couverture du cahier des charges
 
 > **État historique avant correction.** Les sept écarts reproduits ci-dessous sont désormais corrigés ; voir [le lot de correction et ses preuves](CORRECTIONS.md). Les 105 rubriques et la matrice ci-dessous décrivent le commit audité, pas une nouvelle certification après correction.

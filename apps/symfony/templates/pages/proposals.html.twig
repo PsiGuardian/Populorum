@@ -51,15 +51,139 @@
                         </div>
                     {% endfor %}
                 </div>
+                <div class="row-links">
+                    {{
+                        ui.action(
+                            'proposal.transition',
+                            'Faire évoluer l’état',
+                            {
+                                proposalId: proposal.id
+                            }
+                        )
+                    }}
+                    {{
+                        ui.action(
+                            'proposal.reformulate',
+                            'Reformuler et expliquer',
+                            {
+                                proposalId: proposal.id
+                            }
+                        )
+                    }}
+                </div>
                 <h2>L’arbre du raisonnement</h2>
                 <p class="muted small">
                     La liste structurée fournit une lecture accessible des
                     catégories et de leurs compléments. Une observation simulée
                     ne démontre pas une causalité.
                 </p>
+                {% if graph is defined %}
+                    <details class="panel">
+                        <summary>
+                            Afficher le graphe des relations déclarées
+                        </summary>
+                        <div
+                            class="causal-graph-scroll"
+                            tabindex="0"
+                            role="region"
+                            aria-label="Graphe causal ; liste et relations textuelles disponibles à la suite"
+                        >
+                            <svg
+                                viewBox="0 0 920 {{ graph.height }}"
+                                role="img"
+                                aria-labelledby="graph-title"
+                            >
+                                <title id="graph-title">
+                                    Relations déclarées dans {{
+                                        proposal.title
+                                    }}. La disposition n’est pas une preuve de
+                                    causalité.
+                                </title>
+                                <defs>
+                                    <marker
+                                        id="arrow"
+                                        markerWidth="8"
+                                        markerHeight="8"
+                                        refX="7"
+                                        refY="4"
+                                        orient="auto"
+                                    >
+                                        <path
+                                            d="M0 0L8 4L0 8Z"
+                                            fill="#80632c"
+                                        />
+                                    </marker>
+                                </defs>
+                                {% for edge in graph.edges %}
+                                    <g>
+                                        <title>
+                                            {{ edge.from }} : {{
+                                                edge.relation
+                                            }} : {{ edge.to }}
+                                        </title>
+                                        <line
+                                            x1="{{ edge.x1 }}"
+                                            y1="{{ edge.y1 }}"
+                                            x2="{{ edge.x2 }}"
+                                            y2="{{ edge.y2 }}"
+                                            stroke="#80632c"
+                                            stroke-width="2"
+                                            marker-end="url(#arrow)"
+                                        />
+                                    </g>
+                                {% endfor %}
+                                {% for node in graph.nodes %}
+                                    <a href="#causal-{{ node.id }}">
+                                        <title>
+                                            {{ node.category }} : {{
+                                                node.content
+                                            }}
+                                        </title>
+                                        <rect
+                                            x="{{ node.x }}"
+                                            y="{{ node.y }}"
+                                            width="260"
+                                            height="70"
+                                            rx="8"
+                                            fill="#f2eee5"
+                                            stroke="#80632c"
+                                        />
+                                        <text
+                                            x="{{ node.x + 12 }}"
+                                            y="{{ node.y + 30 }}"
+                                            font-size="12"
+                                            fill="#111d2b"
+                                        >
+                                            {{ node.category|slice(0, 34) }}
+                                        </text>
+                                        <text
+                                            x="{{ node.x + 12 }}"
+                                            y="{{ node.y + 50 }}"
+                                            font-size="11"
+                                            fill="#111d2b"
+                                        >
+                                            {{ (node.evidenceType|default(''))
+                                                == 'public_document'
+                                                ? 'Document public cité'
+                                                : (node.evidenceType|default(
+                                                    ''
+                                                ))
+                                                    == 'media_context'
+                                                    ? 'Contexte médiatique cité'
+                                                    : node.kind == 'observation'
+                                                        ? 'Observation simulée'
+                                                        : 'Hypothèse' }}
+                                        </text>
+                                    </a>
+                                {% endfor %}
+                            </svg>
+                        </div>
+                    </details>
+                {% endif %}
                 <div class="causal-grid">
                     {% for node in proposal.nodes %}
                         <article
+                            id="causal-{{ node.id }}"
                             class="causal-node {{
                             node.kind == 'observation'
                                 ? 'observed'
@@ -76,9 +200,15 @@
                                     {{ node.content }}
                                 </p>
                                 <small>
-                                    {{ node.kind == 'observation'
-                                        ? 'Observation simulée'
-                                        : 'Hypothèse / prévision' }}
+                                    {{ (node.evidenceType|default(''))
+                                        == 'public_document'
+                                        ? 'Document public cité — interprétation à discuter'
+                                        : (node.evidenceType|default(''))
+                                            == 'media_context'
+                                            ? 'Contexte médiatique cité — ne mesure pas la délinquance'
+                                            : node.kind == 'observation'
+                                                ? 'Observation simulée'
+                                                : 'Hypothèse / prévision' }}
                                 </small>
                             </div>
                         </article>
@@ -142,7 +272,18 @@
                     }}
                     {% for source in proposal.sources %}
                         <p>
-                            {{ source.label }} · {{ source.date }}
+                            {% if
+                                source.url starts with 'https://'
+                                    or source.url starts with 'http://' %}
+                                <a
+                                    href="{{ source.url }}"
+                                    rel="noopener noreferrer"
+                                >
+                                    {{ source.label }}
+                                </a>
+                            {% else %}
+                                {{ source.label }}
+                            {% endif %}· {{ source.date }}
                         </p>
                     {% endfor %}
                     <p>
@@ -150,6 +291,35 @@
                         comme un fait réel sur la ville.
                     </p>
                 </section>
+                {% for reformulation in proposal.reformulations ?? [] %}
+                    <section
+                        class="panel"
+                        lang="{{ reformulation.locale|slice(0, 2) }}"
+                    >
+                        <h3>
+                            {{ reformulation.level }} · version {{
+                                reformulation.referenceVersion
+                            }}
+                        </h3>
+                        <p>
+                            {{ reformulation.text }}
+                        </p>
+                        <p>
+                            <strong>Glossaire :</strong>
+                            {{ reformulation.glossary }}
+                        </p>
+                        <p class="small muted">
+                            {{ reformulation.warning }}
+                        </p>
+                    </section>
+                {% endfor %}
+                {% for transition in proposal.transitions ?? [] %}
+                    <p class="small">
+                        {{ transition.at }} : {{ transition.from }} → {{
+                            transition.to
+                        }} · {{ transition.reason }}
+                    </p>
+                {% endfor %}
                 <section class="panel">
                     <h3>Versions du chemin</h3>
                     {% for revision in proposal.revisions %}
@@ -184,7 +354,19 @@
                             {% endfor %}
                             {% for source in revision.snapshot.sources %}
                                 <p>
-                                    Source : {{ source.label }} · {{ source.date }}
+                                    Source :{% if
+                                        source.url starts with 'https://'
+                                            or source.url
+                                                starts with 'http://' %}
+                                        <a
+                                            href="{{ source.url }}"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {{ source.label }}
+                                        </a>
+                                    {% else %}
+                                        {{ source.label }}
+                                    {% endif %}· {{ source.date }}
                                 </p>
                             {% endfor %}
                             {% for edge in revision.snapshot.edges %}
@@ -316,7 +498,13 @@
         {{ ui.filter(view, state, q, territory) }}
         <div class="cards-grid">
             {% set found = 0 %}
-            {% for proposal in state.proposals|reverse %}
+            <p class="muted small">
+                Ordre éditorial explicite du jeu de démonstration : sécurité et
+                prévention d’abord, puis autres services, titres par ordre
+                alphabétique. Ce classement ne représente aucune préférence des
+                habitants. Propositions expérimentales sans effet juridique.
+            </p>
+            {% for proposal in proposalList %}
                 {% if
                     (territory == 'all' or territory == proposal.territoryId)
                         and (q == ''

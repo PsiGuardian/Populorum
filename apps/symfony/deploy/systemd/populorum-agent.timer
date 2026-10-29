@@ -1,0 +1,7 @@
+[Unit]
+Description=Synchronisation volontaire périodique Populorum
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+[Install]
+WantedBy=timers.target

@@ -38,6 +38,8 @@ final class SimulationEngine
     public function __construct(
         private readonly CausalGraph $graph = new CausalGraph(),
         private readonly AuditPrivacy $privacy = new AuditPrivacy(),
+        private readonly CivicWorkflow $workflow = new CivicWorkflow(),
+        private readonly ConvergenceAnalyzer $analyzer = new ConvergenceAnalyzer(),
     ) {
     }
 
@@ -179,9 +181,69 @@ final class SimulationEngine
     /** Contrôle le chaînage, les signatures, puis le lien entre le dernier événement et l’état courant. */
     public function verify(array $state): array
     {
+        if (
+            ($state['simulation'] ?? false) !== true
+            || !is_int($state['schemaVersion'] ?? null)
+        ) {
+            return [
+                'valid' => false,
+                'reason' => 'Format de simulation ou version manquante.',
+            ];
+        }
+        foreach (
+            [
+                'events',
+                'territories',
+                'citizens',
+                'proposals',
+                'consultations',
+                'votes',
+                'experiments',
+            ] as $collection
+        ) {
+            if (
+                !is_array($state[$collection] ?? null)
+                || !array_is_list($state[$collection])
+            ) {
+                return [
+                    'valid' => false,
+                    'reason' => 'Collection de preuve invalide.',
+                ];
+            }
+            foreach ($state[$collection] as $item) {
+                if (!is_array($item)) {
+                    return [
+                        'valid' => false,
+                        'reason' => 'Objet de preuve invalide.',
+                    ];
+                }
+            }
+        }
+        foreach ($state['events'] as $event) {
+            if (
+                !is_string($event['hash'] ?? null)
+                || !preg_match('/^[a-f0-9]{64}$/D', $event['hash'])
+                || !is_string($event['signature'] ?? null)
+                || !is_int($event['index'] ?? null)
+                || !is_string($event['previous'] ?? null)
+                || !is_array($event['payload'] ?? null)
+                || !is_string($event['payload']['stateDigest'] ?? null)
+            ) {
+                return [
+                    'valid' => false,
+                    'reason' => 'Structure d’événement signée invalide.',
+                ];
+            }
+        }
         $previousHash = 'GENESIS';
         $publicKey =
             $state['keyPair']['publicKey'] ?? ($state['publicKey'] ?? null);
+        if (
+            $state['events']
+            && (!is_string($publicKey) || !@openssl_pkey_get_public($publicKey))
+        ) {
+            return ['valid' => false, 'reason' => 'Clé publique invalide.'];
+        }
         foreach ($state['events'] as $index => $event) {
             $hash = $event['hash'];
             $signature = $event['signature'];
@@ -306,6 +368,19 @@ final class SimulationEngine
         ];
     }
 
+    /** Sceau initial propre à cette instance ; aucune clé privée dans les fixtures versionnées. */
+    public function initializeFixture(array $state): array
+    {
+        $this->recordAuditEvent(
+            $state,
+            'fixture.created',
+            'municipal-2026-v1',
+            [],
+        );
+
+        return $state;
+    }
+
     public function publicState(array $state): array
     {
         $state['publicKey'] = $state['keyPair']['publicKey'] ?? null;
@@ -339,7 +414,8 @@ final class SimulationEngine
             'expressed' => $expressedCount,
             'participation' => $participation,
             'quorumReached' => $participation >= $consultation['rules']['quorum'],
-            'adopted' => $participation >= $consultation['rules']['quorum']
+            'adopted' => $consultation['status'] !== 'cancelled'
+                && $participation >= $consultation['rules']['quorum']
                 && $expressedCount > 0
                 && $counts['pour'] > $counts['contre'],
             'provisional' => $this->consultationPhase($consultation) === 'open',
@@ -351,8 +427,8 @@ final class SimulationEngine
     /** L’échéance arrête le vote sans proclamer silencieusement un résultat définitif. */
     public function consultationPhase(array $consultation): string
     {
-        if ($consultation['status'] === 'closed') {
-            return 'closed';
+        if (in_array($consultation['status'], ['closed', 'cancelled'], true)) {
+            return $consultation['status'];
         }
 
         return strtotime($consultation['closesAt']) <= time()
@@ -362,33 +438,7 @@ final class SimulationEngine
 
     public function convergence(array $state): array
     {
-        $result = [];
-        foreach ($state['proposals'] as $proposalIndex => $firstProposal) {
-            foreach (
-                array_slice($state['proposals'], $proposalIndex + 1) as $secondProposal
-            ) {
-                $common = array_values(
-                    array_intersect(
-                        $firstProposal['tags'],
-                        $secondProposal['tags'],
-                    ),
-                );
-                $result[] = [
-                    'a' => $firstProposal['id'],
-                    'b' => $secondProposal['id'],
-                    'common' => $common,
-                    'sharedIndicator' => $firstProposal['indicator'] ===
-                        $secondProposal['indicator'],
-                    'status' => count($common) >= 2
-                            ? 'partielle'
-                            : ($common
-                                ? 'thématique'
-                                : 'distincte'),
-                ];
-            }
-        }
-
-        return $result;
+        return $this->analyzer->analyze($state);
     }
 
     private function validateProposal(array $proposal): void
@@ -467,6 +517,26 @@ final class SimulationEngine
         }
         $actorId = $payload['citizenId'] ?? '';
         $actor = $this->requireActiveCitizen($state, $actorId);
+        if (
+            str_starts_with($actionType, 'proposal.')
+            || in_array(
+                $actionType,
+                ['observation.add', 'experiment.create'],
+                true,
+            )
+        ) {
+            foreach ($actor['publicationRestrictions'] ?? [] as $restriction) {
+                if (
+                    !$restriction['revoked']
+                    && strtotime($restriction['until']) > time()
+                ) {
+                    $this->fail(
+                        'Publication temporairement restreinte ; recours et droit de vote préservés.',
+                        403,
+                    );
+                }
+            }
+        }
         $objectId = match ($actionType) {
             'citizen.create' => $this->createCitizen($state, $payload),
             'citizen.withdraw' => $this->withdrawConsent(
@@ -570,7 +640,12 @@ final class SimulationEngine
             'node.configure' => $this->configureVirtualNode($state, $payload),
             'node.sync' => $this->synchronizeVirtualNode($state, $payload),
             'resource.add' => $this->addResourceContribution($state, $payload),
-            default => $this->fail('Opération inconnue.', 404),
+            default => $this->workflow->apply(
+                $state,
+                $actionType,
+                $payload,
+                $actor,
+            ),
         };
         $state['operations'][] = $operationId;
         $this->recordAuditEvent($state, $actionType, $objectId, $payload);
@@ -809,6 +884,28 @@ final class SimulationEngine
             'snapshot' => $snapshot,
         ];
         $next = $state['proposals'][$proposalIndex];
+        if (!empty($payload['observationId'])) {
+            $found = false;
+            foreach ($state['experiments'] as $experiment) {
+                if (
+                    $experiment['proposalId'] === $proposal['id']
+                    && in_array(
+                        $payload['observationId'],
+                        array_column($experiment['observations'], 'id'),
+                        true,
+                    )
+                ) {
+                    $found = true;
+                }
+            }
+            if (!$found) {
+                $this->fail('Observation étrangère au chemin ou introuvable.');
+            }
+            $next['revisions'][array_key_last($next['revisions'])][
+                'observationId'
+            ] = $payload['observationId'];
+        }
+
         foreach (self::PROPOSAL_TEXT_FIELDS as $field) {
             if (array_key_exists($field, $payload)) {
                 $next[$field] =
@@ -1056,6 +1153,15 @@ final class SimulationEngine
         }
         $adaptation = [
             'id' => $this->generateId('adapt'),
+            'authorId' => $actorId,
+            'version' => 1,
+            'revisions' => [],
+            'probableConsequences' => $this->draftText(
+                $payload['probableConsequences'] ?? '',
+            ),
+            'observedConsequences' => $this->draftText(
+                $payload['observedConsequences'] ?? '',
+            ),
             'proposalId' => $proposal['id'],
             'territoryId' => $payload['territoryId'],
             'type' => ($payload['type'] ?? 'adaptation') === 'exclusion'
@@ -1112,7 +1218,13 @@ final class SimulationEngine
         if (floor($days) !== $days && is_float($days)) {
             $this->fail('Nombre entier de jours requis.');
         }
-        $quorum = $this->requireNumber($payload['quorum'] ?? 50, 0, 100);
+        $activeRules =
+            $state['ruleSets'] ?? [] ? end($state['ruleSets']) : null;
+        $quorum = $this->requireNumber(
+            $activeRules['quorum'] ?? ($payload['quorum'] ?? 50),
+            0,
+            100,
+        );
         $objectId = $this->generateId('c');
         $state['consultations'][] = [
             'id' => $objectId,
@@ -1124,18 +1236,18 @@ final class SimulationEngine
                 'quorum' => $quorum,
                 'majority' => 'Majorité stricte des exprimés ; égalité = non adoptée',
                 'abstention' => 'Dans la participation, hors exprimés',
-                'changeAllowed' => true,
+                'changeAllowed' => $activeRules['changeAllowed'] ?? true,
+                'ruleSetId' => $activeRules['id'] ?? 'initial',
             ],
-            'eligibleIds' => array_values(
-                array_column(
-                    array_filter(
-                        $state['citizens'],
-                        fn ($participant) => $participant['territoryId'] ===
-                            $proposal['territoryId']
-                            && !$participant['suspended'],
-                    ),
-                    'id',
+            'eligibleIds' => array_column(
+                array_filter(
+                    $state['citizens'],
+                    fn (array $participant): bool => $participant[
+                        'territoryId'
+                    ] === $proposal['territoryId']
+                        && !$participant['suspended'],
                 ),
+                'id',
             ),
             'opensAt' => $this->currentTimestamp(),
             'closesAt' => gmdate(
@@ -1420,7 +1532,18 @@ final class SimulationEngine
                 409,
             );
         }
+        $comparison = $this->analyzer->evaluation(
+            $experiment,
+            $state['proposals'][
+                $this->findItemIndex(
+                    $state,
+                    'proposals',
+                    $experiment['proposalId'],
+                )
+            ],
+        );
         $state['experiments'][$experimentIndex]['status'] = 'evaluated';
+        $state['experiments'][$experimentIndex]['comparison'] = $comparison;
         $state['experiments'][$experimentIndex]['evaluation'] = [
             'summary' => $this->requireText($payload['summary'] ?? ''),
             'decision' => $decision,
@@ -1448,6 +1571,13 @@ final class SimulationEngine
             'type' => $payload['type'],
             'label' => $this->requireText($payload['label'] ?? ''),
             'cents' => (int) round($amount * 100),
+            'territoryId' => $this->requireActiveCitizen(
+                $state,
+                $payload['citizenId'],
+            )['territoryId'],
+            'category' => $this->draftText(
+                $payload['category'] ?? 'Autre ressource',
+            ),
             'receipt' => $this->requireText($payload['receipt'] ?? ''),
             'date' => gmdate('Y-m-d'),
             'simulated' => true,
@@ -1471,6 +1601,13 @@ final class SimulationEngine
         foreach (['title', 'reason', 'risk', 'rollback'] as $field) {
             $proposal[$field] = $this->requireText($payload[$field] ?? '');
         }
+        $proposal['proposedRules'] = [
+            'quorum' => $this->requireNumber($payload['quorum'] ?? 50, 0, 100),
+            'changeAllowed' => filter_var(
+                $payload['changeAllowed'] ?? true,
+                FILTER_VALIDATE_BOOL,
+            ),
+        ];
         $state['governance'][] = $proposal;
         $objectId = $proposal['id'];
 

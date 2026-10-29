@@ -8,6 +8,227 @@ namespace App\Service;
 final class ActionForms
 {
     public const TYPES = [
+        'proposal.transition' => [
+            'title' => 'Faire évoluer l’état du chemin',
+            'view' => 'proposals',
+            'fields' => [
+                'proposalId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'status' => [
+                    'type' => 'choice',
+                    'label' => 'Nouvel état',
+                    'choices' => [
+                        'completed' => 'completed',
+                        'ready' => 'ready',
+                        'deferred' => 'deferred',
+                        'withdrawn' => 'withdrawn',
+                        'inapplicable' => 'inapplicable',
+                        'observing' => 'observing',
+                        'evaluated' => 'evaluated',
+                        'archived' => 'archived',
+                        'published' => 'published',
+                        'draft' => 'draft',
+                    ],
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Motif',
+                ],
+            ],
+        ],
+        'proposal.reformulate' => [
+            'title' => 'Proposer une reformulation validée',
+            'view' => 'proposals',
+            'fields' => [
+                'proposalId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'locale' => [
+                    'type' => 'text',
+                    'label' => 'Langue (ex. fr_FR)',
+                ],
+                'level' => [
+                    'type' => 'text',
+                    'label' => 'Niveau de lecture (français simple, scientifique expliqué…)',
+                ],
+                'text' => [
+                    'type' => 'textarea',
+                    'label' => 'Reformulation',
+                ],
+                'glossary' => [
+                    'type' => 'textarea',
+                    'label' => 'Mots à expliquer',
+                ],
+            ],
+        ],
+        'governance.enact' => [
+            'title' => 'Appliquer une évolution examinée',
+            'view' => 'governance',
+            'fields' => [
+                'governanceId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Justification de la mise en application',
+                ],
+            ],
+        ],
+        'moderation.decide' => [
+            'title' => 'Instruire le dossier',
+            'view' => 'governance',
+            'fields' => [
+                'caseId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'targetId' => [
+                    'type' => 'text',
+                    'label' => 'Identifiant du personnage concerné',
+                ],
+                'rule' => [
+                    'type' => 'choice',
+                    'label' => 'Règle préexistante',
+                    'choices' => [
+                        'Menace documentée' => 'threat',
+                        'Harcèlement' => 'harassment',
+                        'Usurpation' => 'impersonation',
+                        'Divulgation privée' => 'private_data',
+                        'Spam perturbateur' => 'spam',
+                        'Falsification' => 'falsification',
+                    ],
+                ],
+                'measure' => [
+                    'type' => 'choice',
+                    'label' => 'Mesure proportionnée',
+                    'choices' => [
+                        'Avertissement' => 'warning',
+                        'Pause de publication' => 'publication_pause',
+                        'Classement sans mesure' => 'dismiss',
+                    ],
+                ],
+                'days' => [
+                    'type' => 'number',
+                    'label' => 'Durée en jours (1–30)',
+                ],
+                'facts' => [
+                    'type' => 'textarea',
+                    'label' => 'Faits établis',
+                ],
+                'evidence' => [
+                    'type' => 'textarea',
+                    'label' => 'Preuves et sources',
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Motivation et proportionnalité',
+                ],
+            ],
+        ],
+        'moderation.confirm' => [
+            'title' => 'Confirmer une décision en indépendance',
+            'view' => 'governance',
+            'fields' => [
+                'caseId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Motifs du second conciliateur',
+                ],
+            ],
+        ],
+        'moderation.resolve' => [
+            'title' => 'Résoudre un recours',
+            'view' => 'governance',
+            'fields' => [
+                'appealId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'outcome' => [
+                    'type' => 'choice',
+                    'label' => 'Conclusion',
+                    'choices' => [
+                        'Confirmer la mesure' => 'upheld',
+                        'Révoquer la mesure' => 'revoked',
+                    ],
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Motifs du réexamen indépendant',
+                ],
+            ],
+        ],
+        'integrity.review' => [
+            'title' => 'Examiner une alerte d’intégrité',
+            'view' => 'transparency',
+            'fields' => [
+                'alertId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'status' => [
+                    'type' => 'choice',
+                    'label' => 'Conclusion',
+                    'choices' => [
+                        'reproducible' => 'reproducible',
+                        'dismissed' => 'dismissed',
+                        'security_incident' => 'security_incident',
+                        'confirmed_fraud' => 'confirmed_fraud',
+                        'corrected' => 'corrected',
+                    ],
+                ],
+                'proof' => [
+                    'type' => 'textarea',
+                    'label' => 'Procédure de reproduction et éléments vérifiables',
+                ],
+            ],
+        ],
+        'consultation.review' => [
+            'title' => 'Demander une annulation documentée',
+            'view' => 'consultations',
+            'fields' => [
+                'consultationId' => [
+                    'type' => 'hidden',
+                    'label' => false,
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Motif',
+                ],
+                'proof' => [
+                    'type' => 'textarea',
+                    'label' => 'Preuve de l’incident affectant la consultation',
+                ],
+            ],
+        ],
+        'citizen.preferences' => [
+            'title' => 'Préférences de lecture',
+            'view' => 'citizen',
+            'fields' => [
+                'locale' => [
+                    'type' => 'text',
+                    'label' => 'Langue (fr_FR, en_GB…)',
+                ],
+                'recommendations' => [
+                    'type' => 'checkbox',
+                    'label' => 'Activer les comparaisons suggérées',
+                    'required' => false,
+                ],
+                'largeText' => [
+                    'type' => 'checkbox',
+                    'label' => 'Agrandir les caractères',
+                    'required' => false,
+                ],
+            ],
+        ],
+
         'citizen.create' => [
             'title' => 'Créer un personnage fictif',
             'view' => 'citizen',
@@ -137,6 +358,11 @@ final class ActionForms
             'title' => 'Faire évoluer mon chemin',
             'view' => 'proposals',
             'fields' => [
+                'observationId' => [
+                    'type' => 'text',
+                    'label' => 'Identifiant de l’observation motivant la révision (facultatif)',
+                    'required' => false,
+                ],
                 'proposalId' => [
                     'type' => 'hidden',
                     'label' => false,
@@ -263,10 +489,47 @@ final class ActionForms
                 ],
             ],
         ],
+        'territory.revise' => [
+            'title' => 'Réviser une fiche territoriale',
+            'view' => 'territories',
+            'fields' => [
+                'adaptationId' => ['type' => 'hidden', 'label' => false],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Motif de la révision',
+                ],
+                'probableConsequences' => [
+                    'type' => 'textarea',
+                    'label' => 'Conséquences probables (hypothèses)',
+                ],
+                'observedConsequences' => [
+                    'type' => 'textarea',
+                    'label' => 'Conséquences observées ou absence explicite de mesure',
+                ],
+                'source' => [
+                    'type' => 'text',
+                    'label' => 'Source datée ou référence documentaire',
+                ],
+                'review' => [
+                    'type' => 'textarea',
+                    'label' => 'Conditions de réexamen',
+                ],
+            ],
+        ],
         'territory.adapt' => [
             'title' => 'Adapter un chemin à un autre territoire',
             'view' => 'territories',
             'fields' => [
+                'probableConsequences' => [
+                    'type' => 'textarea',
+                    'label' => 'Conséquences probables',
+                    'required' => false,
+                ],
+                'observedConsequences' => [
+                    'type' => 'textarea',
+                    'label' => 'Conséquences observées (si disponibles)',
+                    'required' => false,
+                ],
                 'proposalId' => [
                     'type' => 'hidden',
                     'label' => false,
@@ -489,6 +752,15 @@ final class ActionForms
             'title' => 'Proposer une évolution',
             'view' => 'governance',
             'fields' => [
+                'quorum' => [
+                    'type' => 'number',
+                    'label' => 'Quorum des futures consultations (%)',
+                ],
+                'changeAllowed' => [
+                    'type' => 'checkbox',
+                    'label' => 'Permettre la révision du vote avant clôture',
+                    'required' => false,
+                ],
                 'title' => [
                     'type' => 'text',
                     'label' => 'Titre de l’évolution',

@@ -22,16 +22,21 @@
                 and (q == ''
                     or (q|lower) in (consultation.frozen.title|lower)) %}
             {% set tally = consultation.tally %}
-            <article class="consultation-card">
+            <article
+                class="consultation-card"
+                data-consultation-id="{{ consultation.id }}"
+            >
                 <div class="consultation-main">
                     <div class="row-header">
                         {{
                             ui.badge(
-                                tally.phase == 'expired'
-                                    ? 'Échéance atteinte · proclamation en attente'
-                                    : tally.phase == 'open'
-                                        ? 'Consultation ouverte'
-                                        : 'Consultation close',
+                                tally.phase == 'cancelled'
+                                    ? 'Consultation annulée · procédure documentée'
+                                    : tally.phase == 'expired'
+                                        ? 'Échéance atteinte · proclamation en attente'
+                                        : tally.phase == 'open'
+                                            ? 'Consultation ouverte'
+                                            : 'Consultation close',
                                 tally.phase == 'open' ? 'green' : 'gray'
                             )
                         }}
@@ -68,15 +73,21 @@
                         <div class="vote-counts">
                             <span>
                                 <i class="pour"></i>
-                                {{ tally.pour }} Pour
+                                <strong data-count="pour">
+                                    {{ tally.pour }}
+                                </strong> Pour
                             </span>
                             <span>
                                 <i class="contre"></i>
-                                {{ tally.contre }} Contre
+                                <strong data-count="contre">
+                                    {{ tally.contre }}
+                                </strong> Contre
                             </span>
                             <span>
                                 <i class="abstention"></i>
-                                {{ tally.abstention }} Abstention
+                                <strong data-count="abstention">
+                                    {{ tally.abstention }}
+                                </strong> Abstention
                             </span>
                         </div>
                         <p class="small muted">
@@ -132,6 +143,12 @@
                             )
                         }}
                     {% endif %}
+                    <p
+                        class="small"
+                        data-live-status
+                        role="status"
+                        aria-live="polite"
+                    ></p>
                     <details>
                         <summary>
                             Participations nominatives fictives
@@ -225,6 +242,15 @@
                             )
                         }}
                     {% endif %}
+                    {% if consultation.status == 'closed' %}{{
+                        ui.action(
+                            'consultation.review',
+                            'Réexaminer un incident de résultat',
+                            {
+                                consultationId: consultation.id
+                            }
+                        )
+                    }}{% endif %}
                 </aside>
             </article>
         {% endif %}
@@ -235,4 +261,5 @@
             consultations sont fictives et distinctes des élections officielles.
         </p>
     </div>
+    <script src="/live-consultations.js" defer></script>
 {% endblock %}

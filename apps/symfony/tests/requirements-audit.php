@@ -10,7 +10,7 @@ use App\Service\SimulationEngine;
 // doivent rester satisfaits, sans prétendre couvrir les 68 scénarios complets.
 $engine = new SimulationEngine();
 $fixture = json_decode(
-    file_get_contents(dirname(__DIR__) . '/data/scenario.json'),
+    file_get_contents(dirname(__DIR__) . '/data/reference-scenario.json'),
     true,
     512,
     JSON_THROW_ON_ERROR,

@@ -1,0 +1,11 @@
+parameters:
+    level: 5
+    paths:
+        - src
+    tmpDir: var/phpstan
+    # Symfony marque ce collecteur @final en PHPDoc, sans le rendre final en PHP.
+    # L’adaptation est isolée et couverte par les tests réels du profiler et d’expurgation.
+    ignoreErrors:
+        -
+            identifier: class.extendsFinalByPhpDoc
+            path: src/DataCollector/PublicDemoRequestCollector.php

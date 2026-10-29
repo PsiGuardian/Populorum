@@ -2574,3 +2574,21 @@ form ul {
 .charter-text a {
     text-decoration: underline;
 }
+
+.causal-graph-scroll {
+    overflow-x: auto;
+}
+.causal-graph-scroll svg {
+    display: block;
+    width: 100%;
+    min-width: 690px;
+}
+.large-text main {
+    font-size: 1.15rem;
+}
+.large-text main p,
+.large-text main label,
+.large-text main input,
+.large-text main textarea {
+    font-size: inherit;
+}

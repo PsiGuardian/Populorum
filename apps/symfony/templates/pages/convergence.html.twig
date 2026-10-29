@@ -8,7 +8,8 @@
             </div>
             <h1>La convergence émergente</h1>
             <p>
-                Une proximité n’impose aucun accord et ne mesure pas la valeur d’une personne.
+                Une proximité n’impose aucun accord et ne mesure pas la valeur
+                d’une personne.
             </p>
         </div>
     </div>
@@ -17,8 +18,10 @@
             {{ ui.badge('CRITÈRES EXPLICITES') }}
             <h2>Se rapprocher<br />sans se confondre.</h2>
             <p>
-                Intersection des thèmes déclarés : deux thèmes communs ou plus indiquent une convergence partielle ; un
-                thème indique une proximité thématique ; aucun thème indique des chemins distincts.
+                Comparaison explicite des solutions, thèmes, indicateurs et
+                versions successives. La proximité des textes est distinguée de
+                celle des observations ; aucune ne prouve à elle seule un lien
+                causal.
             </p>
         </div>
         <div class="convergence-lines">
@@ -33,7 +36,13 @@
                     stroke="#c6a667"
                     stroke-width="2"
                 />
-                <circle cx="280" cy="105" r="16" fill="#111d2b" stroke="#c6a667" />
+                <circle
+                    cx="280"
+                    cy="105"
+                    r="16"
+                    fill="#111d2b"
+                    stroke="#c6a667"
+                />
             </svg>
             <p>
                 Proximité conceptuelle et preuve empirique sont différentes.
@@ -44,6 +53,9 @@
         {% for comparison in convergence %}
             <article class="panel">
                 {{ ui.badge('Proximité ' ~ comparison.status) }}
+                <p>
+                    <strong>{{ comparison.scenario }}</strong>
+                </p>
                 <h3>{{ proposalMap[comparison.a].title }}</h3>
                 <span aria-hidden="true">↔</span>
                 <h3>{{ proposalMap[comparison.b].title }}</h3>
@@ -53,6 +65,22 @@
                 <p>
                     Indicateur identique : {{ comparison.sharedIndicator ? 'oui' : 'non' }}
                 </p>
+                <p>
+                    Observations : {{ comparison.observed.status }}
+                </p>
+                <p class="small muted">
+                    {{ comparison.observed.reason }}
+                </p>
+                <details>
+                    <summary>
+                        Évolution du rapprochement
+                    </summary>
+                    {% for point in comparison.history %}
+                        <p>
+                            {{ point.at }} · {{ point.status }}
+                        </p>
+                    {% endfor %}
+                </details>
                 <p class="small muted">
                     Aucune inférence causale ni évaluation de l’auteur.
                 </p>
@@ -72,7 +100,8 @@
                     {{ heading }}
                 </summary>
                 <p>
-                    {{ description }} Ces exemples pédagogiques ne constituent pas des observations réelles.
+                    {{ description }} Ces exemples pédagogiques ne constituent pas
+                    des observations réelles.
                 </p>
             </details>
         {% endfor %}

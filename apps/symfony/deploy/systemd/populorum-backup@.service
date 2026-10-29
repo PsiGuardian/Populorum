@@ -1,0 +1,12 @@
+[Unit]
+Description=Sauvegarde chiffrée Populorum
+[Service]
+Type=oneshot
+User=populorum
+WorkingDirectory=/srv/populorum/apps/symfony
+UMask=0077
+ExecStart=/usr/bin/php bin/console app:backup create /srv/populorum-backups/ --key-file=/srv/populorum-private/backup.key
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/srv/populorum/apps/symfony/var /srv/populorum-backups /srv/populorum-private

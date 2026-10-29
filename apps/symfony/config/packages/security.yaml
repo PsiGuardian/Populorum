@@ -1,0 +1,23 @@
+security:
+    password_hashers:
+        App\Entity\CivicAccount: auto
+    providers:
+        civic_accounts:
+            id: App\Security\CivicAccountProvider
+    firewalls:
+        main:
+            lazy: true
+            provider: civic_accounts
+            form_login:
+                login_path: citizen_login
+                check_path: citizen_login
+                enable_csrf: true
+                default_target_path: /citizen
+            login_throttling:
+                max_attempts: 5
+                interval: '1 minute'
+            logout:
+                path: citizen_logout
+                target: /
+                enable_csrf: true
+    access_control: []

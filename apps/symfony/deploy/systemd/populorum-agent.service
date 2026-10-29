@@ -1,0 +1,14 @@
+[Unit]
+Description=Agent volontaire de copie publique Populorum
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+User=populorum-agent
+WorkingDirectory=/srv/populorum/apps/symfony
+ExecStart=/usr/bin/php bin/console app:replica sync --config=/etc/populorum-agent/config.json
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/populorum-agent

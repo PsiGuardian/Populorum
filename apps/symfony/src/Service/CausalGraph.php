@@ -52,6 +52,20 @@ final class CausalGraph
                 'category' => trim($category),
                 'content' => trim($node['content'] ?? ''),
                 'kind' => $node['kind'] ?? 'hypothesis',
+                'evidenceType' => in_array(
+                    $node['evidenceType'] ?? '',
+                    [
+                        'public_document',
+                        'media_context',
+                        'simulated',
+                        'hypothesis',
+                    ],
+                    true,
+                )
+                    ? $node['evidenceType']
+                    : (($node['kind'] ?? '') === 'observation'
+                        ? 'simulated'
+                        : 'hypothesis'),
             ];
         }
 

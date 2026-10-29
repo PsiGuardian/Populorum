@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 
+$_SERVER['POPULORUM_SCENARIO'] = 'reference';
 $assertionCount = 0;
 $failureCount = 0;
 $results = [];
@@ -31,7 +32,7 @@ function rejects(callable $operation, string $label): void
 }
 $engine = new SimulationEngine();
 $initialState = json_decode(
-    file_get_contents(dirname(__DIR__) . '/data/scenario.json'),
+    file_get_contents(dirname(__DIR__) . '/data/reference-scenario.json'),
     true,
     512,
     JSON_THROW_ON_ERROR,

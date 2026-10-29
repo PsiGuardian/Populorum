@@ -27,13 +27,14 @@ final class DemoSetupCommand extends Command
         private FileStore $store,
         private Accounts $accounts,
         private Settings $settings,
-        private string $projectDir,
     ) {
         parent::__construct();
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(
+        InputInterface $input,
+        OutputInterface $output,
+    ): int {
         if (
             ($_SERVER['POPULORUM_DEMO'] ?? '') !== '1'
             || !in_array($_SERVER['APP_ENV'] ?? '', ['demo', 'test'], true)
@@ -43,7 +44,12 @@ final class DemoSetupCommand extends Command
         $insertedCities = $this->database->importCities();
         $this->store->initialize();
         if (!$this->accounts->find(self::PUBLIC_USERNAME)) {
-            $this->accounts->add(self::PUBLIC_USERNAME, self::PUBLIC_PASSWORD, 'developer', false);
+            $this->accounts->add(
+                self::PUBLIC_USERNAME,
+                self::PUBLIC_PASSWORD,
+                'developer',
+                false,
+            );
         }
         if (!$this->accounts->find('operator')) {
             $password = bin2hex(random_bytes(24));
@@ -54,7 +60,10 @@ final class DemoSetupCommand extends Command
                 throw new \RuntimeException('Écriture des identifiants privés impossible.');
             }
             chmod($path, 0600);
-            fwrite($credentialsFile, "Identifiant privé : operator\nMot de passe privé : $password\n");
+            fwrite(
+                $credentialsFile,
+                "Identifiant privé : operator\nMot de passe privé : $password\n",
+            );
             fclose($credentialsFile);
         }
         if (!is_file($this->store->root() . '/settings.json')) {

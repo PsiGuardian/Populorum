@@ -2,7 +2,7 @@
 
 Application native **PHP 8.4 / Symfony 8.1 / Doctrine / Twig / Symfony Form et Validator**, sans dépendance React, Node.js ni service JavaScript côté serveur. La base est un fichier SQLite : `var/populorum.sqlite`.
 
-Le projet reste une simulation fictive. Les seules communes initiales sont **Paris (75056), Marseille (13055), Le Havre (76351)**. Leurs noms, rattachements et codes communaux viennent du COG INSEE 2026. Tous les personnages, propositions, votes, expériences et dépenses restent des données pédagogiques fictives.
+Le projet reste une simulation fictive. Les seules communes initiales sont **Paris (75056), Marseille (13055), Le Havre (76351)**. Leurs noms, rattachements et codes communaux viennent du COG INSEE 2026. Les 300 personnages (100 par ville), les 27 projets expérimentaux (neuf par ville), votes et résultats sont fictifs. Les projets s’appuient sur des sources publiques datées, distinctes des hypothèses et résultats inventés. Voir [recherche et fixtures](docs/MUNICIPAL_FIXTURES.md).
 
 ## Installation sur Arch Linux
 
@@ -12,7 +12,7 @@ Les dépendances système proviennent de pacman :
 sudo pacman -S --needed php php-sqlite composer
 ```
 
-Dans `/etc/php/php.ini`, activer `pdo_sqlite` et `sqlite3`, ainsi que `openssl`, `tokenizer`, `mbstring`, `ctype`, `iconv`, `dom`, `xml`, `xmlwriter` et `curl` si ces extensions sont distribuées sous forme de modules sur votre installation. Ne pas ajouter une directive `extension=` pour une extension déjà compilée dans PHP. Vérifier :
+Dans `/etc/php/php.ini`, activer `pdo_sqlite` et `sqlite3`, ainsi que `openssl`, `tokenizer`, `mbstring`, `ctype`, `iconv`, `dom`, `xml`, `xmlwriter`, `xmlreader`, `simplexml` et `curl` si ces extensions sont distribuées sous forme de modules sur votre installation. Ne pas ajouter une directive `extension=` pour une extension déjà compilée dans PHP. Vérifier :
 
 ```bash
 php -v
@@ -103,3 +103,16 @@ Le [guide des développeurs](docs/CODE_STYLE.md) décrit les responsabilités de
 L’[audit des exigences](docs/REQUIREMENTS_AUDIT.md) compare toutes les rubriques et les 68 scénarios au code, distingue les fonctions partielles et contient les preuves des écarts reproduits. Les 99 contrôles de non-régression ne valent pas validation du cahier complet.
 
 Les [sept écarts reproduits ont été corrigés](docs/CORRECTIONS.md), ainsi que le rendu de la charte et les exports d’expériences. `composer test` exécute les 99 contrôles initiaux, 64 contrôles supplémentaires et les 12 sondes désormais satisfaites. Une régression fait échouer la CI. Le résultat avant correction est conservé séparément.
+
+## Fonctionnalités et recette du lot 0.3
+
+Comptes Symfony liés à un personnage, projections SQL transactionnelles, API paginée et SSE, cycles et reformulations versionnées, gouvernance à confirmations indépendantes, modération motivée et recours, convergence descriptive, bilans territoriaux, sauvegardes chiffrées et réplication HTTPS avec agent volontaire sont implémentés. Les commandes d’exploitation et limites sont dans [OPERATIONS.md](docs/OPERATIONS.md), le contrat HTTP dans [API.md](docs/API.md), les vérifications dans [COMPLETION_REVIEW.md](docs/COMPLETION_REVIEW.md).
+
+```bash
+composer test
+composer analyse
+composer style:check
+php bin/console doctrine:schema:validate --env=demo
+```
+
+Les scénarios historiques à neuf personnages sont conservés dans `data/reference-scenario.json` pour les régressions. Les nouveaux laboratoires utilisent `data/scenario.json`. Un laboratoire déjà créé ne change jamais de population ou de texte voté au chargement d’une mise à jour.

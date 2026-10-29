@@ -16,24 +16,47 @@
         <section class="panel">
             <h2>Le registre d’intégrité</h2>
             <p>
-                Les opérations sont chaînées en SHA-256, signées en ECDSA P-256 par PHP/OpenSSL, et associées à une
-                empreinte de l’état courant.
+                Les opérations sont chaînées en SHA-256, signées en ECDSA P-256
+                par PHP/OpenSSL, et associées à une empreinte de l’état courant.
             </p>
             <p class="small muted">
-                L’opérateur reste dans le modèle de confiance. Les clés sont celles de l’instance, pas des signatures
-                individuelles de citoyens. Le premier état pédagogique n’est pas signé.
+                L’opérateur reste dans le modèle de confiance. Les clés sont
+                celles de l’instance, pas des signatures individuelles de
+                citoyens. Le premier état pédagogique n’est pas signé.
             </p>
             <div class="row-links">
-                <a class="button primary" href="{{ path('verify') }}">Vérifier maintenant →</a>
-                <a class="button" href="{{ path('export', { kind: 'proofs' }) }}">Exporter les preuves ↓</a>
+                <a class="button primary" href="{{ path('verify') }}">
+                    Vérifier maintenant →
+                </a>
+                <a
+                    class="button"
+                    href="{{
+                    path(
+                        'export',
+                        {
+                            kind: 'proofs'
+                        }
+                    )
+                    }}"
+                >
+                    Exporter les preuves ↓
+                </a>
             </div>
         </section>
         <section class="panel">
             <h2>Une anomalie n’est pas une culpabilité</h2>
             <p>
-                Un signalement ouvre une vérification ; il ne suspend aucun citoyen automatiquement.
+                Un signalement ouvre une vérification ; il ne suspend aucun
+                citoyen automatiquement.
             </p>
-            {{ ui.action('integrity.alert', 'Décrire une anomalie', {}, 'plain') }}
+            {{
+                ui.action(
+                    'integrity.alert',
+                    'Décrire une anomalie',
+                    {},
+                    'plain'
+                )
+            }}
             {% for integrityAlert in state.alerts %}
                 <p>
                     {{ integrityAlert.reason }} — à vérifier
@@ -41,7 +64,8 @@
             {% endfor %}
             <hr />
             <p>
-                Vérificateur hors ligne : <code>php tools/verify-export.php export.json</code>
+                Vérificateur hors ligne : <code>php tools/verify-export.php
+                    export.json</code>
             </p>
         </section>
     </div>
@@ -63,11 +87,17 @@
                             <td>{{ auditEvent.index + 1 }}</td>
                             <td>{{ auditEvent.type }}</td>
                             <td>{{ auditEvent.at }}</td>
-                            <td><code title="{{ auditEvent.hash }}">{{ auditEvent.hash|slice(0, 24) }}…</code></td>
+                            <td>
+                                <code title="{{ auditEvent.hash }}">
+                                    {{ auditEvent.hash|slice(0, 24) }}…
+                                </code>
+                            </td>
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="4">Les opérations enregistrées apparaîtront ici.</td>
+                            <td colspan="4">
+                                Les opérations enregistrées apparaîtront ici.
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -93,8 +123,20 @@
                     {% for financialEntry in state.finance %}
                         <tr>
                             <td>{{ financialEntry.label }}</td>
-                            <td>{{ financialEntry.type == 'expense' ? 'Dépense' : 'Contribution' }}</td>
-                            <td>{{ (financialEntry.cents / 100)|number_format(2, ',', ' ') }} €</td>
+                            <td>
+                                {{ financialEntry.type == 'expense'
+                                    ? 'Dépense'
+                                    : 'Contribution' }}
+                            </td>
+                            <td>
+                                {{
+                                    (financialEntry.cents / 100)|number_format(
+                                        2,
+                                        ',',
+                                        ' '
+                                    )
+                                }} €
+                            </td>
                             <td>{{ financialEntry.receipt }}</td>
                         </tr>
                     {% endfor %}
@@ -102,7 +144,28 @@
             </table>
         </div>
         <p class="small muted">
-            Ces chiffres ne représentent pas les coûts réels de l’hébergement. Aucun paiement n’est effectué.
+            Ces chiffres ne représentent pas les coûts réels de l’hébergement.
+            Aucun paiement n’est effectué.
         </p>
     </section>
+    {% for alert in state.alerts %}
+        <section class="panel">
+            <h3>Alerte : {{ alert.status }}</h3>
+            <p>
+                {{ alert.reason }}
+            </p>{{
+                ui.action(
+                    'integrity.review',
+                    'Examiner les preuves',
+                    {
+                        alertId: alert.id
+                    }
+                )
+            }}{% for review in alert.reviews ?? [] %}
+                <p>
+                    {{ review.at }} · {{ review.to }} · {{ review.proof }}
+                </p>
+            {% endfor %}
+        </section>
+    {% endfor %}
 {% endblock %}

@@ -1,23 +1,20 @@
-# Baseline Symfony/SQLite — 0.2.0
+# Baseline Symfony/SQLite — 0.3.0
 
-29 octobre 2026. Cette branche corrige l’écart de la première tentative Sites. Elle part de la branche documentaire `main` et ne contient pas l’application React/Workers/D1.
+29 octobre 2026. Succède à [0.2.0](BASELINE-0.2.md). Le projet reste Symfony natif, PHP 8.4+, Doctrine, Twig, SQLite, trois communes. Profiler Shield reste figé à `3595f1e483e4ea1ee2dcbd6ddbabe7e2976e1783` sur `dev-1.0.1` ; son dépôt n’a pas été modifié.
 
-## Pile effectivement installée
+## Organisation
 
-- PHP 8.4 minimum ; essais exécutés sous PHP 8.4.5 dans l’environnement de réalisation.
-- Symfony 8.1, Doctrine ORM/DBAL/Migrations, Twig, Form, Validator et CSRF.
-- SQLite : un fichier local, limité pour l’instant aux communes de Paris, Marseille et Le Havre.
-- Profiler Shield : branche `dev-1.0.1`, commit `3595f1e483e4ea1ee2dcbd6ddbabe7e2976e1783`, sans modification du dépôt du bundle.
-- Interface rendue en Twig et moteur métier PHP ; aucun moteur JavaScript côté serveur.
+- `SimulationEngine` : invariants, opérations et signatures ; `CivicWorkflow` : rôles, décisions et cycles ; `CausalGraph` : validation des liens ; `ConvergenceAnalyzer` : rapprochement descriptif.
+- `DemoDatabase` : snapshot signé/CAS ; `RelationalProjection` : tables métier dans la même transaction ; migrations : évolution du schéma sans écrasement des espaces.
+- `DemoController`, formulaires Symfony et Twig : parcours serveur utilisables sans JavaScript ; SSE est un enrichissement facultatif.
+- `CivicAccount` et sécurité Symfony : accès fictifs liés à un seul personnage. Guardian reste indépendant et public en lecture seule.
+- `BackupService`, `ReplicaProtocol`, `VoluntaryAgent` : restauration authentifiée, copies publiques et consentement local révocable.
+- `MunicipalFixtureBuilder` : génération déterministe de 300 personnages et 27 projets documentés, sans résultat réel allégué.
 
-## Invariants
+## Contrats
 
-Simulation visible, une voix active par personnage admissible, consentement fictif, version et règles figées, autonomie locale, révision tracée, sources et imprévus, aucun classement des citoyens, aucune sanction automatique sur signalement, clés exclues des exports et de Git.
+Une voix active par personnage admissible et consultation, règles et texte figés, consentement fictif, autonomie locale, aucun score humain ni sanction automatique. Clés, sessions, comptes privés, mots de passe et CSV restent hors de Git et des exports publics. Les sauvegardes ne sont pas des répliques publiques. Le schéma SQL projeté ne prétend pas normaliser toutes les entités conceptuelles du cahier des charges.
 
-Le compte public Guardian est `developer`, protégé par une restriction applicative en lecture seule. Ses identifiants sont intentionnellement publics. Aucune connexion HTTP de l’opérateur n’est autorisée. Les clés d’instance restent locales, sans rapport avec les identifiants publics. La collecte native du profiler n’est activée qu’après l’authentification Guardian et l’autorisation du bundle.
+## Vérification et limites
 
-## Écarts restant à traiter par rapport au projet complet
-
-Cette étape ne prétend pas achever le cahier des charges entier. La restriction à trois communes et le remplacement initial de PostgreSQL par SQLite sont demandés par l’utilisateur. La normalisation de l’ensemble des entités métier, l’historique territorial national, l’éditeur graphique avancé, les liens causaux typés complets, SSE/Mercure, l’agent volontaire et la fédération réelle, les sauvegardes chiffrées avec restauration testée et les audits WCAG/RGAA, de sécurité et de charge restent à réaliser.
-
-Les villes sont réelles ; les personnes et données d’expérience sont fictives. Aucun accès de démonstration n’est utilisable pour une instance contenant des données réelles sensibles.
+Voir [la revue courante](COMPLETION_REVIEW.md), [l’exploitation](OPERATIONS.md) et [les sources des fixtures](MUNICIPAL_FIXTURES.md). Les matrices initiales sont historiques : leurs constats « absent » ne décrivent plus nécessairement ce lot. La revue courante conserve les écarts qui demandent une recette plus étendue ou une décision de déploiement. Aucun audit externe, validation juridique, identité civile, consensus distribué ou engagement de disponibilité n’est acquis par les tests locaux.

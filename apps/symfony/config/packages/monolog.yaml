@@ -1,0 +1,15 @@
+monolog:
+    channels: ['civic']
+    handlers:
+        application:
+            type: rotating_file
+            path: '%kernel.logs_dir%/application.log'
+            level: warning
+            max_files: 14
+            channels: ['!event', '!doctrine', '!security']
+        security_private:
+            type: rotating_file
+            path: '%kernel.logs_dir%/security.log'
+            level: notice
+            max_files: 14
+            channels: ['security']

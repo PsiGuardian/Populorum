@@ -8,7 +8,8 @@
             </div>
             <h1>Les territoires</h1>
             <p>
-                Trois villes réelles. Tous les citoyens, consultations et résultats de ce laboratoire sont fictifs.
+                Trois villes réelles. Tous les citoyens, consultations et
+                résultats de ce laboratoire sont fictifs.
             </p>
         </div>
     </div>
@@ -36,20 +37,180 @@
                         <p class="small muted">
                             Code INSEE {{ city.code }} · Référence géographique {{ city.vintage }}
                         </p>
-                        <a class="plain small" href="{{ city.sourceUrl }}" rel="noreferrer" target="_blank">
+                        <a
+                            class="plain small"
+                            href="{{ city.sourceUrl }}"
+                            rel="noreferrer"
+                            target="_blank"
+                        >
                             Source INSEE ↗
                         </a>
+                        {% if city.population is defined %}
+                            <p class="small">
+                                Population municipale {{ city.populationYear }} :
+                                {{ city.population|number_format(0, ',', ' ') }} habitants.
+                                <a href="{{ city.populationSource }}">
+                                    Source INSEE reprise dans l’extrait SSMSI
+                                </a>.
+                            </p>
+                        {% endif %}
+                        {% set report = territorialReports[city.id] %}
+                        <details>
+                            <summary>
+                                Bilan communal de la simulation
+                            </summary>
+                            <p>
+                                {{ report.proposals|length }} chemins ; {{
+                                    report.consultations|length
+                                }} consultations ; {{
+                                    report.experiments|length
+                                }} expériences. Coûts attribués : {{
+                                    (report.expenseCents / 100)|number_format(
+                                        2,
+                                        ',',
+                                        ' '
+                                    )
+                                }} € fictifs.
+                            </p>
+                            {% for experiment in report.experiments %}
+                                <h3>{{ experiment.objective }}</h3>
+                                <p>
+                                    {{ experiment.start }} → {{
+                                        experiment.end
+                                    }} · {{ experiment.indicator }} ({{
+                                        experiment.unit
+                                    }}).
+                                </p>
+                                {% if experiment.evaluation is defined %}
+                                    <p>
+                                        {{ experiment.evaluation.summary }} · Suite
+                                        : {{ experiment.evaluation.decision }}.
+                                    </p>
+                                {% endif %}
+                            {% endfor %}
+                            {% for adaptation in report.adaptations %}
+                                <section class="panel">
+                                    <h3>
+                                        {{ adaptation.type }} · {{
+                                            proposalMap[adaptation.proposalId].title|default(
+                                                adaptation.proposalId
+                                            )
+                                        }} · version {{
+                                            adaptation.version|default(1)
+                                        }}
+                                    </h3>
+                                    <p>
+                                        {{ adaptation.characteristic }} — {{
+                                            adaptation.reason
+                                        }}
+                                    </p>
+                                    <p>
+                                        Hypothèses : {{
+                                            adaptation.probableConsequences|default(
+                                                'Non précisées'
+                                            )
+                                        }}. Observations : {{
+                                            adaptation.observedConsequences|default(
+                                                'Aucune mesure fournie'
+                                            )
+                                        }}.
+                                    </p>
+                                    <p>
+                                        Source : {{ adaptation.source }}.
+                                        Alternative : {{
+                                            adaptation.alternative
+                                        }}. Réexamen : {{ adaptation.review }}.
+                                    </p>
+                                    {% if
+                                        (adaptation.authorId|default(''))
+                                            == actor.id %}{{
+                                        ui.action(
+                                            'territory.revise',
+                                            'Réviser cette fiche',
+                                            {
+                                                adaptationId: adaptation.id
+                                            }
+                                        )
+                                    }}{% endif %}
+                                    {% for revision in adaptation.revisions|default(
+                                        []
+                                    ) %}
+                                        <details>
+                                            <summary>
+                                                Version {{ revision.version }} · {{ revision.at }}
+                                            </summary>
+                                            <p>
+                                                Motif : {{ revision.reason }}
+                                            </p>
+                                            <p>
+                                                Hypothèses antérieures : {{
+                                                    revision.snapshot.probableConsequences
+                                                }}. Observations antérieures : {{
+                                                    revision.snapshot.observedConsequences
+                                                }}. Source : {{
+                                                    revision.snapshot.source
+                                                }}. Réexamen : {{
+                                                    revision.snapshot.review
+                                                }}.
+                                            </p>
+                                        </details>
+                                    {% endfor %}
+                                </section>
+                            {% endfor %}
+                            {% for observation in report.observations %}
+                                <p>
+                                    {{ observation.date }} : {{
+                                        observation.value
+                                    }}
+                                    {{ observation.unit }} ± {{
+                                        observation.uncertainty
+                                    }}. Source : {{ observation.source }}.
+                                    Facteur externe : {{ observation.external }}.
+                                    Imprévu : {{ observation.unexpected }}.
+                                </p>
+                            {% endfor %}
+                        </details>
                         <div class="row-links">
-                            <a class="plain" href="{{ path('section', { view: 'proposals', territory: city.id }) }}">
+                            <a
+                                class="plain"
+                                href="{{
+                                path(
+                                    'section',
+                                    {
+                                        view: 'proposals',
+                                        territory: city.id
+                                    }
+                                )
+                                }}"
+                            >
                                 Chemins locaux →
                             </a>
                             <a
                                 class="plain"
-                                href="{{ path('section', { view: 'consultations', territory: city.id }) }}"
+                                href="{{
+                                path(
+                                    'section',
+                                    {
+                                        view: 'consultations',
+                                        territory: city.id
+                                    }
+                                )
+                                }}"
                             >
                                 Consultations →
                             </a>
-                            <a class="plain" href="{{ path('section', { view: 'experiments', territory: city.id }) }}">
+                            <a
+                                class="plain"
+                                href="{{
+                                path(
+                                    'section',
+                                    {
+                                        view: 'experiments',
+                                        territory: city.id
+                                    }
+                                )
+                                }}"
+                            >
                                 Bilans →
                             </a>
                         </div>
@@ -60,13 +221,18 @@
     </div>
     <div class="notice">
         <p>
-            Le référentiel est volontairement limité à ces trois communes. Les arrondissements de Paris et Marseille ne
-            sont pas des villes supplémentaires dans cette première étape.
+            Le référentiel est volontairement limité à ces trois communes. Les
+            arrondissements de Paris et Marseille ne sont pas des villes
+            supplémentaires dans cette première étape.
         </p>
     </div>
     {% for adaptation in state.adaptations %}
         <article class="panel">
-            <h3>{{ territoryMap[adaptation.territoryId].name }} · {{ adaptation.type }}</h3>
+            <h3>
+                {{ territoryMap[adaptation.territoryId].name }} · {{
+                    adaptation.type
+                }}
+            </h3>
             <p>
                 {{ adaptation.reason }}
             </p>

@@ -1,6 +1,20 @@
 {% extends 'base.html.twig' %}
 {% import 'partials/macros.html.twig' as ui %}
 {% block content %}
+    {% if not app.user %}
+        <form method="post" action="{{ path('demo_new_workspace') }}">
+            <input
+                type="hidden"
+                name="_token"
+                value="{{ csrf_token('new_workspace') }}"
+            /><button type="submit" class="btn">
+                Ouvrir un nouveau laboratoire de 300 personnages fictifs
+            </button><p class="muted small">
+                L’ancien laboratoire est conservé en base. Le nouveau est isolé
+                et contient neuf propositions par ville.
+            </p>
+        </form>
+    {% endif %}
     <div class="page-title">
         <div>
             <div class="eyebrow">
@@ -8,64 +22,147 @@
             </div>
             <h1>Prendre part à l’expérience</h1>
             <p>
-                Votre navigateur dispose de sa propre simulation, conservée côté serveur dans SQLite. Il ne s’agit pas
-                d’un registre d’identités civiles.
+                Votre navigateur dispose de sa propre simulation, conservée côté
+                serveur dans SQLite. Il ne s’agit pas d’un registre d’identités
+                civiles.
             </p>
         </div>
     </div>
     <div class="two-columns">
         <section class="panel">
             <h2>Votre personnage actif</h2>
-            <form method="post" action="{{ path('persona') }}" class="citizen-select">
-                <input type="hidden" name="_token" value="{{ csrf_token('persona') }}" />
-                <label for="citizen">Personnage</label>
-                <select name="citizen" id="citizen">
-                    {% for citizen in state.citizens %}
-                        <option value="{{ citizen.id }}" {{ citizen.id == actor.id ? 'selected' : '' }}>
-                            {{ citizen.name }} — {{ territoryMap[citizen.territoryId].name }}
-                        </option>
-                    {% endfor %}
-                </select>
-                <button class="button">Choisir</button>
-            </form>
+            {% if app.user %}
+                <p>
+                    Compte de laboratoire connecté : {{
+                        app.user.userIdentifier
+                    }}. Identité de personnage liée au compte.
+                </p>
+                <form method="post" action="{{ path('citizen_logout') }}">
+                    <input
+                        type="hidden"
+                        name="_csrf_token"
+                        value="{{ csrf_token('logout') }}"
+                    /><button class="button">Se déconnecter</button>
+                </form>
+            {% else %}
+                <a href="{{ path('citizen_login') }}">
+                    Connexion à un laboratoire partagé
+                </a>
+            {% endif %}
+            {% if not app.user %}
+                <form
+                    method="post"
+                    action="{{ path('persona') }}"
+                    class="citizen-select"
+                >
+                    <input
+                        type="hidden"
+                        name="_token"
+                        value="{{ csrf_token('persona') }}"
+                    />
+                    <label for="citizen">Personnage</label>
+                    <select name="citizen" id="citizen">
+                        {% for citizen in state.citizens %}
+                            <option
+                                value="{{ citizen.id }}"
+                                {{ citizen.id == actor.id ? 'selected' : '' }}
+                            >
+                                {{ citizen.name }} — {{
+                                    territoryMap[citizen.territoryId].name
+                                }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button class="button">Choisir</button>
+                </form>
+            {% endif %}
             <p>
                 {{ actor.name }} · {{ territoryMap[actor.territoryId].name }}
             </p>
+            <p class="small">
+                Rôles fictifs : {{ (actor.roles ?? [actor.role])|join(', ') }}
+            </p>
             {{
                 ui.badge(
-                    actor.consent ? 'Publication nominative fictive consentie' : 'Consentement non donné',
+                    actor.consent
+                        ? 'Publication nominative fictive consentie'
+                        : 'Consentement non donné',
                     actor.consent ? 'green' : 'gray'
                 )
             }}
             <div class="action-links">
+                {{ ui.action('citizen.preferences', 'Préférences de lecture') }}
                 {{ ui.action('citizen.create', 'Créer un personnage') }}
                 {{ ui.action('citizen.update', 'Rectifier mon personnage') }}
                 {% if actor.consent %}
-                    {{ ui.action('citizen.withdraw', 'Retirer le consentement fictif', {}, 'plain') }}
+                    {{
+                        ui.action(
+                            'citizen.withdraw',
+                            'Retirer le consentement fictif',
+                            {},
+                            'plain'
+                        )
+                    }}
                 {% else %}
-                    {{ ui.action('citizen.consent', 'Définir le consentement fictif') }}
+                    {{
+                        ui.action(
+                            'citizen.consent',
+                            'Définir le consentement fictif'
+                        )
+                    }}
                 {% endif %}
-                {{ ui.action('citizen.erase', 'Effacer le nom fictif', {}, 'plain danger') }}
-                <a class="plain" href="{{ path('export', { kind: 'citizen' }) }}">Exporter le personnage ↓</a>
+                {{
+                    ui.action(
+                        'citizen.erase',
+                        'Effacer le nom fictif',
+                        {},
+                        'plain danger'
+                    )
+                }}
+                <a
+                    class="plain"
+                    href="{{
+                    path(
+                        'export',
+                        {
+                            kind: 'citizen'
+                        }
+                    )
+                    }}"
+                >
+                    Exporter le personnage ↓
+                </a>
             </div>
         </section>
         <section class="panel">
             <h2>Contribuer au bien commun</h2>
             <p>
-                Documentation, traduction, accessibilité, observation ou développement : aucune contribution n’achète
-                une voix.
+                Documentation, traduction, accessibilité, observation ou
+                développement : aucune contribution n’achète une voix.
             </p>
-            {{ ui.action('resource.add', 'Décrire une contribution fictive +', {}, 'button primary') }}
+            {{
+                ui.action(
+                    'resource.add',
+                    'Décrire une contribution fictive +',
+                    {},
+                    'button primary'
+                )
+            }}
             {% for contribution in state.resources %}
                 <p>
-                    <strong>{{ contribution.kind }}</strong> — {{ contribution.description }}
+                    <strong>{{ contribution.kind }}</strong> — {{
+                        contribution.description
+                    }}
                 </p>
             {% endfor %}
             <hr />
-            <a class="plain" href="https://github.com/PsiGuardian/Populorum">Consulter le dépôt ↗</a>
+            <a class="plain" href="https://github.com/PsiGuardian/Populorum">
+                Consulter le dépôt ↗
+            </a>
             <p class="small muted">
-                L’accès Guardian au profiler est indépendant de ce personnage. Son compte public de démonstration ne
-                donne aucun privilège de vote.
+                L’accès Guardian au profiler est indépendant de ce personnage.
+                Son compte public de démonstration ne donne aucun privilège de
+                vote.
             </p>
         </section>
     </div>

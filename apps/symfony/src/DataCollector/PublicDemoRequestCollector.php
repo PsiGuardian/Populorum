@@ -11,11 +11,15 @@ use Symfony\Component\HttpKernel\DataCollector\RequestDataCollector;
 /** Le profiler public montre les diagnostics utiles, sans cookies, clés ou jetons. */
 final class PublicDemoRequestCollector extends RequestDataCollector
 {
-    public function collect(Request $request, Response $response, ?\Throwable $exception = null): void
-    {
+    public function collect(
+        Request $request,
+        Response $response,
+        ?\Throwable $exception = null,
+    ): void {
         parent::collect($request, $response, $exception);
         foreach (
             [
+                'request_attributes',
                 'request_request',
                 'request_files',
                 'request_cookies',
@@ -31,16 +35,31 @@ final class PublicDemoRequestCollector extends RequestDataCollector
         }
         $this->data['request_server'] = array_intersect_key(
             $this->data['request_server'],
-            array_flip(['REQUEST_METHOD', 'SERVER_PROTOCOL', 'SERVER_SOFTWARE', 'HTTPS']),
+            array_flip([
+                'REQUEST_METHOD',
+                'SERVER_PROTOCOL',
+                'SERVER_SOFTWARE',
+                'HTTPS',
+            ]),
         );
         $this->data['request_headers'] = array_intersect_key(
             $this->data['request_headers'],
-            array_flip(['accept', 'accept-language', 'content-type', 'host', 'user-agent']),
+            array_flip([
+                'accept',
+                'accept-language',
+                'content-type',
+                'host',
+                'user-agent',
+            ]),
         );
         unset($this->data['response_headers']['set-cookie']);
-        $this->data['content'] = '[Corps omis sur le profiler public de démonstration]';
+        $this->data['content'] =
+            '[Corps omis sur le profiler public de démonstration]';
         $this->data['curlCommand'] =
-            'curl ' . escapeshellarg($request->getSchemeAndHttpHost() . $request->getPathInfo());
+            'curl ' .
+            escapeshellarg(
+                $request->getSchemeAndHttpHost() . $request->getPathInfo(),
+            );
         $this->data['request_query'] = array_intersect_key(
             $this->data['request_query'],
             array_flip(['view', 'territory', 'id', 'locale', 'panel']),

@@ -11,10 +11,13 @@ final class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
 
-    protected function build(\Symfony\Component\DependencyInjection\ContainerBuilder $container): void
-    {
+    protected function build(
+        \Symfony\Component\DependencyInjection\ContainerBuilder $container,
+    ): void {
         parent::build($container);
-        $container->addCompilerPass(new DependencyInjection\PublicDemoCollectorPass());
+        $container->addCompilerPass(
+            new DependencyInjection\PublicDemoCollectorPass(),
+        );
     }
 
     public function getProjectDir(): string
