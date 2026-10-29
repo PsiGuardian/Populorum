@@ -22,26 +22,53 @@ final class SimulationEngine
         'Révision',
     ];
 
+    private const PROPOSAL_TEXT_FIELDS = [
+        'title',
+        'summary',
+        'problem',
+        'cause',
+        'consequence',
+        'solution',
+        'justification',
+        'indicator',
+        'risk',
+        'reversibility',
+    ];
+
+    public function __construct(
+        private readonly CausalGraph $graph = new CausalGraph(),
+        private readonly AuditPrivacy $privacy = new AuditPrivacy(),
+    ) {
+    }
+
     private function fail(string $message, int $status = 400): never
     {
         throw new \DomainException($message, $status);
     }
 
-    private function requireText(mixed $value, int $minimumLength = 4, int $maximumLength = 3000): string
-    {
+    private function requireText(
+        mixed $value,
+        int $minimumLength = 4,
+        int $maximumLength = 3000,
+    ): string {
         if (
             !is_string($value)
             || mb_strlen(trim($value)) < $minimumLength
             || mb_strlen($value) > $maximumLength
         ) {
-            $this->fail("Texte attendu : $minimumLength à $maximumLength caractères.");
+            $this->fail(
+                "Texte attendu : $minimumLength à $maximumLength caractères.",
+            );
         }
 
         return trim($value);
     }
 
-    private function requireNumber(mixed $value, float $minimum = -1e12, float $maximum = 1e12): int|float
-    {
+    private function requireNumber(
+        mixed $value,
+        float $minimum = -1e12,
+        float $maximum = 1e12,
+    ): int|float {
         if (
             !is_numeric($value)
             || !is_finite((float) $value)
@@ -61,11 +88,14 @@ final class SimulationEngine
 
     private function currentTimestamp(): string
     {
-        return gmdate('Y-m-d\TH:i:s\Z');
+        return gmdate("Y-m-d\TH:i:s\Z");
     }
 
-    private function findItemIndex(array $state, string $collection, string $id): int
-    {
+    private function findItemIndex(
+        array $state,
+        string $collection,
+        string $id,
+    ): int {
         foreach ($state[$collection] as $index => $item) {
             if ($item['id'] === $id) {
                 return $index;
@@ -76,7 +106,8 @@ final class SimulationEngine
 
     private function requireActiveCitizen(array $state, string $id): array
     {
-        $citizen = $state['citizens'][$this->findItemIndex($state, 'citizens', $id)];
+        $citizen =
+            $state['citizens'][$this->findItemIndex($state, 'citizens', $id)];
         if ($citizen['suspended']) {
             $this->fail('Participation restreinte ; recours disponible.', 403);
         }
@@ -84,10 +115,15 @@ final class SimulationEngine
         return $citizen;
     }
 
-    private function assertProposalAuthor(array $proposal, string $actorId): void
-    {
+    private function assertProposalAuthor(
+        array $proposal,
+        string $actorId,
+    ): void {
         if ($proposal['authorId'] !== $actorId) {
-            $this->fail('Seul le personnage auteur peut réaliser cette opération.', 403);
+            $this->fail(
+                'Seul le personnage auteur peut réaliser cette opération.',
+                403,
+            );
         }
     }
 
@@ -95,15 +131,25 @@ final class SimulationEngine
     private function canonicalJson(mixed $value): string
     {
         if (!is_array($value)) {
-            return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+            return json_encode(
+                $value,
+                JSON_UNESCAPED_UNICODE |
+                    JSON_UNESCAPED_SLASHES |
+                    JSON_THROW_ON_ERROR,
+            );
         }
         if (array_is_list($value)) {
-            return '[' . implode(',', array_map($this->canonicalJson(...), $value)) . ']';
+            return '[' .
+                implode(',', array_map($this->canonicalJson(...), $value)) .
+                ']';
         }
         ksort($value, SORT_STRING);
         $parts = [];
         foreach ($value as $key => $itemValue) {
-            $parts[] = $this->canonicalJson((string) $key) . ':' . $this->canonicalJson($itemValue);
+            $parts[] =
+                $this->canonicalJson((string) $key) .
+                ':' .
+                $this->canonicalJson($itemValue);
         }
 
         return '{' . implode(',', $parts) . '}';
@@ -117,7 +163,12 @@ final class SimulationEngine
     /** Exclut les clés privées, le journal et les résultats calculés de l’état à signer. */
     private function stateContentForDigest(array $state): array
     {
-        unset($state['events'], $state['operations'], $state['keyPair'], $state['publicKey']);
+        unset(
+            $state['events'],
+            $state['operations'],
+            $state['keyPair'],
+            $state['publicKey'],
+        );
         foreach ($state['consultations'] as &$consultation) {
             unset($consultation['tally']);
         }
@@ -129,7 +180,8 @@ final class SimulationEngine
     public function verify(array $state): array
     {
         $previousHash = 'GENESIS';
-        $publicKey = $state['keyPair']['publicKey'] ?? ($state['publicKey'] ?? null);
+        $publicKey =
+            $state['keyPair']['publicKey'] ?? ($state['publicKey'] ?? null);
         foreach ($state['events'] as $index => $event) {
             $hash = $event['hash'];
             $signature = $event['signature'];
@@ -137,9 +189,20 @@ final class SimulationEngine
             if (
                 $event['index'] !== $index
                 || $event['previous'] !== $previousHash
-                || !hash_equals($hash, $this->digest($event))
+                || (!$this->originalEventMatches($event, $hash)
+                    && (!$publicKey
+                        || !$this->privacy->verifiesRedaction(
+                            $event,
+                            $hash,
+                            $publicKey,
+                            $this->digest(...),
+                        )))
             ) {
-                return ['valid' => false, 'index' => $index, 'reason' => 'Chaînage ou empreinte divergent.'];
+                return [
+                    'valid' => false,
+                    'index' => $index,
+                    'reason' => 'Chaînage ou empreinte divergent.',
+                ];
             }
             if (
                 !$publicKey
@@ -150,7 +213,11 @@ final class SimulationEngine
                     OPENSSL_ALGO_SHA256,
                 ) !== 1
             ) {
-                return ['valid' => false, 'index' => $index, 'reason' => 'Signature invalide.'];
+                return [
+                    'valid' => false,
+                    'index' => $index,
+                    'reason' => 'Signature invalide.',
+                ];
             }
             $previousHash = $hash;
         }
@@ -161,7 +228,10 @@ final class SimulationEngine
                 $this->digest($this->stateContentForDigest($state)),
             )
         ) {
-            return ['valid' => false, 'reason' => 'L’état courant diffère du point de contrôle signé.'];
+            return [
+                'valid' => false,
+                'reason' => 'L’état courant diffère du point de contrôle signé.',
+            ];
         }
 
         return [
@@ -174,9 +244,20 @@ final class SimulationEngine
         ];
     }
 
-    /** Signe une opération et son nouvel état ; la persistance atomique est assurée par DemoDatabase. */
-    private function recordAuditEvent(array &$state, string $actionType, string $objectId, array $payload): void
+    private function originalEventMatches(array $event, string $hash): bool
     {
+        // Une attestation d’expurgation doit toujours être vérifiée, même si elle est superflue.
+        return !isset($event['redaction'])
+            && hash_equals($hash, $this->digest($event));
+    }
+
+    /** Signe une opération et son nouvel état ; la persistance atomique est assurée par DemoDatabase. */
+    private function recordAuditEvent(
+        array &$state,
+        string $actionType,
+        string $objectId,
+        array $payload,
+    ): void {
         if (empty($state['keyPair'])) {
             $keyPair = openssl_pkey_new([
                 'private_key_type' => OPENSSL_KEYTYPE_EC,
@@ -196,19 +277,33 @@ final class SimulationEngine
             'type' => $actionType,
             'object' => $objectId,
             'at' => $this->currentTimestamp(),
-            'previous' => $state['events'] ? end($state['events'])['hash'] : 'GENESIS',
+            'previous' => $state['events']
+                ? end($state['events'])['hash']
+                : 'GENESIS',
             'payload' => [
                 'simulation' => true,
                 'actorId' => $payload['citizenId'] ?? null,
-                'changes' => $payload,
-                'stateDigest' => $this->digest($this->stateContentForDigest($state)),
+                'changes' => $this->privacy->changes($actionType, $payload),
+                'stateDigest' => $this->digest(
+                    $this->stateContentForDigest($state),
+                ),
             ],
         ];
         $hash = $this->digest($event);
-        if (!openssl_sign($hash, $signature, $state['keyPair']['privateKey'], OPENSSL_ALGO_SHA256)) {
+        if (
+            !openssl_sign(
+                $hash,
+                $signature,
+                $state['keyPair']['privateKey'],
+                OPENSSL_ALGO_SHA256,
+            )
+        ) {
             throw new \RuntimeException('Signature impossible.');
         }
-        $state['events'][] = $event + ['hash' => $hash, 'signature' => base64_encode($signature)];
+        $state['events'][] = $event + [
+            'hash' => $hash,
+            'signature' => base64_encode($signature),
+        ];
     }
 
     public function publicState(array $state): array
@@ -216,7 +311,10 @@ final class SimulationEngine
         $state['publicKey'] = $state['keyPair']['publicKey'] ?? null;
         unset($state['keyPair'], $state['operations']);
         foreach ($state['consultations'] as &$consultation) {
-            $consultation['tally'] = $this->tally($consultation, $state['votes']);
+            $consultation['tally'] = $this->tally(
+                $consultation,
+                $state['votes'],
+            );
         }
 
         return $state;
@@ -244,22 +342,48 @@ final class SimulationEngine
             'adopted' => $participation >= $consultation['rules']['quorum']
                 && $expressedCount > 0
                 && $counts['pour'] > $counts['contre'],
-            'provisional' => $consultation['status'] === 'open',
+            'provisional' => $this->consultationPhase($consultation) === 'open',
+            'phase' => $this->consultationPhase($consultation),
+            'awaitingProclamation' => $this->consultationPhase($consultation) === 'expired',
         ];
+    }
+
+    /** L’échéance arrête le vote sans proclamer silencieusement un résultat définitif. */
+    public function consultationPhase(array $consultation): string
+    {
+        if ($consultation['status'] === 'closed') {
+            return 'closed';
+        }
+
+        return strtotime($consultation['closesAt']) <= time()
+            ? 'expired'
+            : 'open';
     }
 
     public function convergence(array $state): array
     {
         $result = [];
         foreach ($state['proposals'] as $proposalIndex => $firstProposal) {
-            foreach (array_slice($state['proposals'], $proposalIndex + 1) as $secondProposal) {
-                $common = array_values(array_intersect($firstProposal['tags'], $secondProposal['tags']));
+            foreach (
+                array_slice($state['proposals'], $proposalIndex + 1) as $secondProposal
+            ) {
+                $common = array_values(
+                    array_intersect(
+                        $firstProposal['tags'],
+                        $secondProposal['tags'],
+                    ),
+                );
                 $result[] = [
                     'a' => $firstProposal['id'],
                     'b' => $secondProposal['id'],
                     'common' => $common,
-                    'sharedIndicator' => $firstProposal['indicator'] === $secondProposal['indicator'],
-                    'status' => count($common) >= 2 ? 'partielle' : ($common ? 'thématique' : 'distincte'),
+                    'sharedIndicator' => $firstProposal['indicator'] ===
+                        $secondProposal['indicator'],
+                    'status' => count($common) >= 2
+                            ? 'partielle'
+                            : ($common
+                                ? 'thématique'
+                                : 'distincte'),
                 ];
             }
         }
@@ -285,28 +409,49 @@ final class SimulationEngine
         ) {
             $this->requireText($proposal[$field] ?? '');
         }
-        if (count($proposal['nodes']) !== 12) {
+        if (count($proposal['nodes']) < 12) {
             $this->fail('Douze catégories causales sont requises.');
         }
         foreach (self::CATEGORIES as $nodeIndex => $category) {
-            if (($proposal['nodes'][$nodeIndex]['category'] ?? '') !== $category) {
+            if (
+                ($proposal['nodes'][$nodeIndex]['category'] ?? '') !==
+                $category
+            ) {
                 $this->fail('Catégorie causale invalide.');
             }
             $this->requireText($proposal['nodes'][$nodeIndex]['content'] ?? '');
-            if (str_starts_with($proposal['nodes'][$nodeIndex]['content'], 'À compléter')) {
-                $this->fail('Complétez les éléments causaux avant publication.');
+            if (
+                str_starts_with(
+                    $proposal['nodes'][$nodeIndex]['content'],
+                    'À compléter',
+                )
+            ) {
+                $this->fail(
+                    'Complétez les éléments causaux avant publication.',
+                );
             }
         }
+        foreach ($proposal['nodes'] as $node) {
+            $this->requireText($node['content']);
+        }
+        $this->graph->edges($proposal['edges'], $proposal['nodes']);
         if (!$proposal['sources']) {
             $this->fail('Une source pédagogique est nécessaire.');
         }
     }
 
     /** Valide l’intégrité et l’anti-rejeu avant de déléguer chaque action à une méthode métier. */
-    public function apply(array $state, string $actionType, array $payload, string $operationId): array
-    {
+    public function apply(
+        array $state,
+        string $actionType,
+        array $payload,
+        string $operationId,
+    ): array {
         if ($state['events'] && !$this->verify($state)['valid']) {
-            $this->fail('Intégrité divergente : opération suspendue pour vérification.', 409);
+            $this->fail(
+                'Intégrité divergente : opération suspendue pour vérification.',
+                409,
+            );
         }
         if (strlen($operationId) < 16 || strlen($operationId) > 100) {
             $this->fail('Identifiant d’opération invalide.');
@@ -315,31 +460,112 @@ final class SimulationEngine
             $this->fail('Rejeu refusé.', 409);
         }
         if (count($state['operations']) >= 10000) {
-            $this->fail('Limite pédagogique atteinte : exportez cette simulation.', 429);
+            $this->fail(
+                'Limite pédagogique atteinte : exportez cette simulation.',
+                429,
+            );
         }
         $actorId = $payload['citizenId'] ?? '';
         $actor = $this->requireActiveCitizen($state, $actorId);
         $objectId = match ($actionType) {
             'citizen.create' => $this->createCitizen($state, $payload),
-            'citizen.withdraw' => $this->withdrawConsent($state, $payload, $actorId),
-            'citizen.consent' => $this->changeConsent($state, $payload, $actorId),
-            'citizen.update' => $this->updateCitizen($state, $payload, $actorId, $actor),
-            'citizen.erase' => $this->eraseCitizenName($state, $payload, $actorId),
-            'proposal.create' => $this->createProposal($state, $payload, $actorId, $actor),
-            'proposal.publish' => $this->publishProposal($state, $payload, $actorId),
-            'proposal.revise' => $this->reviseProposal($state, $payload, $actorId),
-            'territory.adapt' => $this->adaptProposalToTerritory($state, $payload, $actorId, $actor),
-            'consultation.open' => $this->openConsultation($state, $payload, $actorId),
+            'citizen.withdraw' => $this->withdrawConsent(
+                $state,
+                $payload,
+                $actorId,
+            ),
+            'citizen.consent' => $this->changeConsent(
+                $state,
+                $payload,
+                $actorId,
+            ),
+            'citizen.update' => $this->updateCitizen(
+                $state,
+                $payload,
+                $actorId,
+                $actor,
+            ),
+            'citizen.erase' => $this->eraseCitizenName(
+                $state,
+                $payload,
+                $actorId,
+            ),
+            'proposal.create' => $this->createProposal(
+                $state,
+                $payload,
+                $actorId,
+                $actor,
+            ),
+            'proposal.publish' => $this->publishProposal(
+                $state,
+                $payload,
+                $actorId,
+            ),
+            'proposal.revise' => $this->reviseProposal(
+                $state,
+                $payload,
+                $actorId,
+            ),
+            'proposal.node' => $this->addCausalNode($state, $payload, $actorId),
+            'proposal.edge' => $this->addCausalEdge($state, $payload, $actorId),
+            'proposal.source' => $this->addProposalSource(
+                $state,
+                $payload,
+                $actorId,
+            ),
+            'territory.adapt' => $this->adaptProposalToTerritory(
+                $state,
+                $payload,
+                $actorId,
+                $actor,
+            ),
+            'consultation.open' => $this->openConsultation(
+                $state,
+                $payload,
+                $actorId,
+            ),
             'vote.cast' => $this->castVote($state, $payload, $actorId, $actor),
-            'consultation.close' => $this->closeConsultation($state, $payload, $actorId),
-            'experiment.create' => $this->createExperiment($state, $payload, $actorId),
-            'observation.add' => $this->addObservation($state, $payload, $actor),
-            'experiment.evaluate' => $this->evaluateExperiment($state, $payload, $actorId),
+            'consultation.close' => $this->closeConsultation(
+                $state,
+                $payload,
+                $actorId,
+            ),
+            'experiment.create' => $this->createExperiment(
+                $state,
+                $payload,
+                $actorId,
+            ),
+            'observation.add' => $this->addObservation(
+                $state,
+                $payload,
+                $actor,
+            ),
+            'experiment.evaluate' => $this->evaluateExperiment(
+                $state,
+                $payload,
+                $actorId,
+            ),
             'finance.add' => $this->addFinancialEntry($state, $payload),
-            'governance.propose' => $this->proposeGovernanceChange($state, $payload, $actorId),
-            'governance.approve' => $this->approveGovernanceChange($state, $payload, $actorId),
-            'moderation.report' => $this->reportModerationCase($state, $payload, $actorId),
-            'moderation.appeal' => $this->appealModerationCase($state, $payload, $actorId),
+            'governance.propose' => $this->proposeGovernanceChange(
+                $state,
+                $payload,
+                $actorId,
+            ),
+            'governance.approve' => $this->approveGovernanceChange(
+                $state,
+                $payload,
+                $actorId,
+            ),
+            'moderation.report' => $this->reportModerationCase(
+                $state,
+                $payload,
+                $actorId,
+            ),
+            'moderation.appeal' => $this->appealModerationCase(
+                $state,
+                $payload,
+                $actorId,
+            ),
             'integrity.alert' => $this->reportIntegrityAlert($state, $payload),
             'node.configure' => $this->configureVirtualNode($state, $payload),
             'node.sync' => $this->synchronizeVirtualNode($state, $payload),
@@ -355,9 +581,15 @@ final class SimulationEngine
     private function createCitizen(array &$state, array $payload): string
     {
         $name = $this->requireText($payload['name'] ?? '', 2, 80);
-        $this->findItemIndex($state, 'territories', $payload['territoryId'] ?? '');
+        $this->findItemIndex(
+            $state,
+            'territories',
+            $payload['territoryId'] ?? '',
+        );
         foreach ($state['citizens'] as $existingCitizen) {
-            if (mb_strtolower($existingCitizen['name']) === mb_strtolower($name)) {
+            if (
+                mb_strtolower($existingCitizen['name']) === mb_strtolower($name)
+            ) {
                 $this->fail('Identité fictive dupliquée.', 409);
             }
         }
@@ -376,15 +608,21 @@ final class SimulationEngine
     }
 
     /** Le retrait est aussi inscrit dans la charge auditée, et pas uniquement dans le personnage. */
-    private function withdrawConsent(array &$state, array &$payload, string $actorId): string
-    {
+    private function withdrawConsent(
+        array &$state,
+        array &$payload,
+        string $actorId,
+    ): string {
         $payload['consent'] = false;
 
         return $this->changeConsent($state, $payload, $actorId);
     }
 
-    private function changeConsent(array &$state, array $payload, string $actorId): string
-    {
+    private function changeConsent(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
         $citizenIndex = $this->findItemIndex($state, 'citizens', $actorId);
         $state['citizens'][$citizenIndex]['consent'] = filter_var(
             $payload['consent'] ?? false,
@@ -395,45 +633,65 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function updateCitizen(array &$state, array $payload, string $actorId, array $actor): string
-    {
+    private function updateCitizen(
+        array &$state,
+        array $payload,
+        string $actorId,
+        array $actor,
+    ): string {
         $citizenIndex = $this->findItemIndex($state, 'citizens', $actorId);
         if (!empty($payload['name'])) {
             $name = $this->requireText($payload['name'], 2, 80);
             foreach ($state['citizens'] as $existingCitizen) {
                 if (
                     $existingCitizen['id'] !== $actorId
-                    && mb_strtolower($existingCitizen['name']) === mb_strtolower($name)
+                    && mb_strtolower($existingCitizen['name']) ===
+                        mb_strtolower($name)
                 ) {
                     $this->fail('Nom fictif déjà utilisé.', 409);
                 }
             }
             $state['citizens'][$citizenIndex]['name'] = $name;
         }
-        if (!empty($payload['territoryId']) && $payload['territoryId'] !== $actor['territoryId']) {
+        if (
+            !empty($payload['territoryId'])
+            && $payload['territoryId'] !== $actor['territoryId']
+        ) {
             foreach ($state['consultations'] as $consultation) {
                 if (
                     $consultation['status'] === 'open'
                     && in_array($actorId, $consultation['eligibleIds'], true)
                 ) {
-                    $this->fail('Changement territorial différé : consultation admissible ouverte.', 409);
+                    $this->fail(
+                        'Changement territorial différé : consultation admissible ouverte.',
+                        409,
+                    );
                 }
             }
-            $this->findItemIndex($state, 'territories', $payload['territoryId']);
+            $this->findItemIndex(
+                $state,
+                'territories',
+                $payload['territoryId'],
+            );
             $state['citizens'][$citizenIndex]['history'][] = [
                 'territoryId' => $actor['territoryId'],
                 'until' => $this->currentTimestamp(),
             ];
-            $state['citizens'][$citizenIndex]['territoryId'] = $payload['territoryId'];
+            $state['citizens'][$citizenIndex]['territoryId'] =
+                $payload['territoryId'];
         }
         $objectId = $actorId;
 
         return $objectId;
     }
 
-    private function eraseCitizenName(array &$state, array $payload, string $actorId): string
-    {
+    private function eraseCitizenName(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
         $citizenIndex = $this->findItemIndex($state, 'citizens', $actorId);
+        $this->privacy->eraseLegacyNames($state, $actorId, $this->digest(...));
         $state['citizens'][$citizenIndex]['name'] = 'Identité fictive effacée';
         $state['citizens'][$citizenIndex]['consent'] = false;
         $objectId = $actorId;
@@ -441,9 +699,17 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function createProposal(array &$state, array $payload, string $actorId, array $actor): string
-    {
-        $this->findItemIndex($state, 'territories', $payload['territoryId'] ?? '');
+    private function createProposal(
+        array &$state,
+        array $payload,
+        string $actorId,
+        array $actor,
+    ): string {
+        $this->findItemIndex(
+            $state,
+            'territories',
+            $payload['territoryId'] ?? '',
+        );
         if ($actor['territoryId'] !== $payload['territoryId']) {
             $this->fail('Un auteur local est requis.', 403);
         }
@@ -457,49 +723,51 @@ final class SimulationEngine
             'revisions' => [],
             'edges' => [],
         ];
-        foreach (
-            [
-                'title',
-                'summary',
-                'problem',
-                'cause',
-                'consequence',
-                'solution',
-                'justification',
-                'indicator',
-                'risk',
-                'reversibility',
-            ] as $field
-        ) {
-            $proposal[$field] = $this->requireText($payload[$field] ?? '');
+        foreach (self::PROPOSAL_TEXT_FIELDS as $field) {
+            $proposal[$field] =
+                $field === 'title'
+                    ? $this->requireText($payload[$field] ?? '')
+                    : $this->draftText($payload[$field] ?? '');
         }
-        $proposal['theme'] = $this->requireText($payload['theme'] ?? 'Vie locale', 2, 80);
-        $proposal['tags'] = array_values(
-            array_filter(array_map('trim', explode(',', (string) ($payload['tags'] ?? '')))),
+        $proposal['theme'] = $this->draftText(
+            $payload['theme'] ?? 'Vie locale',
         );
-        $proposal['forecast'] = $this->requireNumber($payload['forecast'] ?? 0, -100, 100);
-        foreach (self::CATEGORIES as $nodeIndex => $category) {
-            $proposal['nodes'][] = [
-                'id' => 'n' . $nodeIndex,
+        $proposal['tags'] = $this->proposalTags($payload['tags'] ?? '');
+        $proposal['forecast'] = $this->requireNumber(
+            $payload['forecast'] ?? 0,
+            -100,
+            100,
+        );
+        $nodes = $payload['nodes'] ?? [];
+        foreach (self::CATEGORIES as $index => $category) {
+            $nodes[$index] ??= [
                 'category' => $category,
-                'content' => $this->requireText($payload['nodes'][$nodeIndex]['content'] ?? 'À compléter'),
-                'kind' => ($payload['nodes'][$nodeIndex]['kind'] ?? 'hypothesis') === 'observation'
-                        ? 'observation'
-                        : 'hypothesis',
+                'content' => '',
+                'kind' => 'hypothesis',
             ];
         }
-        $proposal['sources'] = empty($payload['source'])
-            ? []
-            : [['label' => $this->requireText($payload['source']), 'date' => gmdate('Y-m-d'), 'url' => '']];
+        $proposal['nodes'] = $this->graph->nodes($nodes);
+        $proposal['edges'] = $this->graph->edges(
+            $payload['edges'] ?? [],
+            $proposal['nodes'],
+        );
+        $proposal['sources'] = $this->proposalSources($payload);
         $state['proposals'][] = $proposal;
         $objectId = $proposal['id'];
 
         return $objectId;
     }
 
-    private function publishProposal(array &$state, array $payload, string $actorId): string
-    {
-        $proposalIndex = $this->findItemIndex($state, 'proposals', $payload['proposalId'] ?? '');
+    private function publishProposal(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
+        $proposalIndex = $this->findItemIndex(
+            $state,
+            'proposals',
+            $payload['proposalId'] ?? '',
+        );
         $proposal = $state['proposals'][$proposalIndex];
         $this->assertProposalAuthor($proposal, $actorId);
         if ($proposal['status'] !== 'draft') {
@@ -512,13 +780,23 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function reviseProposal(array &$state, array $payload, string $actorId): string
-    {
-        $proposalIndex = $this->findItemIndex($state, 'proposals', $payload['proposalId'] ?? '');
+    private function reviseProposal(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
+        $proposalIndex = $this->findItemIndex(
+            $state,
+            'proposals',
+            $payload['proposalId'] ?? '',
+        );
         $proposal = $state['proposals'][$proposalIndex];
         $this->assertProposalAuthor($proposal, $actorId);
         foreach ($state['consultations'] as $consultation) {
-            if ($consultation['proposalId'] === $proposal['id'] && $consultation['status'] === 'open') {
+            if (
+                $consultation['proposalId'] === $proposal['id']
+                && $consultation['status'] === 'open'
+            ) {
                 $this->fail('Version gelée pendant la consultation.', 409);
             }
         }
@@ -530,28 +808,222 @@ final class SimulationEngine
             'reason' => $this->requireText($payload['reason'] ?? ''),
             'snapshot' => $snapshot,
         ];
-        foreach (['solution', 'risk', 'summary'] as $field) {
-            if (!empty($payload[$field])) {
-                $state['proposals'][$proposalIndex][$field] = $this->requireText($payload[$field]);
+        $next = $state['proposals'][$proposalIndex];
+        foreach (self::PROPOSAL_TEXT_FIELDS as $field) {
+            if (array_key_exists($field, $payload)) {
+                $next[$field] =
+                    $field === 'title'
+                        ? $this->requireText($payload[$field])
+                        : $this->draftText($payload[$field]);
             }
+        }
+        if (array_key_exists('theme', $payload)) {
+            $next['theme'] = $this->draftText($payload['theme']);
+        }
+        if (array_key_exists('tags', $payload)) {
+            $next['tags'] = $this->proposalTags($payload['tags']);
+        }
+        if (array_key_exists('forecast', $payload)) {
+            $next['forecast'] = $this->requireNumber(
+                $payload['forecast'],
+                -100,
+                100,
+            );
         }
         if (isset($payload['nodes'])) {
-            foreach (self::CATEGORIES as $nodeIndex => $category) {
-                $state['proposals'][$proposalIndex]['nodes'][$nodeIndex] = [
-                    'id' => 'n' . $nodeIndex,
-                    'category' => $category,
-                    'content' => $this->requireText($payload['nodes'][$nodeIndex]['content'] ?? ''),
-                    'kind' => ($payload['nodes'][$nodeIndex]['kind'] ?? 'hypothesis') === 'observation'
-                            ? 'observation'
-                            : 'hypothesis',
-                ];
-            }
+            $next['nodes'] = $this->graph->nodes($payload['nodes']);
         }
-        ++$state['proposals'][$proposalIndex]['version'];
-        $state['proposals'][$proposalIndex]['status'] = 'published';
+        $next['edges'] = $this->graph->edges(
+            $payload['edges'] ?? $next['edges'],
+            $next['nodes'],
+        );
+        if (
+            array_key_exists('source', $payload)
+            || array_key_exists('sources', $payload)
+        ) {
+            $next['sources'] = $this->proposalSources($payload);
+        }
+        ++$next['version'];
+        // Un brouillon complété reste un brouillon jusqu’à la publication explicite.
+        $next['status'] =
+            $proposal['status'] === 'draft' ? 'draft' : 'published';
+        if ($next['status'] !== 'draft') {
+            $this->validateProposal($next);
+        }
+        $state['proposals'][$proposalIndex] = $next;
         $objectId = $proposal['id'];
 
         return $objectId;
+    }
+
+    private function draftText(mixed $value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+        if (!is_string($value) || mb_strlen($value) > 3000) {
+            $this->fail('Texte limité à 3000 caractères.');
+        }
+
+        return trim($value);
+    }
+
+    private function proposalTags(mixed $value): array
+    {
+        return array_values(
+            array_unique(
+                array_filter(
+                    array_map('trim', explode(',', $this->draftText($value))),
+                ),
+            ),
+        );
+    }
+
+    private function proposalSources(array $payload): array
+    {
+        if (isset($payload['sources'])) {
+            if (
+                !is_array($payload['sources'])
+                || count($payload['sources']) > 50
+            ) {
+                $this->fail('Liste de sources invalide.');
+            }
+
+            return array_map(function (array $source): array {
+                $url = $source['url'] ?? '';
+                if (
+                    $url !== ''
+                    && (!filter_var($url, FILTER_VALIDATE_URL)
+                        || !in_array(
+                            parse_url($url, PHP_URL_SCHEME),
+                            ['https', 'http'],
+                            true,
+                        ))
+                ) {
+                    $this->fail('Lien de source invalide.');
+                }
+                $date = $source['date'] ?? gmdate('Y-m-d');
+                if (
+                    !is_string($date)
+                    || !preg_match('/^\d{4}-\d{2}-\d{2}$/D', $date)
+                    || !strtotime($date)
+                ) {
+                    $this->fail('Date de source invalide.');
+                }
+
+                return [
+                    'label' => $this->requireText($source['label'] ?? ''),
+                    'date' => $date,
+                    'url' => $url,
+                ];
+            }, $payload['sources']);
+        }
+        $label = $this->draftText($payload['source'] ?? '');
+
+        return $label === ''
+            ? []
+            : [
+                [
+                    'label' => $this->requireText($label),
+                    'date' => gmdate('Y-m-d'),
+                    'url' => '',
+                ],
+            ];
+    }
+
+    private function addProposalSource(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
+        $proposal =
+            $state['proposals'][
+                $this->findItemIndex(
+                    $state,
+                    'proposals',
+                    $payload['proposalId'] ?? '',
+                )
+            ];
+        $sources = $proposal['sources'];
+        $sources[] = [
+            'label' => $payload['label'] ?? '',
+            'date' => $payload['date'] ?? '',
+            'url' => $payload['url'] ?? '',
+        ];
+
+        return $this->reviseProposal(
+            $state,
+            $payload + [
+                'sources' => $sources,
+                'reason' => 'Ajout d’une source',
+            ],
+            $actorId,
+        );
+    }
+
+    private function addCausalNode(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
+        $proposal =
+            $state['proposals'][
+                $this->findItemIndex(
+                    $state,
+                    'proposals',
+                    $payload['proposalId'] ?? '',
+                )
+            ];
+        $nodes = $proposal['nodes'];
+        $nodes[] = [
+            'id' => $this->generateId('n'),
+            'category' => $this->requireText(
+                $payload['category'] ?? '',
+                2,
+                100,
+            ),
+            'content' => $this->requireText($payload['content'] ?? ''),
+            'kind' => $payload['kind'] ?? 'hypothesis',
+        ];
+
+        return $this->reviseProposal(
+            $state,
+            $payload + [
+                'nodes' => $nodes,
+                'reason' => 'Ajout d’un élément causal',
+            ],
+            $actorId,
+        );
+    }
+
+    private function addCausalEdge(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
+        $proposal =
+            $state['proposals'][
+                $this->findItemIndex(
+                    $state,
+                    'proposals',
+                    $payload['proposalId'] ?? '',
+                )
+            ];
+        $edges = $proposal['edges'];
+        $edges[] = [
+            'from' => $payload['from'] ?? '',
+            'to' => $payload['to'] ?? '',
+            'relation' => $payload['relation'] ?? '',
+        ];
+
+        return $this->reviseProposal(
+            $state,
+            $payload + [
+                'edges' => $edges,
+                'reason' => 'Ajout d’une relation causale',
+            ],
+            $actorId,
+        );
     }
 
     private function adaptProposalToTerritory(
@@ -560,22 +1032,40 @@ final class SimulationEngine
         string $actorId,
         array $actor,
     ): string {
-        $proposal = $state['proposals'][$this->findItemIndex($state, 'proposals', $payload['proposalId'] ?? '')];
-        $this->findItemIndex($state, 'territories', $payload['territoryId'] ?? '');
+        $proposal =
+            $state['proposals'][
+                $this->findItemIndex(
+                    $state,
+                    'proposals',
+                    $payload['proposalId'] ?? '',
+                )
+            ];
+        $this->findItemIndex(
+            $state,
+            'territories',
+            $payload['territoryId'] ?? '',
+        );
         if (
             $proposal['territoryId'] === $payload['territoryId']
             || $actor['territoryId'] !== $payload['territoryId']
         ) {
-            $this->fail('Choisissez un autre territoire et son personnage local.', 403);
+            $this->fail(
+                'Choisissez un autre territoire et son personnage local.',
+                403,
+            );
         }
         $adaptation = [
             'id' => $this->generateId('adapt'),
             'proposalId' => $proposal['id'],
             'territoryId' => $payload['territoryId'],
-            'type' => ($payload['type'] ?? 'adaptation') === 'exclusion' ? 'exclusion' : 'adaptation',
+            'type' => ($payload['type'] ?? 'adaptation') === 'exclusion'
+                    ? 'exclusion'
+                    : 'adaptation',
             'at' => $this->currentTimestamp(),
         ];
-        foreach (['reason', 'characteristic', 'source', 'alternative', 'review'] as $field) {
+        foreach (
+            ['reason', 'characteristic', 'source', 'alternative', 'review'] as $field
+        ) {
             $adaptation[$field] = $this->requireText($payload[$field] ?? '');
         }
         $state['adaptations'][] = $adaptation;
@@ -597,14 +1087,24 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function openConsultation(array &$state, array $payload, string $actorId): string
-    {
-        $proposalIndex = $this->findItemIndex($state, 'proposals', $payload['proposalId'] ?? '');
+    private function openConsultation(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
+        $proposalIndex = $this->findItemIndex(
+            $state,
+            'proposals',
+            $payload['proposalId'] ?? '',
+        );
         $proposal = $state['proposals'][$proposalIndex];
         $this->assertProposalAuthor($proposal, $actorId);
         $this->validateProposal($proposal);
         foreach ($state['consultations'] as $existingConsultation) {
-            if ($existingConsultation['proposalId'] === $proposal['id'] && $existingConsultation['status'] === 'open') {
+            if (
+                $existingConsultation['proposalId'] === $proposal['id']
+                && $existingConsultation['status'] === 'open'
+            ) {
                 $this->fail('Consultation déjà ouverte.', 409);
             }
         }
@@ -630,14 +1130,18 @@ final class SimulationEngine
                 array_column(
                     array_filter(
                         $state['citizens'],
-                        fn ($participant) => $participant['territoryId'] === $proposal['territoryId']
+                        fn ($participant) => $participant['territoryId'] ===
+                            $proposal['territoryId']
                             && !$participant['suspended'],
                     ),
                     'id',
                 ),
             ),
             'opensAt' => $this->currentTimestamp(),
-            'closesAt' => gmdate('Y-m-d\TH:i:s\Z', time() + (int) $days * 86400),
+            'closesAt' => gmdate(
+                "Y-m-d\TH:i:s\Z",
+                time() + (int) $days * 86400,
+            ),
             'status' => 'open',
         ];
         $state['proposals'][$proposalIndex]['status'] = 'consultation';
@@ -645,9 +1149,17 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function castVote(array &$state, array $payload, string $actorId, array $actor): string
-    {
-        $consultationIndex = $this->findItemIndex($state, 'consultations', $payload['consultationId'] ?? '');
+    private function castVote(
+        array &$state,
+        array $payload,
+        string $actorId,
+        array $actor,
+    ): string {
+        $consultationIndex = $this->findItemIndex(
+            $state,
+            'consultations',
+            $payload['consultationId'] ?? '',
+        );
         $consultation = $state['consultations'][$consultationIndex];
         if (
             $consultation['status'] !== 'open'
@@ -671,14 +1183,20 @@ final class SimulationEngine
         }
         $existingVoteChanged = false;
         foreach ($state['votes'] as &$vote) {
-            if ($vote['consultationId'] === $consultation['id'] && $vote['citizenId'] === $actorId) {
+            if (
+                $vote['consultationId'] === $consultation['id']
+                && $vote['citizenId'] === $actorId
+            ) {
                 if (!$consultation['rules']['changeAllowed']) {
                     $this->fail('Changement interdit.', 409);
                 }
                 if ($vote['choice'] === $choice) {
                     $this->fail('Ce choix est déjà actif.', 409);
                 }
-                $vote['history'][] = ['choice' => $vote['choice'], 'at' => $vote['at']];
+                $vote['history'][] = [
+                    'choice' => $vote['choice'],
+                    'at' => $vote['at'],
+                ];
                 $vote['choice'] = $choice;
                 $vote['at'] = $this->currentTimestamp();
                 $existingVoteChanged = true;
@@ -701,18 +1219,36 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function closeConsultation(array &$state, array $payload, string $actorId): string
-    {
-        $consultationIndex = $this->findItemIndex($state, 'consultations', $payload['consultationId'] ?? '');
+    private function closeConsultation(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
+        $consultationIndex = $this->findItemIndex(
+            $state,
+            'consultations',
+            $payload['consultationId'] ?? '',
+        );
         $consultation = $state['consultations'][$consultationIndex];
-        $proposalIndex = $this->findItemIndex($state, 'proposals', $consultation['proposalId']);
-        $this->assertProposalAuthor($state['proposals'][$proposalIndex], $actorId);
+        $proposalIndex = $this->findItemIndex(
+            $state,
+            'proposals',
+            $consultation['proposalId'],
+        );
+        $this->assertProposalAuthor(
+            $state['proposals'][$proposalIndex],
+            $actorId,
+        );
         if ($consultation['status'] !== 'open') {
             $this->fail('Consultation déjà close.', 409);
         }
         $state['consultations'][$consultationIndex]['status'] = 'closed';
-        $state['consultations'][$consultationIndex]['closedAt'] = $this->currentTimestamp();
-        $state['consultations'][$consultationIndex]['closeReason'] = $this->requireText(
+        $state['consultations'][$consultationIndex][
+            'closedAt'
+        ] = $this->currentTimestamp();
+        $state['consultations'][$consultationIndex][
+            'closeReason'
+        ] = $this->requireText(
             $payload['reason'] ?? 'Clôture pédagogique volontaire',
         );
         $state['consultations'][$consultationIndex]['result'] = $this->tally(
@@ -725,10 +1261,19 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function createExperiment(array &$state, array $payload, string $actorId): string
-    {
+    private function createExperiment(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
         $consultation =
-            $state['consultations'][$this->findItemIndex($state, 'consultations', $payload['consultationId'] ?? '')];
+            $state['consultations'][
+                $this->findItemIndex(
+                    $state,
+                    'consultations',
+                    $payload['consultationId'] ?? '',
+                )
+            ];
         if (
             $consultation['status'] !== 'closed'
             || !$this->tally($consultation, $state['votes'])['adopted']
@@ -740,12 +1285,21 @@ final class SimulationEngine
                 $this->fail('Protocole déjà créé.', 409);
             }
         }
-        $proposalIndex = $this->findItemIndex($state, 'proposals', $consultation['proposalId']);
-        $this->assertProposalAuthor($state['proposals'][$proposalIndex], $actorId);
+        $proposalIndex = $this->findItemIndex(
+            $state,
+            'proposals',
+            $consultation['proposalId'],
+        );
+        $this->assertProposalAuthor(
+            $state['proposals'][$proposalIndex],
+            $actorId,
+        );
         $experiment = [
             'id' => $this->generateId('e'),
             'consultationId' => $consultation['id'],
             'proposalId' => $consultation['proposalId'],
+            'proposalVersion' => $consultation['version'],
+            'frozenProposal' => $consultation['frozen'],
             'territoryId' => $consultation['territoryId'],
             'indicator' => $consultation['frozen']['indicator'],
             'baseline' => $this->requireNumber($payload['baseline'] ?? null, 0),
@@ -753,9 +1307,21 @@ final class SimulationEngine
             'observations' => [],
         ];
         foreach (
-            ['objective', 'hypothesis', 'unit', 'start', 'end', 'stop', 'method', 'limitations'] as $field
+            [
+                'objective',
+                'hypothesis',
+                'unit',
+                'start',
+                'end',
+                'stop',
+                'method',
+                'limitations',
+            ] as $field
         ) {
-            $experiment[$field] = $this->requireText($payload[$field] ?? '', $field === 'unit' ? 1 : 4);
+            $experiment[$field] = $this->requireText(
+                $payload[$field] ?? '',
+                $field === 'unit' ? 1 : 4,
+            );
         }
         if (
             !strtotime($experiment['start'])
@@ -771,9 +1337,16 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function addObservation(array &$state, array $payload, array $actor): string
-    {
-        $experimentIndex = $this->findItemIndex($state, 'experiments', $payload['experimentId'] ?? '');
+    private function addObservation(
+        array &$state,
+        array $payload,
+        array $actor,
+    ): string {
+        $experimentIndex = $this->findItemIndex(
+            $state,
+            'experiments',
+            $payload['experimentId'] ?? '',
+        );
         $experiment = $state['experiments'][$experimentIndex];
         if ($experiment['territoryId'] !== $actor['territoryId']) {
             $this->fail('Observateur local requis.', 403);
@@ -782,7 +1355,11 @@ final class SimulationEngine
             $this->fail('Expérience close.', 409);
         }
         $date = $this->requireText($payload['date'] ?? '', 10, 10);
-        if (!strtotime($date) || $date < $experiment['start'] || $date > $experiment['end']) {
+        if (
+            !strtotime($date)
+            || $date < $experiment['start']
+            || $date > $experiment['end']
+        ) {
             $this->fail('Observation hors période.');
         }
         $observation = [
@@ -790,24 +1367,44 @@ final class SimulationEngine
             'date' => $date,
             'baseline' => $experiment['baseline'],
             'value' => $this->requireNumber($payload['value'] ?? null),
-            'uncertainty' => $this->requireNumber($payload['uncertainty'] ?? null, 0),
+            'uncertainty' => $this->requireNumber(
+                $payload['uncertainty'] ?? null,
+                0,
+            ),
             'source' => $this->requireText($payload['source'] ?? ''),
             'external' => $this->requireText($payload['external'] ?? ''),
-            'unexpected' => $this->requireText($payload['unexpected'] ?? 'Aucun imprévu déclaré'),
+            'unexpected' => $this->requireText(
+                $payload['unexpected'] ?? 'Aucun imprévu déclaré',
+            ),
             'simulated' => true,
         ];
-        $state['experiments'][$experimentIndex]['observations'][] = $observation;
+        $state['experiments'][$experimentIndex][
+            'observations'
+        ][] = $observation;
         $objectId = $experiment['id'];
 
         return $objectId;
     }
 
-    private function evaluateExperiment(array &$state, array $payload, string $actorId): string
-    {
-        $experimentIndex = $this->findItemIndex($state, 'experiments', $payload['experimentId'] ?? '');
+    private function evaluateExperiment(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
+        $experimentIndex = $this->findItemIndex(
+            $state,
+            'experiments',
+            $payload['experimentId'] ?? '',
+        );
         $experiment = $state['experiments'][$experimentIndex];
         $this->assertProposalAuthor(
-            $state['proposals'][$this->findItemIndex($state, 'proposals', $experiment['proposalId'])],
+            $state['proposals'][
+                $this->findItemIndex(
+                    $state,
+                    'proposals',
+                    $experiment['proposalId'],
+                )
+            ],
             $actorId,
         );
         if (!$experiment['observations']) {
@@ -816,6 +1413,12 @@ final class SimulationEngine
         $decision = $payload['decision'] ?? 'revise';
         if (!in_array($decision, ['continue', 'revise', 'stop'], true)) {
             $this->fail('Suite invalide.');
+        }
+        if (isset($experiment['evaluation'])) {
+            $this->fail(
+                'Ce bilan est déjà publié ; son remplacement est interdit.',
+                409,
+            );
         }
         $state['experiments'][$experimentIndex]['status'] = 'evaluated';
         $state['experiments'][$experimentIndex]['evaluation'] = [
@@ -834,7 +1437,9 @@ final class SimulationEngine
         if (abs($amount * 100 - round($amount * 100)) > 0.00001) {
             $this->fail('Deux décimales maximum.');
         }
-        if (!in_array($payload['type'] ?? '', ['expense', 'contribution'], true)) {
+        if (
+            !in_array($payload['type'] ?? '', ['expense', 'contribution'], true)
+        ) {
             $this->fail('Nature comptable invalide.');
         }
         $objectId = $this->generateId('f');
@@ -851,8 +1456,11 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function proposeGovernanceChange(array &$state, array $payload, string $actorId): string
-    {
+    private function proposeGovernanceChange(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
         $proposal = [
             'id' => $this->generateId('g'),
             'authorId' => $actorId,
@@ -869,11 +1477,21 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function approveGovernanceChange(array &$state, array $payload, string $actorId): string
-    {
-        $proposalIndex = $this->findItemIndex($state, 'governance', $payload['governanceId'] ?? '');
+    private function approveGovernanceChange(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
+        $proposalIndex = $this->findItemIndex(
+            $state,
+            'governance',
+            $payload['governanceId'] ?? '',
+        );
         $proposal = $state['governance'][$proposalIndex];
-        if ($proposal['authorId'] === $actorId || in_array($actorId, $proposal['approvals'], true)) {
+        if (
+            $proposal['authorId'] === $actorId
+            || in_array($actorId, $proposal['approvals'], true)
+        ) {
             $this->fail('Un avis indépendant est requis.', 409);
         }
         $state['governance'][$proposalIndex]['approvals'][] = $actorId;
@@ -885,13 +1503,20 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function reportModerationCase(array &$state, array $payload, string $actorId): string
-    {
+    private function reportModerationCase(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
         $objectId = $this->generateId('case');
         $state['cases'][] = [
             'id' => $objectId,
             'reporterId' => $actorId,
-            'objectId' => $this->requireText($payload['objectId'] ?? '', 1, 100),
+            'objectId' => $this->requireText(
+                $payload['objectId'] ?? '',
+                1,
+                100,
+            ),
             'reason' => $this->requireText($payload['reason'] ?? ''),
             'status' => 'under_review',
             'at' => $this->currentTimestamp(),
@@ -901,8 +1526,11 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function appealModerationCase(array &$state, array $payload, string $actorId): string
-    {
+    private function appealModerationCase(
+        array &$state,
+        array $payload,
+        string $actorId,
+    ): string {
         $this->findItemIndex($state, 'cases', $payload['caseId'] ?? '');
         $objectId = $this->generateId('appeal');
         $state['appeals'][] = [
@@ -932,13 +1560,20 @@ final class SimulationEngine
 
     private function configureVirtualNode(array &$state, array $payload): string
     {
-        $nodeIndex = $this->findItemIndex($state, 'nodes', $payload['nodeId'] ?? '');
+        $nodeIndex = $this->findItemIndex(
+            $state,
+            'nodes',
+            $payload['nodeId'] ?? '',
+        );
         $bandwidth = $this->requireNumber($payload['bandwidth'] ?? 0, 1, 1024);
         if ((int) $bandwidth != $bandwidth) {
             $this->fail('Débit entier requis.');
         }
         $state['nodes'][$nodeIndex]['bandwidth'] = (int) $bandwidth;
-        $state['nodes'][$nodeIndex]['status'] = filter_var($payload['enabled'] ?? false, FILTER_VALIDATE_BOOL)
+        $state['nodes'][$nodeIndex]['status'] = filter_var(
+            $payload['enabled'] ?? false,
+            FILTER_VALIDATE_BOOL,
+        )
             ? 'ready'
             : 'stopped';
         $objectId = $state['nodes'][$nodeIndex]['id'];
@@ -946,14 +1581,22 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function synchronizeVirtualNode(array &$state, array $payload): string
-    {
-        $nodeIndex = $this->findItemIndex($state, 'nodes', $payload['nodeId'] ?? '');
+    private function synchronizeVirtualNode(
+        array &$state,
+        array $payload,
+    ): string {
+        $nodeIndex = $this->findItemIndex(
+            $state,
+            'nodes',
+            $payload['nodeId'] ?? '',
+        );
         if ($state['nodes'][$nodeIndex]['status'] === 'stopped') {
             $this->fail('Relais virtuel arrêté.');
         }
         $state['nodes'][$nodeIndex]['checkpoint'] = [
-            'hash' => $state['events'] ? end($state['events'])['hash'] : 'GENESIS',
+            'hash' => $state['events']
+                ? end($state['events'])['hash']
+                : 'GENESIS',
             'count' => count($state['events']),
             'at' => $this->currentTimestamp(),
             'publicOnly' => true,
@@ -964,8 +1607,10 @@ final class SimulationEngine
         return $objectId;
     }
 
-    private function addResourceContribution(array &$state, array $payload): string
-    {
+    private function addResourceContribution(
+        array &$state,
+        array $payload,
+    ): string {
         $objectId = $this->generateId('r');
         $state['resources'][] = [
             'id' => $objectId,

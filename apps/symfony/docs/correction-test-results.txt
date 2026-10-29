@@ -1,0 +1,65 @@
+PASS — Ancien format signé réellement valide avant effacement
+PASS — Ancien nom supprimé du profil et du journal public
+PASS — Empreinte originale conservée après expurgation
+PASS — Expurgation ancienne explicitement attestée
+PASS — Export expurgé et signatures vérifiables
+PASS — Falsification de l’attestation refusée
+PASS — Falsification d’un événement expurgé refusée
+PASS — Suppression de l’attestation refusée
+PASS — Expurgation stable après sérialisation
+PASS — Brouillon incomplet non publiable
+PASS — Réviser un brouillon ne le publie pas
+PASS — Version incomplète conservée
+PASS — Catégorie complémentaire ajoutée par une action dédiée
+PASS — Relation ajoutée sans perdre les catégories
+PASS — Relation vers un élément absent refusée
+PASS — Cycle causal avec la relation existante refusé
+PASS — Ajout causal interdit pendant le vote
+PASS — Relation par un autre auteur refusée
+PASS — Prévision et sources révisables
+PASS — Sources précédentes conservées dans la version
+PASS — Titres et emphases Markdown structurés
+PASS — Listes sémantiques au lieu de paragraphes par ligne
+PASS — HTML et liens actifs non sûrs exclus du Markdown
+PASS — Charte rendue : ar_SA
+PASS — Charte rendue : cs_CZ
+PASS — Charte rendue : de_DE
+PASS — Charte rendue : el_GR
+PASS — Charte rendue : en_CA
+PASS — Charte rendue : en_GB
+PASS — Charte rendue : en_IE
+PASS — Charte rendue : en_US
+PASS — Charte rendue : es_ES
+PASS — Charte rendue : fr_FR
+PASS — Charte rendue : hi_IN
+PASS — Charte rendue : hr_HR
+PASS — Charte rendue : hu_HU
+PASS — Charte rendue : id_ID
+PASS — Charte rendue : it_IT
+PASS — Charte rendue : ja_JP
+PASS — Charte rendue : ka_GE
+PASS — Charte rendue : mn_MN
+PASS — Charte rendue : ms_MY
+PASS — Charte rendue : nl_NL
+PASS — Charte rendue : pl_PL
+PASS — Charte rendue : pt_PT
+PASS — Charte rendue : ro_RO
+PASS — Charte rendue : ru_RU
+PASS — Charte rendue : sk_SK
+PASS — Charte rendue : tr_TR
+PASS — Charte rendue : vi_VN
+PASS — Charte rendue : zh_CN
+PASS — Sept titres structurés dans la charte française
+PASS — Les douze éléments de l’article 9 sont une liste
+PASS — Les vingt-quatre articles restent présents
+PASS — Brouillon incomplet enregistré par Symfony Form avec CSRF
+PASS — Export HTTP rattaché à la solution réellement consultée
+PASS — Export HTTP identifie la version de référence
+PASS — Formulaire de révision expose problème et sources existantes
+PASS — Formulaire de relations accessible sans JavaScript
+PASS — Ajout d’une catégorie par formulaire CSRF natif
+PASS — Révision HTTP conserve le treizième élément
+PASS — Révision complète et sources enregistrées par formulaire natif
+PASS — Révision HTTP préserve les catégories et l’intégrité signée
+PASS — Ajout de source par formulaire natif sans JavaScript
+64 contrôles, 0 échec(s).

@@ -1,4 +1,6 @@
-# Audit de couverture du cahier des charges
+# Audit initial de couverture du cahier des charges
+
+> **État historique avant correction.** Les sept écarts reproduits ci-dessous sont désormais corrigés ; voir [le lot de correction et ses preuves](CORRECTIONS.md). Les 105 rubriques et la matrice ci-dessous décrivent le commit audité, pas une nouvelle certification après correction.
 
 Date : 29 octobre 2026. Application examinée : `apps/symfony`, branche `development/symfony-sqlite`, code métier du commit GitHub `663e7327af56b319db8bc03551e1212da0a80a0d`. Le présent ajout ne corrige pas les fonctionnalités : il rend les écarts et leurs preuves consultables.
 
@@ -8,7 +10,7 @@ Références : [cahier des charges français](../../../docs/specifications/REQUI
 
 ## Périmètre et méthode
 
-Lecture des 105 rubriques (dont la recette du §91 et ses conditions §91 bis), des 68 scénarios DK-001 à DK-068, des 24 mutations du moteur, du contrôleur HTTP, des formulaires, templates, entités, migrations, configuration et outils de vérification. Nouvelle exécution de `tests/integration.php` : **99 contrôles réussis, zéro échec**. Exécution de [12 sondes complémentaires](../tests/requirements-audit.php) : **5 satisfaites, 7 écarts**, résultats bruts dans [requirements-audit-results.json](requirements-audit-results.json).
+Lecture des 105 rubriques (dont la recette du §91 et ses conditions §91 bis), des 68 scénarios DK-001 à DK-068, des 24 mutations du moteur, du contrôleur HTTP, des formulaires, templates, entités, migrations, configuration et outils de vérification. Nouvelle exécution de `tests/integration.php` : **99 contrôles réussis, zéro échec**. Exécution de [12 sondes complémentaires](../tests/requirements-audit.php) : **5 satisfaites, 7 écarts**, résultats bruts dans [résultats avant correction](requirements-audit-results.before.json).
 
 Les sondes opèrent sur des copies en mémoire et un export temporaire. Elles n’altèrent pas une base de visiteur et ne contiennent que des données fictives. La commande d’audit retourne volontairement 1 tant qu’une sonde n’est pas satisfaite ; elle est distincte du contrôle de non-régression de la CI. Les deux ensembles ne sont pas additionnés pour annoncer un taux de conformité.
 

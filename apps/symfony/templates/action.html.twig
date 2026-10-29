@@ -6,38 +6,59 @@
         </div>
         <h1>{{ title }}</h1>
         <p>
-            Personnage actif : <strong>{{ actor.name }}</strong> · {{ territoryMap[actor.territoryId].name }}. <a
-                href="{{ path('section', { view: 'citizen' }) }}"
+            Personnage actif : <strong>{{ actor.name }}</strong> · {{
+                territoryMap[actor.territoryId].name
+            }}. <a
+                href="{{
+                path(
+                    'section',
+                    {
+                        view: 'citizen'
+                    }
+                )
+                }}"
             >
                 Changer de personnage
             </a>.
         </p>
+        {% if type == 'proposal.create' or type == 'proposal.revise' %}
+            <p class="notice">
+                Vous pouvez enregistrer un brouillon incomplet avec un titre et
+                un territoire. Les informations et les douze rubriques complètes
+                seront exigées à la publication. Les compléments et relations se
+                gèrent depuis la fiche du chemin.
+            </p>
+        {% endif %}
         {% if type == 'vote.cast' %}
             <div class="notice">
                 <p>
-                    Le nom fictif et le choix seront visibles dans votre simulation. Une seule voix active sera comptée.
-                    Le consentement préalable est requis depuis Participer. La justification écrite n’est pas
-                    obligatoire.
+                    Le nom fictif et le choix seront visibles dans votre
+                    simulation. Une seule voix active sera comptée. Le
+                    consentement préalable est requis depuis Participer. La
+                    justification écrite n’est pas obligatoire.
                 </p>
             </div>
         {% elseif type == 'citizen.erase' %}
             <div class="notice">
                 <p>
-                    Le nom fictif sera effacé. Les expériences et voix de simulation restent rattachées à l’identifiant
-                    pédagogique. Aucune donnée civile réelle ne doit être saisie.
+                    Le nom fictif sera effacé. Les expériences et voix de
+                    simulation restent rattachées à l’identifiant pédagogique.
+                    Aucune donnée civile réelle ne doit être saisie.
                 </p>
             </div>
         {% elseif type == 'node.configure' or type == 'node.sync' %}
             <div class="notice">
                 <p>
-                    Relais virtuel uniquement : aucune ressource de votre appareil ni bande passante n’est partagée.
+                    Relais virtuel uniquement : aucune ressource de votre
+                    appareil ni bande passante n’est partagée.
                 </p>
             </div>
         {% elseif type == 'consultation.open' %}
             <div class="notice">
                 <p>
-                    Majorité stricte des exprimés, abstentions dans la participation, égalité non adoptée. Les règles et
-                    le texte sont figés à l’ouverture.
+                    Majorité stricte des exprimés, abstentions dans la
+                    participation, égalité non adoptée. Les règles et le texte
+                    sont figés à l’ouverture.
                 </p>
             </div>
         {% endif %}
@@ -51,14 +72,29 @@
             {{ form_errors(form) }}
             {{ form_widget(form) }}
             <div class="row-links">
-                <a class="button" href="{{ path('section', { view: view }) }}">Annuler</a>
-                <button class="button primary" type="submit">Enregistrer dans la simulation →</button>
+                <a
+                    class="button"
+                    href="{{
+                    path(
+                        'section',
+                        {
+                            view: view
+                        }
+                    )
+                    }}"
+                >
+                    Annuler
+                </a>
+                <button class="button primary" type="submit">
+                    Enregistrer dans la simulation →
+                </button>
             </div>
             {{ form_end(form) }}
         </div>
         <p class="small muted">
-            Les opérations sont validées en PHP côté serveur, protégées contre le rejeu, conservées dans SQLite et
-            consignées dans le journal signé.
+            Les opérations sont validées en PHP côté serveur, protégées contre
+            le rejeu, conservées dans SQLite et consignées dans le journal
+            signé.
         </p>
     </section>
 {% endblock %}

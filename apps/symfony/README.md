@@ -102,4 +102,4 @@ Le [guide des développeurs](docs/CODE_STYLE.md) décrit les responsabilités de
 
 L’[audit des exigences](docs/REQUIREMENTS_AUDIT.md) compare toutes les rubriques et les 68 scénarios au code, distingue les fonctions partielles et contient les preuves des écarts reproduits. Les 99 contrôles de non-régression ne valent pas validation du cahier complet.
 
-La commande `php tests/requirements-audit.php` est un audit complémentaire : elle retourne volontairement un code non nul tant que des exigences restent insatisfaites. Son résultat courant est conservé dans `docs/requirements-audit-results.json`. Elle n’est pas ajoutée à la CI de non-régression comme si tous ces écarts étaient déjà corrigés.
+Les [sept écarts reproduits ont été corrigés](docs/CORRECTIONS.md), ainsi que le rendu de la charte et les exports d’expériences. `composer test` exécute les 99 contrôles initiaux, 64 contrôles supplémentaires et les 12 sondes désormais satisfaites. Une régression fait échouer la CI. Le résultat avant correction est conservé séparément.

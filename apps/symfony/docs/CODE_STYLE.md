@@ -43,3 +43,11 @@ php bin/console lint:twig templates --env=demo
 `style:check` est exécuté par GitHub Actions et refuse les écarts. `style:fix` applique la convention Symfony définie dans `.php-cs-fixer.dist.php`. Les dépendances, caches, fichiers SQLite actifs et coffres privés sont exclus du périmètre du formateur.
 
 Le lint Twig contrôle la syntaxe ; il ne remplace pas la lecture des conditions et de leurs noms. Lors d’un renommage, vérifier notamment les propriétés du modèle (par exemple `comparison.a`) et éviter qu’une variable de boucle masque un filtre de page.
+
+## Services ajoutés lors des corrections
+
+- `CharterRenderer` produit un HTML Markdown sûr et structuré ; Twig ne découpe plus le document par ligne.
+- `CausalGraph` normalise et valide les catégories supplémentaires, les relations et les cycles du sous-graphe causal.
+- `AuditPrivacy` sépare les noms du journal et atteste l’expurgation des charges anciennes. Le moteur vérifie ces attestations avec les signatures originales.
+- `ProposalSourceType` définit les champs d’une source dans la révision native Symfony.
+- `tests/corrections.php` couvre les migrations de preuve, la charte et les parcours HTTP corrigés. Les tests de falsification sont distincts des seuls contrôles de syntaxe.

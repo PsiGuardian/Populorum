@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Form\SimulationActionType;
 use App\Service\ActionForms;
+use App\Service\CharterRenderer;
 use App\Service\DemoDatabase;
 use App\Service\SimulationEngine;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -38,6 +39,7 @@ final class DemoController extends AbstractController
         private DemoDatabase $database,
         private SimulationEngine $engine,
         private string $projectDir,
+        private CharterRenderer $charterRenderer,
     ) {
     }
 
@@ -74,7 +76,8 @@ final class DemoController extends AbstractController
             'proposalMap' => array_column($state['proposals'], null, 'id'),
             'convergence' => $this->engine->convergence($state),
             'categories' => SimulationEngine::CATEGORIES,
-            'guardianPath' => $_SERVER['GUARDIAN_LOGIN_PATH'] ?? '/demo-profiler-shield-populorum',
+            'guardianPath' => $_SERVER['GUARDIAN_LOGIN_PATH'] ??
+                '/demo-profiler-shield-populorum',
         ];
     }
 
@@ -91,12 +94,19 @@ final class DemoController extends AbstractController
     {
         $context = $this->context($request, $view);
         $context['q'] = trim((string) $request->query->get('q', ''));
-        $context['territory'] = (string) $request->query->get('territory', 'all');
+        $context['territory'] = (string) $request->query->get(
+            'territory',
+            'all',
+        );
         $context['selected'] = (string) $request->query->get('id', '');
         if ($view === 'charter') {
             $locale = (string) $request->query->get('locale', 'fr_FR');
-            $translationsDirectory = dirname($this->projectDir, 2) . '/docs/translations';
-            $locales = array_map('basename', glob($translationsDirectory . '/*', GLOB_ONLYDIR));
+            $translationsDirectory =
+                dirname($this->projectDir, 2) . '/docs/translations';
+            $locales = array_map(
+                'basename',
+                glob($translationsDirectory . '/*', GLOB_ONLYDIR),
+            );
             if (!in_array($locale, $locales, true)) {
                 $locale = 'fr_FR';
             }
@@ -107,14 +117,20 @@ final class DemoController extends AbstractController
             $context += [
                 'locale' => $locale,
                 'locales' => $locales,
-                'charter' => file_get_contents($charterFile),
+                'charterHtml' => $this->charterRenderer->render(
+                    file_get_contents($charterFile),
+                ),
             ];
         }
 
         return $this->render('pages/' . $view . '.html.twig', $context);
     }
 
-    #[Route('/action/{type}', name: 'simulation_action', methods: ['GET', 'POST'])]
+    #[Route(
+        '/action/{type}',
+        name: 'simulation_action',
+        methods: ['GET', 'POST'],
+    )]
     public function action(Request $request, string $type): Response
     {
         if (!isset(ActionForms::TYPES[$type])) {
@@ -122,9 +138,12 @@ final class DemoController extends AbstractController
         }
         $context = $this->context($request, ActionForms::TYPES[$type]['view']);
         $initialData = $this->initialActionData($request, $type, $context);
+        $proposal =
+            $context['proposalMap'][$initialData['proposalId'] ?? ''] ?? null;
         $form = $this->createForm(SimulationActionType::class, $initialData, [
             'action_type' => $type,
             'territories' => $context['state']['territories'],
+            'causal_nodes' => $proposal['nodes'] ?? [],
         ]);
         $form->handleRequest($request);
         $error = null;
@@ -137,13 +156,32 @@ final class DemoController extends AbstractController
                 unset($payload['revision'], $payload['operationId']);
                 // L’auteur vient de la session : un champ de formulaire ne peut pas l’usurper.
                 $payload['citizenId'] = $context['actor']['id'];
-                if (in_array($type, ['proposal.create', 'proposal.revise'], true)) {
-                    foreach (SimulationEngine::CATEGORIES as $nodeIndex => $category) {
+                if (
+                    in_array(
+                        $type,
+                        ['proposal.create', 'proposal.revise'],
+                        true,
+                    )
+                ) {
+                    foreach (
+                        $proposal['nodes'] ??
+                            array_map(
+                                static fn (string $category): array => [
+                                    'category' => $category,
+                                ],
+                                SimulationEngine::CATEGORIES,
+                            ) as $nodeIndex => $node
+                    ) {
                         $payload['nodes'][] = [
-                            'content' => $payload['node' . $nodeIndex],
+                            'id' => $node['id'] ?? 'n' . $nodeIndex,
+                            'category' => $node['category'],
+                            'content' => $payload['node' . $nodeIndex] ?? '',
                             'kind' => $payload['kind' . $nodeIndex],
                         ];
-                        unset($payload['node' . $nodeIndex], $payload['kind' . $nodeIndex]);
+                        unset(
+                            $payload['node' . $nodeIndex],
+                            $payload['kind' . $nodeIndex],
+                        );
                     }
                 }
                 // Le contrôle optimiste empêche un ancien formulaire d’écraser une autre écriture.
@@ -151,11 +189,21 @@ final class DemoController extends AbstractController
                 if ($workspace['revision'] !== $revision) {
                     throw new \DomainException('La simulation a évolué. Rechargez le formulaire.', 409);
                 }
-                $next = $this->engine->apply($workspace['state'], $type, $payload, $operationId);
+                $next = $this->engine->apply(
+                    $workspace['state'],
+                    $type,
+                    $payload,
+                    $operationId,
+                );
                 $this->database->save($this->owner($request), $revision, $next);
-                $this->addFlash('success', 'Opération enregistrée dans votre simulation fictive.');
+                $this->addFlash(
+                    'success',
+                    'Opération enregistrée dans votre simulation fictive.',
+                );
 
-                return $this->redirectToRoute('section', ['view' => ActionForms::TYPES[$type]['view']]);
+                return $this->redirectToRoute('section', [
+                    'view' => ActionForms::TYPES[$type]['view'],
+                ]);
             } catch (\DomainException $exception) {
                 $error = $exception->getMessage();
                 $status = $exception->getCode() ?: 400;
@@ -179,7 +227,12 @@ final class DemoController extends AbstractController
     #[Route('/persona', name: 'persona', methods: ['POST'])]
     public function persona(Request $request): Response
     {
-        if (!$this->isCsrfTokenValid('persona', (string) $request->request->get('_token'))) {
+        if (
+            !$this->isCsrfTokenValid(
+                'persona',
+                (string) $request->request->get('_token'),
+            )
+        ) {
             throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('Jeton CSRF invalide.');
         }
         $context = $this->context($request, 'citizen');
@@ -195,7 +248,9 @@ final class DemoController extends AbstractController
     #[Route(
         '/export/{kind}',
         name: 'export',
-        requirements: ['kind' => 'memory|proofs|citizen|consultation|experiment'],
+        requirements: [
+            'kind' => 'memory|proofs|citizen|consultation|experiment',
+        ],
         methods: ['GET'],
     )]
     public function export(Request $request, string $kind): Response
@@ -210,13 +265,15 @@ final class DemoController extends AbstractController
                 'proposals' => array_values(
                     array_filter(
                         $state['proposals'],
-                        fn ($proposal) => $proposal['authorId'] === $context['actor']['id'],
+                        fn ($proposal) => $proposal['authorId'] ===
+                            $context['actor']['id'],
                     ),
                 ),
                 'votes' => array_values(
                     array_filter(
                         $state['votes'],
-                        fn ($value) => $value['citizenId'] === $context['actor']['id'],
+                        fn ($value) => $value['citizenId'] ===
+                            $context['actor']['id'],
                     ),
                 ),
             ];
@@ -232,12 +289,18 @@ final class DemoController extends AbstractController
             }
             $payload = $consultation + [
                 'votes' => array_values(
-                    array_filter($state['votes'], fn ($value) => $value['consultationId'] === $id),
+                    array_filter(
+                        $state['votes'],
+                        fn ($value) => $value['consultationId'] === $id,
+                    ),
                 ),
             ];
         }
         if ($kind === 'experiment') {
-            $items = array_filter($state['experiments'], fn ($experiment) => $experiment['id'] === $id);
+            $items = array_filter(
+                $state['experiments'],
+                fn ($experiment) => $experiment['id'] === $id,
+            );
             $experiment = reset($items);
             if (!$experiment) {
                 throw $this->createNotFoundException();
@@ -245,7 +308,14 @@ final class DemoController extends AbstractController
             $payload = [
                 'simulation' => true,
                 'experiment' => $experiment,
-                'proposal' => $context['proposalMap'][$experiment['proposalId']],
+                'proposalVersion' => $experiment['proposalVersion'] ??
+                    $this->experimentConsultation($state, $experiment)[
+                        'version'
+                    ],
+                'proposal' => $experiment['frozenProposal'] ??
+                    $this->experimentConsultation($state, $experiment)[
+                        'frozen'
+                    ],
             ];
         }
 
@@ -254,6 +324,19 @@ final class DemoController extends AbstractController
             'Content-Disposition' => 'attachment; filename="populorum-' . $kind . '.json"',
             'X-Content-Type-Options' => 'nosniff',
         ]);
+    }
+
+    /** Les anciennes expériences se rattachent aussi à la version réellement consultée. */
+    private function experimentConsultation(
+        array $state,
+        array $experiment,
+    ): array {
+        foreach ($state['consultations'] as $consultation) {
+            if ($consultation['id'] === $experiment['consultationId']) {
+                return $consultation;
+            }
+        }
+        throw new \DomainException('Consultation de référence introuvable.', 409);
     }
 
     #[Route('/verify', name: 'verify', methods: ['GET', 'POST'])]
@@ -266,20 +349,27 @@ final class DemoController extends AbstractController
                 'label' => 'Export JSON à vérifier',
                 'constraints' => [new Assert\File(maxSize: '5M')],
             ])
-            ->add('submit', SubmitType::class, ['label' => 'Vérifier cet export'])
+            ->add('submit', SubmitType::class, [
+                'label' => 'Vérifier cet export',
+            ])
             ->getForm();
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $value = json_decode(
-                    file_get_contents($form->get('proof')->getData()->getPathname()),
+                    file_get_contents(
+                        $form->get('proof')->getData()->getPathname(),
+                    ),
                     true,
                     512,
                     JSON_THROW_ON_ERROR,
                 );
                 $result = $this->engine->verify($value);
             } catch (\Throwable) {
-                $result = ['valid' => false, 'reason' => 'Fichier invalide ou preuve incomplète.'];
+                $result = [
+                    'valid' => false,
+                    'reason' => 'Fichier invalide ou preuve incomplète.',
+                ];
             }
         }
 
@@ -295,15 +385,22 @@ final class DemoController extends AbstractController
         $context = $this->context($request);
 
         return $this->json(
-            ['state' => $context['state'], 'revision' => $context['revision'], 'simulation' => true],
+            [
+                'state' => $context['state'],
+                'revision' => $context['revision'],
+                'simulation' => true,
+            ],
             200,
             ['Cache-Control' => 'no-store'],
         );
     }
 
     /** Prépare les valeurs affichées ; aucune donnée n’est enregistrée ici. */
-    private function initialActionData(Request $request, string $type, array $context): array
-    {
+    private function initialActionData(
+        Request $request,
+        string $type,
+        array $context,
+    ): array {
         $initialData = [
             'revision' => (string) $context['revision'],
             'operationId' => bin2hex(random_bytes(16)),
@@ -324,22 +421,56 @@ final class DemoController extends AbstractController
             'unit' => 'véhicules / heure',
         ];
         foreach (
-            ['proposalId', 'consultationId', 'experimentId', 'governanceId', 'caseId', 'nodeId', 'choice'] as $key
+            [
+                'proposalId',
+                'consultationId',
+                'experimentId',
+                'governanceId',
+                'caseId',
+                'nodeId',
+                'choice',
+            ] as $key
         ) {
             if ($request->query->has($key)) {
                 $initialData[$key] = (string) $request->query->get($key);
             }
         }
+        // Le schéma des rubriques dépend du chemin aussi pendant le POST.
+        // Ce choix prépare le formulaire ; l’auteur et la révision restent contrôlés ensuite.
+        if ($request->isMethod('POST')) {
+            $submitted = $request->request->all('simulation_action');
+            if (is_string($submitted['proposalId'] ?? null)) {
+                $initialData['proposalId'] = $submitted['proposalId'];
+            }
+        }
         if (
-            in_array($type, ['proposal.revise', 'proposal.publish'], true)
+            in_array(
+                $type,
+                [
+                    'proposal.revise',
+                    'proposal.publish',
+                    'proposal.node',
+                    'proposal.edge',
+                    'proposal.source',
+                ],
+                true,
+            )
             && isset($initialData['proposalId'])
         ) {
-            $proposal = $context['proposalMap'][$initialData['proposalId']] ?? null;
+            $proposal =
+                $context['proposalMap'][$initialData['proposalId']] ?? null;
             if (!$proposal) {
                 throw $this->createNotFoundException();
             }
-            $initialData['solution'] = $proposal['solution'];
-            $initialData['risk'] = $proposal['risk'];
+            foreach (
+                ActionForms::TYPES['proposal.create']['fields'] as $field => $definition
+            ) {
+                if (array_key_exists($field, $proposal)) {
+                    $initialData[$field] = $proposal[$field];
+                }
+            }
+            $initialData['tags'] = implode(', ', $proposal['tags']);
+            $initialData['sources'] = $proposal['sources'];
             foreach ($proposal['nodes'] as $nodeIndex => $node) {
                 $initialData['node' . $nodeIndex] = $node['content'];
                 $initialData['kind' . $nodeIndex] = $node['kind'];
@@ -353,7 +484,8 @@ final class DemoController extends AbstractController
                         : ($nodeIndex === 11
                             ? 'Première version du chemin'
                             : '');
-                $initialData['kind' . $nodeIndex] = $nodeIndex === 4 ? 'observation' : 'hypothesis';
+                $initialData['kind' . $nodeIndex] =
+                    $nodeIndex === 4 ? 'observation' : 'hypothesis';
             }
         }
         if ($type === 'citizen.update') {

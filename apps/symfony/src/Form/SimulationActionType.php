@@ -26,20 +26,62 @@ final class SimulationActionType extends AbstractType
             'csrf_protection' => true,
             'action_type' => '',
             'territories' => [],
+            'causal_nodes' => [],
         ]);
-        $resolver->setAllowedValues('action_type', array_keys(ActionForms::TYPES));
+        $resolver->setAllowedValues(
+            'action_type',
+            array_keys(ActionForms::TYPES),
+        );
     }
 
-    public function buildForm(FormBuilderInterface $builder, array $options): void
-    {
+    public function buildForm(
+        FormBuilderInterface $builder,
+        array $options,
+    ): void {
         $actionType = $options['action_type'];
 
-        foreach (ActionForms::TYPES[$actionType]['fields'] as $name => $definition) {
-            $this->addConfiguredField($builder, $name, $definition, $options['territories']);
+        foreach (
+            ActionForms::TYPES[$actionType]['fields'] as $name => $definition
+        ) {
+            $draftField =
+                in_array(
+                    $actionType,
+                    ['proposal.create', 'proposal.revise'],
+                    true,
+                )
+                && !in_array(
+                    $name,
+                    ['title', 'territoryId', 'proposalId', 'reason'],
+                    true,
+                );
+            $definition['required'] ??= !$draftField;
+            $this->addConfiguredField(
+                $builder,
+                $name,
+                $definition,
+                $options['territories'],
+                $options['causal_nodes'],
+            );
         }
 
-        if (in_array($actionType, ['proposal.create', 'proposal.revise'], true)) {
-            $this->addCausalFields($builder);
+        if (
+            in_array($actionType, ['proposal.create', 'proposal.revise'], true)
+        ) {
+            $this->addCausalFields($builder, $options['causal_nodes']);
+            if ($actionType === 'proposal.revise') {
+                $builder->add(
+                    'sources',
+                    \Symfony\Component\Form\Extension\Core\Type\CollectionType::class,
+                    [
+                        'entry_type' => ProposalSourceType::class,
+                        'allow_add' => true,
+                        'allow_delete' => true,
+                        'by_reference' => false,
+                        'required' => false,
+                        'label' => 'Sources du chemin',
+                    ],
+                );
+            }
         }
 
         // Ces valeurs accompagnent la protection CSRF : elles ne remplacent pas le contrôle serveur.
@@ -57,17 +99,34 @@ final class SimulationActionType extends AbstractType
         string $name,
         array $definition,
         array $territories,
+        array $nodes,
     ): void {
         $fieldType = TextType::class;
         $fieldOptions = [
             'label' => $definition['label'],
-            'constraints' => [new Assert\NotBlank(), new Assert\Length(max: 3000)],
+            'required' => $definition['required'],
+            'constraints' => $definition['required']
+                ? [new Assert\NotBlank(), new Assert\Length(max: 3000)]
+                : [new Assert\Length(max: 3000)],
         ];
 
         switch ($definition['type']) {
             case 'territory':
                 $fieldType = ChoiceType::class;
-                $fieldOptions['choices'] = array_column($territories, 'id', 'name');
+                $fieldOptions['choices'] = array_column(
+                    $territories,
+                    'id',
+                    'name',
+                );
+                break;
+
+            case 'node':
+                $fieldType = ChoiceType::class;
+                foreach ($nodes as $node) {
+                    $fieldOptions['choices'][
+                        $node['category'] . ' · ' . $node['id']
+                    ] = $node['id'];
+                }
                 break;
 
             case 'hidden':
@@ -81,7 +140,10 @@ final class SimulationActionType extends AbstractType
 
             case 'number':
                 $fieldType = NumberType::class;
-                $fieldOptions['constraints'] = [new Assert\NotNull()];
+                $fieldOptions['constraints'] = $definition['required']
+                    ? [new Assert\NotNull()]
+                    : [];
+                $fieldOptions['empty_data'] = '0';
                 $fieldOptions['scale'] = 2;
                 $fieldOptions['html5'] = true;
                 break;
@@ -102,19 +164,31 @@ final class SimulationActionType extends AbstractType
             case 'checkbox':
                 $fieldType = CheckboxType::class;
                 $fieldOptions['required'] = $definition['required'];
-                $fieldOptions['constraints'] = $definition['required'] ? [new Assert\IsTrue()] : [];
+                $fieldOptions['constraints'] = $definition['required']
+                    ? [new Assert\IsTrue()]
+                    : [];
                 break;
         }
 
         $builder->add($name, $fieldType, $fieldOptions);
     }
 
-    private function addCausalFields(FormBuilderInterface $builder): void
-    {
-        foreach (SimulationEngine::CATEGORIES as $nodeIndex => $label) {
+    private function addCausalFields(
+        FormBuilderInterface $builder,
+        array $nodes,
+    ): void {
+        $nodes =
+            $nodes ?:
+            array_map(
+                static fn (string $label): array => ['category' => $label],
+                SimulationEngine::CATEGORIES,
+            );
+        foreach ($nodes as $nodeIndex => $node) {
+            $label = $node['category'];
             $builder->add('node' . $nodeIndex, TextareaType::class, [
-                'label' => ($nodeIndex + 1) . '. ' . $label,
-                'constraints' => [new Assert\NotBlank(), new Assert\Length(max: 3000)],
+                'label' => $nodeIndex + 1 . '. ' . $label,
+                'required' => false,
+                'constraints' => [new Assert\Length(max: 3000)],
                 'attr' => ['rows' => 2],
             ]);
             $builder->add('kind' . $nodeIndex, ChoiceType::class, [

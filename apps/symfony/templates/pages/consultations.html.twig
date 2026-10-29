@@ -8,7 +8,8 @@
             </div>
             <h1>Les consultations</h1>
             <p>
-                Texte, règles et admissibilité figés avant l’ouverture. Aucun vote n’a d’effet juridique.
+                Texte, règles et admissibilité figés avant l’ouverture. Aucun
+                vote n’a d’effet juridique.
             </p>
         </div>
     </div>
@@ -16,20 +17,27 @@
     {% for consultation in state.consultations %}
         {% if
             (selected == '' or selected == consultation.id)
-                and (territory == 'all' or territory == consultation.territoryId)
-                and (q == '' or (q|lower) in (consultation.frozen.title|lower)) %}
+                and (territory == 'all'
+                    or territory == consultation.territoryId)
+                and (q == ''
+                    or (q|lower) in (consultation.frozen.title|lower)) %}
             {% set tally = consultation.tally %}
             <article class="consultation-card">
                 <div class="consultation-main">
                     <div class="row-header">
                         {{
                             ui.badge(
-                                consultation.status == 'open' ? 'Consultation ouverte' : 'Consultation close',
-                                consultation.status == 'open' ? 'green' : 'gray'
+                                tally.phase == 'expired'
+                                    ? 'Échéance atteinte · proclamation en attente'
+                                    : tally.phase == 'open'
+                                        ? 'Consultation ouverte'
+                                        : 'Consultation close',
+                                tally.phase == 'open' ? 'green' : 'gray'
                             )
                         }}
                         <span class="small muted">
-                            {{ territoryMap[consultation.territoryId].name }} · version figée {{ consultation.version }}
+                            {{ territoryMap[consultation.territoryId].name }} · version
+                            figée {{ consultation.version }}
                         </span>
                     </div>
                     <h2>{{ consultation.frozen.title }}</h2>
@@ -40,14 +48,18 @@
                         <div
                             class="vote-bar"
                             role="img"
-                            aria-label="{{ tally.pour }} pour, {{ tally.contre }} contre, {{
-                            tally.abstention
-                            }} abstentions"
+                            aria-label="{{ tally.pour }} pour, {{
+                            tally.contre
+                            }} contre, {{ tally.abstention }} abstentions"
                         >
                             {% for choice in ['pour', 'contre', 'abstention'] %}
                                 <span
                                     class="{{ choice }}"
-                                    style="width:{{ tally.total ? tally[choice] / tally.total * 100 : 0 }}%"
+                                    style="width:{{
+                                    tally.total
+                                        ? tally[choice] / tally.total * 100
+                                        : 0
+                                    }}%"
                                 >
 
                                 </span>
@@ -68,18 +80,22 @@
                             </span>
                         </div>
                         <p class="small muted">
-                            {{ tally.total }} / {{ tally.eligible }} personnages · {{ tally.participation|round }} % · quorum
+                            {{ tally.total }} / {{ tally.eligible }} personnages ·
+                            {{ tally.participation|round }} % · quorum
                             {{ consultation.rules.quorum }} %
                         </p>
                     </div>
-                    {% if consultation.status == 'open' %}
+                    {% if tally.phase == 'open' %}
                         <div class="consultation-actions">
                             {% for choice in ['pour', 'contre', 'abstention'] %}
                                 {{
                                     ui.action(
                                         'vote.cast',
                                         choice|capitalize,
-                                        { consultationId: consultation.id, choice: choice },
+                                        {
+                                            consultationId: consultation.id,
+                                            choice: choice
+                                        },
                                         'button'
                                     )
                                 }}
@@ -87,15 +103,31 @@
                         </div>
                         <p class="small muted">
                             Résultats provisoires. <a
-                                href="{{ path('section', { view: 'consultations', id: consultation.id }) }}"
+                                href="{{
+                                path(
+                                    'section',
+                                    {
+                                        view: 'consultations',
+                                        id: consultation.id
+                                    }
+                                )
+                                }}"
                             >
                                 Actualiser les résultats
                             </a>.
                         </p>
+                    {% elseif tally.phase == 'expired' %}
+                        <p class="notice">
+                            Le vote est terminé. Les totaux attendent une
+                            clôture et une proclamation tracées ; ils ne sont
+                            pas encore définitifs.
+                        </p>
                     {% else %}
                         {{
                             ui.badge(
-                                tally.adopted ? 'Adoptée dans la simulation' : 'Non adoptée dans la simulation',
+                                tally.adopted
+                                    ? 'Adoptée dans la simulation'
+                                    : 'Non adoptée dans la simulation',
                                 tally.adopted ? 'green' : 'gray'
                             )
                         }}
@@ -104,9 +136,13 @@
                         <summary>
                             Participations nominatives fictives
                         </summary>
-                        {% for vote in state.votes|filter(vote => vote.consultationId == consultation.id) %}
+                        {% for vote in state.votes|filter(
+                            vote => vote.consultationId == consultation.id
+                        ) %}
                             <p>
-                                {{ citizenMap[vote.citizenId].name }} — {{ vote.choice }} · {{ vote.history|length }} révision(s)
+                                {{ citizenMap[vote.citizenId].name }} — {{
+                                    vote.choice
+                                }} · {{ vote.history|length }} révision(s)
                             </p>
                         {% endfor %}
                     </details>
@@ -144,9 +180,22 @@
                             : 'interdit' }}.
                     </p>
                     <p>
-                        {{ consultation.opensAt|date('d/m/Y H:i') }} → {{ consultation.closesAt|date('d/m/Y H:i') }}
+                        {{ consultation.opensAt|date('d/m/Y H:i') }} → {{
+                            consultation.closesAt|date('d/m/Y H:i')
+                        }}
                     </p>
-                    <a class="plain" href="{{ path('export', { kind: 'consultation', id: consultation.id }) }}">
+                    <a
+                        class="plain"
+                        href="{{
+                        path(
+                            'export',
+                            {
+                                kind: 'consultation',
+                                id: consultation.id
+                            }
+                        )
+                        }}"
+                    >
                         Exporter pour un recalcul indépendant ↓
                     </a>
                     {% if consultation.status == 'open' %}
@@ -154,17 +203,26 @@
                             ui.action(
                                 'consultation.close',
                                 'Clôturer la simulation',
-                                { consultationId: consultation.id },
+                                {
+                                    consultationId: consultation.id
+                                },
                                 'plain danger'
                             )
                         }}
                     {% elseif
                         tally.adopted
                             and not state.experiments|filter(
-                                experiment => experiment.consultationId == consultation.id
+                                experiment => experiment.consultationId
+                                    == consultation.id
                             ) %}
                         {{
-                            ui.action('experiment.create', 'Définir un protocole', { consultationId: consultation.id })
+                            ui.action(
+                                'experiment.create',
+                                'Définir un protocole',
+                                {
+                                    consultationId: consultation.id
+                                }
+                            )
                         }}
                     {% endif %}
                 </aside>
@@ -173,8 +231,8 @@
     {% endfor %}
     <div class="notice">
         <p>
-            Les résultats visibles peuvent influencer les choix. Ces consultations sont fictives et distinctes des
-            élections officielles.
+            Les résultats visibles peuvent influencer les choix. Ces
+            consultations sont fictives et distinctes des élections officielles.
         </p>
     </div>
 {% endblock %}

@@ -491,7 +491,11 @@ main:focus {
     overflow: hidden;
     padding: 26px 28px;
     color: var(--gold);
-    background-image: radial-gradient(ellipse at 65% 50%, #243441 0, transparent 60%);
+    background-image: radial-gradient(
+        ellipse at 65% 50%,
+        #243441 0,
+        transparent 60%
+    );
 }
 .art-label {
     font-size: 8px;
@@ -2436,7 +2440,8 @@ form ul {
     white-space: normal;
 }
 .charter-text {
-    white-space: pre-wrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
     font-family: inherit;
 }
 .page-title .button {
@@ -2510,4 +2515,62 @@ form ul {
     .hero-art {
         display: none;
     }
+}
+
+/* La charte est un document HTML structuré : les espaces du template ne sont pas du contenu. */
+.charter-text {
+    max-width: 72ch;
+    margin-block: 2.5rem;
+    color: var(--navy);
+    font-size: 1rem;
+    line-height: 1.75;
+}
+.charter-text p,
+.charter-text li {
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+}
+.charter-text p {
+    margin-block: 0 1rem;
+}
+.charter-text h2,
+.charter-text h3,
+.charter-text h4 {
+    line-height: 1.35;
+    margin-block: 2.25rem 0.85rem;
+}
+.charter-text h2 {
+    font-size: 1.6rem;
+}
+.charter-text h3 {
+    font-size: 1.3rem;
+}
+.charter-text h4 {
+    font-size: 1.1rem;
+}
+.charter-text ul,
+.charter-text ol {
+    margin-block: 0 1.25rem;
+    padding-inline-start: 1.6rem;
+}
+.charter-text li + li {
+    margin-block-start: 0.45rem;
+}
+.charter-text blockquote {
+    margin: 1.5rem 0;
+    padding: 0.75rem 1.25rem;
+    border-inline-start: 3px solid var(--gold);
+    background: var(--stone);
+}
+.charter-text blockquote p:last-child {
+    margin-bottom: 0;
+}
+.charter-text hr {
+    margin-block: 2rem;
+    border: 0;
+    border-top: 1px solid var(--line);
+}
+.charter-text a {
+    text-decoration: underline;
 }

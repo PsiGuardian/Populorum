@@ -145,13 +145,121 @@ final class ActionForms
                     'type' => 'textarea',
                     'label' => 'Motif de révision',
                 ],
+                'title' => ['type' => 'text', 'label' => 'Titre'],
+                'theme' => ['type' => 'text', 'label' => 'Thème'],
+                'tags' => [
+                    'type' => 'text',
+                    'label' => 'Thèmes communs, séparés par des virgules',
+                ],
+                'summary' => [
+                    'type' => 'textarea',
+                    'label' => 'Explication en français courant',
+                ],
+                'problem' => ['type' => 'textarea', 'label' => 'Problème'],
+                'cause' => [
+                    'type' => 'textarea',
+                    'label' => 'Cause principale supposée',
+                ],
+                'consequence' => [
+                    'type' => 'textarea',
+                    'label' => 'Conséquence',
+                ],
                 'solution' => [
                     'type' => 'textarea',
-                    'label' => 'Solution révisée',
+                    'label' => 'Solution à expérimenter',
+                ],
+                'justification' => [
+                    'type' => 'textarea',
+                    'label' => 'Justification',
+                ],
+                'indicator' => [
+                    'type' => 'text',
+                    'label' => 'Indicateur mesurable',
+                ],
+                'forecast' => [
+                    'type' => 'number',
+                    'label' => 'Variation attendue en %',
                 ],
                 'risk' => [
                     'type' => 'textarea',
-                    'label' => 'Risques réexaminés',
+                    'label' => 'Risques anticipés',
+                ],
+                'reversibility' => [
+                    'type' => 'textarea',
+                    'label' => 'Conditions de retour arrière',
+                ],
+            ],
+        ],
+        'proposal.source' => [
+            'title' => 'Ajouter une source au chemin',
+            'view' => 'proposals',
+            'fields' => [
+                'proposalId' => ['type' => 'hidden', 'label' => false],
+                'label' => ['type' => 'text', 'label' => 'Source pédagogique'],
+                'date' => ['type' => 'date', 'label' => 'Date de la source'],
+                'url' => [
+                    'type' => 'text',
+                    'label' => 'Lien facultatif',
+                    'required' => false,
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Motif de cet ajout',
+                ],
+            ],
+        ],
+        'proposal.node' => [
+            'title' => 'Ajouter un élément au raisonnement',
+            'view' => 'proposals',
+            'fields' => [
+                'proposalId' => ['type' => 'hidden', 'label' => false],
+                'category' => [
+                    'type' => 'text',
+                    'label' => 'Catégorie complémentaire',
+                ],
+                'content' => [
+                    'type' => 'textarea',
+                    'label' => 'Ce que vous souhaitez ajouter',
+                ],
+                'kind' => [
+                    'type' => 'choice',
+                    'label' => 'Nature',
+                    'choices' => [
+                        'Hypothèse / prévision' => 'hypothesis',
+                        'Observation simulée' => 'observation',
+                    ],
+                ],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Motif de cette évolution',
+                ],
+            ],
+        ],
+        'proposal.edge' => [
+            'title' => 'Relier deux éléments du raisonnement',
+            'view' => 'proposals',
+            'fields' => [
+                'proposalId' => ['type' => 'hidden', 'label' => false],
+                'from' => ['type' => 'node', 'label' => 'Premier élément'],
+                'relation' => [
+                    'type' => 'choice',
+                    'label' => 'Relation',
+                    'choices' => [
+                        'Cause de' => 'cause de',
+                        'Contribue à' => 'contribue à',
+                        'Dépend de' => 'dépend de',
+                        'Rend possible' => 'rend possible',
+                        'Produit potentiellement' => 'produit potentiellement',
+                        'Observé après' => 'observé après',
+                        'Documenté par' => 'documenté par',
+                        'Remplacé par' => 'remplacé par',
+                        'Alternative à' => 'alternative à',
+                    ],
+                ],
+                'to' => ['type' => 'node', 'label' => 'Second élément'],
+                'reason' => [
+                    'type' => 'textarea',
+                    'label' => 'Motif et limites de cette relation',
                 ],
             ],
         ],

@@ -3,15 +3,33 @@
 {% block content %}
     {% if selected != '' and proposalMap[selected] is defined %}
         {% set proposal = proposalMap[selected] %}
-        <a class="plain back" href="{{ path('section', { view: 'proposals' }) }}">← Tous les chemins</a>
+        <a
+            class="plain back"
+            href="{{
+            path(
+                'section',
+                {
+                    view: 'proposals'
+                }
+            )
+            }}"
+        >
+            ← Tous les chemins
+        </a>
         <div class="detail-heading">
-            {{ ui.badge('Version ' ~ proposal.version ~ ' · ' ~ proposal.status) }}
+            {{
+                ui.badge(
+                    'Version ' ~ proposal.version ~ ' · ' ~ proposal.status
+                )
+            }}
             <h1>{{ proposal.title }}</h1>
             <p>
                 {{ proposal.summary }}
             </p>
             <div class="meta">
-                {{ territoryMap[proposal.territoryId].name }} · {{ citizenMap[proposal.authorId].name }} · Raisonnement autonome
+                {{ territoryMap[proposal.territoryId].name }} · {{
+                    citizenMap[proposal.authorId].name
+                }} · Raisonnement autonome
             </div>
         </div>
         <div class="detail-layout">
@@ -35,50 +53,101 @@
                 </div>
                 <h2>L’arbre du raisonnement</h2>
                 <p class="muted small">
-                    La liste structurée fournit une lecture accessible des douze catégories. Une observation simulée ne
-                    démontre pas une causalité.
+                    La liste structurée fournit une lecture accessible des
+                    catégories et de leurs compléments. Une observation simulée
+                    ne démontre pas une causalité.
                 </p>
                 <div class="causal-grid">
                     {% for node in proposal.nodes %}
-                        <article class="causal-node {{ node.kind == 'observation' ? 'observed' : '' }}">
+                        <article
+                            class="causal-node {{
+                            node.kind == 'observation'
+                                ? 'observed'
+                                : ''
+                            }}"
+                        >
                             <div>
                                 <div class="eyebrow">
-                                    {{ '%02d'|format(loop.index) }} · {{ node.category }}
+                                    {{ '%02d'|format(loop.index) }} · {{
+                                        node.category
+                                    }}
                                 </div>
                                 <p>
                                     {{ node.content }}
                                 </p>
                                 <small>
-                                    {{ node.kind == 'observation' ? 'Observation simulée' : 'Hypothèse / prévision' }}
+                                    {{ node.kind == 'observation'
+                                        ? 'Observation simulée'
+                                        : 'Hypothèse / prévision' }}
                                 </small>
                             </div>
                         </article>
                     {% endfor %}
                 </div>
+                <div class="row-links">
+                    {{
+                        ui.action(
+                            'proposal.node',
+                            'Ajouter un élément',
+                            {
+                                proposalId: proposal.id
+                            }
+                        )
+                    }}
+                    {{
+                        ui.action(
+                            'proposal.edge',
+                            'Relier deux éléments',
+                            {
+                                proposalId: proposal.id
+                            }
+                        )
+                    }}
+                </div>
                 <details class="panel">
                     <summary>
                         Relations explicites
                     </summary>
-                    {% for experiment in proposal.edges %}
+                    {% set nodeMap = {} %}
+                    {% for node in proposal.nodes %}
+                        {% set nodeMap =
+                            nodeMap|merge({
+                                (node.id): node.category
+                            })
+                        %}
+                    {% endfor %}
+                    {% for edge in proposal.edges %}
                         <p>
-                            {{ experiment.from }} → {{ experiment.relation }} → {{ experiment.to }}
+                            {{ nodeMap[edge.from] ?? edge.from }} → {{
+                                edge.relation
+                            }} → {{ nodeMap[edge.to] ?? edge.to }}
                         </p>
                     {% else %}
                         <p>
-                            Les relations entre éléments seront complétées ; leur simple succession ne prouve pas un
-                            lien causal.
+                            Les relations entre éléments seront complétées ;
+                            leur simple succession ne prouve pas un lien causal.
                         </p>
                     {% endfor %}
                 </details>
                 <section class="panel">
                     <h3>Sources et limites</h3>
+                    {{
+                        ui.action(
+                            'proposal.source',
+                            'Ajouter une source',
+                            {
+                                proposalId: proposal.id
+                            }
+                        )
+                    }}
                     {% for source in proposal.sources %}
                         <p>
                             {{ source.label }} · {{ source.date }}
                         </p>
                     {% endfor %}
                     <p>
-                        Jeu pédagogique : aucun résultat simulé n’est présenté comme un fait réel sur la ville.
+                        Jeu pédagogique : aucun résultat simulé n’est présenté
+                        comme un fait réel sur la ville.
                     </p>
                 </section>
                 <section class="panel">
@@ -88,13 +157,48 @@
                             <summary>
                                 Version {{ revision.version }} · {{ revision.reason }}
                             </summary>
-                            <p>
-                                {{ revision.snapshot.solution }}
-                            </p>
+                            {% for key, label in {
+                                title: 'Titre',
+                                problem: 'Problème',
+                                summary: 'Explication',
+                                cause: 'Cause',
+                                consequence: 'Conséquence',
+                                solution: 'Solution',
+                                justification: 'Justification',
+                                indicator: 'Indicateur',
+                                forecast: 'Prévision',
+                                risk: 'Risques',
+                                reversibility: 'Retour arrière'
+                            } %}
+                                <h4>{{ label }}</h4>
+                                <p>
+                                    {{ revision.snapshot[key] }}
+                                </p>
+                            {% endfor %}
+                            {% for node in revision.snapshot.nodes %}
+                                <p>
+                                    <strong>{{ node.category }}</strong> : {{
+                                        node.content
+                                    }}
+                                </p>
+                            {% endfor %}
+                            {% for source in revision.snapshot.sources %}
+                                <p>
+                                    Source : {{ source.label }} · {{ source.date }}
+                                </p>
+                            {% endfor %}
+                            {% for edge in revision.snapshot.edges %}
+                                <p>
+                                    {{ edge.from }} → {{ edge.relation }} → {{
+                                        edge.to
+                                    }}
+                                </p>
+                            {% endfor %}
                         </details>
                     {% else %}
                         <p>
-                            Première version. Toute révision significative conservera un motif et une trace.
+                            Première version. Toute révision significative
+                            conservera un motif et une trace.
                         </p>
                     {% endfor %}
                 </section>
@@ -117,7 +221,9 @@
                         ui.action(
                             'proposal.revise',
                             'Faire évoluer ce chemin',
-                            { proposalId: proposal.id },
+                            {
+                                proposalId: proposal.id
+                            },
                             'button full'
                         )
                     }}
@@ -126,20 +232,32 @@
                             ui.action(
                                 'proposal.publish',
                                 'Publier le brouillon',
-                                { proposalId: proposal.id },
+                                {
+                                    proposalId: proposal.id
+                                },
                                 'button full'
                             )
                         }}
                     {% endif %}
                     {% set open =
                         state.consultations|filter(
-                            consultation => consultation.proposalId == proposal.id and consultation.status == 'open'
+                            consultation => consultation.proposalId
+                                == proposal.id
+                                and consultation.status == 'open'
                         )
                     %}
                     {% if open %}
                         <a
                             class="button primary full"
-                            href="{{ path('section', { view: 'consultations', id: open|first.id }) }}"
+                            href="{{
+                            path(
+                                'section',
+                                {
+                                    view: 'consultations',
+                                    id: open|first.id
+                                }
+                            )
+                            }}"
                         >
                             Voir la consultation →
                         </a>
@@ -148,7 +266,9 @@
                             ui.action(
                                 'consultation.open',
                                 'Ouvrir une consultation',
-                                { proposalId: proposal.id },
+                                {
+                                    proposalId: proposal.id
+                                },
                                 'button primary full'
                             )
                         }}
@@ -163,7 +283,9 @@
                         ui.action(
                             'territory.adapt',
                             'Adapter ou documenter une exclusion',
-                            { proposalId: proposal.id },
+                            {
+                                proposalId: proposal.id
+                            },
                             'plain'
                         )
                     }}
@@ -178,10 +300,18 @@
                 </div>
                 <h1>Explorer les chemins</h1>
                 <p>
-                    Exposer un raisonnement, documenter les causes et rendre visibles les conséquences.
+                    Exposer un raisonnement, documenter les causes et rendre
+                    visibles les conséquences.
                 </p>
             </div>
-            {{ ui.action('proposal.create', 'Exposer mon chemin +', {}, 'button primary') }}
+            {{
+                ui.action(
+                    'proposal.create',
+                    'Exposer mon chemin +',
+                    {},
+                    'button primary'
+                )
+            }}
         </div>
         {{ ui.filter(view, state, q, territory) }}
         <div class="cards-grid">
@@ -189,7 +319,10 @@
             {% for proposal in state.proposals|reverse %}
                 {% if
                     (territory == 'all' or territory == proposal.territoryId)
-                        and (q == '' or (q|lower) in ((proposal.title ~ proposal.summary ~ proposal.theme)|lower)) %}
+                        and (q == ''
+                            or (q|lower)
+                            in ((proposal.title ~ proposal.summary
+                            ~ proposal.theme)|lower)) %}
                     {{ ui.card(proposal, territoryMap) }}
                     {% set found = found + 1 %}
                 {% endif %}

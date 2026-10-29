@@ -24,3 +24,9 @@ Les 23 fichiers PHP du périmètre de style respectent la configuration PHP CS F
 Nouvelle exécution : 99 contrôles de non-régression réussis. L’[audit complet des rubriques et des 68 scénarios](REQUIREMENTS_AUDIT.md) identifie 31 scénarios validés dans la démo, 28 partiels, 4 absents, 2 non vérifiés et 3 différés par le périmètre accepté. Ces catégories ne mesurent pas un pourcentage de code terminé.
 
 Douze sondes complémentaires ont réellement été exécutées : cinq satisfaites et sept écarts. Les [résultats bruts](requirements-audit-results.json) et le [script](../tests/requirements-audit.php) sont versionnés. Ces sondes portent notamment sur les brouillons, l’extension causale, les relations, les révisions, les noms anciens dans les exports et les bilans. Les nuances de bilan tracé dans le journal et de clôture manuelle après échéance sont expliquées dans l’audit. Aucun écart fonctionnel n’est corrigé par cet ajout documentaire.
+
+## Correction des écarts reproduits et de la charte
+
+Le [lot de correction](CORRECTIONS.md) ajoute 64 contrôles et fait passer les 12 sondes de recette : 175 contrôles satisfaits au total, sans équivalence avec un taux d’achèvement du cahier complet. Le rendu des 28 chartes, la structure des 24 articles français, les véritables formulaires de brouillon/révision/ajout et l’export d’expérience sont vérifiés. Les trois suites font maintenant partie de `composer test`, donc de la CI.
+
+Le rendu visuel a aussi été observé dans Chromium sur le HTML produit par Symfony et son CSS, en largeur ordinateur et dans un cadre mobile de 390 px. L’URL localhost de l’utilisateur n’était pas joignable. Le rapport de correction précise les limites et contient une capture.
