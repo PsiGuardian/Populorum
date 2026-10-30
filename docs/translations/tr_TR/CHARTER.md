@@ -3,7 +3,6 @@
 **KURUCU ŞART — Sürüm 1.1 — 29 Ekim 2026**
 
 <!-- institutional-complement:start -->
-> [!NOTE]
 > **Mevcut kurumları tamamlayan bir proje**
 >
 > Bu kurgusal proje, hâlihazırda kurulmuş bir devlet sisteminin varlığını esas alır. Mevcut kurumları, hukuki çerçeveleri, kamu hizmetleri ve güvenceleriyle birlikte tamamlamak üzere tasarlanmıştır; bağımsız bir yönetim sistemi oluşturmaz.

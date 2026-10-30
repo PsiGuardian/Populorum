@@ -3,7 +3,6 @@
 **OPRICHTINGSCHARTER — Versie 1.1 — 29 oktober 2026**
 
 <!-- institutional-complement:start -->
-> [!NOTE]
 > **Een aanvulling op bestaande instellingen**
 >
 > Dit fictieve project gaat ervan uit dat er al een staatsbestel bestaat. Het is bedoeld als aanvulling op bestaande instellingen, met hun wettelijke kader, openbare diensten en waarborgen; het vormt geen zelfstandig bestuurssysteem.

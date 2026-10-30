@@ -3,7 +3,6 @@
 **HIẾN CHƯƠNG SÁNG LẬP — Phiên bản 1.1 — 29 tháng 10 năm 2026**
 
 <!-- institutional-complement:start -->
-> [!NOTE]
 > **Bổ sung cho các thể chế hiện có**
 >
 > Dự án giả tưởng này giả định rằng một hệ thống nhà nước đã tồn tại. Dự án được thiết kế để bổ sung cho các thể chế hiện có, cùng với khuôn khổ pháp luật, dịch vụ công và các cơ chế bảo đảm của chúng; đây không phải là một hệ thống quản trị nhà nước độc lập.

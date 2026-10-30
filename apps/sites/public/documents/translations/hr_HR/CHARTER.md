@@ -3,7 +3,6 @@
 **OSNIVAČKA POVELJA — Verzija 1.1 — 29. listopada 2026.**
 
 <!-- institutional-complement:start -->
-> [!NOTE]
 > **Dopuna postojećim institucijama**
 >
 > Ovaj fiktivni projekt pretpostavlja već uspostavljen državni sustav. Osmišljen je kao dopuna postojećim institucijama, s njihovim pravnim okvirom, javnim službama i jamstvima; ne predstavlja samostalan sustav upravljanja državom.

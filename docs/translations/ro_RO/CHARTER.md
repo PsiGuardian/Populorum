@@ -3,7 +3,6 @@
 **CARTA FONDATOARE — Versiunea 1.1 — 29 octombrie 2026**
 
 <!-- institutional-complement:start -->
-> [!NOTE]
 > **O completare a instituțiilor existente**
 >
 > Acest proiect fictiv presupune existența unui sistem de stat deja funcțional. Este conceput ca o completare a instituțiilor existente, cu cadrul lor legal, serviciile publice și garanțiile lor; nu constituie un sistem autonom de guvernare.

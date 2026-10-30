@@ -3,7 +3,6 @@
 **PIAGAM PENGASASAN — Versi 1.1 — 29 Oktober 2026**
 
 <!-- institutional-complement:start -->
-> [!NOTE]
 > **Pelengkap kepada institusi sedia ada**
 >
 > Projek fiksyen ini mengandaikan adanya sistem negara yang telah pun diwujudkan. Projek ini direka sebagai pelengkap kepada institusi sedia ada, bersama-sama kerangka undang-undang, perkhidmatan awam dan jaminan perlindungannya; projek ini bukan suatu sistem pemerintahan yang berdiri sendiri.

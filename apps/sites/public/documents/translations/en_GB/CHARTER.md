@@ -2,7 +2,6 @@
 ### Δῆμος Κράτος — Power belongs to the people
 
 <!-- institutional-complement:start -->
-> [!NOTE]
 > **A complement to existing institutions**
 >
 > This fictional project assumes that a system of State institutions is already in place. It is designed to complement existing institutions, together with their legal framework, public services and safeguards; it is not a standalone system of government.

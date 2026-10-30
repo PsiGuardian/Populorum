@@ -2,7 +2,6 @@
 ### Δῆμος Κράτος — El poder pertenece al pueblo
 
 <!-- institutional-complement:start -->
-> [!NOTE]
 > **Un complemento de las instituciones existentes**
 >
 > Este proyecto ficticio presupone un sistema estatal ya establecido. Está concebido como complemento de las instituciones existentes, con su marco legal, sus servicios públicos y sus garantías; no constituye un sistema autónomo de gobierno.

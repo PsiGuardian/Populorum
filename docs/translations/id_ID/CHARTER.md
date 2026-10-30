@@ -3,7 +3,6 @@
 **PIAGAM PENDIRIAN — Versi 1.1 — 29 Oktober 2026**
 
 <!-- institutional-complement:start -->
-> [!NOTE]
 > **Pelengkap bagi lembaga yang sudah ada**
 >
 > Proyek fiktif ini mengasumsikan adanya sistem negara yang telah berjalan. Proyek ini dirancang sebagai pelengkap lembaga yang sudah ada, beserta kerangka hukum, layanan publik, dan jaminan perlindungannya; proyek ini bukan sistem pemerintahan yang berdiri sendiri.

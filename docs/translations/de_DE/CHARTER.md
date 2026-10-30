@@ -2,7 +2,6 @@
 ### Δῆμος Κράτος — Die Macht gehört dem Volk
 
 <!-- institutional-complement:start -->
-> [!NOTE]
 > **Eine Ergänzung zu bestehenden Institutionen**
 >
 > Dieses fiktive Projekt setzt ein bereits bestehendes staatliches System voraus. Es soll die bestehenden Institutionen mit ihrem rechtlichen Rahmen, ihren öffentlichen Diensten und ihren Schutzgarantien ergänzen; es stellt kein eigenständiges Regierungssystem dar.

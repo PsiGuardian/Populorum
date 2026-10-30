@@ -3,7 +3,6 @@
 **ALAPÍTÓ OKIRAT — 1.1 verzió — 2026. október 29.**
 
 <!-- institutional-complement:start -->
-> [!NOTE]
 > **A meglévő intézmények kiegészítése**
 >
 > Ez a fiktív projekt egy már működő állami rendszert feltételez. A meglévő intézmények, jogi keretük, közszolgáltatásaik és garanciáik kiegészítésére szolgál; nem alkot önálló kormányzási rendszert.

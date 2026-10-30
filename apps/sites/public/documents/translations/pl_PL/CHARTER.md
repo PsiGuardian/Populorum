@@ -3,7 +3,6 @@
 **KARTA ZAŁOŻYCIELSKA — Wersja 1.1 — 29 października 2026 r.**
 
 <!-- institutional-complement:start -->
-> [!NOTE]
 > **Uzupełnienie istniejących instytucji**
 >
 > Ten fikcyjny projekt zakłada istnienie działającego systemu państwowego. Został pomyślany jako uzupełnienie istniejących instytucji, wraz z ich ramami prawnymi, usługami publicznymi i gwarancjami; nie stanowi samodzielnego systemu sprawowania władzy.

@@ -3,7 +3,6 @@
 **ZAKLÁDACÍ CHARTA — Verze 1.1 — 29. října 2026**
 
 <!-- institutional-complement:start -->
-> [!NOTE]
 > **Doplněk ke stávajícím institucím**
 >
 > Tento fiktivní projekt předpokládá již fungující státní systém. Je navržen jako doplněk stávajících institucí s jejich právním rámcem, veřejnými službami a zárukami; nepředstavuje samostatný systém vládnutí.
