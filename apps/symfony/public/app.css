@@ -2865,12 +2865,43 @@ form ul {
     margin-bottom: 22px;
     border-left: 3px solid var(--gold-dark);
 }
-.uncertainty-panel summary {
-    cursor: pointer;
-    min-height: 44px;
-    font-weight: 650;
-    padding: 8px 0;
+.uncertainty-panel h2 {
+    font-size: 18px;
+    line-height: 1.5;
+    margin: 0 0 12px;
 }
+.uncertainty-panel .uncertainty-intro { max-width: 88ch; }
+.uncertainty-explanations > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 44px;
+    margin-top: 8px;
+    padding: 10px 16px;
+    border: 1px solid var(--gold-dark);
+    border-radius: 5px;
+    color: var(--gold-dark);
+    background: transparent;
+    cursor: pointer;
+    font-weight: 650;
+    list-style: none;
+}
+.uncertainty-explanations > summary::-webkit-details-marker { display: none; }
+.uncertainty-explanations > summary:hover { background: #f5f1e8; }
+.uncertainty-explanations .uncertainty-hide,
+.uncertainty-explanations[open] .uncertainty-show { display: none; }
+.uncertainty-explanations[open] .uncertainty-hide { display: inline; }
+.uncertainty-explanations[open] .uncertainty-chevron { transform: rotate(180deg); }
+.uncertainty-full {
+    margin-top: 24px;
+    padding-top: 4px;
+    border-top: 1px solid var(--line);
+    max-width: 80ch;
+}
+.uncertainty-full h3 { margin: 28px 0 12px; font-size: 17px; line-height: 1.5; }
+.uncertainty-full p, .uncertainty-full li { line-height: 1.85; }
+.uncertainty-full ul { padding-inline-start: 22px; }
+.uncertainty-full li { margin-bottom: 10px; }
 
 .crime-category {
     padding: 14px 0;
