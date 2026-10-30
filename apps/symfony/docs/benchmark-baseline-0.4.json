@@ -1,0 +1,18 @@
+{
+    "date": "2026-10-29T12:44:15+00:00",
+    "php": "8.4.5",
+    "scope": "Séquentiel local HttpKernel chaud ; 300 personnages évolutifs \/ 27 propositions \/ 2700 votes avec historique \/ SQLite. Exclut réseau HTTP, concurrence, PHP-FPM et télémétrie réelle.",
+    "api": {
+        "samples": 100,
+        "medianMs": 61.556,
+        "p95Ms": 89.272,
+        "maxMs": 101.8
+    },
+    "voteAndTransactionalProjection": {
+        "samples": 50,
+        "medianMs": 248.466,
+        "p95Ms": 306.237,
+        "maxMs": 320.383
+    },
+    "peakMemoryBytes": 64503808
+}

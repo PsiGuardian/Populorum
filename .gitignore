@@ -1,0 +1,24 @@
+# Dependencies are installed from lockfiles.
+**/vendor/
+**/node_modules/
+**/.pnpm-store/
+
+# Local application state and credentials.
+**/var/*
+!**/var/.gitkeep
+**/.env.local
+**/.env.*.local
+**/auth.json
+**/.guardian-shield/
+
+# Build outputs and tool caches.
+**/.next/
+**/.wrangler/
+**/dist/
+**/.phpunit.cache/
+**/.phpunit.result.cache
+**/.php-cs-fixer.cache
+**/__pycache__/
+*.py[cod]
+*.zip
+.DS_Store

@@ -1,3 +1,5 @@
+> Experimental amendment, 29 October 2026: citizens retain individual reasoning and FOR/AGAINST/ABSTAIN positions. Each declared eligible family contributes at most one adoption vote, regardless of size. Strict majority of expressed FOR/AGAINST within the family; ties or abstentions only mean family abstention, no participant means non-participation. Quorum and adoption majority use families. Membership and aggregation are frozen at opening; no person belongs to two families in the same consultation. Historical consultations retain their frozen rules. This amendment supersedes any earlier wording that equates individual positions with adoption votes.
+
 # GENERAL REQUIREMENTS SPECIFICATION — DÉMOS KRATOS
 
 ### Δῆμος Κράτος — Power belongs to the people
@@ -36,7 +38,7 @@ Enable collective decision-making without imposing uniformity of thought through
 
 ## 3. Non-negotiable principles
 
-- **P-01 — Civic equality:** one vote per eligible person per consultation.
+- **P-01 — Individual expression, family suffrage:** every eligible citizen may reason and express a position; each declared eligible family contributes at most one adoption vote per consultation, regardless of size.
 - **P-02 — Freedom of thought:** no imposed intellectual path.
 - **P-03 — Non-judgement:** no ranking of people's worth by political opinion.
 - **P-04 — Path autonomy:** explain one's own reasoning rather than personally contradict others.
@@ -188,7 +190,7 @@ Three choices: **FOR**, **AGAINST**, **ABSTAIN**. The choice does not evaluate p
 
 ## 27. Changing a vote
 
-Where the rules allow, votes may be changed while the consultation is open, with an auditable history and **only one active vote** per person. After closing, the historic result remains frozen; later changes of opinion are recorded in personal paths or new consultations.
+Where the rules allow, votes may be changed while the consultation is open, with an auditable history and **only one active individual position** per person and at most one adoption vote per family. After closing, the historic result remains frozen; later changes of opinion are recorded in personal paths or new consultations.
 
 ## 28. Live results
 
@@ -365,7 +367,7 @@ PostgreSQL stores relational and transactional data. Causal graphs use normalise
 
 ## 58. Integrity constraints
 
-Unique territorial identifiers tied to official editions; one active vote per citizen/consultation; immutable proposal-version references and consultation rules; eligibility and timing checks; auditable workflows; revision history; cycle restrictions where a specific acyclic subgraph requires them; consistent financial sums; independently recomputable cryptographic digests.
+Unique territorial identifiers tied to official editions; one active individual position per citizen/consultation; one frozen family membership per person and at most one adoption vote per family; immutable proposal-version references and consultation rules; eligibility and timing checks; auditable workflows; revision history; cycle restrictions where a specific acyclic subgraph requires them; consistent financial sums; independently recomputable cryptographic digests.
 
 ## 59. API
 

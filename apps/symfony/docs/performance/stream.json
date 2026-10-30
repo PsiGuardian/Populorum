@@ -1,0 +1,6 @@
+{
+    "endpoint": "\/api\/v1\/events",
+    "streamMs": 21005.301,
+    "bytes": 293164,
+    "scope": "Temps d’occupation du worker par un flux SSE historique, hors en-têtes et réseau. Cette route reste compatible mais le navigateur utilise désormais des requêtes courtes."
+}

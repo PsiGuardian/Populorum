@@ -1,0 +1,241 @@
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    <a
+        class="plain"
+        href="{{
+        civic_path(
+            'section',
+            {
+                view: 'citizen'
+            }
+        )
+        }}"
+    >
+        ← Participer et choisir un personnage
+    </a>
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                PORTRAIT NARRATIF · FICTION
+            </div>
+            <h1>{{ character.name }}</h1>
+            <p>
+                {{
+                    character.familyLabel|default(
+                        'Famille fictive non déclarée'
+                    )
+                }}
+            </p>
+            <p>
+                {{ territoryMap[character.territoryId].name }} · {{
+                    voice.name
+                }} · tour {{ character.mind.round }}
+            </p>
+        </div>
+    </div>
+    <p class="notice">
+        Ce personnage est inventé. Ses paramètres servent à écrire une
+        trajectoire, sans diagnostic, mesure d’intelligence ni représentation
+        des habitants réels. Le choix POUR, CONTRE ou ABSTENTION ne mesure
+        jamais sa valeur.
+    </p>
+    <div class="two-columns">
+        <section class="panel">
+            <h2>Ce qui compte pour moi</h2>
+            <ol>
+                {% for key, weight in character.mind.priorities %}
+                    <li>{{ priorities[key] }}</li>
+                {% endfor %}
+            </ol>
+            <p>
+                « {{ voice.opening }} {{ voice.doubt }} »
+            </p>
+            <p>
+                Langage : {{ voice.name }}. Les réponses utilisent cette voix
+                sans transformer un style en niveau d’intelligence.
+            </p>
+        </section>
+        <section class="panel">
+            <h2>Comment mon avis évolue</h2>
+            <p>
+                {% if character.mind.learningRate < 0.25 %}
+                    Je reviens lentement sur mes attentes, même après un revers.
+                {% elseif character.mind.learningRate > 0.7 %}
+                    Un retour d’expérience peut me faire revoir rapidement mes
+                    attentes.
+                {% else %}
+                    J’ajuste mes attentes progressivement, avec des réserves.
+                {% endif %}
+            </p>
+            <p>
+                {% if character.mind.attachment > 0.65 %}
+                    Je tends à défendre ma première interprétation quand elle
+                    est contredite.
+                {% else %}
+                    Je peux prendre de la distance avec ma première
+                    interprétation.
+                {% endif %} {% if character.mind.uncertaintyTolerance < 0.4 %}
+                    Face à des éléments ambigus, je préfère souvent attendre.
+                {% else %}
+                    Je peux accepter un essai limité malgré une part
+                    d’incertitude.
+                {% endif %}
+            </p>
+            <details>
+                <summary>
+                    Paramètres fictifs et versions du profil
+                </summary>
+                <p>
+                    Ce sont des coefficients de modèle, sans validation
+                    psychométrique. Un apprentissage rapide peut aussi amplifier
+                    une conclusion trompeuse.
+                </p>
+                {% for entry in character.mindHistory %}
+                    <p>
+                        Tour {{ entry.round }} · profil {{
+                            entry.profile.revision
+                        }} : {{ entry.trigger }} · réactivité aux retours {{
+                            entry.profile.learningRate
+                        }}, ouverture {{ entry.profile.openness }}, attachement {{
+                            entry.profile.attachment
+                        }}.
+                    </p>
+                {% endfor %}
+            </details>
+        </section>
+    </div>
+    {% if character.familyId is defined %}
+        <section class="panel">
+            <h2>Ma famille fictive</h2>
+            <p>
+                Groupe déclaré : {{
+                    character.familyLabel|default(character.familyId)
+                }}. Je garde mon expression individuelle, mais ma famille ne
+                peut apporter qu’une seule voix d’adoption à une consultation.
+                Le rattachement et la règle utilisés sont ceux qui ont été figés
+                à l’ouverture.
+            </p>
+        </section>
+    {% endif %}
+    <h2>Mes neuf décisions locales</h2>
+    <p>
+        Chaque décision garde ses douze réponses et ses versions. Les
+        consultations closes restent figées. Un choix manuel remplace le vote
+        automatique, avec conservation de son historique.
+    </p>
+    <div class="panel">
+        <ul>
+            {% for vote in characterVotes %}
+                <li>
+                    <a
+                        href="{{
+                        civic_path(
+                            'fictional_character',
+                            {
+                                id: character.id,
+                                consultation: vote.consultationId
+                            }
+                        )
+                        }}"
+                    >
+                        {{ consultationMap[vote.consultationId].frozen.title }}
+                    </a> — <strong>{{ vote.choice|upper }}</strong> · {{
+                        vote.history|length
+                    }} étape(s) conservée(s){% if
+                        vote.deliberation is not defined %} · choix manuel{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% if selectedVote %}
+        {% set electoral = consultationMap[selectedVote.consultationId].tally %}
+        {% if electoral.unit == 'family' %}
+            <p class="notice">
+                Le choix ci-dessous est individuel. Le résultat d’adoption
+                compte les familles : {{ electoral.pour }} POUR, {{
+                    electoral.contre
+                }} CONTRE et {{ electoral.abstention }} abstentions familiales. Chaque
+                famille pèse au maximum une voix.
+            </p>
+        {% endif %}
+        <h2>{{ consultationMap[selectedVote.consultationId].frozen.title }}</h2>
+        {% if rounds %}
+            <nav aria-label="Étapes du raisonnement">
+                <p>
+                    {% for round in rounds %}
+                        <a
+                            class="button"
+                            href="{{
+                            civic_path(
+                                'fictional_character',
+                                {
+                                    id: character.id,
+                                    consultation: selectedVote.consultationId,
+                                    round: round
+                                }
+                            )
+                            }}"
+                        >
+                            Tour {{ round }}
+                        </a>
+                    {% endfor %}
+                </p>
+            </nav>
+        {% endif %}
+        {% if dossier %}
+            <p class="badge">
+                {{ dossier.choice|upper }} · tour {{ dossier.round }} · profil {{
+                    dossier.profileRevision
+                }} · proposition figée v{{ dossier.proposalVersion }}
+            </p>
+            <p>
+                {{ dossier.learningNarrative }}
+            </p>
+            <div class="causal-grid">
+                {% for response in dossier.reasoning %}
+                    <article class="causal-node">
+                        <div>
+                            <h3>
+                                {{ '%02d'|format(loop.index) }} · {{
+                                    response.category
+                                }}
+                            </h3>
+                            <p>
+                                {{ response.answer }}
+                            </p>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+            <a
+                class="button"
+                href="{{
+                civic_path(
+                    'fictional_character',
+                    {
+                        id: character.id,
+                        consultation: selectedVote.consultationId,
+                        round: dossier.round,
+                        format: 'json'
+                    }
+                )
+                }}"
+            >
+                Exporter ces douze réponses en JSON
+            </a>
+            <p class="muted small">
+                Le texte régénéré doit correspondre à l’empreinte conservée dans
+                le vote. Les retours d’expérience de ces tours sont des
+                contre-factuels inventés ; les documents cités ne prouvent pas
+                l’efficacité de la mesure.
+            </p>
+        {% else %}
+            <p>
+                Ce vote est manuel : aucun raisonnement n’est inventé à la place
+                de la personne qui l’a modifié. Les anciens tours restent
+                consultables.
+            </p>
+        {% endif %}
+    {% endif %}
+{% endblock %}

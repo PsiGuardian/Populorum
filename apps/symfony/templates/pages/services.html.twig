@@ -1,0 +1,396 @@
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                ORGANISER SANS IMPOSER · SIMULATION
+            </div>
+            <h1>Services, compétences et missions</h1>
+            <p>
+                Identifier le besoin, préserver les services essentiels,
+                proposer aux personnes compétentes et proches, puis vérifier le
+                résultat.
+            </p>
+        </div>
+    </div>
+    <section class="notice">
+        <h2>Une urgence réelle relève des services compétents</h2>
+        <p>
+            Cette page ne déclenche aucune intervention et ne contacte personne.
+            Danger immédiat : appeler les secours (112). Les coordonnées de
+            proximité ci-dessous sont des zones entièrement fictives, sans
+            adresse personnelle ni position GPS.
+        </p>
+        <p>
+            Une compétence déclarée ne vaut pas habilitation. Les interventions
+            réglementées sont bloquées dans le circuit citoyen ; les autres
+            propositions se limitent à la coordination et aux tâches simples
+            sans danger. Aucun vote n’oblige un travailleur à intervenir.
+            Demandeur et travailleur sont distincts pour permettre une
+            vérification du résultat. Salaires, matériel, assurance, transport
+            et coordination ne disparaissent pas avec le bénévolat.
+        </p>
+    </section>
+    <nav class="task-actions">
+        <a class="button" href="#service-map">Services et dépendances</a><a
+            class="button"
+            href="#worker-directory"
+        >
+            Annuaire des compétences
+        </a><a class="button" href="#missions">Missions par priorité</a>
+    </nav>
+    <section id="service-map" class="panel section">
+        <h2>Les fonctions à assurer</h2>
+        <p>
+            Les responsabilités indiquées sont des repères de compétence, à
+            vérifier localement. Cette carte ne transfère aucun pouvoir de
+            l’État à une commune. Les dépendances peuvent former des cycles :
+            les maintenir fait partie de la continuité des services.
+        </p>
+        <div class="cards-grid">
+            {% for key, service in serviceCatalog %}
+                <article>
+                    <h3>{{ service.label }}</h3>
+                    <p>
+                        {{ service.owner }}
+                    </p>
+                    <p>
+                        Priorité indicative {{ service.priority }} · {{ service.regulated ? 'Circuit habilité requis' : 'Coordination et tâches simples uniquement' }}
+                    </p>
+                    <p class="small">
+                        Dépend de :{% for dependency in service.depends %}
+                            {{ serviceCatalog[dependency].label }}{{ not loop.last ? ', ' : '' }}
+                        {% endfor %}.
+                    </p>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+    <section id="worker-directory" class="panel section">
+        <h2>Qui sait faire quoi ?</h2>
+        <p>
+            {{ pagination.total }} profils fictifs. Les liens familiaux ne donnent aucun
+            privilège de mission. Le classement des candidats vérifie compétence,
+            consentement, disponibilité, capacité et devis dans le plafond ; il donne
+            ensuite priorité à la zone la plus proche, puis au coût déclaré.
+        </p>
+        <div class="task-actions">
+            {{
+                ui.action(
+                    'worker.profile',
+                    'Décrire mon métier et ma compétence'
+                )
+            }}{{
+                ui.action(
+                    'worker.availability',
+                    'Choisir ma disponibilité volontaire'
+                )
+            }}
+        </div>
+        <form
+            method="get"
+            action="{{
+            civic_path(
+                'section',
+                {
+                    view: 'services'
+                }
+            )
+            }}#worker-directory"
+        >
+            <label for="worker-city">Ville</label><select
+                id="worker-city"
+                name="territory"
+            >
+                <option value="all">
+                    Toutes les villes
+                </option>
+                {% for city in state.territories %}
+                    <option
+                        value="{{ city.id }}"
+                        {{ territory == city.id ? 'selected' : '' }}
+                    >
+                        {{ city.name }}
+                    </option>
+                {% endfor %}
+            </select><label for="worker-skill">Compétence</label><select
+                id="worker-skill"
+                name="skill"
+            >
+                <option value="">
+                    Toutes les compétences
+                </option>
+                {% for id, item in serviceCatalog %}
+                    <option
+                        value="{{ id }}"
+                        {{ selectedSkill == id ? 'selected' : '' }}
+                    >
+                        {{ item.label }}
+                    </option>
+                {% endfor %}
+            </select><button class="button" type="submit">
+                Filtrer l’annuaire
+            </button>
+        </form>
+        <div>
+            <h3>Annuaire public fictif</h3>
+            {% include 'partials/pagination.html.twig' %}
+            <div
+                class="evidence-table-scroll"
+                tabindex="0"
+                role="region"
+                aria-label="Annuaire des compétences"
+            >
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Personnage</th>
+                            <th>Ville et zone fictive</th>
+                            <th>Métier et compétence</th>
+                            <th>Disponibilité</th>
+                            <th>Coût simulé</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for worker in workers %}
+                            <tr>
+                                <td>{{ citizenMap[worker.id].name }}</td>
+                                <td>
+                                    {{ territoryMap[worker.territoryId].name }} ·
+                                    {{ worker.zone }}
+                                </td>
+                                <td>
+                                    {{ worker.profession }}<br />{% for skill in worker.skills %}
+                                        {{ serviceCatalog[skill].label }}
+                                    {% endfor %}<small>
+                                        {{ worker.qualification }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {{ worker.optIn and worker.available
+                                        ? 'Volontaire et disponible'
+                                        : 'Non disponible pour une proposition' }}
+                                    · {{ worker.capacityHours }} h
+                                </td>
+                                <td>
+                                    {{
+                                        (worker.hourlyCents
+                                            / 100)|number_format(2, ',', ' ')
+                                    }} €/h
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5">
+                                    Ouvrez un nouveau laboratoire pour charger
+                                    les 300 profils, ou déclarez votre fiche
+                                    fictive.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+    <section id="missions" class="section">
+        <div class="row-header">
+            <h2>Les besoins locaux, par priorité</h2>{{
+                ui.action(
+                    'mission.create',
+                    'Décrire un besoin local',
+                    {},
+                    'button primary'
+                )
+            }}
+        </div>
+        <p>
+            Les priorités sont déclarées et discutables. L’accès aux loisirs, à
+            la culture et au repos reste visible ; un classement n’est pas une
+            autorisation de supprimer un service.
+        </p>
+        {% for mission in missions %}
+            <div id="{{ mission.id }}">
+                {{
+                    ui.action(
+                        'tender.create',
+                        'Consulter des entreprises pour ce besoin',
+                        {
+                            missionId: mission.id
+                        },
+                        'button ghost'
+                    )
+                }}
+            </div>
+            <article class="panel section">
+                <h3>{{ mission.title }}</h3>
+                <p>
+                    {{ territoryMap[mission.territoryId].name }} · zone {{
+                        mission.zone
+                    }} · priorité {{ mission.priority }} · {{
+                        serviceCatalog[mission.service].label
+                    }}
+                </p>{{
+                    ui.badge(
+                        {
+                            open: 'À proposer',
+                            offered: 'Proposée dans la simulation',
+                            accepted: 'Acceptée volontairement',
+                            in_progress: 'En cours',
+                            completed: 'Réalisation déclarée',
+                            reviewed: 'Résultat examiné',
+                            cancelled: 'Retirée',
+                            authority_required: 'Service habilité requis'
+                        }[mission.status]
+                    )
+                }}<p>
+                    {{ mission.description }}
+                </p>
+                <p>
+                    Travail estimé : {{ mission.hours }} h ; matériel : {{
+                        (mission.materialsCents / 100)|number_format(
+                            2,
+                            ',',
+                            ' '
+                        )
+                    }} € ; plafond : {{
+                        (mission.budgetCents / 100)|number_format(2, ',', ' ')
+                    }} €.
+                </p>
+                {% if mission.status == 'authority_required' %}
+                    <p class="notice">
+                        Affectation citoyenne bloquée. Il faut solliciter le
+                        service compétent et faire vérifier les habilitations ;
+                        cette simulation n’effectue aucun signalement.
+                    </p>
+                {% endif %}
+                {% if mission.workerId %}
+                    <p>
+                        Personnage sollicité : {{
+                            citizenMap[mission.workerId].name
+                        }} · devis {{
+                            (mission.quoteCents / 100)|number_format(
+                                2,
+                                ',',
+                                ' '
+                            )
+                        }} €.
+                    </p>
+                {% endif %}
+                {% if mission.actualCents is not null %}
+                    <p>
+                        Coût réalisé déclaré : {{
+                            (mission.actualCents / 100)|number_format(
+                                2,
+                                ',',
+                                ' '
+                            )
+                        }} €. {{ mission.status == 'reviewed' ? 'Résultat examiné par le demandeur.' : 'En attente de vérification par le demandeur.' }}
+                    </p>
+                {% endif %}
+                {% if mission.status == 'open' %}
+                    <h4>
+                        Candidats admissibles, du plus proche au plus éloigné
+                    </h4>
+                    <ol>
+                        {% for worker in candidates[mission.id] %}
+                            <li>
+                                {{ citizenMap[worker.id].name }} · écart de zone {{
+                                    worker.zoneDistance
+                                }} (pas des kilomètres) · devis {{
+                                    (worker.quoteCents / 100)|number_format(
+                                        2,
+                                        ',',
+                                        ' '
+                                    )
+                                }} €.
+                            </li>
+                        {% else %}
+                            <li>
+                                Aucun candidat compatible : revoir le périmètre,
+                                le budget ou la disponibilité, sans affectation
+                                forcée.
+                            </li>
+                        {% endfor %}
+                    </ol>
+                    {% if
+                        mission.authorId == actor.id
+                            and (candidates[mission.id]|length) %}{{
+                        ui.action(
+                            'mission.offer',
+                            'Proposer à un candidat compatible',
+                            {
+                                missionId: mission.id
+                            }
+                        )
+                    }}{% endif %}
+                {% endif %}
+                {% if
+                    mission.workerId == actor.id
+                        and mission.status == 'offered' %}{{
+                    ui.action(
+                        'mission.respond',
+                        'Accepter ou refuser volontairement',
+                        {
+                            missionId: mission.id
+                        }
+                    )
+                }}{% endif %}
+                {% if
+                    mission.workerId == actor.id
+                        and mission.status in ['accepted', 'in_progress'] %}{{
+                    ui.action(
+                        'mission.progress',
+                        mission.status == 'accepted'
+                            ? 'Déclarer le début de réalisation'
+                            : 'Déclarer la fin et le coût réalisé',
+                        {
+                            missionId: mission.id
+                        }
+                    )
+                }}{% endif %}
+                {% if
+                    mission.authorId == actor.id
+                        and mission.status == 'completed' %}{{
+                    ui.action(
+                        'mission.review',
+                        'Vérifier le résultat et documenter les limites',
+                        {
+                            missionId: mission.id
+                        }
+                    )
+                }}{% endif %}
+                {% if
+                    actor.id in [mission.authorId, mission.workerId]
+                        and mission.status
+                            not in ['completed', 'reviewed', 'cancelled'] %}{{
+                    ui.action(
+                        'mission.cancel',
+                        'Retirer la mission ou mon engagement',
+                        {
+                            missionId: mission.id
+                        }
+                    )
+                }}{% endif %}
+                <details>
+                    <summary>
+                        Historique de la mission
+                    </summary>
+                    {% for step in mission.history %}
+                        <p>
+                            {{ step.at }} · {{ step.from }} → {{ step.to }} · {{
+                                citizenMap[step.actorId].name
+                            }} : {{ step.reason }}
+                        </p>
+                    {% endfor %}
+                </details>
+            </article>
+        {% else %}
+            <p class="panel">
+                Aucune mission dans ce laboratoire. Commencez par un besoin
+                simple et un budget explicite.
+            </p>
+        {% endfor %}
+    </section>
+{% endblock %}

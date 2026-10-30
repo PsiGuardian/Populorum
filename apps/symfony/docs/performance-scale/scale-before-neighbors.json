@@ -1,0 +1,1903 @@
+{
+    "at": "2026-10-30T14:27:23+00:00",
+    "php": "8.4.5",
+    "opcacheCli": false,
+    "samples": 5,
+    "fixture": "300 citoyens, 27 propositions, 2700 positions ; 4 autres simulations. Données synthétiques disjointes, trois villes conservées.",
+    "scope": "Local séquentiel, HttpKernel demo\/debug=0. Processus frais avec caches Symfony déjà compilés ; kernel réutilisé pour chaud. Aucun réseau, navigateur, concurrence ou PHP-FPM. Phases inclusives : ne pas les additionner.",
+    "pages": [
+        {
+            "label": "Accueil",
+            "path": "\/",
+            "status": 200,
+            "bytes": 45196,
+            "firstHandleMs": 20.918,
+            "warm": {
+                "samples": 5,
+                "medianMs": 20.486,
+                "p95Ms": 23.75,
+                "minMs": 18.135,
+                "maxMs": 23.75
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.017,
+                "p95Ms": 0.086,
+                "minMs": 0.013,
+                "maxMs": 0.086
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.461,
+                    "p95Ms": 1.856,
+                    "minMs": 1.257,
+                    "maxMs": 1.856
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 11.683,
+                    "p95Ms": 15.854,
+                    "minMs": 10.947,
+                    "maxMs": 15.854
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 13,
+                    "p95Ms": 17.779,
+                    "minMs": 12.386,
+                    "maxMs": 17.779
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.006,
+                    "p95Ms": 0.008,
+                    "minMs": 0.005,
+                    "maxMs": 0.008
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.102,
+                    "p95Ms": 0.122,
+                    "minMs": 0.092,
+                    "maxMs": 0.122
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 1.029,
+                    "p95Ms": 1.264,
+                    "minMs": 0.965,
+                    "maxMs": 1.264
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 18.433,
+                    "p95Ms": 23.599,
+                    "minMs": 17.964,
+                    "maxMs": 23.599
+                }
+            }
+        },
+        {
+            "label": "Territoires",
+            "path": "\/territoires",
+            "status": 200,
+            "bytes": 20957,
+            "firstHandleMs": 41.914,
+            "warm": {
+                "samples": 5,
+                "medianMs": 28.917,
+                "p95Ms": 32.707,
+                "minMs": 21.968,
+                "maxMs": 32.707
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.016,
+                "p95Ms": 0.017,
+                "minMs": 0.014,
+                "maxMs": 0.017
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 2.006,
+                    "p95Ms": 3.962,
+                    "minMs": 1.831,
+                    "maxMs": 3.962
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 18.413,
+                    "p95Ms": 20.74,
+                    "minMs": 12.618,
+                    "maxMs": 20.74
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 20.683,
+                    "p95Ms": 24.86,
+                    "minMs": 14.922,
+                    "maxMs": 24.86
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.007,
+                    "p95Ms": 0.008,
+                    "minMs": 0.006,
+                    "maxMs": 0.008
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.16,
+                    "p95Ms": 0.318,
+                    "minMs": 0.12,
+                    "maxMs": 0.318
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 1.429,
+                    "p95Ms": 1.77,
+                    "minMs": 0.688,
+                    "maxMs": 1.77
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 28.641,
+                    "p95Ms": 32.503,
+                    "minMs": 21.602,
+                    "maxMs": 32.503
+                }
+            }
+        },
+        {
+            "label": "Propositions",
+            "path": "\/chemins",
+            "status": 200,
+            "bytes": 30596,
+            "firstHandleMs": 34.116,
+            "warm": {
+                "samples": 5,
+                "medianMs": 28.793,
+                "p95Ms": 37.587,
+                "minMs": 24.358,
+                "maxMs": 37.587
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.015,
+                "p95Ms": 0.019,
+                "minMs": 0.014,
+                "maxMs": 0.019
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.63,
+                    "p95Ms": 9.589,
+                    "minMs": 1.365,
+                    "maxMs": 9.589
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 16.924,
+                    "p95Ms": 20.031,
+                    "minMs": 13.662,
+                    "maxMs": 20.031
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 21.063,
+                    "p95Ms": 26.573,
+                    "minMs": 15.494,
+                    "maxMs": 26.573
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.007,
+                    "p95Ms": 0.007,
+                    "minMs": 0.006,
+                    "maxMs": 0.007
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.059,
+                    "p95Ms": 0.066,
+                    "minMs": 0.055,
+                    "maxMs": 0.066
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 1.677,
+                    "p95Ms": 3.482,
+                    "minMs": 1.468,
+                    "maxMs": 3.482
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 28.635,
+                    "p95Ms": 37.438,
+                    "minMs": 24.207,
+                    "maxMs": 37.438
+                }
+            }
+        },
+        {
+            "label": "Consultations",
+            "path": "\/consultations",
+            "status": 200,
+            "bytes": 193373,
+            "firstHandleMs": 45.947,
+            "warm": {
+                "samples": 5,
+                "medianMs": 40.773,
+                "p95Ms": 52.483,
+                "minMs": 30.178,
+                "maxMs": 52.483
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.015,
+                "p95Ms": 0.017,
+                "minMs": 0.013,
+                "maxMs": 0.017
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.378,
+                    "p95Ms": 2.533,
+                    "minMs": 1.327,
+                    "maxMs": 2.533
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 11.807,
+                    "p95Ms": 18.446,
+                    "minMs": 11.556,
+                    "maxMs": 18.446
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 13.196,
+                    "p95Ms": 21.044,
+                    "minMs": 12.989,
+                    "maxMs": 21.044
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 8.6,
+                    "p95Ms": 15.012,
+                    "minMs": 6.261,
+                    "maxMs": 15.012
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.997,
+                    "p95Ms": 1.167,
+                    "minMs": 0.761,
+                    "maxMs": 1.167
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 7.256,
+                    "p95Ms": 18.693,
+                    "minMs": 5.069,
+                    "maxMs": 18.693
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 40.48,
+                    "p95Ms": 52.309,
+                    "minMs": 30.012,
+                    "maxMs": 52.309
+                }
+            }
+        },
+        {
+            "label": "Expériences",
+            "path": "\/experiences",
+            "status": 200,
+            "bytes": 13775,
+            "firstHandleMs": 20.893,
+            "warm": {
+                "samples": 5,
+                "medianMs": 17.982,
+                "p95Ms": 18.693,
+                "minMs": 17.55,
+                "maxMs": 18.693
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.014,
+                "p95Ms": 0.015,
+                "minMs": 0.014,
+                "maxMs": 0.015
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.295,
+                    "p95Ms": 1.332,
+                    "minMs": 1.246,
+                    "maxMs": 1.332
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 11.434,
+                    "p95Ms": 12.074,
+                    "minMs": 11.247,
+                    "maxMs": 12.074
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 12.779,
+                    "p95Ms": 13.463,
+                    "minMs": 12.559,
+                    "maxMs": 13.463
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.006,
+                    "p95Ms": 0.007,
+                    "minMs": 0.005,
+                    "maxMs": 0.007
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.058,
+                    "p95Ms": 0.066,
+                    "minMs": 0.051,
+                    "maxMs": 0.066
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 0.644,
+                    "p95Ms": 0.657,
+                    "minMs": 0.589,
+                    "maxMs": 0.657
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 17.798,
+                    "p95Ms": 18.542,
+                    "minMs": 17.403,
+                    "maxMs": 18.542
+                }
+            }
+        },
+        {
+            "label": "Convergence",
+            "path": "\/convergence",
+            "status": 200,
+            "bytes": 54361,
+            "firstHandleMs": 24.473,
+            "warm": {
+                "samples": 5,
+                "medianMs": 20.714,
+                "p95Ms": 22.667,
+                "minMs": 19.907,
+                "maxMs": 22.667
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.015,
+                "p95Ms": 0.015,
+                "minMs": 0.013,
+                "maxMs": 0.015
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.313,
+                    "p95Ms": 1.344,
+                    "minMs": 1.262,
+                    "maxMs": 1.344
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 11.665,
+                    "p95Ms": 12.868,
+                    "minMs": 11.292,
+                    "maxMs": 12.868
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 13.07,
+                    "p95Ms": 14.187,
+                    "minMs": 12.608,
+                    "maxMs": 14.187
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.006,
+                    "p95Ms": 0.048,
+                    "minMs": 0.006,
+                    "maxMs": 0.048
+                },
+                "convergence": {
+                    "samples": 5,
+                    "medianMs": 1.028,
+                    "p95Ms": 1.043,
+                    "minMs": 1.007,
+                    "maxMs": 1.043
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 1.528,
+                    "p95Ms": 1.598,
+                    "minMs": 1.509,
+                    "maxMs": 1.598
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 1.262,
+                    "p95Ms": 1.342,
+                    "minMs": 1.201,
+                    "maxMs": 1.342
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 20.538,
+                    "p95Ms": 22.484,
+                    "minMs": 19.688,
+                    "maxMs": 22.484
+                }
+            }
+        },
+        {
+            "label": "Mémoire",
+            "path": "\/memoire",
+            "status": 200,
+            "bytes": 30067,
+            "firstHandleMs": 23.672,
+            "warm": {
+                "samples": 5,
+                "medianMs": 26.088,
+                "p95Ms": 31.154,
+                "minMs": 22.795,
+                "maxMs": 31.154
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.016,
+                "p95Ms": 0.016,
+                "minMs": 0.014,
+                "maxMs": 0.016
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.611,
+                    "p95Ms": 3.51,
+                    "minMs": 1.274,
+                    "maxMs": 3.51
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 15.767,
+                    "p95Ms": 19.492,
+                    "minMs": 14.435,
+                    "maxMs": 19.492
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 18.012,
+                    "p95Ms": 20.826,
+                    "minMs": 16.106,
+                    "maxMs": 20.826
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.006,
+                    "p95Ms": 0.007,
+                    "minMs": 0.006,
+                    "maxMs": 0.007
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.058,
+                    "p95Ms": 0.067,
+                    "minMs": 0.056,
+                    "maxMs": 0.067
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 1.423,
+                    "p95Ms": 2.307,
+                    "minMs": 1.189,
+                    "maxMs": 2.307
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 25.861,
+                    "p95Ms": 30.956,
+                    "minMs": 22.647,
+                    "maxMs": 30.956
+                }
+            }
+        },
+        {
+            "label": "Transparence",
+            "path": "\/transparence",
+            "status": 200,
+            "bytes": 11417,
+            "firstHandleMs": 31.107,
+            "warm": {
+                "samples": 5,
+                "medianMs": 27.569,
+                "p95Ms": 31.048,
+                "minMs": 21.632,
+                "maxMs": 31.048
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.015,
+                "p95Ms": 0.017,
+                "minMs": 0.015,
+                "maxMs": 0.017
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.513,
+                    "p95Ms": 2.086,
+                    "minMs": 1.261,
+                    "maxMs": 2.086
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 18.023,
+                    "p95Ms": 18.448,
+                    "minMs": 13.266,
+                    "maxMs": 18.448
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 19.517,
+                    "p95Ms": 20.508,
+                    "minMs": 14.972,
+                    "maxMs": 20.508
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.007,
+                    "p95Ms": 0.007,
+                    "minMs": 0.006,
+                    "maxMs": 0.007
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.06,
+                    "p95Ms": 0.063,
+                    "minMs": 0.058,
+                    "maxMs": 0.063
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 0.524,
+                    "p95Ms": 0.948,
+                    "minMs": 0.52,
+                    "maxMs": 0.948
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 27.425,
+                    "p95Ms": 30.888,
+                    "minMs": 21.355,
+                    "maxMs": 30.888
+                }
+            }
+        },
+        {
+            "label": "Infrastructure",
+            "path": "\/infrastructure",
+            "status": 200,
+            "bytes": 11409,
+            "firstHandleMs": 24.68,
+            "warm": {
+                "samples": 5,
+                "medianMs": 23.504,
+                "p95Ms": 31.865,
+                "minMs": 20.32,
+                "maxMs": 31.865
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.015,
+                "p95Ms": 0.019,
+                "minMs": 0.013,
+                "maxMs": 0.019
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.499,
+                    "p95Ms": 2.455,
+                    "minMs": 1.372,
+                    "maxMs": 2.455
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 15.49,
+                    "p95Ms": 21.166,
+                    "minMs": 12.164,
+                    "maxMs": 21.166
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 17.006,
+                    "p95Ms": 23.689,
+                    "minMs": 13.718,
+                    "maxMs": 23.689
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.006,
+                    "p95Ms": 0.008,
+                    "minMs": 0.005,
+                    "maxMs": 0.008
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.061,
+                    "p95Ms": 0.102,
+                    "minMs": 0.055,
+                    "maxMs": 0.102
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 0.513,
+                    "p95Ms": 0.893,
+                    "minMs": 0.467,
+                    "maxMs": 0.893
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 23.354,
+                    "p95Ms": 31.637,
+                    "minMs": 20.179,
+                    "maxMs": 31.637
+                }
+            }
+        },
+        {
+            "label": "Gouvernance",
+            "path": "\/gouvernance",
+            "status": 200,
+            "bytes": 8810,
+            "firstHandleMs": 27.241,
+            "warm": {
+                "samples": 5,
+                "medianMs": 22.844,
+                "p95Ms": 28.442,
+                "minMs": 22.2,
+                "maxMs": 28.442
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.014,
+                "p95Ms": 0.015,
+                "minMs": 0.014,
+                "maxMs": 0.015
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.442,
+                    "p95Ms": 2.044,
+                    "minMs": 1.231,
+                    "maxMs": 2.044
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 15.041,
+                    "p95Ms": 17.376,
+                    "minMs": 14.855,
+                    "maxMs": 17.376
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 16.814,
+                    "p95Ms": 19.474,
+                    "minMs": 16.137,
+                    "maxMs": 19.474
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.007,
+                    "p95Ms": 0.073,
+                    "minMs": 0.005,
+                    "maxMs": 0.073
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.053,
+                    "p95Ms": 0.056,
+                    "minMs": 0.05,
+                    "maxMs": 0.056
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 0.478,
+                    "p95Ms": 0.606,
+                    "minMs": 0.434,
+                    "maxMs": 0.606
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 22.648,
+                    "p95Ms": 28.088,
+                    "minMs": 22.013,
+                    "maxMs": 28.088
+                }
+            }
+        },
+        {
+            "label": "Participer",
+            "path": "\/participer",
+            "status": 200,
+            "bytes": 101206,
+            "firstHandleMs": 28.543,
+            "warm": {
+                "samples": 5,
+                "medianMs": 22.4,
+                "p95Ms": 24.793,
+                "minMs": 21.546,
+                "maxMs": 24.793
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.014,
+                "p95Ms": 0.016,
+                "minMs": 0.013,
+                "maxMs": 0.016
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.442,
+                    "p95Ms": 1.594,
+                    "minMs": 1.26,
+                    "maxMs": 1.594
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 13.449,
+                    "p95Ms": 15.453,
+                    "minMs": 12.878,
+                    "maxMs": 15.453
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 14.927,
+                    "p95Ms": 17.101,
+                    "minMs": 14.182,
+                    "maxMs": 17.101
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.005,
+                    "p95Ms": 0.007,
+                    "minMs": 0.005,
+                    "maxMs": 0.007
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.05,
+                    "p95Ms": 0.241,
+                    "minMs": 0.048,
+                    "maxMs": 0.241
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 2.313,
+                    "p95Ms": 2.471,
+                    "minMs": 2.018,
+                    "maxMs": 2.471
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 22.259,
+                    "p95Ms": 24.477,
+                    "minMs": 21.41,
+                    "maxMs": 24.477
+                }
+            }
+        },
+        {
+            "label": "Charte",
+            "path": "\/charte",
+            "status": 200,
+            "bytes": 34578,
+            "firstHandleMs": 52.312,
+            "warm": {
+                "samples": 5,
+                "medianMs": 31.503,
+                "p95Ms": 37.12,
+                "minMs": 30.476,
+                "maxMs": 37.12
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.021,
+                "p95Ms": 0.104,
+                "minMs": 0.014,
+                "maxMs": 0.104
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 2.207,
+                    "p95Ms": 2.498,
+                    "minMs": 1.575,
+                    "maxMs": 2.498
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 13.763,
+                    "p95Ms": 13.953,
+                    "minMs": 13.31,
+                    "maxMs": 13.953
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 16.152,
+                    "p95Ms": 16.463,
+                    "minMs": 15.266,
+                    "maxMs": 16.463
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.006,
+                    "p95Ms": 0.007,
+                    "minMs": 0.006,
+                    "maxMs": 0.007
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 8.812,
+                    "p95Ms": 13.171,
+                    "minMs": 8.076,
+                    "maxMs": 13.171
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 0.491,
+                    "p95Ms": 0.789,
+                    "minMs": 0.431,
+                    "maxMs": 0.789
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 31.356,
+                    "p95Ms": 36.381,
+                    "minMs": 30.275,
+                    "maxMs": 36.381
+                }
+            }
+        },
+        {
+            "label": "Récits",
+            "path": "\/recits",
+            "status": 200,
+            "bytes": 137309,
+            "firstHandleMs": 30.602,
+            "warm": {
+                "samples": 5,
+                "medianMs": 25.196,
+                "p95Ms": 27.244,
+                "minMs": 22.44,
+                "maxMs": 27.244
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.014,
+                "p95Ms": 0.017,
+                "minMs": 0.013,
+                "maxMs": 0.017
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.224,
+                    "p95Ms": 1.563,
+                    "minMs": 1.189,
+                    "maxMs": 1.563
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 12.586,
+                    "p95Ms": 15.431,
+                    "minMs": 11.983,
+                    "maxMs": 15.431
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 13.989,
+                    "p95Ms": 16.683,
+                    "minMs": 13.256,
+                    "maxMs": 16.683
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.005,
+                    "p95Ms": 0.006,
+                    "minMs": 0.005,
+                    "maxMs": 0.006
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 1.029,
+                    "p95Ms": 1.41,
+                    "minMs": 0.888,
+                    "maxMs": 1.41
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 3.044,
+                    "p95Ms": 4.303,
+                    "minMs": 2.525,
+                    "maxMs": 4.303
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 24.98,
+                    "p95Ms": 27.042,
+                    "minMs": 22.24,
+                    "maxMs": 27.042
+                }
+            }
+        },
+        {
+            "label": "Services et missions",
+            "path": "\/services-et-missions",
+            "status": 200,
+            "bytes": 350783,
+            "firstHandleMs": 31.93,
+            "warm": {
+                "samples": 5,
+                "medianMs": 32.047,
+                "p95Ms": 35.809,
+                "minMs": 29.031,
+                "maxMs": 35.809
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.016,
+                "p95Ms": 0.018,
+                "minMs": 0.014,
+                "maxMs": 0.018
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.645,
+                    "p95Ms": 1.932,
+                    "minMs": 1.245,
+                    "maxMs": 1.932
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 17.946,
+                    "p95Ms": 18.978,
+                    "minMs": 14.899,
+                    "maxMs": 18.978
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 19.749,
+                    "p95Ms": 20.758,
+                    "minMs": 16.214,
+                    "maxMs": 20.758
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.006,
+                    "p95Ms": 0.007,
+                    "minMs": 0.005,
+                    "maxMs": 0.007
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.144,
+                    "p95Ms": 0.289,
+                    "minMs": 0.102,
+                    "maxMs": 0.289
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 6.63,
+                    "p95Ms": 8.02,
+                    "minMs": 5.154,
+                    "maxMs": 8.02
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 31.841,
+                    "p95Ms": 35.611,
+                    "minMs": 28.88,
+                    "maxMs": 35.611
+                }
+            }
+        },
+        {
+            "label": "Budget",
+            "path": "\/budget-et-priorites",
+            "status": 200,
+            "bytes": 231931,
+            "firstHandleMs": 41.344,
+            "warm": {
+                "samples": 5,
+                "medianMs": 38.481,
+                "p95Ms": 41.684,
+                "minMs": 36.568,
+                "maxMs": 41.684
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.018,
+                "p95Ms": 0.019,
+                "minMs": 0.015,
+                "maxMs": 0.019
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.729,
+                    "p95Ms": 1.876,
+                    "minMs": 1.474,
+                    "maxMs": 1.876
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 18.248,
+                    "p95Ms": 18.951,
+                    "minMs": 14.736,
+                    "maxMs": 18.951
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 19.783,
+                    "p95Ms": 20.858,
+                    "minMs": 16.345,
+                    "maxMs": 20.858
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.006,
+                    "p95Ms": 0.007,
+                    "minMs": 0.006,
+                    "maxMs": 0.007
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 6.107,
+                    "p95Ms": 9.786,
+                    "minMs": 5.84,
+                    "maxMs": 9.786
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 4.038,
+                    "p95Ms": 4.361,
+                    "minMs": 3.945,
+                    "maxMs": 4.361
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 38.052,
+                    "p95Ms": 41.366,
+                    "minMs": 36.134,
+                    "maxMs": 41.366
+                }
+            }
+        },
+        {
+            "label": "Besoins et devis",
+            "path": "\/besoins-et-devis",
+            "status": 200,
+            "bytes": 10046,
+            "firstHandleMs": 35.553,
+            "warm": {
+                "samples": 5,
+                "medianMs": 29.316,
+                "p95Ms": 29.822,
+                "minMs": 27.094,
+                "maxMs": 29.822
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.018,
+                "p95Ms": 0.019,
+                "minMs": 0.017,
+                "maxMs": 0.019
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.787,
+                    "p95Ms": 1.99,
+                    "minMs": 1.412,
+                    "maxMs": 1.99
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 18.883,
+                    "p95Ms": 20.028,
+                    "minMs": 18.046,
+                    "maxMs": 20.028
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 20.816,
+                    "p95Ms": 21.498,
+                    "minMs": 19.846,
+                    "maxMs": 21.498
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.007,
+                    "p95Ms": 0.007,
+                    "minMs": 0.007,
+                    "maxMs": 0.007
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.076,
+                    "p95Ms": 0.08,
+                    "minMs": 0.07,
+                    "maxMs": 0.08
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 0.763,
+                    "p95Ms": 1.145,
+                    "minMs": 0.676,
+                    "maxMs": 1.145
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 29.078,
+                    "p95Ms": 29.603,
+                    "minMs": 26.879,
+                    "maxMs": 29.603
+                }
+            }
+        },
+        {
+            "label": "Proposition détaillée",
+            "path": "\/proposals\/fiche\/p1",
+            "status": 200,
+            "bytes": 47949,
+            "firstHandleMs": 35.476,
+            "warm": {
+                "samples": 5,
+                "medianMs": 26.056,
+                "p95Ms": 29.663,
+                "minMs": 24.771,
+                "maxMs": 29.663
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.015,
+                "p95Ms": 0.016,
+                "minMs": 0.013,
+                "maxMs": 0.016
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.515,
+                    "p95Ms": 1.716,
+                    "minMs": 1.341,
+                    "maxMs": 1.716
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 15.925,
+                    "p95Ms": 18.861,
+                    "minMs": 15.151,
+                    "maxMs": 18.861
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 17.691,
+                    "p95Ms": 20.457,
+                    "minMs": 16.551,
+                    "maxMs": 20.457
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.006,
+                    "p95Ms": 0.011,
+                    "minMs": 0.006,
+                    "maxMs": 0.011
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.104,
+                    "p95Ms": 0.119,
+                    "minMs": 0.097,
+                    "maxMs": 0.119
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 1.659,
+                    "p95Ms": 2.054,
+                    "minMs": 1.216,
+                    "maxMs": 2.054
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 25.899,
+                    "p95Ms": 29.433,
+                    "minMs": 24.533,
+                    "maxMs": 29.433
+                }
+            }
+        },
+        {
+            "label": "Consultation détaillée",
+            "path": "\/consultations\/fiche\/c1",
+            "status": 200,
+            "bytes": 94062,
+            "firstHandleMs": 42.866,
+            "warm": {
+                "samples": 5,
+                "medianMs": 43.846,
+                "p95Ms": 47.097,
+                "minMs": 41.007,
+                "maxMs": 47.097
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.018,
+                "p95Ms": 0.02,
+                "minMs": 0.017,
+                "maxMs": 0.02
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.755,
+                    "p95Ms": 1.896,
+                    "minMs": 1.716,
+                    "maxMs": 1.896
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 19.351,
+                    "p95Ms": 21.639,
+                    "minMs": 17.745,
+                    "maxMs": 21.639
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 21.139,
+                    "p95Ms": 23.599,
+                    "minMs": 19.526,
+                    "maxMs": 23.599
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 10.34,
+                    "p95Ms": 10.751,
+                    "minMs": 9.597,
+                    "maxMs": 10.751
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 1.085,
+                    "p95Ms": 1.169,
+                    "minMs": 0.904,
+                    "maxMs": 1.169
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 3.626,
+                    "p95Ms": 3.667,
+                    "minMs": 3.534,
+                    "maxMs": 3.667
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 43.659,
+                    "p95Ms": 46.801,
+                    "minMs": 40.833,
+                    "maxMs": 46.801
+                }
+            }
+        },
+        {
+            "label": "Expérience détaillée",
+            "path": "\/experiments\/fiche\/e1",
+            "status": 200,
+            "bytes": 13771,
+            "firstHandleMs": 32.69,
+            "warm": {
+                "samples": 5,
+                "medianMs": 31.129,
+                "p95Ms": 37.601,
+                "minMs": 28.302,
+                "maxMs": 37.601
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.016,
+                "p95Ms": 0.017,
+                "minMs": 0.014,
+                "maxMs": 0.017
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.725,
+                    "p95Ms": 1.808,
+                    "minMs": 1.287,
+                    "maxMs": 1.808
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 20.717,
+                    "p95Ms": 27.031,
+                    "minMs": 19.208,
+                    "maxMs": 27.031
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 22.103,
+                    "p95Ms": 28.915,
+                    "minMs": 21.001,
+                    "maxMs": 28.915
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.007,
+                    "p95Ms": 0.008,
+                    "minMs": 0.007,
+                    "maxMs": 0.008
+                },
+                "page_data": {
+                    "samples": 5,
+                    "medianMs": 0.081,
+                    "p95Ms": 0.125,
+                    "minMs": 0.074,
+                    "maxMs": 0.125
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 0.874,
+                    "p95Ms": 0.97,
+                    "minMs": 0.803,
+                    "maxMs": 0.97
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 30.935,
+                    "p95Ms": 37.34,
+                    "minMs": 28.088,
+                    "maxMs": 37.34
+                }
+            }
+        },
+        {
+            "label": "Personnage et raisonnement",
+            "path": "\/characters\/u1",
+            "status": 200,
+            "bytes": 24297,
+            "firstHandleMs": 77.018,
+            "warm": {
+                "samples": 5,
+                "medianMs": 65.199,
+                "p95Ms": 69.258,
+                "minMs": 59.357,
+                "maxMs": 69.258
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.015,
+                "p95Ms": 0.016,
+                "minMs": 0.013,
+                "maxMs": 0.016
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 2.502,
+                    "p95Ms": 2.559,
+                    "minMs": 2.313,
+                    "maxMs": 2.559
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 39.508,
+                    "p95Ms": 43.686,
+                    "minMs": 39.417,
+                    "maxMs": 43.686
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 42.26,
+                    "p95Ms": 46.489,
+                    "minMs": 42.07,
+                    "maxMs": 46.489
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 9.948,
+                    "p95Ms": 9.992,
+                    "minMs": 7.743,
+                    "maxMs": 9.992
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 0.936,
+                    "p95Ms": 0.99,
+                    "minMs": 0.65,
+                    "maxMs": 0.99
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 65.019,
+                    "p95Ms": 69.084,
+                    "minMs": 59.207,
+                    "maxMs": 69.084
+                }
+            }
+        },
+        {
+            "label": "Connexion",
+            "path": "\/citizen\/login",
+            "status": 200,
+            "bytes": 1673,
+            "firstHandleMs": 3.658,
+            "warm": {
+                "samples": 5,
+                "medianMs": 0.639,
+                "p95Ms": 0.836,
+                "minMs": 0.545,
+                "maxMs": 0.836
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.006,
+                "p95Ms": 0.008,
+                "minMs": 0.006,
+                "maxMs": 0.008
+            },
+            "phases": {
+                "request": {
+                    "samples": 5,
+                    "medianMs": 0.551,
+                    "p95Ms": 0.643,
+                    "minMs": 0.468,
+                    "maxMs": 0.643
+                }
+            }
+        },
+        {
+            "label": "Vérification d’intégrité",
+            "path": "\/verify",
+            "status": 200,
+            "bytes": 9424,
+            "firstHandleMs": 161.499,
+            "warm": {
+                "samples": 5,
+                "medianMs": 148.645,
+                "p95Ms": 160.745,
+                "minMs": 137.22,
+                "maxMs": 160.745
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.015,
+                "p95Ms": 0.015,
+                "minMs": 0.014,
+                "maxMs": 0.015
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.895,
+                    "p95Ms": 2.035,
+                    "minMs": 1.799,
+                    "maxMs": 2.035
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 34.018,
+                    "p95Ms": 37.566,
+                    "minMs": 29.896,
+                    "maxMs": 37.566
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 36.334,
+                    "p95Ms": 39.664,
+                    "minMs": 31.971,
+                    "maxMs": 39.664
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 9.604,
+                    "p95Ms": 13.129,
+                    "minMs": 8.118,
+                    "maxMs": 13.129
+                },
+                "twig": {
+                    "samples": 5,
+                    "medianMs": 0.939,
+                    "p95Ms": 1.689,
+                    "minMs": 0.851,
+                    "maxMs": 1.689
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 148.498,
+                    "p95Ms": 160.58,
+                    "minMs": 136.899,
+                    "maxMs": 160.58
+                }
+            }
+        },
+        {
+            "label": "API état",
+            "path": "\/api\/v1\/state",
+            "status": 200,
+            "bytes": 3212730,
+            "firstHandleMs": 95.107,
+            "warm": {
+                "samples": 5,
+                "medianMs": 101.017,
+                "p95Ms": 134.905,
+                "minMs": 82.069,
+                "maxMs": 134.905
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.015,
+                "p95Ms": 0.165,
+                "minMs": 0.014,
+                "maxMs": 0.165
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 2.222,
+                    "p95Ms": 5.853,
+                    "minMs": 1.906,
+                    "maxMs": 5.853
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 43.999,
+                    "p95Ms": 46.591,
+                    "minMs": 31.634,
+                    "maxMs": 46.591
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 46.291,
+                    "p95Ms": 52.642,
+                    "minMs": 33.761,
+                    "maxMs": 52.642
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 10.571,
+                    "p95Ms": 15.908,
+                    "minMs": 9.209,
+                    "maxMs": 15.908
+                },
+                "json_encode": {
+                    "samples": 5,
+                    "medianMs": 29.737,
+                    "p95Ms": 52.781,
+                    "minMs": 27.63,
+                    "maxMs": 52.781
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 100.862,
+                    "p95Ms": 134.741,
+                    "minMs": 81.859,
+                    "maxMs": 134.741
+                }
+            }
+        },
+        {
+            "label": "API propositions",
+            "path": "\/api\/v1\/proposals",
+            "status": 200,
+            "bytes": 111497,
+            "firstHandleMs": 36.428,
+            "warm": {
+                "samples": 5,
+                "medianMs": 22.036,
+                "p95Ms": 24.495,
+                "minMs": 21.132,
+                "maxMs": 24.495
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.014,
+                "p95Ms": 0.014,
+                "minMs": 0.012,
+                "maxMs": 0.014
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.399,
+                    "p95Ms": 1.757,
+                    "minMs": 1.297,
+                    "maxMs": 1.757
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 14.06,
+                    "p95Ms": 16.375,
+                    "minMs": 13.712,
+                    "maxMs": 16.375
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 15.518,
+                    "p95Ms": 17.832,
+                    "minMs": 15.214,
+                    "maxMs": 17.832
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 0.005,
+                    "p95Ms": 0.006,
+                    "minMs": 0.005,
+                    "maxMs": 0.006
+                },
+                "json_encode": {
+                    "samples": 5,
+                    "medianMs": 0.576,
+                    "p95Ms": 0.676,
+                    "minMs": 0.487,
+                    "maxMs": 0.676
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 21.891,
+                    "p95Ms": 24.346,
+                    "minMs": 20.996,
+                    "maxMs": 24.346
+                }
+            }
+        },
+        {
+            "label": "API résultats",
+            "path": "\/api\/v1\/results",
+            "status": 200,
+            "bytes": 71496,
+            "firstHandleMs": 36.173,
+            "warm": {
+                "samples": 5,
+                "medianMs": 33.442,
+                "p95Ms": 35.926,
+                "minMs": 31.168,
+                "maxMs": 35.926
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.015,
+                "p95Ms": 0.016,
+                "minMs": 0.014,
+                "maxMs": 0.016
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.42,
+                    "p95Ms": 2.07,
+                    "minMs": 1.225,
+                    "maxMs": 2.07
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 16.686,
+                    "p95Ms": 17.379,
+                    "minMs": 15.29,
+                    "maxMs": 17.379
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 18.252,
+                    "p95Ms": 18.856,
+                    "minMs": 16.806,
+                    "maxMs": 18.856
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 8.156,
+                    "p95Ms": 8.936,
+                    "minMs": 7.314,
+                    "maxMs": 8.936
+                },
+                "json_encode": {
+                    "samples": 5,
+                    "medianMs": 0.549,
+                    "p95Ms": 0.638,
+                    "minMs": 0.475,
+                    "maxMs": 0.638
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 33.284,
+                    "p95Ms": 35.774,
+                    "minMs": 31.021,
+                    "maxMs": 35.774
+                }
+            }
+        },
+        {
+            "label": "Export mémoire",
+            "path": "\/export\/memory",
+            "status": 200,
+            "bytes": 3212689,
+            "firstHandleMs": 118.102,
+            "warm": {
+                "samples": 5,
+                "medianMs": 93.919,
+                "p95Ms": 99.852,
+                "minMs": 79.19,
+                "maxMs": 99.852
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.015,
+                "p95Ms": 0.016,
+                "minMs": 0.014,
+                "maxMs": 0.016
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.974,
+                    "p95Ms": 6.423,
+                    "minMs": 1.913,
+                    "maxMs": 6.423
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 36.514,
+                    "p95Ms": 42.973,
+                    "minMs": 33.383,
+                    "maxMs": 42.973
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 39.078,
+                    "p95Ms": 49.707,
+                    "minMs": 35.738,
+                    "maxMs": 49.707
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 8.888,
+                    "p95Ms": 9.284,
+                    "minMs": 7.393,
+                    "maxMs": 9.284
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 93.706,
+                    "p95Ms": 99.656,
+                    "minMs": 79.045,
+                    "maxMs": 99.656
+                }
+            }
+        },
+        {
+            "label": "Actualisation courte (nouvelle)",
+            "path": "\/api\/v1\/live-results",
+            "status": 200,
+            "bytes": 5837,
+            "firstHandleMs": 32.122,
+            "warm": {
+                "samples": 5,
+                "medianMs": 36.941,
+                "p95Ms": 42.16,
+                "minMs": 27.86,
+                "maxMs": 42.16
+            },
+            "terminate": {
+                "samples": 5,
+                "medianMs": 0.016,
+                "p95Ms": 0.061,
+                "minMs": 0.015,
+                "maxMs": 0.061
+            },
+            "phases": {
+                "db_read": {
+                    "samples": 5,
+                    "medianMs": 1.741,
+                    "p95Ms": 2.121,
+                    "minMs": 1.193,
+                    "maxMs": 2.121
+                },
+                "json_decode": {
+                    "samples": 5,
+                    "medianMs": 18.233,
+                    "p95Ms": 20.059,
+                    "minMs": 14.181,
+                    "maxMs": 20.059
+                },
+                "workspace": {
+                    "samples": 5,
+                    "medianMs": 20.414,
+                    "p95Ms": 21.782,
+                    "minMs": 15.424,
+                    "maxMs": 21.782
+                },
+                "public_state": {
+                    "samples": 5,
+                    "medianMs": 9.393,
+                    "p95Ms": 9.739,
+                    "minMs": 6.934,
+                    "maxMs": 9.739
+                },
+                "json_encode": {
+                    "samples": 5,
+                    "medianMs": 0.095,
+                    "p95Ms": 0.42,
+                    "minMs": 0.09,
+                    "maxMs": 0.42
+                },
+                "request": {
+                    "samples": 5,
+                    "medianMs": 36.79,
+                    "p95Ms": 41.893,
+                    "minMs": 27.664,
+                    "maxMs": 41.893
+                }
+            }
+        }
+    ],
+    "firstWorkspaceAndRequest": {
+        "status": 200,
+        "handleMs": 440.562263,
+        "terminateMs": 0.02142,
+        "bytes": 45196,
+        "phases": {
+            "db_read": {
+                "ms": 1.0617,
+                "calls": 2
+            },
+            "json_decode": {
+                "ms": 30.63405,
+                "calls": 1
+            },
+            "workspace": {
+                "ms": 330.958892,
+                "calls": 1
+            },
+            "public_state": {
+                "ms": 0.009578,
+                "calls": 1
+            },
+            "page_data": {
+                "ms": 0.28927,
+                "calls": 1
+            },
+            "twig": {
+                "ms": 8.356183,
+                "calls": 1
+            },
+            "request": {
+                "ms": 417.895171,
+                "calls": 1
+            }
+        }
+    },
+    "scale": 1,
+    "neighbors": 4,
+    "databaseBytes": 42627072,
+    "peakMemoryBytes": 75333632
+}

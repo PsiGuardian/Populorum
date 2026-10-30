@@ -1,0 +1,101 @@
+{% if graph is defined %}
+    <section class="panel causal-tree" aria-label="Arbre de cause à effet">
+        <h3>Arbre de cause à effet</h3>
+        <p class="small muted">
+            Chaque flèche correspond à une relation déclarée. Sélectionnez un
+            élément pour lire son contenu.
+        </p>
+        {% if graph.cycleIds|length %}
+            <p class="notice">
+                Certaines relations forment une boucle ou en dépendent. Leur
+                position ne représente pas une succession temporelle.
+            </p>
+        {% endif %}
+        {% if graph.edges is empty %}
+            <p class="notice">
+                Aucune relation déclarée : les éléments sont présentés sans
+                flèches. Reliez-les pour construire un arbre.
+            </p>
+        {% endif %}
+        <div
+            class="causal-graph-scroll"
+            tabindex="0"
+            role="region"
+            aria-label="Graphe causal ; liste et relations textuelles disponibles à la suite"
+        >
+            <svg
+                viewBox="0 0 920 {{ graph.height }}"
+                role="img"
+                aria-labelledby="graph-title"
+            >
+                <title id="graph-title">
+                    Relations déclarées dans {{ proposal.title }}. La
+                    disposition n’est pas une preuve de causalité.
+                </title>
+                <defs>
+                    <marker
+                        id="arrow"
+                        markerWidth="8"
+                        markerHeight="8"
+                        refX="7"
+                        refY="4"
+                        orient="auto"
+                    >
+                        <path d="M0 0L8 4L0 8Z" fill="#80632c" />
+                    </marker>
+                </defs>
+                {% for edge in graph.edges %}
+                    <g>
+                        <title>
+                            {{ edge.from }} : {{ edge.relation }} : {{
+                                edge.to
+                            }}
+                        </title>
+                        <path
+                            d="{{ edge.path }}"
+                            fill="none"
+                            stroke="#80632c"
+                            stroke-width="2"
+                            marker-end="url(#arrow)"
+                        />
+                    </g>
+                {% endfor %}
+                {% for node in graph.nodes %}
+                    <a href="#causal-{{ node.id }}">
+                        <title>
+                            {{ node.category }} : {{ node.content }}
+                        </title>
+                        <rect
+                            x="{{ node.x }}"
+                            y="{{ node.y }}"
+                            width="260"
+                            height="70"
+                            rx="8"
+                            fill="#f2eee5"
+                            stroke="#80632c"
+                        />
+                        <text
+                            x="{{ node.x + 12 }}"
+                            y="{{ node.y + 30 }}"
+                            font-size="12"
+                            fill="#111d2b"
+                        >
+                            {{ node.category|slice(0, 34) }}
+                        </text>
+                        <text
+                            x="{{ node.x + 12 }}"
+                            y="{{ node.y + 50 }}"
+                            font-size="11"
+                            fill="#111d2b"
+                        >
+                            {{ node.content|length
+                                ? (node.content|slice(0, 33))
+                                    ~ ((node.content|length) > 33 ? '…' : '')
+                                : 'À compléter' }}
+                        </text>
+                    </a>
+                {% endfor %}
+            </svg>
+        </div>
+    </section>
+{% endif %}

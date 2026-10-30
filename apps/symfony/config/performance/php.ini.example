@@ -1,0 +1,9 @@
+; Optional settings for the PHP serving the application, when OPcache is installed.
+; This example is not loaded automatically. Verify against the actual hosting setup.
+opcache.enable=1
+opcache.memory_consumption=128
+opcache.max_accelerated_files=20000
+opcache.validate_timestamps=1
+opcache.revalidate_freq=0
+; For an explicitly chosen local CLI server only, when supported:
+; opcache.enable_cli=1

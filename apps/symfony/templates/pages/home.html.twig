@@ -1,0 +1,196 @@
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    {% include 'partials/uncertainty.html.twig' %}
+    <section class="workbench-intro">
+        <div class="eyebrow">
+            COMPRENDRE AVANT DE DÉCIDER
+        </div>
+        <h1>Du problème aux conséquences.</h1>
+        <p>
+            Explorez un arbre, discutez une solution, puis confrontez les
+            attentes aux observations.
+        </p>
+        <nav class="journey" aria-label="Les étapes de participation">
+            <a
+                href="{{
+                civic_path(
+                    'section',
+                    {
+                        view: 'proposals'
+                    }
+                )
+                }}"
+            >
+                <strong>1 · Comprendre</strong><span>Lire les causes et les
+                    hypothèses</span>
+            </a>
+            <a
+                href="{{
+                civic_path(
+                    'section',
+                    {
+                        view: 'consultations'
+                    }
+                )
+                }}"
+            >
+                <strong>2 · Donner mon avis</strong><span>Argumenter et voter
+                    dans la simulation</span>
+            </a>
+            <a
+                href="{{
+                civic_path(
+                    'section',
+                    {
+                        view: 'convergence'
+                    }
+                )
+                }}"
+            >
+                <strong>3 · Vérifier et réviser</strong><span>Comparer les
+                    résultats et les sources</span>
+            </a>
+        </nav>
+    </section>
+    {% if featuredProposal is defined %}
+        {% set proposal = featuredProposal %}
+        <section class="panel workbench" aria-labelledby="tree-heading">
+            <div class="row-header">
+                <div>
+                    <div class="eyebrow">
+                        L’ARBRE AU PREMIER PLAN
+                    </div>
+                    <h2 id="tree-heading">{{ proposal.title }}</h2>
+                    <p>
+                        {{ territoryMap[proposal.territoryId].name }} · {{
+                            proposal.summary
+                        }}
+                    </p>
+                </div>{{ ui.badge('Simulation fictive') }}
+            </div>
+            <form method="get" action="{{ civic_path('home') }}" class="tree-picker">
+                <label for="tree-choice">Choisir un autre problème</label>
+                <select name="id" id="tree-choice">
+                    {% for item in proposalList %}
+                        <option
+                            value="{{ item.id }}"
+                            {{ item.id == proposal.id ? 'selected' : '' }}
+                        >
+                            {{ territoryMap[item.territoryId].name }} · {{
+                                item.title
+                            }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button class="button" type="submit">Afficher cet arbre</button>
+            </form>
+            {% include 'partials/causal-tree.html.twig' %}
+            <div class="home-node-list">
+                {% for node in proposal.nodes %}
+                    <details id="causal-{{ node.id }}">
+                        <summary>
+                            {{ node.category }}
+                            <small>
+                                {{ node.kind == 'observation'
+                                    ? '· élément documenté à examiner'
+                                    : '· hypothèse' }}
+                            </small>
+                        </summary>
+                        <p>
+                            {{ node.content
+                                ?
+                                : 'Cet élément reste à documenter.' }}
+                        </p>
+                    </details>
+                {% endfor %}
+            </div>
+            <div class="task-actions">
+                <a
+                    class="button primary"
+                    href="{{
+                    civic_path(
+                        'section',
+                        {
+                            view: 'proposals',
+                            id: proposal.id
+                        }
+                    )
+                    }}"
+                >
+                    Ouvrir ce raisonnement et agir →
+                </a>
+                <a
+                    class="button"
+                    href="{{
+                    civic_path(
+                        'section',
+                        {
+                            view: 'convergence',
+                            id: proposal.id
+                        }
+                    )
+                    }}"
+                >
+                    Comparer avec d’autres chemins
+                </a>
+                {{ ui.action('proposal.create', 'Créer mon propre chemin') }}
+            </div>
+        </section>
+    {% else %}
+        <section class="panel">
+            <h2>Le premier arbre reste à construire</h2>{{
+                ui.action(
+                    'proposal.create',
+                    'Décrire un problème',
+                    {},
+                    'button primary'
+                )
+            }}
+        </section>
+    {% endif %}
+    <section class="two-columns section">
+        <article class="panel">
+            <div class="eyebrow">
+                DES SOURCES, PAS DES CERTITUDES
+            </div>
+            <h2>Qu’est-ce qui se rapproche réellement ?</h2>
+            <p>
+                La convergence sépare les idées communes, les expériences
+                fictives et les évolutions mesurées dans les données publiques.
+                Une tendance commune ne démontre pas l’effet d’une solution.
+            </p><a
+                class="plain"
+                href="{{
+                civic_path(
+                    'section',
+                    {
+                        view: 'convergence'
+                    }
+                )
+                }}"
+            >
+                Examiner les données et les comparaisons →
+            </a>
+        </article>
+        <article class="panel">
+            <div class="eyebrow">
+                UN CADRE INDISPENSABLE
+            </div>
+            <h2>En complément des institutions</h2>
+            {% include 'partials/institutional-context.html.twig' %}<a
+                class="plain"
+                href="{{
+                civic_path(
+                    'section',
+                    {
+                        view: 'charter'
+                    }
+                )
+                }}"
+            >
+                Lire la charte et le cadre du projet →
+            </a>
+        </article>
+    </section>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% if pagination is defined %}
+    <nav class="panel row-header" aria-label="Pagination des résultats">
+        <span aria-live="polite">{{ pagination.first }}–{{ pagination.last }} sur {{ pagination.total }} résultat(s) · page {{ pagination.page }}/{{ pagination.pages }}</span>
+        {% set params = {view: view, territory: territory, term: q} %}
+        {% if view == 'services' and selectedSkill|default('') != '' %}
+            {% set params = params|merge({skill: selectedSkill}) %}
+        {% endif %}
+        {% set route = q == '' ? 'site_list_page' : 'site_list_search_page' %}
+        <div class="row-links">
+            {% if pagination.page > 1 %}
+                <a class="button" rel="prev" href="{{ civic_path(route, params|merge({page: pagination.page - 1})) ~ (view == 'services' ? '#worker-directory' : '') }}">← Précédents</a>
+            {% endif %}
+            {% if pagination.page < pagination.pages %}
+                <a class="button" rel="next" href="{{ civic_path(route, params|merge({page: pagination.page + 1})) ~ (view == 'services' ? '#worker-directory' : '') }}">Suivants →</a>
+            {% endif %}
+        </div>
+    </nav>
+{% endif %}

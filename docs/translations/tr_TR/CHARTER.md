@@ -1,6 +1,6 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — İktidar halka aittir
-**KURUCU ŞART — Sürüm 1.0 — 29 Ekim 2026**
+**KURUCU ŞART — Sürüm 1.1 — 29 Ekim 2026**
 
 *“Kimse farklı düşündüğü için mahkûm edilmesin. Herkes yalnızca kendi yolunu açıklamaya davet edilsin ki herkes kendi kararlarının sonuçlarından öğrenebilsin.”*
 
@@ -57,7 +57,13 @@ Olgusal iddialar mümkün olduğunca kaynaklandırılır; varsayımlar açıkça
 
 ## BÖLÜM IV — ORTAK KARAR
 ### Madde 11 — Oy hakkı
-Her uygun yurttaşın bir oyu vardır: kabul, ret veya çekimser. Katılım koşulları, süre, sayım, varsa yeter sayı ve karar ölçütleri önceden ilan edilir. Fazla hesap veya cihaz ek oy sağlamaz.
+
+Uygun her vatandaş gerekçesini açıklayabilir ve KABUL, RET veya ÇEKİMSER görüş bildirebilir. Ancak önerinin kabulünde, beyan edilmiş uygun her aile büyüklüğünden bağımsız olarak en fazla bir oy sayılır.
+
+Aile kararı, katılan üyelerin KABUL ve RET görüşleri arasındaki kesin çoğunluğa dayanır. Eşitlik veya yalnızca çekimser görüşler aile çekimserliği demektir; katılımcı yoksa aile katılmamış sayılır. Yeter sayı ve çoğunluk aileler üzerinden hesaplanır.
+
+Üyelik ve kurallar açılıştan önce yayımlanır ve sabitlenir. Bir kişi aynı danışmada yalnızca bir aileye bağlı olabilir. Geçmiş danışmalar kendi kurallarını korur. Kurgusal gruplar beyan edilir; adlardan çıkarılmaz.
+
 ### Madde 12 — Katılımın açıklığı
 Deneysel danışmalarda isimle katılım gönüllüdür. Katılımcıya kimliğinin, oyunun ve gerekçelerinin erişilebilir olabileceği önceden bildirilir. Rıza ve kişisel verilerin korunması başta olmak üzere yasal güvenceler gerekir. Adıyla oy vermeyen kişi de açık önerileri ve sonuçları görebilir. Bunlar resmî seçim değildir; yasal gizli oy hükümlerinin yerini almaz.
 ### Madde 13 — Yerel özerklik
@@ -100,6 +106,6 @@ Démos Kratos'u kimin haklı olduğunu ilan etmek için kurmuyoruz. Herkes kendi
 
 *“Yolunu dayatma. Kendi yolunu aydınlat ve sonuçların herkese öğretmesine izin ver.”*
 
-**Durum:** Önerilen kurucu şart · **Sürüm:** 1.0 · **Tarih:** 29 Ekim 2026 · **İlk bölge:** Fransa · **İlke:** Kendiliğinden yakınsama · **Nitelik:** Özgür, ortaklaşa, kamusal ve deneysel proje.
+**Durum:** Önerilen kurucu şart · **Sürüm:** 1.1 · **Tarih:** 29 Ekim 2026 · **İlk bölge:** Fransa · **İlke:** Kendiliğinden yakınsama · **Nitelik:** Özgür, ortaklaşa, kamusal ve deneysel proje.
 
 > Çalışma çevirisidir. Farklılık durumunda [Fransızca asla](../../../CHARTER.md) bakınız.

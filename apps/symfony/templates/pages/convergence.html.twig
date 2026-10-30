@@ -1,0 +1,400 @@
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    {% include 'partials/uncertainty.html.twig' %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                RELIER LES IDÉES AUX OBSERVATIONS
+            </div>
+            <h1>Comparer pour mieux comprendre</h1>
+            <p>
+                Trois lectures distinctes : les faits de contexte, les
+                ressemblances entre idées et les résultats des expériences
+                fictives.
+            </p>
+        </div>
+    </div>
+    <nav class="task-actions" aria-label="Choisir une lecture">
+        <a class="button primary" href="#public-context">
+            1. Données publiques
+        </a>
+        <a class="button" href="#proposal-comparisons">2. Chemins comparés</a>
+        <a
+            class="button"
+            href="{{
+            civic_path(
+                'section',
+                {
+                    view: 'experiments'
+                }
+            )
+            }}"
+        >
+            3. Observations de la simulation
+        </a>
+    </nav>
+    <section class="panel section" id="public-context">
+        <div class="eyebrow">
+            CONTEXTE RÉEL · EXTRAIT DATÉ · AUCUN LIEN CAUSAL DÉMONTRÉ
+        </div>
+        <h2>Que mesurent les sources publiques ?</h2>
+        <p>
+            Les statistiques enregistrées décrivent un contexte communal. Elles
+            ne mesurent ni toute la délinquance réelle, ni l’effet des
+            propositions de ce laboratoire. Elles couvrent ici la sécurité ;
+            aucun chiffre n’est extrapolé aux autres sujets.
+        </p>
+        {% if publicEvidence.available %}
+            <form
+                method="get"
+                action="{{
+                civic_path(
+                    'section',
+                    {
+                        view: 'convergence'
+                    }
+                )
+                }}"
+                class="tree-picker"
+            >
+                <input type="hidden" name="id" value="{{ selected }}" />
+                <input type="hidden" name="territory" value="{{ territory }}" />
+                <label for="indicator">
+                    Choisir une mesure commune aux trois villes
+                </label>
+                <select name="indicator" id="indicator">
+                    {% for indicator in publicEvidence.indicators %}
+                        <option
+                            {{
+                            indicator == publicEvidence.indicator
+                                ? 'selected'
+                                : ''
+                            }}
+                        >
+                            {{ indicator }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button class="button" type="submit">
+                    Comparer cette mesure
+                </button>
+            </form>
+            <h3>{{ publicEvidence.indicator }}</h3>
+            <p>
+                Taux pour 1 000 {{ publicEvidence.denominator }} · évolution 2024
+                → 2025. L’écart est exprimé en points de taux, pas en pourcentage.
+            </p>
+            <div class="evidence-cities">
+                {% for city in publicEvidence.cities %}
+                    <article class="evidence-city">
+                        <h3>{{ city.name }}</h3>
+                        {% for year in [2024, 2025] %}
+                            <p>
+                                <strong>{{ year }}</strong> :{% if
+                                    city.years[year] is defined %}
+                                    {{
+                                        city.years[year].rate|number_format(
+                                            2,
+                                            ',',
+                                            ' '
+                                        )
+                                    }} ‰ <small>
+                                        ({{ city.years[year].count
+                                            ?? 'effectif indisponible' }} · {{
+                                            city.years[year].countUnit
+                                        }})
+                                    </small>
+                                {% else %}
+                                    Non publié ou indisponible
+                                {% endif %}
+                            </p>
+                        {% endfor %}
+                        <p>
+                            <strong>
+                                {% if city.change is not null %}
+                                    {{ city.change > 0 ? '+' : '' }}{{
+                                        city.change|number_format(2, ',', ' ')
+                                    }} point(s)
+                                {% else %}
+                                    Évolution non calculable
+                                {% endif %}
+                            </strong>
+                        </p>
+                        <a
+                            class="plain"
+                            href="{{
+                            civic_path(
+                                'section',
+                                {
+                                    view: 'proposals',
+                                    territory: state.territories
+                                        |filter(
+                                            territory => territory.code
+                                                == city.code
+                                        )
+                                        |first.id
+                                }
+                            )
+                            }}"
+                        >
+                            Explorer les chemins de cette ville →
+                        </a>
+                    </article>
+                {% endfor %}
+            </div>
+            <h3>Les évolutions vont-elles dans le même sens ?</h3>
+            <p>
+                Ce calcul compare uniquement le signe de l’écart 2024–2025. Il
+                ne mesure ni une significativité statistique, ni la proximité
+                des niveaux, ni l’efficacité d’une politique.
+            </p>
+            <ul>
+                {% for comparison in publicEvidence.comparisons %}
+                    <li>
+                        <strong>
+                            {{ comparison.first }} / {{ comparison.second }}
+                        </strong> : {{ comparison.status }}.
+                    </li>
+                {% endfor %}
+            </ul>
+            <details>
+                <summary>
+                    Source, dates, méthode et limites
+                </summary>
+                <p>
+                    {{ publicEvidence.publisher }} · publication {{
+                        publicEvidence.publishedAt
+                    }} · extrait consulté le {{ publicEvidence.accessedAt }}. Ce
+                    fichier n’est pas actualisé en direct.
+                </p>
+                <p>
+                    <a
+                        href="{{ publicEvidence.source }}"
+                        rel="noopener noreferrer"
+                    >
+                        Télécharger la source publique citée ↗
+                    </a>
+                </p>
+                <p>
+                    Les cambriolages sont rapportés aux logements ; les autres
+                    taux aux habitants. Ne pas additionner les indicateurs ni
+                    déduire un classement global des villes. Les écarts de
+                    déclaration et de pratiques d’enregistrement limitent les
+                    comparaisons.
+                </p>
+                {% for city in publicEvidence.cities %}
+                    {% for year, reading in city.years %}
+                        <p>
+                            {{ city.name }} · {{ year }} : population de référence
+                            {{ reading.populationVintage }}, logements de
+                            référence {{ reading.housingVintage }}.
+                        </p>
+                    {% endfor %}
+                {% endfor %}
+                <p class="hash">
+                    Empreinte archivée du fichier source : {{ publicEvidence.sourceSha256 }}
+                </p>
+            </details>
+        {% else %}
+            <p role="status">
+                L’extrait public est indisponible. Aucun chiffre de remplacement
+                n’est inventé.
+            </p>
+        {% endif %}
+    </section>
+    <section id="proposal-comparisons" class="section">
+        <h2>Quels chemins se rapprochent ?</h2>
+        <p>
+            Une solution identique signale un rapprochement de texte. Les
+            résultats affichés ci-dessous proviennent du laboratoire fictif,
+            indépendamment des statistiques publiques ci-dessus.
+        </p>
+        <form
+            method="get"
+            action="{{
+            civic_path(
+                'section',
+                {
+                    view: 'convergence'
+                }
+            )
+            }}"
+            class="tree-picker panel"
+        >
+            <input
+                type="hidden"
+                name="indicator"
+                value="{{ publicEvidence.indicator|default('') }}"
+            />
+            <label for="comparison-proposal">
+                Centrer la comparaison sur un chemin
+            </label>
+            <select id="comparison-proposal" name="id">
+                <option value="">
+                    Tous les chemins
+                </option>
+                {% for item in proposalList %}
+                    <option
+                        value="{{ item.id }}"
+                        {{ selected == item.id ? 'selected' : '' }}
+                    >
+                        {{ territoryMap[item.territoryId].name }} · {{
+                            item.title
+                        }}
+                    </option>
+                {% endfor %}
+            </select>
+            <label for="comparison-city">
+                Ville concernée par au moins un chemin
+            </label>
+            <select id="comparison-city" name="territory">
+                <option value="all">
+                    Toutes les villes
+                </option>
+                {% for city in state.territories %}
+                    <option
+                        value="{{ city.id }}"
+                        {{ territory == city.id ? 'selected' : '' }}
+                    >
+                        {{ city.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="button">
+                Afficher les comparaisons
+            </button>
+        </form>
+        <p>
+            {{ comparisonCount }} comparaisons · page {{ comparisonPage }} · 12 résultats
+            par page.
+        </p>
+        <div class="comparison-list">
+            {% for comparison in convergence %}
+                <article class="panel">
+                    {{
+                        ui.badge(
+                            'Ressemblance des idées : ' ~ comparison.status
+                        )
+                    }}
+                    <h3>
+                        <a
+                            href="{{
+                            civic_path(
+                                'section',
+                                {
+                                    view: 'proposals',
+                                    id: comparison.a
+                                }
+                            )
+                            }}"
+                        >
+                            {{ proposalMap[comparison.a].title }}
+                        </a>
+                    </h3>
+                    <p>
+                        comparé à <a
+                            href="{{
+                            civic_path(
+                                'section',
+                                {
+                                    view: 'proposals',
+                                    id: comparison.b
+                                }
+                            )
+                            }}"
+                        >
+                            {{ proposalMap[comparison.b].title }}
+                        </a>
+                    </p>
+                    <p>
+                        Thèmes communs : {{ comparison.common|join(', ')
+                            ?
+                            : 'aucun' }} · même indicateur : {{ comparison.sharedIndicator
+                            ? 'oui'
+                            : 'non' }}.
+                    </p>
+                    <div class="notice">
+                        <strong>
+                            Résultats fictifs : {{ comparison.observed.status }}
+                        </strong><p>
+                            {{ comparison.observed.reason }}
+                        </p>
+                        {% if comparison.observed.firstPct is defined %}
+                            <p>
+                                Variations : {{
+                                    comparison.observed.firstPct|round(2)
+                                }} % / {{
+                                    comparison.observed.secondPct|round(2)
+                                }} % · tolérance cumulée : {{
+                                    comparison.observed.tolerancePct|round(2)
+                                }} points. Comparaison descriptive uniquement.
+                            </p>
+                        {% endif %}
+                    </div>
+                    <details>
+                        <summary>
+                            Pourquoi ce rapprochement ?
+                        </summary>
+                        <p>
+                            {{ comparison.method }}
+                        </p>
+                        <p>
+                            {{ comparison.scenario }}
+                        </p>
+                        {% for point in comparison.history %}
+                            <p>
+                                {{ point.at }} · {{ point.status }}
+                            </p>
+                        {% endfor %}
+                    </details>
+                </article>
+            {% else %}
+                <p class="empty">
+                    Aucune paire pour ces critères. Choisissez un autre chemin
+                    ou toutes les villes.
+                </p>
+            {% endfor %}
+        </div>
+        <nav class="task-actions" aria-label="Pages des comparaisons">
+            {% if comparisonPage > 1 %}
+                <a
+                    class="button"
+                    href="{{
+                    civic_path(
+                        'section',
+                        {
+                            view: 'convergence',
+                            id: selected,
+                            territory: territory,
+                            indicator: publicEvidence.indicator|default(''),
+                            page: comparisonPage - 1
+                        }
+                    )
+                    }}#proposal-comparisons"
+                >
+                    ← Page précédente
+                </a>
+            {% endif %}
+            {% if comparisonPage * 12 < comparisonCount %}
+                <a
+                    class="button"
+                    href="{{
+                    civic_path(
+                        'section',
+                        {
+                            view: 'convergence',
+                            id: selected,
+                            territory: territory,
+                            indicator: publicEvidence.indicator|default(''),
+                            page: comparisonPage + 1
+                        }
+                    )
+                    }}#proposal-comparisons"
+                >
+                    Page suivante →
+                </a>
+            {% endif %}
+        </nav>
+    </section>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                UNE INFRASTRUCTURE CONSENTIE
+            </div>
+            <h1>Les relais citoyens</h1>
+            <p>
+                Copies pédagogiques dans le navigateur et agent CLI volontaire
+                de réplication publique signée.
+            </p>
+        </div>
+    </div>
+    <div class="notice">
+        <p>
+            Aucun agent n’est installé automatiquement sur votre appareil. Votre
+            connexion et votre ordinateur ne sont pas partagés. Les plafonds
+            affichés décrivent uniquement la simulation.
+        </p>
+    </div>
+    <section class="panel">
+        <h2>Agent volontaire externe</h2>
+        <p>
+            Un opérateur peut publier explicitement un laboratoire fictif signé.
+            Un agent indépendant vérifie l’autorité approuvée, la chaîne, les
+            signatures, les plafonds et la continuité avant de remplacer sa
+            copie.
+        </p>
+        <p>
+            <a href="/api/v1/replica">
+                Consulter la copie publiée, si disponible
+            </a>. Installation, limites et arrêt sont décrits dans le guide
+            d’exploitation du dépôt. Le fichier STOP arrête le transfert ; aucun
+            rôle de vote n’est accordé au relais.
+        </p>
+        <p class="small muted">
+            Il s’agit d’une réplication vérifiable avec autorité épinglée, pas
+            d’un consensus national. Les paramètres ci-dessous restent un
+            laboratoire virtuel distinct.
+        </p>
+    </section>
+    <div class="two-columns">
+        {% for node in state.nodes %}
+            <section class="panel">
+                <div class="row-header">
+                    <h2>{{ node.name }}</h2>
+                    {{
+                        ui.badge(
+                            node.status,
+                            node.status == 'stopped' ? 'gray' : 'green'
+                        )
+                    }}
+                </div>
+                <p>
+                    Plafond pédagogique : {{ node.bandwidth }} Ko/s
+                </p>
+                <p>
+                    Données autorisées : points de contrôle du journal public
+                    uniquement.
+                </p>
+                {% if node.checkpoint %}
+                    <p>
+                        <code>{{ node.checkpoint.hash|slice(0, 32) }}…</code>
+                        <br />
+                        {{ node.checkpoint.count }} événements · {{
+                            node.checkpoint.at
+                        }}
+                    </p>
+                {% else %}
+                    <p class="muted">
+                        Aucune copie pour le moment.
+                    </p>
+                {% endif %}
+                <div class="row-links">
+                    {{
+                        ui.action(
+                            'node.configure',
+                            'Configurer',
+                            {
+                                nodeId: node.id
+                            }
+                        )
+                    }}
+                    {% if node.status != 'stopped' %}
+                        {{
+                            ui.action(
+                                'node.sync',
+                                'Synchroniser',
+                                {
+                                    nodeId: node.id
+                                },
+                                'button primary'
+                            )
+                        }}
+                    {% endif %}
+                </div>
+            </section>
+        {% endfor %}
+    </div>
+    <section class="panel">
+        <h3>Comparer les copies virtuelles</h3>
+        <p>
+            {% if state.nodes[0].checkpoint and state.nodes[1].checkpoint %}
+                {{ state.nodes[0].checkpoint.hash
+                    == state.nodes[1].checkpoint.hash
+                    ? 'Les points de contrôle sont identiques.'
+                    : 'Les points de contrôle diffèrent. Une copie peut être en retard : vérifiez puis resynchronisez.' }}
+            {% else %}
+                Synchronisez les deux relais pour comparer leurs points de
+                contrôle.
+            {% endif %}
+        </p>
+        <p class="small muted">
+            Une copie ancienne ne prouve pas une falsification. Aucun consensus
+            distribué n’est revendiqué à cette étape.
+        </p>
+    </section>
+{% endblock %}

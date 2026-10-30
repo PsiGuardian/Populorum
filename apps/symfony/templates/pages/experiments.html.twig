@@ -1,0 +1,174 @@
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                COMPARER LES ATTENTES AUX CONSÉQUENCES
+            </div>
+            <h1>Les expériences</h1>
+            <p>
+                Protocoles prédéfinis, observations sourcées et droit à la
+                révision.
+            </p>
+        </div>
+    </div>
+    {{ ui.filter(view, state, q, territory) }}
+    {% for experiment in state.experiments %}
+        {% if
+            (territory == 'all' or territory == experiment.territoryId)
+                and (q == ''
+                    or (q|lower)
+                    in (proposalMap[experiment.proposalId].title|lower)) %}
+            <article class="experiment-card">
+                <div class="row-header">
+                    {{
+                        ui.badge(
+                            experiment.status == 'running'
+                                ? 'Observation en cours'
+                                : 'Bilan disponible',
+                            'green'
+                        )
+                    }}
+                    <span class="small muted">
+                        {{ territoryMap[experiment.territoryId].name }} · {{
+                            experiment.start
+                        }} → {{ experiment.end }}
+                    </span>
+                </div>
+                <h2>{{ proposalMap[experiment.proposalId].title }}</h2>
+                <p>
+                    {{ experiment.objective }}
+                </p>
+                <div class="two-columns">
+                    <div>
+                        <h3>Protocole prédéfini</h3>
+                        <p>
+                            <strong>Hypothèse :</strong>
+                            {{ experiment.hypothesis }}
+                        </p>
+                        <p>
+                            <strong>Indicateur :</strong>
+                            {{ experiment.indicator }}
+                        </p>
+                        <p>
+                            <strong>Méthode :</strong> {{ experiment.method }}
+                        </p>
+                        <p>
+                            <strong>Critère d’arrêt :</strong>
+                            {{ experiment.stop }}
+                        </p>
+                        <p class="muted">
+                            {{ experiment.limitations }}
+                        </p>
+                    </div>
+                    <div class="observation-chart">
+                        <div class="eyebrow">
+                            DONNÉES SIMULÉES · {{ experiment.unit }}
+                        </div>
+                        <div class="metric">
+                            <strong>
+                                {{ experiment.observations
+                                    ? experiment.observations|last.value
+                                    : '—' }}
+                            </strong>
+                            <span>
+                                valeur observée<br />pour {{
+                                    experiment.baseline
+                                }} initialement
+                            </span>
+                        </div>
+                        {% for observation in experiment.observations %}
+                            <div class="observation">
+                                <div class="row-header">
+                                    <span>{{ observation.date }}</span>
+                                    <strong>
+                                        {{ observation.value }} ± {{
+                                            observation.uncertainty
+                                        }}
+                                    </strong>
+                                </div>
+                                <p>
+                                    Source : {{ observation.source }}
+                                    <br />Facteur externe : {{
+                                        observation.external
+                                    }}
+                                    <br />Imprévu : {{ observation.unexpected }}
+                                </p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="action-links">
+                    {% if experiment.status == 'running' %}
+                        {{
+                            ui.action(
+                                'observation.add',
+                                'Ajouter une observation +',
+                                {
+                                    experimentId: experiment.id
+                                }
+                            )
+                        }}
+                        {{
+                            ui.action(
+                                'experiment.evaluate',
+                                'Produire un bilan',
+                                {
+                                    experimentId: experiment.id
+                                }
+                            )
+                        }}
+                    {% endif %}
+                    <a
+                        class="button"
+                        href="{{
+                        civic_path(
+                            'export',
+                            {
+                                kind: 'experiment',
+                                id: experiment.id
+                            }
+                        )
+                        }}"
+                    >
+                        Exporter le bilan ↓
+                    </a>
+                    <a
+                        class="plain"
+                        href="{{
+                        civic_path(
+                            'section',
+                            {
+                                view: 'proposals',
+                                id: experiment.proposalId
+                            }
+                        )
+                        }}"
+                    >
+                        Réexaminer le chemin ↗
+                    </a>
+                </div>
+                {% if experiment.comparison is defined %}
+                    <p>
+                        Prévision / observation : {{
+                            experiment.comparison.classification
+                        }}.{% if experiment.comparison.observedPct is defined %}
+                            Variation observée {{
+                                experiment.comparison.observedPct|round(2)
+                            }} % pour {{ experiment.comparison.forecastPct }} % prévu.
+                        {% endif %}
+                    </p>
+                {% endif %}
+                {% if experiment.evaluation is defined %}
+                    <div class="notice">
+                        <p>
+                            {{ experiment.evaluation.summary }} · Suite proposée :
+                            {{ experiment.evaluation.decision }}
+                        </p>
+                    </div>
+                {% endif %}
+            </article>
+        {% endif %}
+    {% endfor %}
+{% endblock %}

@@ -1,0 +1,255 @@
+{% extends 'base.html.twig' %}
+{% block content %}
+    {% if
+        type == 'vote.cast'
+            and (state.preferences.votingUnit|default('individual'))
+                == 'family' %}
+        <p class="notice">
+            Vous enregistrez une prise de position individuelle. Elle participe
+            à la décision de votre famille, qui ne peut représenter qu’une voix
+            dans le résultat d’adoption, quelle que soit sa taille.
+        </p>
+    {% endif %}
+    {% if type == 'simulation.advance' %}
+        <p class="notice">
+            Ce tour applique de nouveaux retours entièrement inventés aux
+            profils du laboratoire et recalcule leurs votes automatiques
+            admissibles. Les décisions closes, les choix repris manuellement,
+            les anciennes réponses et le texte soumis au vote sont conservés.
+        </p>
+    {% endif %}
+    {% if type in ['account.create', 'account.append'] %}
+        <section class="notice">
+            <h2>Comprendre sans forcer une révélation</h2>
+            <p>
+                Ce laboratoire accueille uniquement des récits inventés. Publiez
+                seulement ce que le personnage souhaite raconter ; les éléments
+                non saisis ne sont pas collectés. Chaque ajout soumis reste
+                visible dans l’historique. Vous pouvez préciser une année, une
+                date ou une heure, ou laisser le moment inconnu.
+            </p>
+            <p>
+                La démarche recherche des améliorations, sans score de
+                culpabilité ni pénalité automatique liée au récit. Elle ne crée
+                aucune immunité juridique : ne saisissez ni aveu réel, ni
+                accusation visant une personne réelle.
+            </p>
+        </section>
+    {% endif %}
+    {% if type starts with 'tender.' %}
+        <p class="notice">
+            Consultation entièrement fictive. Les montants des champs monétaires
+            sont saisis en euros et conservés en centimes entiers. Aucun
+            engagement juridique ni paiement réel.
+        </p>
+    {% endif %}
+    {% if type == 'tender.bid' %}
+        <p class="notice">
+            Pour détailler le devis, saisir une ligne par poste : « Peinture | 4
+            | 2500 » signifie 4 unités à 25 €, soit 100 €. Les prix unitaires de
+            ce tableau texte sont en centimes entiers. Le dépôt et son motif
+            restent chiffrés jusqu’à l’ouverture. Une nouvelle version remplace
+            la précédente pour la comparaison.
+        </p>
+    {% endif %}
+    <section class="form-shell">
+        <div class="eyebrow">
+            SIMULATION · AUCUN EFFET JURIDIQUE
+        </div>
+        <h1>{{ title }}</h1>
+        <p>
+            Personnage actif : <strong>{{ actor.name }}</strong> · {{
+                territoryMap[actor.territoryId].name
+            }}. <a
+                href="{{
+                civic_path(
+                    'section',
+                    {
+                        view: 'citizen'
+                    }
+                )
+                }}"
+            >
+                Changer de personnage
+            </a>.
+        </p>
+        {% if type == 'proposal.create' or type == 'proposal.revise' %}
+            <p class="notice">
+                Vous pouvez enregistrer un brouillon incomplet avec un titre et
+                un territoire. Les informations et les douze rubriques complètes
+                seront exigées à la publication. Les compléments et relations se
+                gèrent depuis la fiche du chemin.
+            </p>
+        {% endif %}
+        {% if type == 'vote.cast' %}
+            <div class="notice">
+                <p>
+                    Le nom fictif et le choix seront visibles dans votre
+                    simulation. Une seule prise de position active sera
+                    conservée.{% if
+                        (state.preferences.votingUnit|default('individual'))
+                            == 'family' %}
+                        Le résultat d’adoption comptera au maximum une voix par
+                        famille.
+                    {% endif %}Le consentement préalable est requis depuis
+                    Participer. La justification écrite n’est pas obligatoire.
+                </p>
+            </div>
+        {% elseif type == 'citizen.erase' %}
+            <div class="notice">
+                <p>
+                    Le nom fictif sera effacé. Les expériences et voix de
+                    simulation restent rattachées à l’identifiant pédagogique.
+                    Aucune donnée civile réelle ne doit être saisie.
+                </p>
+            </div>
+        {% elseif type == 'node.configure' or type == 'node.sync' %}
+            <div class="notice">
+                <p>
+                    Relais virtuel uniquement : aucune ressource de votre
+                    appareil ni bande passante n’est partagée.
+                </p>
+            </div>
+        {% elseif type == 'consultation.open' %}
+            <div class="notice">
+                <p>
+                    {% if
+                        (state.preferences.votingUnit|default('individual'))
+                            == 'family' %}
+                        Suffrage familial : majorité des POUR/CONTRE au sein de
+                        chaque famille, égalité = abstention familiale. Au
+                        maximum une voix par famille ; quorum et majorité
+                        d’adoption calculés sur les familles. Rattachements et
+                        règle figés à l’ouverture.
+                    {% else %}
+                        Majorité stricte des exprimés, abstentions dans la
+                        participation, égalité non adoptée. Les règles et le
+                        texte sont figés à l’ouverture.
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+        {% if error %}
+            <p class="alert error" role="alert">
+                {{ error }}
+            </p>
+        {% endif %}
+        <div class="panel">
+            {{ form_start(form) }}
+            {{ form_errors(form) }}
+            {% if type in ['proposal.create', 'proposal.revise'] %}
+                <fieldset class="action-group">
+                    <legend>
+                        1 · Décrire le chemin
+                    </legend>
+                    <p class="small muted">
+                        Commencez par le titre et la ville. Vous pouvez
+                        enregistrer puis revenir compléter les autres champs.
+                    </p>
+                    {% for field in form %}
+                        {% if
+                            not (
+                                field.vars.name starts with 'node'
+                                    or field.vars.name starts with 'kind'
+                            ) %}{{ form_row(field) }}{% endif %}
+                    {% endfor %}
+                </fieldset>
+                <fieldset class="action-group">
+                    <legend>
+                        2 · Construire le raisonnement
+                    </legend>
+                    <p>
+                        Ouvrez chaque rubrique pour la compléter. Les champs
+                        facultatifs peuvent rester vides dans un brouillon.
+                    </p>
+                    {% for field in form %}
+                        {% if field.vars.name starts with 'node' %}
+                            {% set kindName = 'kind'
+                                ~ (field.vars.name|slice(4))
+                            %}
+                            <details
+                                class="reasoning-field"
+                                {{
+                                (field.vars.errors|length)
+                                    or (form[kindName].vars.errors|length)
+                                    ? 'open'
+                                    : ''
+                                }}
+                            >
+                                <summary>
+                                    {{ field.vars.label }} · {{ field.vars.value
+                                        ? 'renseigné'
+                                        : 'à compléter' }}
+                                </summary>{{ form_row(field) }}{{ form_row(form[kindName]) }}
+                            </details>
+                        {% endif %}
+                    {% endfor %}
+                </fieldset>
+            {% elseif type == 'tender.create' %}
+                {% set groups = {
+                    '1 · Décrire le besoin': [
+                        'title',
+                        'scope',
+                        'location',
+                        'service',
+                        'risks'
+                    ],
+                    '2 · Expliquer et vérifier': [
+                        'cause',
+                        'expectedEffect',
+                        'indicator',
+                        'uncertainty'
+                    ],
+                    '3 · Fixer les règles communes': [
+                        'deadline',
+                        'budgetCents',
+                        'referenceCents',
+                        'referenceBasis',
+                        'horizonYears'
+                    ],
+                    '4 · Relier les démarches existantes (facultatif)': [
+                        'proposalId',
+                        'missionId'
+                    ]
+                } %}
+                {% for legend, names in groups %}
+                    <fieldset class="action-group">
+                        <legend>
+                            {{ legend }}
+                        </legend>
+                        {% for name in names %}
+                            {{ form_row(form[name]) }}
+                        {% endfor %}
+                    </fieldset>
+                {% endfor %}
+                {{ form_rest(form) }}
+            {% else %}
+                {{ form_widget(form) }}
+            {% endif %}
+            <div class="row-links">
+                <a
+                    class="button"
+                    href="{{
+                    civic_path(
+                        'section',
+                        {
+                            view: view
+                        }
+                    )
+                    }}"
+                >
+                    Annuler
+                </a>
+                <button class="button primary" type="submit">
+                    Enregistrer dans la simulation →
+                </button>
+            </div>
+            {{ form_end(form) }}
+        </div>
+        <p class="small muted">
+            Les opérations sont validées en PHP côté serveur, protégées contre
+            le rejeu, conservées dans SQLite et consignées dans le journal
+            signé.
+        </p>
+    </section>
+{% endblock %}

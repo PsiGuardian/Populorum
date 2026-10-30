@@ -1,0 +1,10 @@
+framework:
+    rate_limiter:
+        civic_writes:
+            policy: sliding_window
+            limit: 120
+            interval: '1 minute'
+        search_reads:
+            policy: sliding_window
+            limit: 120
+            interval: '1 minute'

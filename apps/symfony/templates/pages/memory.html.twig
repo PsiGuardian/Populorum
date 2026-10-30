@@ -1,0 +1,111 @@
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                TRANSMETTRE SANS FIGER LA PENSÉE
+            </div>
+            <h1>La mémoire collective</h1>
+            <p>
+                Le vote exprime un choix situé ; l’observation permet de le
+                réexaminer.
+            </p>
+        </div>
+        <a
+            class="button"
+            href="{{
+            civic_path(
+                'export',
+                {
+                    kind: 'memory'
+                }
+            )
+            }}"
+        >
+            Exporter la mémoire ↓
+        </a>
+    </div>
+    <div class="row-links">
+        <a
+            href="{{
+            civic_path(
+                'section',
+                {
+                    view: 'memory'
+                }
+            )
+            }}"
+        >
+            Mémoire collective
+        </a><a
+            href="{{
+            civic_path(
+                'section',
+                {
+                    view: 'memory',
+                    personal: 1
+                }
+            )
+            }}"
+        >
+            Mon cheminement fictif
+        </a>
+    </div>
+    {{ ui.filter(view, state, q, territory) }}
+    <div class="timeline">
+        {% for auditEvent in state.events|reverse %}
+            {% if
+                (not personal or auditEvent.payload.actorId == actor.id)
+                    and (q == ''
+                        or (q|lower)
+                        in ((auditEvent.type ~ auditEvent.object)|lower)) %}
+                <article>
+                    <div class="timeline-dot"></div>
+                    <span class="eyebrow">
+                        {{ auditEvent.at|date('d/m/Y H:i') }} · {{ actionLabels[auditEvent.type]
+                            ?? auditEvent.type }}
+                    </span>
+                    <h3>{{ auditEvent.object }}</h3>
+                    <p class="small muted">
+                        {{ citizenMap[auditEvent.payload.actorId].name
+                            ?? 'Opération de simulation' }} · Trace signée et vérifiable
+                    </p>
+                </article>
+            {% endif %}
+        {% endfor %}
+        {% for proposal in state.proposals %}
+            {% if
+                (not personal or proposal.authorId == actor.id)
+                    and (territory == 'all'
+                        or territory == proposal.territoryId)
+                    and (q == '' or (q|lower) in (proposal.title|lower)) %}
+                <article>
+                    <div class="timeline-dot"></div>
+                    <span class="eyebrow">
+                        {{ proposal.createdAt|date('d/m/Y') }} · Chemin initial
+                    </span>
+                    <h3>{{ proposal.title }}</h3>
+                    <a
+                        class="plain"
+                        href="{{
+                        civic_path(
+                            'section',
+                            {
+                                view: 'proposals',
+                                id: proposal.id
+                            }
+                        )
+                        }}"
+                    >
+                        Consulter le chemin →
+                    </a>
+                    <p class="small muted">
+                        État pédagogique initial : données simulées, sans
+                        jugement sur la personne.
+                    </p>
+                </article>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endblock %}

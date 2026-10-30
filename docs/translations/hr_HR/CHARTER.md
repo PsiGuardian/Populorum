@@ -1,6 +1,6 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Vlast pripada narodu
-**OSNIVAČKA POVELJA — Verzija 1.0 — 29. listopada 2026.**
+**OSNIVAČKA POVELJA — Verzija 1.1 — 29. listopada 2026.**
 
 *„Neka nitko ne bude osuđen zato što misli drukčije. Neka ga se samo pozove da objasni svoj put, kako bi svatko mogao učiti iz posljedica vlastitih odluka.”*
 
@@ -57,7 +57,13 @@ Svaki prijedlog sadržava objašnjenje jednostavnim francuskim jezikom, uz mogu�
 
 ## NASLOV IV — ZAJEDNIČKO ODLUČIVANJE
 ### Članak 11 — Pravo glasa
-Svaki ovlašteni sudionik ima jedan glas: za, protiv ili suzdržan. Uvjeti, trajanje, brojanje, mogući kvorum i kriteriji objavljuju se unaprijed. Više računa ili uređaja ne donosi dodatne glasove.
+
+Svaki prihvatljivi građanin može obrazložiti razmišljanje i odabrati ZA, PROTIV ili SUZDRŽANOST. Za usvajanje svaka prijavljena prihvatljiva obitelj ima najviše jedan glas, neovisno o veličini.
+
+Obiteljski izbor slijedi strogu većinu iznesenih stavova ZA i PROTIV. Izjednačenje ili samo suzdržani stavovi daju obiteljsku suzdržanost; bez sudionika obitelj ne sudjeluje. Kvorum i većina računaju se po obiteljima.
+
+Članstvo i pravila objavljuju se i zamrzavaju prije otvaranja. Osoba pripada samo jednoj obitelji u istom savjetovanju. Povijesna savjetovanja zadržavaju pravila. Izmišljene skupine prijavljuju se, ne izvode se iz prezimena.
+
 ### Članak 12 — Transparentnost sudjelovanja
 U eksperimentalnim savjetovanjima sudjelovanje pod vlastitim imenom dobrovoljno je. Prije glasanja jasno je da javni identitet, izbor i razlozi mogu biti dostupni. Potrebna su pravna jamstva, osobito privola i zaštita podataka. Bez imenovanog sudjelovanja i dalje je moguć uvid u javne prijedloge i rezultate. To nisu službeni izbori i ne zamjenjuju zakonsku tajnost glasovanja.
 ### Članak 13 — Teritorijalna autonomija
@@ -100,6 +106,6 @@ Démos Kratos ne osnivamo da odredimo tko je u pravu. Svaki građanin može osvi
 
 *„Ne nameći svoj put. Osvijetli vlastiti i dopusti da posljedice podučavaju svakoga.”*
 
-**Status:** Prijedlog osnivačke povelje · **Verzija:** 1.0 · **Datum:** 29. listopada 2026. · **Početno područje:** Francuska · **Načelo:** Emergentna konvergencija · **Priroda:** Slobodan, suradnički, javan i eksperimentalan projekt.
+**Status:** Prijedlog osnivačke povelje · **Verzija:** 1.1 · **Datum:** 29. listopada 2026. · **Početno područje:** Francuska · **Načelo:** Emergentna konvergencija · **Priroda:** Slobodan, suradnički, javan i eksperimentalan projekt.
 
 > Radni prijevod. Za razlike pogledajte [francuski izvornik](../../../CHARTER.md).

@@ -1,0 +1,492 @@
+{% extends 'base.html.twig' %}
+{% block content %}
+    <section class="panel">
+        <h2>Devis et réalisations du laboratoire</h2>
+        <p>
+            {{ procurementSummary.count }} dossier(s) avec paiement fictif après contrôle
+            ; coût total déclaré : {{
+                (procurementSummary.actualCents / 100)|number_format(
+                    2,
+                    ',',
+                    ' '
+                )
+            }} €. Ces montants simulés ne sont ni déduits des comptes publics réels
+            ni convertis en remise fiscale. Les références déclarées ne constituent
+            pas des économies certifiées.
+        </p>
+        <a
+            class="button"
+            href="{{
+            civic_path(
+                'section',
+                {
+                    view: 'procurement'
+                }
+            )
+            }}"
+        >
+            Comparer les besoins et devis
+        </a>
+    </section>
+
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                COMPTES PUBLICS ET HYPOTHÈSES SÉPARÉS
+            </div>
+            <h1>Budget et priorités</h1>
+            <p>
+                Objectif expérimental : une contribution locale de 1 € par
+                habitant et par an. Les chiffres doivent permettre d’en éprouver
+                la faisabilité.
+            </p>
+        </div>
+    </div>
+    <section class="notice">
+        <h2>Un plafond souhaité n’est pas une économie réalisée</h2>
+        <p>
+            Les agrégats ci-dessous décrivent les comptes communaux consolidés
+            2025 publiés par l’OFGL à partir de la DGFiP. Paris comprend son
+            périmètre communal et départemental. Les périmètres des trois villes
+            diffèrent ; ces chiffres ne constituent pas un classement
+            d’efficacité.
+        </p>
+        <p>
+            Les dépenses de l’État, de la sécurité sociale, des régions,
+            départements hors Paris et métropoles ne sont pas intégralement
+            consolidées ici. Les dotations, taxes nationales, tarifs payés par
+            les usagers et coûts privés restent des financements supportés
+            ailleurs. Une contribution locale simulée de 1 € ne signifie pas un
+            impôt total de 1 €.
+        </p>
+        <p>
+            Couverture : {{ budgetSource.coverage }}. Les opérations détaillées
+            et factures qui ne sont pas publiées ne sont pas inventées.
+            L’exhaustivité de toutes les dépenses publiques n’est pas
+            revendiquée.
+        </p>
+    </section>
+    <section class="panel">
+        <h2>Tester une hypothèse de réduction</h2>
+        <p>
+            Le modèle protège les dépenses de personnel, intérêts financiers et
+            remboursements d’emprunts recensés. Ce plancher de scénario ne
+            recense pas toutes les obligations légales ni tous les services
+            vitaux. Les autres réductions restent des hypothèses non validées.
+        </p>
+        <form
+            method="get"
+            action="{{
+            civic_path(
+                'section',
+                {
+                    view: 'budget'
+                }
+            )
+            }}"
+        >
+            <label for="saving">
+                Réduction hypothétique de l’enveloppe restante (%)
+            </label><input
+                id="saving"
+                name="saving"
+                type="number"
+                min="0"
+                max="100"
+                value="{{ savingsPercent }}"
+            /><label for="resources">
+                Autres ressources hypothétiques par ville, en centimes annuels
+                (0 par défaut)
+            </label><input
+                id="resources"
+                name="resources"
+                type="number"
+                min="0"
+                max="10000000000000"
+                value="{{ otherResourcesCents }}"
+            /><button class="button primary" type="submit">
+                Recalculer sans modifier les comptes réels
+            </button>
+        </form>
+        <p>
+            Les autres ressources ne sont pas automatiquement identifiées ni
+            garanties ; elles peuvent déplacer la charge vers d’autres
+            personnes. Un résultat « dans la cible » ne constitue pas une
+            validation de faisabilité.
+        </p>
+    </section>
+    {% for city in budgetCities %}
+        {% set scenario = budgetScenarios[city.city.id] %}
+        <section class="panel section">
+            <h2>{{ city.city.name }} · comptes consolidés 2025</h2>
+            {% if city.totalCents is not null %}
+                <div class="evidence-cities">
+                    <article class="evidence-city">
+                        <h3>Dépenses annuelles recensées</h3>
+                        <p>
+                            {{
+                                (city.totalCents / 100)|number_format(
+                                    2,
+                                    ',',
+                                    ' '
+                                )
+                            }} €
+                        </p>
+                        <p>
+                            {{ city.population|number_format(0, ',', ' ') }} habitants
+                            · population totale de référence OFGL
+                        </p>
+                        <p>
+                            {{
+                                (city.totalCents / 100
+                                    / city.population)|number_format(
+                                    2,
+                                    ',',
+                                    ' '
+                                )
+                            }} € de dépenses par habitant ; ce n’est pas l’impôt payé
+                            par chaque habitant.
+                        </p>
+                    </article>
+                    <article class="evidence-city">
+                        <h3>Enveloppe visée à 1 €</h3>
+                        <p>
+                            {{
+                                (city.targetCents / 100)|number_format(
+                                    2,
+                                    ',',
+                                    ' '
+                                )
+                            }} € par an
+                        </p>
+                        <p>
+                            Plancher protégé du modèle : {{
+                                (city.protectedCents / 100)|number_format(
+                                    2,
+                                    ',',
+                                    ' '
+                                )
+                            }} €.
+                        </p>
+                    </article>
+                    <article class="evidence-city">
+                        <h3>Scénario non validé</h3>
+                        <p>
+                            Dépenses restantes : {{
+                                (scenario.residualCents / 100)|number_format(
+                                    2,
+                                    ',',
+                                    ' '
+                                )
+                            }} €.
+                        </p>
+                        <p>
+                            Contribution locale nécessaire dans le modèle : {{
+                                (scenario.perResidentCents / 100)|number_format(
+                                    2,
+                                    ',',
+                                    ' '
+                                )
+                            }} €/habitant.
+                        </p><strong>
+                            {{ scenario.targetWithinModel
+                                ? 'Cible numérique satisfaite uniquement sous les hypothèses saisies'
+                                : 'Cible de 1 € non atteinte' }}
+                        </strong><p>
+                            Écart à financer : {{
+                                (scenario.gapCents / 100)|number_format(
+                                    2,
+                                    ',',
+                                    ' '
+                                )
+                            }} €.
+                        </p>
+                    </article>
+                </div>
+            {% else %}
+                <p>
+                    Aucun total comparable publié dans l’extrait. Aucun zéro de
+                    remplacement.
+                </p>
+            {% endif %}
+            <details>
+                <summary>
+                    Examiner tous les agrégats disponibles pour cette ville ({{
+                        city.rows|length
+                    }})
+                </summary>
+                <p>
+                    Les totaux, sous-totaux et soldes se recoupent : ne pas
+                    additionner les lignes. Les remboursements et flux
+                    financiers ne sont pas des consommations de services.
+                </p>
+                <div
+                    class="evidence-table-scroll"
+                    tabindex="0"
+                    role="region"
+                    aria-label="Comptes de {{ city.city.name }}"
+                >
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Agrégat</th>
+                                <th>Montant consolidé</th>
+                                <th>Budget principal</th>
+                                <th>Budgets annexes</th>
+                                <th>Flux croisés à neutraliser</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in city.rows %}
+                                <tr>
+                                    <th scope="row">{{ row.agregat }}</th>
+                                    <td>
+                                        {{
+                                            row.montant|number_format(
+                                                2,
+                                                ',',
+                                                ' '
+                                            )
+                                        }} €
+                                    </td>
+                                    <td>
+                                        {{
+                                            row.montant_bp|number_format(
+                                                2,
+                                                ',',
+                                                ' '
+                                            )
+                                        }} €
+                                    </td>
+                                    <td>
+                                        {{
+                                            row.montant_ba|number_format(
+                                                2,
+                                                ',',
+                                                ' '
+                                            )
+                                        }} €
+                                    </td>
+                                    <td>
+                                        {{
+                                            row.montant_flux|number_format(
+                                                2,
+                                                ',',
+                                                ' '
+                                            )
+                                        }} €
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </section>
+    {% endfor %}
+    <section class="panel section" id="ledger">
+        <h2>Les comptes détaillés publiés par la DGFiP</h2>
+        <p>
+            4 322 lignes archivées pour les trois collectivités. Ce sont des
+            comptes de balance, pas 4 322 dépenses individuelles. Les mouvements
+            budgétaires et non budgétaires, débits, crédits et soldes sont
+            distincts. Il serait faux d’additionner toutes ces lignes comme des
+            dépenses.
+        </p>
+        <form
+            method="get"
+            action="{{
+            civic_path(
+                'section',
+                {
+                    view: 'budget'
+                }
+            )
+            }}#ledger"
+        >
+            <label for="ledger-city">Collectivité</label><select
+                name="city"
+                id="ledger-city"
+            >
+                {% for city in budgetCities %}
+                    <option
+                        value="{{ city.city.code }}"
+                        {{ ledgerCode == city.city.code ? 'selected' : '' }}
+                    >
+                        {{ city.city.name }}
+                    </option>
+                {% endfor %}
+            </select><label for="ledger-account">
+                Préfixe de compte (facultatif ; 6 pour les charges, 2 pour les
+                immobilisations)
+            </label><input
+                name="account"
+                id="ledger-account"
+                value="{{ ledgerPrefix }}"
+                maxlength="8"
+                pattern="[0-9]{0,8}"
+            /><button class="button" type="submit">Examiner les comptes</button>
+        </form>
+        <p>
+            {{ ledger.total }} lignes pour ce filtre · page {{ ledger.page }} · 50
+            lignes par page. Montants en euros.
+        </p>
+        <div
+            class="evidence-table-scroll"
+            tabindex="0"
+            role="region"
+            aria-label="Balance comptable DGFiP"
+        >
+            <table>
+                <thead>
+                    <tr>
+                        <th>Budget</th>
+                        <th>Nomenclature / compte</th>
+                        <th>Mouvements budgétaires nets débit</th>
+                        <th>Mouvements budgétaires nets crédit</th>
+                        <th>Détail de la ligne</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in ledger.rows %}
+                        <tr>
+                            <th scope="row">{{ row.lbudg }}</th>
+                            <td>{{ row.nomen }} / {{ row.compte }}</td>
+                            <td>
+                                {{ row.obnetdeb|number_format(2, ',', ' ') }}
+                            </td>
+                            <td>
+                                {{ row.obnetcre|number_format(2, ',', ' ') }}
+                            </td>
+                            <td>
+                                <details>
+                                    <summary>
+                                        Toutes les colonnes publiées
+                                    </summary>
+                                    <pre class="hash">
+                                        {{
+                                            row|json_encode(
+                                                constant('JSON_PRETTY_PRINT')
+                                            )
+                                        }}
+                                    </pre>
+                                </details>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5">
+                                Aucune ligne disponible pour ce filtre.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <nav class="task-actions">
+            {% if ledger.page > 1 %}
+                <a
+                    class="button"
+                    href="{{
+                    civic_path(
+                        'section',
+                        {
+                            view: 'budget',
+                            city: ledgerCode,
+                            account: ledgerPrefix,
+                            page: ledger.page - 1
+                        }
+                    )
+                    }}#ledger"
+                >
+                    Page précédente
+                </a>
+            {% endif %}
+            {% if ledger.page * 50 < ledger.total %}
+                <a
+                    class="button"
+                    href="{{
+                    civic_path(
+                        'section',
+                        {
+                            view: 'budget',
+                            city: ledgerCode,
+                            account: ledgerPrefix,
+                            page: ledger.page + 1
+                        }
+                    )
+                    }}#ledger"
+                >
+                    Page suivante
+                </a>
+            {% endif %}
+        </nav>
+        <p>
+            <a
+                href="{{
+                civic_path(
+                    'public_budget_export',
+                    {
+                        kind: 'aggregates'
+                    }
+                )
+                }}"
+            >
+                Télécharger les 149 agrégats OFGL
+            </a> · <a
+                href="{{
+                civic_path(
+                    'public_budget_export',
+                    {
+                        kind: 'balances'
+                    }
+                )
+                }}"
+            >
+                Télécharger les 4 322 lignes DGFiP et leur provenance
+            </a>.
+        </p>
+    </section>
+    <section class="panel section">
+        <h2>Sources et dépenses restant à documenter</h2>
+        <p>
+            <a
+                href="{{ budgetSource.source|default(
+                    'https://data.ofgl.fr/'
+                ) }}"
+            >
+                Source officielle OFGL ↗
+            </a> · extrait consulté le {{
+                budgetSource.retrievedAt|default('non disponible')
+            }}.
+        </p>
+        <p>
+            <a
+                href="https://www.paris.fr/pages/comptes-administratifs-de-la-ville-retrouvez-toutes-les-infos-27793"
+            >
+                Comptes et annexes de Paris
+            </a> · <a
+                href="https://www.marseille.fr/mairie/administration-de-la-commune/le-budget"
+            >
+                Comptes et annexes de Marseille
+            </a> · <a
+                href="https://lehavre.fr/ma-ville/la-mairie/budgets/finances-locales/compte-financier-unique"
+            >
+                Comptes et annexes du Havre
+            </a>.
+        </p>
+        <p>
+            La vue consolidée OFGL neutralise des flux entre budgets et peut
+            différer du total affiché dans une présentation municipale. Vérifier
+            le périmètre, les opérations d’ordre et les retraitements avant tout
+            rapprochement. Les balances détaillées archivées ne sont pas des
+            factures individuelles.
+        </p>
+        <p>
+            Le coût des missions fictives du laboratoire ne se soustrait pas
+            automatiquement aux dépenses publiques réelles. Une priorité doit
+            aussi être discutée en termes de droits, d’effets différés, de
+            qualité et de coût complet.
+        </p>
+    </section>
+{% endblock %}

@@ -1,7 +1,7 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Die Macht gehört dem Volk
 
-**GRÜNDUNGSCHARTA — Version 1.0 — 29. Oktober 2026**
+**GRÜNDUNGSCHARTA — Version 1.1 — 29. Oktober 2026**
 
 *„Niemand soll verurteilt werden, weil er anders denkt. Jeder soll lediglich eingeladen werden, seinen Weg zu erklären, damit alle aus den Folgen ihrer eigenen Entscheidungen lernen können.“*
 
@@ -73,7 +73,12 @@ Die Sprache muss möglichst vielen zugänglich sein. Vorschläge enthalten eine 
 ## TITEL IV — KOLLEKTIVE ENTSCHEIDUNGEN
 
 ### Artikel 11 — Stimmrecht
-Jede berechtigte Person hat eine Stimme: dafür, dagegen oder Enthaltung. Zulassung, Dauer, Auszählung, gegebenenfalls Quorum und Entscheidungskriterien werden vorab veröffentlicht. Mehrere Konten oder Geräte geben keine zusätzlichen Stimmen.
+
+Jeder teilnahmeberechtigte Bürger darf seine Begründung darlegen und FÜR, GEGEN oder ENTHALTUNG wählen. Für die Annahme zählt jede erklärte, berechtigte Familie jedoch höchstens eine Stimme, unabhängig von ihrer Größe.
+
+Die Familienentscheidung folgt der strikten Mehrheit der abgegebenen FÜR- und GEGEN-Positionen. Gleichstand oder ausschließlich Enthaltungen ergeben eine Familienenthaltung; ohne Beteiligung nimmt die Familie nicht teil. Quorum und Annahmemehrheit beziehen sich auf Familien.
+
+Familienzuordnung und Regeln werden vor Beginn veröffentlicht und eingefroren. Eine Person darf pro Konsultation nur einer Familie angehören. Historische Konsultationen behalten ihre Regeln. Fiktive Gruppen werden erklärt, nicht aus Namen abgeleitet.
 
 ### Artikel 12 — Transparenz der Teilnahme
 Für experimentelle Abstimmungen gilt das Prinzip freiwilliger namentlicher Teilnahme. Vor der Stimmabgabe wird erklärt, dass öffentliche Identität, Entscheidung und Begründung zugänglich werden können. Hierfür sind angemessene rechtliche Garantien erforderlich, besonders Einwilligung und Datenschutz. Wer nicht namentlich abstimmt, darf dennoch öffentliche Vorschläge und Ergebnisse einsehen. Diese Abstimmungen sind keine amtlichen Wahlen und ersetzen keine gesetzliche Wahlgeheimhaltung.
@@ -133,7 +138,7 @@ Wir gründen Démos Kratos nicht, um Sieger und Verlierer der Wahrheit zu benenn
 ---
 
 **Status:** Vorgeschlagene Gründungscharta eines experimentellen Systems partizipativer Demokratie.  
-**Version:** 1.0 · **Datum:** 29. Oktober 2026.  
+**Version:** 1.1 · **Datum:** 29. Oktober 2026.\
 **Erstes Erprobungsgebiet:** Frankreich · **Kernprinzip:** Emergente Konvergenz.  
 **Art:** Freies, gemeinschaftliches, öffentliches und experimentelles Projekt.
 

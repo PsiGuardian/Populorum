@@ -1,0 +1,132 @@
+site_territories:
+    path: /territoires
+    controller: App\Controller\DemoController::page
+    defaults: { view: territories }
+    methods: [GET]
+site_proposals:
+    path: /chemins
+    controller: App\Controller\DemoController::page
+    defaults: { view: proposals }
+    methods: [GET]
+site_consultations:
+    path: /consultations
+    controller: App\Controller\DemoController::page
+    defaults: { view: consultations }
+    methods: [GET]
+site_experiments:
+    path: /experiences
+    controller: App\Controller\DemoController::page
+    defaults: { view: experiments }
+    methods: [GET]
+site_convergence:
+    path: /convergence
+    controller: App\Controller\DemoController::page
+    defaults: { view: convergence }
+    methods: [GET]
+site_memory:
+    path: /memoire
+    controller: App\Controller\DemoController::page
+    defaults: { view: memory }
+    methods: [GET]
+site_transparency:
+    path: /transparence
+    controller: App\Controller\DemoController::page
+    defaults: { view: transparency }
+    methods: [GET]
+site_infrastructure:
+    path: /infrastructure
+    controller: App\Controller\DemoController::page
+    defaults: { view: infrastructure }
+    methods: [GET]
+site_governance:
+    path: /gouvernance
+    controller: App\Controller\DemoController::page
+    defaults: { view: governance }
+    methods: [GET]
+site_citizen:
+    path: /participer
+    controller: App\Controller\DemoController::page
+    defaults: { view: citizen }
+    methods: [GET]
+site_charter:
+    path: /charte
+    controller: App\Controller\DemoController::page
+    defaults: { view: charter }
+    methods: [GET]
+site_accounts:
+    path: /recits
+    controller: App\Controller\DemoController::page
+    defaults: { view: accounts }
+    methods: [GET]
+site_selected:
+    path: /{view}/fiche/{id}
+    controller: App\Controller\DemoController::page
+    requirements:
+        view: 'proposals|consultations|experiments|convergence|accounts|procurement'
+        id: '[a-zA-Z0-9_-]{1,80}'
+    methods: [GET]
+site_search:
+    path: /recherche/{view}/{territory}/{term}
+    controller: App\Controller\DemoController::page
+    requirements:
+        view: 'territories|proposals|consultations|experiments|convergence|memory|accounts'
+        territory: 'all|t[1-3]'
+        term: '.{1,640}'
+    methods: [GET]
+site_search_empty:
+    path: /recherche/{view}/{territory}
+    controller: App\Controller\DemoController::page
+    defaults: { term: '' }
+    requirements:
+        view: 'territories|proposals|consultations|experiments|convergence|memory|accounts'
+        territory: 'all|t[1-3]'
+    methods: [GET]
+site_action_object:
+    path: /agir/{type}/{contextKey}/{contextId}
+    controller: App\Controller\DemoController::action
+    requirements:
+        type: '[a-z.]{1,80}'
+        contextKey: 'proposalId|consultationId|experimentId|governanceId|caseId|appealId|alertId|nodeId|accountId|missionId|workerId|tenderId'
+        contextId: '[a-zA-Z0-9_-]{1,80}'
+    methods: [GET, POST]
+site_services:
+    path: /services-et-missions
+    controller: App\Controller\DemoController::page
+    defaults: { view: services }
+    methods: [GET]
+site_budget:
+    path: /budget-et-priorites
+    controller: App\Controller\DemoController::page
+    defaults: { view: budget }
+    methods: [GET]
+
+site_procurement:
+    path: /besoins-et-devis
+    controller: App\Controller\DemoController::page
+    defaults: { view: procurement }
+    methods: [GET]
+site_procurement_city:
+    path: /besoins-et-devis/ville/{territory}
+    controller: App\Controller\DemoController::page
+    defaults: { view: procurement }
+    requirements: { territory: 't[1-3]' }
+    methods: [GET]
+
+site_list_page:
+    path: /liste/{view}/{territory}/{page}
+    controller: App\Controller\DemoController::page
+    defaults: { term: '' }
+    requirements:
+        view: 'proposals|consultations|services'
+        territory: 'all|t[1-3]'
+        page: '[1-9][0-9]{0,4}'
+    methods: [GET]
+site_list_search_page:
+    path: /liste/{view}/{territory}/{page}/{term}
+    controller: App\Controller\DemoController::page
+    requirements:
+        view: 'proposals|consultations|services'
+        territory: 'all|t[1-3]'
+        page: '[1-9][0-9]{0,4}'
+        term: '.{1,640}'
+    methods: [GET]

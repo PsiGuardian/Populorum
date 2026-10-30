@@ -1,0 +1,808 @@
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% macro money(cents) %}
+    {{ (cents / 100)|number_format(2, ',', ' ') }} €
+{% endmacro %}
+{% block content %}
+    <div class="page-heading">
+        <div>
+            <div class="eyebrow">
+                BESOINS · CONCURRENCE · CONTRÔLE
+            </div>
+            <h1>Un besoin. Des offres. Un choix expliqué.</h1>
+            <p>
+                Comparer le même service, suivre chaque changement de prix et
+                vérifier le résultat.
+            </p>
+        </div>
+        {{ ui.action('tender.create', 'Publier un besoin fictif') }}
+    </div>
+    <p class="notice">
+        Laboratoire : entreprises, devis, habilitations et paiements sont
+        fictifs. Ce module ne constitue pas un profil d’acheteur conforme et ne
+        conclut aucun marché. Les offres fictives deviennent publiques après
+        ouverture ; les secrets d’affaires réels ne doivent jamais être saisis
+        ici.
+    </p>
+    <nav class="action-row procurement-filters" aria-label="Dossiers par ville">
+        <a
+            class="button ghost"
+            href="{{
+            civic_path(
+                'section',
+                {
+                    view: 'procurement'
+                }
+            )
+            }}"
+        >
+            Toutes les villes
+        </a>
+        {% for city in state.territories %}
+            <a
+                class="button ghost"
+                href="{{
+                civic_path(
+                    'site_procurement_city',
+                    {
+                        territory: city.id
+                    }
+                )
+                }}"
+            >
+                {{ city.name }}
+            </a>
+        {% endfor %}
+        <a
+            class="button ghost"
+            href="{{
+            civic_path(
+                'section',
+                {
+                    view: 'budget'
+                }
+            )
+            }}"
+        >
+            Dépenses et budget
+        </a>
+    </nav>
+    <ol class="procurement-stages" aria-label="Parcours de traitement">
+        <li>Décrire le besoin</li>
+        <li>Recevoir les offres</li>
+        <li>Comparer et expliquer</li>
+        <li>Réaliser et contrôler</li>
+        <li>Publier le coût final</li>
+    </ol>
+    {% set statuses = {
+        open: 'Dépôts ouverts jusqu’à la date limite',
+        review: 'Offres ouvertes · examen',
+        awarded: 'Choix motivé enregistré',
+        in_progress: 'Réalisation en cours',
+        completed: 'Réalisation déclarée · contrôle attendu',
+        inspected: 'Résultat contrôlé',
+        paid: 'Paiement fictif enregistré',
+        paused: 'Participation retirée · dossier suspendu',
+        cancelled: 'Dossier interrompu'
+    } %}
+    {% for tender in tenders %}
+        {% set owner = tender.authorId == actor.id %}
+        {% set bidderIds = tender.sealedOffers|map(o => o.bidderId) %}
+        {% set volunteerIds = tender.participation
+            ? tender.participation.volunteers|keys
+            : []
+        %}
+        {% set independent = actor.territoryId == tender.territoryId
+            and not owner
+            and actor.id not in bidderIds
+            and actor.id not in volunteerIds
+        %}
+        {% set params = {
+            tenderId: tender.id
+        } %}
+        <article class="panel procurement-dossier" id="{{ tender.id }}">
+            {% set statusLabel = tender.status == 'open'
+                and ('now'|date('U')) >= tender.closesAt
+                ? 'Échéance atteinte · ouverture attendue'
+                : statuses[tender.status]
+            %}
+            <div class="card-top">
+                {{
+                    ui.badge(
+                        statusLabel,
+                        tender.status == 'paid' ? 'green' : 'gold'
+                    )
+                }}<span>{{ territoryMap[tender.territoryId].name }}</span>
+            </div>
+            <h2>
+                <a
+                    href="{{
+                    civic_path(
+                        'section',
+                        {
+                            view: 'procurement',
+                            id: tender.id
+                        }
+                    )
+                    }}"
+                >
+                    {{ tender.title }}
+                </a>
+            </h2>
+            <p>
+                {{ tender.scope }}
+            </p>
+            <p>
+                <strong>Plafond : {{ _self.money(tender.budgetCents) }}</strong> ·
+                date limite : {{
+                    tender.closesAt|date('d/m/Y H:i', 'Europe/Paris')
+                }} (Paris) · {{ tender.offers|length }} offre(s) ouverte(s).
+            </p>
+            {% if tender.actualCents is not null %}
+                <p class="notice">
+                    <strong>
+                        Coût final déclaré : {{ _self.money(tender.actualCents) }}
+                    </strong>{% if tender.selection %}
+                        · montant initial retenu : {{ _self.money(tender.selection.amountCents) }}
+                    {% endif %}. {{ tender.payment ? 'Contrôle effectué et paiement fictif enregistré.' : 'Consulter les contrôles et justificatifs ci-dessous.' }}
+                </p>
+            {% endif %}
+            {% if selected == '' %}
+                <a
+                    class="button"
+                    href="{{
+                    civic_path(
+                        'section',
+                        {
+                            view: 'procurement',
+                            id: tender.id
+                        }
+                    )
+                    }}"
+                >
+                    Comprendre le besoin et agir
+                </a>
+            {% else %}
+                <p>
+                    Pilote fictif : {{ citizenMap[tender.authorId].name }} · {{
+                        serviceCatalog[tender.service].label
+                    }} · {{ tender.location }}
+                </p>
+                <h3>Du problème au résultat</h3>
+                <div
+                    class="procurement-causal"
+                    aria-label="Raisonnement et vérification"
+                >
+                    <div>
+                        <span class="eyebrow">CAUSE SUPPOSÉE</span><p>
+                            {{ tender.cause }}
+                        </p>
+                    </div>
+                    <div>
+                        <span class="eyebrow">BESOIN ET ACTION</span><p>
+                            {{ tender.scope }}
+                        </p>
+                    </div>
+                    <div>
+                        <span class="eyebrow">EFFET ATTENDU</span><p>
+                            {{ tender.expectedEffect }}
+                        </p>
+                    </div>
+                    <div>
+                        <span class="eyebrow">VÉRIFICATION</span><p>
+                            {{ tender.indicator }}
+                        </p>
+                    </div>
+                </div>
+                <p>
+                    <strong>Incertitude :</strong> {{ tender.uncertainty }}<br
+                    /><strong>Risques :</strong> {{ tender.risks }}
+                </p>
+                {% if tender.proposalId %}
+                    <a
+                        class="button ghost"
+                        href="{{
+                        civic_path(
+                            'section',
+                            {
+                                view: 'proposals',
+                                id: tender.proposalId
+                            }
+                        )
+                        }}"
+                    >
+                        Explorer l’arbre causal lié
+                    </a>
+                {% endif %}
+                {% if tender.missionId %}
+                    <p>
+                        Mission liée : <a
+                            href="{{
+                            civic_path(
+                                'section',
+                                {
+                                    view: 'services'
+                                }
+                            )
+                            }}#{{ tender.missionId }}"
+                        >
+                            {{ tender.missionId }}
+                        </a>. Son budget reste distinct : aucun double comptage
+                        automatique.
+                    </p>
+                {% endif %}
+                <p>
+                    <strong>Référence déclarée :</strong>
+                    {{ _self.money(tender.referenceCents) }} (0 = inconnue). {{
+                        tender.referenceBasis
+                    }}. Une référence déclarative ne prouve ni surcoût ni
+                    économie.
+                </p>
+                <section aria-labelledby="offers-heading">
+                    <h3 id="offers-heading">Offres et comparaison</h3>
+                    <p>
+                        Critères figés : coût sur {{ tender.horizonYears }} ans 50
+                        %, qualité motivée 30 %, délai 10 %, garantie 10 %. Montants
+                        TTC ; coûts futurs estimés, sans actualisation. Les notes
+                        ne remplacent pas le jugement documenté.
+                    </p>
+                    {% if tender.status == 'open' %}
+                        <p class="notice">
+                            Les offres restent chiffrées tant que le pilote ne
+                            les a pas ouvertes après la date limite. Seule la
+                            dernière version active de chaque soumissionnaire
+                            sera comparée. Aucun prix n’est publié dans les
+                            reçus ou les exports avant ouverture.
+                        </p>
+                        <div class="action-row">
+                            {% if ('now'|date('U')) < tender.closesAt %}
+                                {% if not owner %}
+                                    {{
+                                        ui.action(
+                                            'tender.bid',
+                                            'Déposer un devis fictif',
+                                            params
+                                        )
+                                    }}{{
+                                        ui.action(
+                                            'tender.withdraw',
+                                            'Retirer mes offres',
+                                            params,
+                                            'button ghost'
+                                        )
+                                    }}
+                                {% endif %}
+                                {{
+                                    ui.action(
+                                        'tender.question',
+                                        'Poser une question publique',
+                                        params,
+                                        'button ghost'
+                                    )
+                                }}
+                                {% if
+                                    owner
+                                        and not tender.participation
+                                        and not serviceCatalog[tender.service].regulated %}{{
+                                    ui.action(
+                                        'tender.participation',
+                                        'Étudier une alternative habitante',
+                                        params,
+                                        'button ghost'
+                                    )
+                                }}{% endif %}
+                            {% elseif owner %}
+                                {{
+                                    ui.action(
+                                        'tender.open',
+                                        'Ouvrir les offres après clôture',
+                                        params
+                                    )
+                                }}
+                            {% endif %}
+                        </div>
+                        {% for receipt in tender.sealedOffers %}
+                            {% if receipt.bidderId == actor.id %}
+                                <p>
+                                    Mon reçu : <code>{{ receipt.id }}</code> · {{
+                                        receipt.at
+                                    }} · {{ receipt.withdrawn
+                                        ? 'retiré'
+                                        : 'déposé ; une version ultérieure active remplace celle-ci' }}.
+                                </p>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    {% for offer in tender.offers %}
+                        <details open class="procurement-offer">
+                            <summary>
+                                {{ offer.company }} · {{
+                                    _self.money(offer.totalCents)
+                                }} · {{ offer.days }} jours · garantie {{
+                                    offer.warrantyMonths
+                                }} mois
+                            </summary>
+                            <p>
+                                Soumissionnaire fictif : {{
+                                    citizenMap[offer.bidderId].name
+                                }}. Motif du dépôt : {{
+                                    offer.submissionReason|default(
+                                        'Dépôt fictif'
+                                    )
+                                }}. Qualifications déclarées : {{
+                                    offer.qualifications
+                                }}. Réserves : {{ offer.exclusions }}.
+                            </p>
+                            <div class="table-scroll">
+                                <table>
+                                    <caption>
+                                        Décomposition TTC du devis fictif
+                                    </caption>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Poste</th>
+                                            <th scope="col">Quantité</th>
+                                            <th scope="col">Prix unitaire</th>
+                                            <th scope="col">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for line in offer.items %}
+                                            <tr>
+                                                <td>{{ line.label }}</td>
+                                                <td>{{ line.quantity }}</td>
+                                                <td>
+                                                    {{
+                                                        _self.money(
+                                                            line.unitCents
+                                                        )
+                                                    }}
+                                                </td>
+                                                <td>
+                                                    {{
+                                                        _self.money(
+                                                            line.totalCents
+                                                        )
+                                                    }}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p>
+                                Entretien futur déclaré : {{
+                                    _self.money(offer.annualMaintenanceCents)
+                                }}/an. Coût estimé sur {{ tender.horizonYears }} ans
+                                : {{
+                                    _self.money(
+                                        offer.totalCents
+                                            + offer.annualMaintenanceCents
+                                                * tender.horizonYears
+                                    )
+                                }}.
+                            </p>
+                            {% if
+                                tender.referenceCents > 0
+                                    and offer.totalCents
+                                        > 2 * tender.referenceCents %}
+                                <p class="notice">
+                                    Prix supérieur au double de la référence
+                                    déclarée : comparabilité et explication à
+                                    examiner. Ce signal ne démontre aucune
+                                    fraude.
+                                </p>
+                            {% endif %}
+                            {% if tender.evaluations[offer.id] is defined %}
+                                {% set evaluation =
+                                    tender.evaluations[offer.id]
+                                %}
+                                <p>
+                                    <strong>
+                                        {{ evaluation.compliant
+                                            ? 'Conforme selon l’examinateur fictif'
+                                            : 'Non conforme selon l’examinateur fictif' }}
+                                    </strong> · qualité {{
+                                        evaluation.qualityScore
+                                    }}/100 · {{
+                                        citizenMap[evaluation.actorId].name
+                                    }} : {{ evaluation.reason }}.
+                                </p>
+                            {% else %}
+                                <p>
+                                    Examen indépendant attendu.
+                                </p>
+                            {% endif %}
+                        </details>
+                    {% else %}
+                        {% if tender.status != 'open' %}
+                            <p>
+                                Aucune offre active à l’ouverture. Le dossier
+                                peut être interrompu ou un plan participatif
+                                déjà préparé peut être examiné.
+                            </p>
+                        {% endif %}
+                    {% endfor %}
+                    {% if
+                        tender.status == 'review'
+                            and independent
+                            and (tender.offers|length) %}{{
+                        ui.action(
+                            'tender.evaluate',
+                            'Examiner une offre',
+                            params
+                        )
+                    }}{% endif %}
+                    {% if rankings[tender.id]|length %}
+                        <h4>
+                            Classement indicatif des offres jugées conformes
+                        </h4>
+                        <ol>
+                            {% for offer in rankings[tender.id] %}
+                                <li>
+                                    {{ offer.company }} : {{ offer.score }}/100
+                                    · coût sur la durée {{
+                                        _self.money(offer.lifecycleCents)
+                                    }}.
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    {% endif %}
+                </section>
+                <section aria-labelledby="participation-heading">
+                    <h3 id="participation-heading">
+                        Participation habitante volontaire
+                    </h3>
+                    <p>
+                        Aucune pénalité en cas de non-participation, aucun droit
+                        fiscal individuel créé. Un éventuel gain réduit le
+                        besoin de financement collectif ; il ne déclenche aucune
+                        remise d’impôt automatique.
+                    </p>
+                    {% if tender.participation %}
+                        {% set plan = tender.participation %}
+                        <p>
+                            {{ plan.scope }}
+                        </p>
+                        <p>
+                            <strong>Protection et organisation :</strong>
+                            {{ plan.safety }}<br /><strong>
+                                Solution de repli :
+                            </strong>
+                            {{ plan.fallback }}
+                        </p>
+                        <ul>
+                            <li>
+                                Fournitures et équipements : {{ _self.money(plan.materialsCents) }}
+                            </li>
+                            <li>
+                                Assurance : {{ _self.money(plan.insuranceCents) }}
+                            </li>
+                            <li>
+                                Encadrement : {{ _self.money(plan.supervisionCents) }}
+                            </li>
+                            <li>
+                                Contrôle : {{ _self.money(plan.controlCents) }}
+                            </li>
+                        </ul>
+                        <p>
+                            <strong>
+                                Coût budgétaire estimé : {{ _self.money(plan.costCents) }}
+                            </strong> · {{ plan.hoursNeeded }} heures nécessaires.
+                            Valeur indicative du temps demandé : {{
+                                _self.money(
+                                    plan.hoursNeeded * plan.hourValueCents
+                                )
+                            }}, en supplément du coût budgétaire.
+                        </p>
+                        <ul>
+                            {% for id, hours in plan.volunteers %}
+                                <li>
+                                    {{ citizenMap[id].name }} : {{ hours }} heures
+                                    proposées.
+                                </li>
+                            {% else %}
+                                <li>Aucun engagement volontaire.</li>
+                            {% endfor %}
+                        </ul>
+                        <p>
+                            {{ plan.validation
+                                ? 'Plan examiné par '
+                                    ~ citizenMap[plan.validation.actorId].name
+                                    ~ ' : '
+                                    ~ plan.validation.reason
+                                : 'Examen indépendant du plan attendu.' }}
+                        </p>
+                        {% if
+                            (tender.status == 'open'
+                                and ('now'|date('U')) < tender.closesAt)
+                                or (actor.id in volunteerIds
+                                    and tender.status
+                                    in [
+                                        'open',
+                                        'review',
+                                        'awarded',
+                                        'in_progress'
+                                    ]) %}{{
+                            ui.action(
+                                'tender.volunteer',
+                                actor.id in volunteerIds
+                                    ? 'Modifier ou retirer mon engagement'
+                                    : 'Proposer ma participation',
+                                params,
+                                'button ghost'
+                            )
+                        }}{% endif %}
+                        {% if tender.status == 'review' and independent %}{{
+                            ui.action(
+                                'tender.validate',
+                                'Examiner le plan participatif',
+                                params
+                            )
+                        }}{% endif %}
+                    {% else %}
+                        <p>
+                            Aucun plan participatif. Les services réglementés
+                            restent confiés à leurs intervenants habilités.
+                        </p>
+                    {% endif %}
+                </section>
+                <section aria-labelledby="decision-heading">
+                    <h3 id="decision-heading">
+                        Choix, réalisation et paiement fictif
+                    </h3>
+                    {% if tender.status == 'review' and owner %}{{
+                        ui.action(
+                            'tender.award',
+                            'Choisir et expliquer',
+                            params
+                        )
+                    }}{% endif %}
+                    {% if tender.selection %}
+                        <p>
+                            <strong>
+                                {{ tender.selection.kind == 'company'
+                                    ? 'Entreprise fictive retenue'
+                                    : 'Plan participatif retenu' }}
+                            </strong> · prix initial {{
+                                _self.money(tender.selection.amountCents)
+                            }} · plafond autorisé après avenants {{
+                                _self.money(tender.authorizedCents)
+                            }}.
+                        </p>
+                        <p>
+                            {{ tender.selection.reason }}
+                            {{ tender.selection.priceJustification }}
+                        </p>
+                        {% if
+                            tender.authorizedCents
+                                > tender.selection.amountCents %}
+                            <p class="notice">
+                                Augmentation cumulée : {{
+                                    _self.money(
+                                        tender.authorizedCents
+                                            - tender.selection.amountCents
+                                    )
+                                }}. Le prix initial reste visible.
+                            </p>
+                        {% endif %}
+                        {% if
+                            actor.id == tender.selection.operatorId
+                                and tender.status
+                                    in ['awarded', 'in_progress'] %}{{
+                            ui.action(
+                                'tender.delivery',
+                                tender.status == 'awarded'
+                                    ? 'Déclarer le début'
+                                    : 'Déclarer le résultat et son coût',
+                                params
+                            )
+                        }}{% endif %}
+                        {% if
+                            owner
+                                and tender.status
+                                    in ['awarded', 'in_progress'] %}{{
+                            ui.action(
+                                'tender.amend',
+                                'Proposer un avenant motivé',
+                                params,
+                                'button ghost'
+                            )
+                        }}{% endif %}
+                        {% if
+                            independent
+                                and tender.status in ['awarded', 'in_progress']
+                                and (tender.amendments|length) %}{{
+                            ui.action(
+                                'tender.approve',
+                                'Examiner un avenant en attente',
+                                params,
+                                'button ghost'
+                            )
+                        }}{% endif %}
+                    {% endif %}
+                    {% for amendment in tender.amendments %}
+                        <p>
+                            Avenant {{ amendment.id }} · {{
+                                _self.money(amendment.deltaCents)
+                            }} · {{ amendment.scope }} · {{ amendment.reason }} ·
+                            {{ amendment.approval
+                                ? 'Approuvé par '
+                                    ~ citizenMap[amendment.approval.actorId].name
+                                    ~ ' : '
+                                    ~ amendment.approval.reason
+                                : 'En attente, sans effet sur le montant autorisé' }}.
+                        </p>
+                    {% endfor %}
+                    {% for invoice in tender.invoices %}
+                        <p>
+                            Justificatif fictif {{ invoice.reference }} · {{
+                                _self.money(invoice.amountCents)
+                            }} · {{ invoice.at }}<br /><strong>
+                                Effet observé déclaré :
+                            </strong> {{ invoice.observedEffect }}
+                        </p>
+                        {% if tender.selection.kind == 'participation' %}
+                            <p>
+                                Temps bénévole déclaré : {{
+                                    invoice.volunteerHours
+                                }} heures ; valeur indicative {{
+                                    _self.money(
+                                        invoice.volunteerHours
+                                            * tender.participation.hourValueCents
+                                    )
+                                }}, distincte de la dépense budgétaire.
+                            </p>
+                        {% endif %}
+                    {% endfor %}
+                    {% for inspection in tender.inspections %}
+                        <p>
+                            Contrôle de {{
+                                citizenMap[inspection.actorId].name
+                            }} : {{ inspection.accepted
+                                ? 'accepté'
+                                : 'correction demandée' }} · {{ inspection.reason }}
+                        </p>
+                    {% endfor %}
+                    {% if tender.status == 'completed' and independent %}{{
+                        ui.action(
+                            'tender.inspect',
+                            'Contrôler le résultat et le justificatif',
+                            params
+                        )
+                    }}{% endif %}
+                    {% if tender.status == 'inspected' and owner %}{{
+                        ui.action(
+                            'tender.pay',
+                            'Enregistrer le paiement fictif',
+                            params
+                        )
+                    }}{% endif %}
+                    {% if tender.payment %}
+                        <p class="notice">
+                            Paiement fictif {{ tender.payment.reference }} : {{
+                                _self.money(tender.payment.amountCents)
+                            }}. Aucun argent transféré. Écart à la référence
+                            déclarée : {{
+                                _self.money(
+                                    tender.referenceCents
+                                        - tender.payment.amountCents
+                                )
+                            }} ; il ne constitue pas une économie certifiée ni une
+                            réduction fiscale.
+                        </p>
+                    {% endif %}
+                    {% if tender.status == 'paused' %}
+                        <p class="notice">
+                            Un habitant a retiré son engagement. Réalisation
+                            suspendue : appliquer le repli prévu et préparer un
+                            nouveau dossier si nécessaire.
+                        </p>
+                    {% endif %}
+                    {% if
+                        owner
+                            and tender.status
+                                in [
+                                    'open',
+                                    'review',
+                                    'awarded',
+                                    'in_progress',
+                                    'paused'
+                                ] %}{{
+                        ui.action(
+                            'tender.cancel',
+                            'Interrompre et conserver les coûts engagés',
+                            params,
+                            'button ghost'
+                        )
+                    }}{% endif %}
+                </section>
+                <details>
+                    <summary>
+                        Questions et réponses communes ({{
+                            tender.questions|length
+                        }})
+                    </summary>
+                    {% for question in tender.questions %}
+                        <p>
+                            <strong>
+                                {{ citizenMap[question.authorId].name }} :
+                            </strong>
+                            {{ question.text }}<br /><strong>Réponse :</strong>
+                            {{ question.answer ?? 'En attente' }}
+                        </p>
+                    {% endfor %}
+                    {% if
+                        owner
+                            and tender.status == 'open'
+                            and ('now'|date('U')) < tender.closesAt %}{{
+                        ui.action(
+                            'tender.answer',
+                            'Répondre à une question',
+                            params,
+                            'button ghost'
+                        )
+                    }}{% endif %}
+                </details>
+                <details open>
+                    <summary>
+                        Signalements et explications ({{
+                            tender.alerts|length
+                        }})
+                    </summary>
+                    <p>
+                        Une anomalie est une demande de vérification. Aucun
+                        classement de personnes suspectes n’est établi.
+                    </p>{{
+                        ui.action(
+                            'tender.alert',
+                            'Demander une explication documentée',
+                            params,
+                            'button ghost'
+                        )
+                    }}{% for alert in tender.alerts %}
+                        <p>
+                            {{ alert.reason }} · {{ alert.evidence }}<br
+                            />{{ alert.response
+                                ? alert.response.text
+                                : 'Examen indépendant attendu ; le choix est bloqué tant que la réponse manque.' }}
+                        </p>
+                    {% endfor %}
+                    {% if independent and (tender.alerts|length) %}{{
+                        ui.action(
+                            'tender.explain',
+                            'Examiner un signalement',
+                            params,
+                            'button ghost'
+                        )
+                    }}{% endif %}
+                </details>
+                <details>
+                    <summary>
+                        Historique daté et décisions conservées
+                    </summary>
+                    <ol>
+                        {% for step in tender.history %}
+                            <li>
+                                {{ step.at }} · {{
+                                    citizenMap[step.actorId].name
+                                }} · {{ actionLabels[step.action] }} · {{
+                                    step.reason
+                                }}
+                            </li>
+                        {% endfor %}
+                    </ol>
+                </details>
+            {% endif %}
+        </article>
+    {% else %}
+        <div class="panel">
+            <h2>Commencer par un besoin concret</h2>
+            <p>
+                Décris une intervention fictive, son périmètre et une référence
+                de coût. Les entreprises fictives pourront ensuite déposer leurs
+                devis.
+            </p>{{ ui.action('tender.create', 'Créer le premier dossier') }}
+        </div>
+    {% endfor %}
+{% endblock %}

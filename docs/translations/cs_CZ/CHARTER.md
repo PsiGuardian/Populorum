@@ -1,6 +1,6 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Moc patří lidu
-**ZAKLÁDACÍ CHARTA — Verze 1.0 — 29. října 2026**
+**ZAKLÁDACÍ CHARTA — Verze 1.1 — 29. října 2026**
 
 *„Nikdo nesmí být odsouzen za to, že myslí jinak. Ať je pouze vyzván, aby vysvětlil svou cestu, a každý se tak mohl poučit z důsledků vlastních rozhodnutí.“*
 
@@ -57,7 +57,13 @@ Každý návrh obsahuje výklad v jednoduché francouzštině, případně dopln
 
 ## HLAVA IV — SPOLEČNÉ ROZHODOVÁNÍ
 ### Článek 11 — Hlasování
-Každý oprávněný má jeden hlas: pro, proti nebo zdržení se. Podmínky, délka hlasování, sčítání, případné kvórum a kritéria se zveřejní předem. Další účty či zařízení nezakládají další hlasy.
+
+Každý oprávněný občan může vysvětlit své úvahy a vyjádřit PRO, PROTI nebo ZDRŽENÍ SE. Pro přijetí však každá deklarovaná oprávněná rodina představuje nejvýše jeden hlas bez ohledu na velikost.
+
+Rodinné stanovisko určuje přísná většina vyjádřených PRO a PROTI. Rovnost nebo pouze zdržení znamenají zdržení rodiny; bez účastníků se rodina neúčastní. Kvórum a většina se počítají podle rodin.
+
+Členství a pravidla jsou zveřejněna a zmrazena před zahájením. Jedna osoba patří v dané konzultaci pouze k jedné rodině. Historické konzultace zachovávají pravidla. Fiktivní skupiny jsou deklarovány, nikoli odvozovány z příjmení.
+
 ### Článek 12 — Otevřenost účasti
 Experimentální konzultace připouštějí dobrovolné hlasování pod vlastním jménem. Občan předem ví, že jeho veřejná totožnost, volba a odůvodnění mohou být přístupné. Nutné jsou právní záruky, zejména souhlas a ochrana údajů. Bez jmenné účasti lze stále číst veřejné návrhy a výsledky. Nejde o oficiální volby; zákonné tajné hlasování zůstává zachováno.
 ### Článek 13 — Územní samostatnost
@@ -100,6 +106,6 @@ Nezakládáme Démos Kratos, abychom určili, kdo má pravdu. Každý má osvět
 
 *„Nevnucuj svou cestu. Osvětli tu svou a nech důsledky učit každého.“*
 
-**Stav:** Návrh zakládací charty · **Verze:** 1.0 · **Datum:** 29. října 2026 · **První území:** Francie · **Princip:** Vznikající konvergence · **Povaha:** Svobodný, společný, veřejný a experimentální projekt.
+**Stav:** Návrh zakládací charty · **Verze:** 1.1 · **Datum:** 29. října 2026 · **První území:** Francie · **Princip:** Vznikající konvergence · **Povaha:** Svobodný, společný, veřejný a experimentální projekt.
 
 > Pracovní překlad. Při nejasnostech platí [francouzský originál](../../../CHARTER.md).

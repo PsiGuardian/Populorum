@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+{% block content %}
+    {% include 'partials/uncertainty.html.twig' %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                LE POUVOIR APPARTIENT AU PEUPLE
+            </div>
+            <h1>La charte fondatrice</h1>
+            <p>
+                24 articles pour préserver les chemins libres et la mémoire des
+                conséquences.
+            </p>
+        </div>
+    </div>
+    <section
+        class="panel institutional-context"
+        aria-label="Cadre institutionnel"
+    >
+        <h2>Un complément aux institutions existantes</h2>
+        {% include 'partials/institutional-context.html.twig' %}
+    </section>
+    <div class="charter-motto">
+        <blockquote>
+            « N’impose pas ton chemin. Éclaire le tien, et laisse les
+            conséquences instruire chacun. »
+        </blockquote>
+        <span>CONVERGENCE ÉMERGENTE</span>
+    </div>
+    <section class="panel">
+        <form
+            method="get"
+            action="{{
+            civic_path(
+                'section',
+                {
+                    view: 'charter'
+                }
+            )
+            }}"
+        >
+            <label for="locale">Langue documentaire</label>
+            <select id="locale" name="locale">
+                {% for availableLocale in locales %}
+                    <option
+                        value="{{ availableLocale }}"
+                        {{ locale == availableLocale ? 'selected' : '' }}
+                    >
+                        {{ availableLocale == 'fr_FR'
+                            ? 'Français — référence'
+                            : availableLocale }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button class="button" style="margin-top:12px">
+                Lire cette traduction
+            </button>
+        </form>
+        <p class="small muted">
+            L’interface est en français. Les traductions ne modifient jamais le
+            texte de référence figé d’un vote. Les textes fondateurs sont
+            conservés dans leur intégralité.
+        </p>
+        <article
+            class="charter-text"
+            lang="{{ locale|slice(0, 2) }}"
+            dir="{{ locale == 'ar_SA' ? 'rtl' : 'ltr' }}"
+        >
+            {{ charterHtml|raw }}
+        </article>
+    </section>
+{% endblock %}

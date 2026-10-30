@@ -1,0 +1,245 @@
+[
+  {
+    "id": "ssmsi",
+    "label": "SSMSI : statistiques communales 2024–2025, géographie 2026",
+    "url": "https://www.data.gouv.fr/datasets/bases-statistiques-communale-departementale-et-regionale-de-la-delinquance-enregistree-par-la-police-et-la-gendarmerie-nationales",
+    "type": "public_document",
+    "publishedAt": "2026-07-09",
+    "accessedAt": "2026-10-29",
+    "date": "2026-07-09"
+  },
+  {
+    "id": "ssmsi-method",
+    "label": "SSMSI : méthode, unités et secret statistique",
+    "url": "https://statistiques.interieur.gouv.fr/ssmsi/sources-et-methodes-statistiques/sources-de-donnees/base-communale",
+    "type": "public_document",
+    "publishedAt": null,
+    "accessedAt": "2026-10-29",
+    "date": "2026-10-29"
+  },
+  {
+    "id": "legal-police",
+    "label": "CGCT : pouvoirs de police municipale et limites de compétence",
+    "url": "https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000006390150",
+    "type": "public_document",
+    "publishedAt": null,
+    "accessedAt": "2026-10-29",
+    "date": "2026-10-29"
+  },
+  {
+    "id": "legal-state",
+    "label": "Conseil d’État : articulation des polices municipale et étatique",
+    "url": "https://www.conseil-etat.fr/fr/arianeweb/CE/decision/2026-09-18/518576",
+    "type": "public_document",
+    "publishedAt": "2026-09-18",
+    "accessedAt": "2026-10-29",
+    "date": "2026-09-18"
+  },
+  {
+    "id": "paris-police",
+    "label": "Paris : missions de proximité, prévention et sécurité routière",
+    "url": "https://www.paris.fr/pages/tout-savoir-sur-la-police-municipale-parisienne-16970",
+    "type": "public_document",
+    "publishedAt": null,
+    "accessedAt": "2026-10-29",
+    "date": "2026-10-29"
+  },
+  {
+    "id": "paris-victims",
+    "label": "Services publics parisiens : accueil et orientation des victimes",
+    "url": "https://www.masecurite.interieur.gouv.fr/fr/informations-locales/police-paris",
+    "type": "public_document",
+    "publishedAt": "2026-04-10",
+    "accessedAt": "2026-10-29",
+    "date": "2026-04-10"
+  },
+  {
+    "id": "paris-media",
+    "label": "Presse : inquiétudes du tourisme après les violences d’octobre",
+    "url": "https://www.lemonde.fr/economie/article/2026/10/19/apres-les-violences-urbaines-du-17-octobre-le-tourisme-francais-craint-pour-son-attractivite-mes-proches-au-bresil-m-ont-dit-de-ne-pas-aller-a-paris_6797583_3234.html",
+    "type": "media_context",
+    "publishedAt": "2026-10-19",
+    "accessedAt": "2026-10-29",
+    "date": "2026-10-19"
+  },
+  {
+    "id": "paris-schools",
+    "label": "Paris : aménagements de rues aux écoles et accessibilité",
+    "url": "https://www.parisetmetropole-amenagement.fr/fr/rues-aux-ecoles-des-espaces-publics-repenses-pour-les-enfants-et-le-quartier-835",
+    "type": "public_document",
+    "publishedAt": "2026-08-06",
+    "accessedAt": "2026-10-29",
+    "date": "2026-08-06"
+  },
+  {
+    "id": "paris-heat",
+    "label": "Paris : adaptation des équipements scolaires à la chaleur",
+    "url": "https://www.paris.fr/pages/face-au-changement-climatique-paris-s-adapte-et-accelere-ses-transformations-36619",
+    "type": "public_document",
+    "publishedAt": "2026-09-29",
+    "accessedAt": "2026-10-29",
+    "date": "2026-09-29"
+  },
+  {
+    "id": "paris-rents",
+    "label": "Paris : cadre et calendrier de l’encadrement des loyers",
+    "url": "https://www.paris.fr/pages/l-encadrement-des-loyers-comprendre-le-dispositif-29091",
+    "type": "public_document",
+    "publishedAt": null,
+    "accessedAt": "2026-10-29",
+    "date": "2026-10-29"
+  },
+  {
+    "id": "paris-tourism",
+    "label": "Paris : règles administratives des meublés touristiques",
+    "url": "https://www.paris.fr/pages/meubles-touristiques-3637",
+    "type": "public_document",
+    "publishedAt": "2026-03-25",
+    "accessedAt": "2026-10-29",
+    "date": "2026-03-25"
+  },
+  {
+    "id": "paris-works",
+    "label": "Paris : voirie, chantiers et maintien des cheminements",
+    "url": "https://www.paris.fr/pages/chantiers-de-voirie-3207",
+    "type": "public_document",
+    "publishedAt": null,
+    "accessedAt": "2026-10-29",
+    "date": "2026-10-29"
+  },
+  {
+    "id": "marseille-prevention",
+    "label": "Marseille : prévention, médiation et cadre partenarial",
+    "url": "https://www.marseille.fr/index.php/prevention-delinquance",
+    "type": "public_document",
+    "publishedAt": null,
+    "accessedAt": "2026-10-29",
+    "date": "2026-10-29"
+  },
+  {
+    "id": "marseille-media",
+    "label": "Presse/AFP : évolution récente des homicides liés aux trafics",
+    "url": "https://www.leparisien.fr/societe/narcotrafic-a-marseille-avec-cinq-narchomicides-depuis-janvier-la-ville-voit-les-reglements-de-compte-baisser-a-un-niveau-jamais-vu-16-10-2026-QULMJXPT2NGLBCYRSNYGJY2ZPA.php",
+    "type": "media_context",
+    "publishedAt": "2026-10-16",
+    "accessedAt": "2026-10-29",
+    "date": "2026-10-16"
+  },
+  {
+    "id": "marseille-safety",
+    "label": "Marseille : services de sécurité, prévention et secours",
+    "url": "https://www.marseille.fr/securite",
+    "type": "public_document",
+    "publishedAt": null,
+    "accessedAt": "2026-10-29",
+    "date": "2026-10-29"
+  },
+  {
+    "id": "marseille-schools",
+    "label": "Marseille : rentrée 2026, sécurité, fraîcheur et services scolaires",
+    "url": "https://www.marseille.fr/rentree-scolaire",
+    "type": "public_document",
+    "publishedAt": "2026-08-28",
+    "accessedAt": "2026-10-29",
+    "date": "2026-08-28"
+  },
+  {
+    "id": "marseille-housing",
+    "label": "Marseille : sécurité des immeubles et habitat indigne",
+    "url": "https://www.marseille.fr/logement-urbanisme/logement/logements-insalubres-et-arretes-de-perils",
+    "type": "public_document",
+    "publishedAt": null,
+    "accessedAt": "2026-10-29",
+    "date": "2026-10-29"
+  },
+  {
+    "id": "marseille-safeplaces",
+    "label": "Région Sud : lieux d’accueil sûrs à Marseille et formation des agents",
+    "url": "https://www.maregionsud.fr/actualites/detail/la-region-sud-un-lieu-sur",
+    "type": "public_document",
+    "publishedAt": "2026-09-01",
+    "accessedAt": "2026-10-29",
+    "date": "2026-09-01"
+  },
+  {
+    "id": "havre-safety",
+    "label": "Le Havre : services de sécurité, tranquillité et prévention",
+    "url": "https://lehavre.fr/services-au-quotidien/cadre-de-vie/securite-prevention",
+    "type": "public_document",
+    "publishedAt": "2025-06-05",
+    "accessedAt": "2026-10-29",
+    "date": "2025-06-05"
+  },
+  {
+    "id": "havre-freight",
+    "label": "Préfecture : coopération pour prévenir les vols de fret",
+    "url": "https://www.seine-maritime.gouv.fr/Actualites/Prevention-des-vols-de-fret",
+    "type": "public_document",
+    "publishedAt": "2026-05-28",
+    "accessedAt": "2026-10-29",
+    "date": "2026-05-28"
+  },
+  {
+    "id": "havre-port",
+    "label": "HAROPA PORT : coopération de sûreté avec les services de l’État",
+    "url": "https://www.haropaport.com/fr/actualites/haropa-port-et-les-services-de-letat-mobilises-pour-renforcer-la-surete-portuaire",
+    "type": "public_document",
+    "publishedAt": "2026-07-23",
+    "accessedAt": "2026-10-29",
+    "date": "2026-07-23"
+  },
+  {
+    "id": "havre-media",
+    "label": "Presse : exposition des métiers portuaires aux pressions criminelles",
+    "url": "https://www.leparisien.fr/faits-divers/pecheurs-et-dockers-cibles-et-appates-comment-les-narcotrafiquants-jettent-leurs-filets-dans-les-ports-30-04-2026-KVTC5WI2UJBUZGWTCJGFIP2OHQ.php",
+    "type": "media_context",
+    "publishedAt": "2026-04-30",
+    "accessedAt": "2026-10-29",
+    "date": "2026-04-30"
+  },
+  {
+    "id": "havre-tram",
+    "label": "Le Havre : phases des travaux de la ligne C et circulation",
+    "url": "https://lehavre.fr/actualites/toutes-les-actualites/ligne-c-de-tramway-les-prochaines-etapes-du-chantier",
+    "type": "public_document",
+    "publishedAt": "2026-09-02",
+    "accessedAt": "2026-10-29",
+    "date": "2026-09-02"
+  },
+  {
+    "id": "havre-flood",
+    "label": "Le Havre : risque d’inondation et de submersion",
+    "url": "https://lehavre.fr/services-au-quotidien/cadre-de-vie/risques-majeurs/risques-dorigine-naturelle/inondation-et",
+    "type": "public_document",
+    "publishedAt": "2026-01-23",
+    "accessedAt": "2026-10-29",
+    "date": "2026-01-23"
+  },
+  {
+    "id": "havre-climate",
+    "label": "Le Havre Seine Métropole : plan climat, énergie et mobilités",
+    "url": "https://www.lehavreseinemetropole.fr/plan-climat-air-energie-territorial-pcaet",
+    "type": "public_document",
+    "publishedAt": null,
+    "accessedAt": "2026-10-29",
+    "date": "2026-10-29"
+  },
+  {
+    "id": "havre-projects",
+    "label": "Le Havre : rénovation, centre ancien et littoral de Dollemard",
+    "url": "https://lehavre.fr/ma-ville/le-havre-ville-en-mouvement",
+    "type": "public_document",
+    "publishedAt": "2026-06-09",
+    "accessedAt": "2026-10-29",
+    "date": "2026-06-09"
+  },
+  {
+    "id": "havre-alerts",
+    "label": "Le Havre Seine Métropole : prévision et information sur les inondations",
+    "url": "https://www.lehavreseinemetropole.fr/inondations",
+    "type": "public_document",
+    "publishedAt": "2026-06-30",
+    "accessedAt": "2026-10-29",
+    "date": "2026-06-30"
+  }
+]

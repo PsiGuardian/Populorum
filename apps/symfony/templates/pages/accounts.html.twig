@@ -1,0 +1,335 @@
+{% extends 'base.html.twig' %}
+{% import 'partials/macros.html.twig' as ui %}
+{% block content %}
+    <div class="page-title">
+        <div>
+            <div class="eyebrow">
+                COMPRENDRE LES MÉCANISMES · FICTION PUBLIQUE
+            </div>
+            <h1>Récits et inquiétudes</h1>
+            <p>
+                Un personnage peut expliquer progressivement ce qu’il a fait,
+                vécu ou craint, puis compléter ou corriger son raisonnement.
+                Rien ne l’oblige à tout raconter en une fois.
+            </p>
+        </div>{{
+            ui.action(
+                'account.create',
+                'Commencer un récit fictif',
+                {},
+                'button primary'
+            )
+        }}
+    </div>
+    <section class="notice">
+        <h2>Une démarche d’apprentissage, sans promesse d’immunité</h2>
+        <p>
+            Les noms affichés et les familles sont inventés. Toutes les
+            contributions de ce laboratoire sont visibles dans leur espace de
+            simulation, y compris leurs ajouts antérieurs. Il ne s’agit pas d’un
+            registre de délinquants réels ni de plaintes.
+        </p>
+        <p>
+            Le moteur ne prononce aucune sanction automatique et ne mesure pas
+            la culpabilité. Un site ne peut toutefois pas garantir la
+            non-utilisation judiciaire d’un aveu public. Aucun nom réel de
+            victime, de tiers ou aveu réel ne doit être saisi.
+        </p>
+        <p>
+            La liberté d’expression et la possibilité de formuler une inquiétude
+            valent pour chacun, dans le respect des droits d’autrui. La crainte
+            de parler peut elle-même devenir un récit de cause à effet ;
+            personne n’a à justifier sa dignité, son identité ou sa valeur par
+            un vote ou une révélation.
+        </p>
+    </section>
+    {% include 'partials/uncertainty.html.twig' %}
+    <nav class="task-actions" aria-label="Parcourir les récits">
+        <a class="button" href="#recorded-crime-data">
+            Voir les chiffres par catégorie
+        </a><a class="button" href="#public-accounts">
+            Lire les récits et leurs compléments
+        </a>
+    </nav>
+    <div id="public-accounts"></div>
+    {{ ui.filter(view, state, q, territory) }}
+    {% set shown = 0 %}
+    {% for account in state.causalAccounts|default([]) %}
+        {% if
+            (selected == '' or selected == account.id)
+                and (territory == 'all' or territory == account.territoryId)
+                and (q == ''
+                    or (q|lower)
+                    in ((account.title ~ account.category)|lower)) %}
+            {% set shown = shown + 1 %}
+            <article class="panel section" id="{{ account.id }}">
+                <div class="row-header">
+                    {{
+                        ui.badge(
+                            account.kind == 'concern'
+                                ? 'Inquiétude fictive'
+                                : 'Récit fictif'
+                        )
+                    }}<span>{{ territoryMap[account.territoryId].name }}</span>
+                </div>
+                <h2>{{ account.title }}</h2>
+                <p>
+                    {{ citizenMap[account.authorId].name }} · {{
+                        citizenMap[account.authorId].familyLabel|default(
+                            'Famille non déclarée'
+                        )
+                    }} · {{ account.category }}
+                </p>
+                {% if account.proposalId %}
+                    <a
+                        class="plain"
+                        href="{{
+                        civic_path(
+                            'section',
+                            {
+                                view: 'proposals',
+                                id: account.proposalId
+                            }
+                        )
+                        }}"
+                    >
+                        Voir l’arbre lié →
+                    </a>
+                {% endif %}
+                <p>
+                    {{ account.entries|last.cause }}
+                </p>
+                <p>
+                    <a
+                        class="plain"
+                        href="{{
+                        civic_path(
+                            'section',
+                            {
+                                view: 'accounts',
+                                id: account.id
+                            }
+                        )
+                        }}"
+                    >
+                        Ouvrir ce récit et ses {{ account.entries|length }} ajout(s)
+                        →
+                    </a>
+                </p>
+                <details {{ selected == account.id ? 'open' : '' }}>
+                    <summary>
+                        Historique des causes, conséquences et corrections
+                    </summary>
+                    <ol class="account-timeline">
+                        {% for entry in account.entries %}
+                            <li>
+                                <h3>
+                                    Ajout {{ entry.version }} · {{
+                                        {
+                                            partial: 'récit encore partiel',
+                                            additional: 'nouvel élément',
+                                            correction: 'correction'
+                                        }[entry.disclosure]
+                                    }}
+                                </h3>
+                                <p>
+                                    Publié le {{
+                                        entry.recordedAt|date(
+                                            'd/m/Y à H:i:s',
+                                            'Europe/Paris'
+                                        )
+                                    }} (Europe/Paris). Moment raconté :{% if
+                                        entry.eventDate %}
+                                        {{ entry.eventDate }}
+                                    {% elseif entry.year %}
+                                        année {{ entry.year }}
+                                    {% else %}
+                                        inconnu
+                                    {% endif %}
+                                    {% if entry.eventTime %}
+                                        à {{ entry.eventTime }} (heure locale déclarée,
+                                        Europe/Paris)
+                                    {% endif %}.
+                                </p>
+                                <p class="badge">
+                                    {{
+                                        {
+                                            hypothesis: 'Hypothèse',
+                                            self_report: 'Récit personnel fictif — non vérifié',
+                                            documented: 'Élément avec source déclarée — à examiner'
+                                        }[entry.nature]
+                                    }}
+                                </p>
+                                <div class="two-columns">
+                                    <div>
+                                        <h4>Cause ou mécanisme proposé</h4>
+                                        <p>
+                                            {{ entry.cause }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <h4>Conséquences ou inquiétudes</h4>
+                                        <p>
+                                            {{ entry.consequence }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <h4>Incertitudes et vérification</h4>
+                                <p>
+                                    {{ entry.uncertainty }}
+                                </p>
+                                {% if entry.unknownVariables %}
+                                    <h4>Variables inconnues envisagées</h4>
+                                    <p>
+                                        {{ entry.unknownVariables }}
+                                    </p>
+                                {% endif %}
+                                {% if entry.source %}
+                                    <h4>Source et limites déclarées</h4>
+                                    <p>
+                                        {{ entry.source }}
+                                    </p>
+                                {% endif %}
+                                <p>
+                                    <strong>Motif de l’ajout :</strong>
+                                    {{ entry.reason }}
+                                </p>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                </details>
+                {% if account.authorId == actor.id %}{{
+                    ui.action(
+                        'account.append',
+                        'Ajouter une précision ou une correction',
+                        {
+                            accountId: account.id
+                        },
+                        'button primary'
+                    )
+                }}{% endif %}
+            </article>
+        {% endif %}
+    {% endfor %}
+    {% if not shown %}
+        <section class="panel">
+            <h2>Aucun récit pour ces critères</h2>
+            <p>
+                Vous pouvez commencer par un seul enchaînement, mentionner ce
+                qui reste inconnu et revenir plus tard.
+            </p>
+        </section>
+    {% endif %}
+    <section class="panel section" id="recorded-crime-data">
+        <h2>Approfondir les délits et crimes recensés</h2>
+        {% for report in crimeReports %}
+            <details class="crime-category">
+                <summary>
+                    {{ report.indicator }} · {{ report.denominator }}
+                </summary>
+                <p>
+                    Source : {{ report.publisher }} · publication {{
+                        report.publishedAt
+                    }} · extrait consulté le {{ report.accessedAt }}. Même
+                    indicateur, même unité de taux ; contexte et déclaration
+                    restent à examiner.
+                </p>
+                <div
+                    class="evidence-table-scroll"
+                    role="region"
+                    aria-label="Mesures de {{ report.indicator }}"
+                    tabindex="0"
+                >
+                    <table>
+                        <caption>
+                            {{ report.indicator }} : faits enregistrés et taux pour
+                            1 000 {{ report.denominator }}
+                        </caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Ville</th>
+                                <th scope="col">2024 — effectif et taux</th>
+                                <th scope="col">2025 — effectif et taux</th>
+                                <th scope="col">Écart de taux</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for city in report.cities %}
+                                <tr>
+                                    <th scope="row">{{ city.name }}</th>
+                                    {% for year in [2024, 2025] %}
+                                        <td>
+                                            {% if city.years[year] is defined %}
+                                                {{ city.years[year].count
+                                                    ?? 'Non publié' }}
+                                                {{ city.years[year].countUnit }} ·
+                                                {{
+                                                    city.years[year].rate|number_format(
+                                                        2,
+                                                        ',',
+                                                        ' '
+                                                    )
+                                                }} ‰
+                                            {% else %}
+                                                Non publié
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                    <td>
+                                        {{ city.change is not null
+                                            ? (city.change|number_format(
+                                                2,
+                                                ',',
+                                                ' '
+                                            ))
+                                                ~ ' points'
+                                            : 'Non calculable' }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    <a href="{{ report.source }}" rel="noopener noreferrer">
+                        Fichier public de référence ↗
+                    </a>
+                </p>
+                {{
+                    ui.action(
+                        'account.create',
+                        'Explorer les mécanismes dans un récit fictif',
+                        {
+                            category: report.indicator
+                        }
+                    )
+                }}
+            </details>
+        {% endfor %}
+        <p>
+            Consultez les quinze catégories disponibles dans l’extrait communal
+            SSMSI : effectifs enregistrés, unité de compte, taux 2024 et 2025,
+            évolutions par ville et limites de mesure. Ces statistiques ne
+            permettent pas d’identifier leurs auteurs ; aucun récit fictif ne
+            leur est attribué.
+        </p>
+        <p>
+            Les homicides et certains autres crimes ne figurent pas dans cet
+            extrait communal : leur absence ici ne signifie pas absence de
+            faits. Un récit personnel n’est pas ajouté aux statistiques
+            officielles.
+        </p><a
+            class="button"
+            href="{{
+            civic_path(
+                'section',
+                {
+                    view: 'convergence'
+                }
+            )
+            }}"
+        >
+            Examiner les chiffres et leurs sources →
+        </a>
+    </section>
+{% endblock %}

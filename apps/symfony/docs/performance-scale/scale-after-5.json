@@ -1,0 +1,6770 @@
+{
+  "at": "2026-10-30T14:43:40+00:00",
+  "php": "8.4.5",
+  "opcacheCli": false,
+  "samples": 5,
+  "fixture": "1500 citoyens, 135 propositions, 13500 positions ; 0 autres simulations. Données synthétiques disjointes, trois villes conservées.",
+  "scope": "Local séquentiel, HttpKernel demo/debug=0. Processus frais avec caches Symfony déjà compilés ; kernel réutilisé pour chaud. Aucun réseau, navigateur, concurrence ou PHP-FPM. Phases inclusives : ne pas les additionner.",
+  "pages": [
+    {
+      "label": "Accueil",
+      "path": "/",
+      "status": 200,
+      "bytes": 75484,
+      "firstHandleMs": 51.528,
+      "warm": {
+        "samples": 5,
+        "medianMs": 48.758,
+        "p95Ms": 51.847,
+        "minMs": 43.223,
+        "maxMs": 51.847
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.017,
+        "p95Ms": 0.019,
+        "minMs": 0.015,
+        "maxMs": 0.019
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 7.179,
+          "p95Ms": 7.868,
+          "minMs": 6.508,
+          "maxMs": 7.868
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 30.546,
+          "p95Ms": 32.333,
+          "minMs": 24.187,
+          "maxMs": 32.333
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 38.643,
+          "p95Ms": 40.451,
+          "minMs": 30.965,
+          "maxMs": 40.451
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.007,
+          "p95Ms": 0.009,
+          "minMs": 0.006,
+          "maxMs": 0.009
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 0.37,
+          "p95Ms": 0.448,
+          "minMs": 0.306,
+          "maxMs": 0.448
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 2.205,
+          "p95Ms": 2.647,
+          "minMs": 2.08,
+          "maxMs": 2.647
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 48.525,
+          "p95Ms": 51.666,
+          "minMs": 40.513,
+          "maxMs": 51.666
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 212.984,
+        "p95Ms": 268.958,
+        "minMs": 184.37,
+        "maxMs": 268.958
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 172.905,
+        "p95Ms": 227.533,
+        "minMs": 145.638,
+        "maxMs": 227.533
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Territoires",
+      "path": "/territoires",
+      "status": 200,
+      "bytes": 26289,
+      "firstHandleMs": 53.91,
+      "warm": {
+        "samples": 5,
+        "medianMs": 47.453,
+        "p95Ms": 56.77,
+        "minMs": 41.274,
+        "maxMs": 56.77
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.015,
+        "p95Ms": 0.016,
+        "minMs": 0.013,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 7.28,
+          "p95Ms": 7.485,
+          "minMs": 6.229,
+          "maxMs": 7.485
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 30.256,
+          "p95Ms": 39.945,
+          "minMs": 24.561,
+          "maxMs": 39.945
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 38.047,
+          "p95Ms": 46.375,
+          "minMs": 32.306,
+          "maxMs": 46.375
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.008,
+          "minMs": 0.006,
+          "maxMs": 0.008
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 0.558,
+          "p95Ms": 0.643,
+          "minMs": 0.453,
+          "maxMs": 0.643
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 1.095,
+          "p95Ms": 1.857,
+          "minMs": 0.835,
+          "maxMs": 1.857
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 47.302,
+          "p95Ms": 56.635,
+          "minMs": 41.072,
+          "maxMs": 56.635
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 220.656,
+        "p95Ms": 226.649,
+        "minMs": 181.522,
+        "maxMs": 226.649
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 170.365,
+        "p95Ms": 180.767,
+        "minMs": 144.559,
+        "maxMs": 180.767
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Propositions",
+      "path": "/chemins",
+      "status": 200,
+      "bytes": 31516,
+      "firstHandleMs": 54.596,
+      "warm": {
+        "samples": 5,
+        "medianMs": 44.031,
+        "p95Ms": 48.808,
+        "minMs": 36.609,
+        "maxMs": 48.808
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.014,
+        "p95Ms": 0.016,
+        "minMs": 0.012,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 6.769,
+          "p95Ms": 7.11,
+          "minMs": 5.019,
+          "maxMs": 7.11
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 28.487,
+          "p95Ms": 31.583,
+          "minMs": 22.561,
+          "maxMs": 31.583
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 35.426,
+          "p95Ms": 38.914,
+          "minMs": 27.749,
+          "maxMs": 38.914
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.005,
+          "maxMs": 0.007
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 0.292,
+          "p95Ms": 0.335,
+          "minMs": 0.238,
+          "maxMs": 0.335
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 1.598,
+          "p95Ms": 1.793,
+          "minMs": 1.274,
+          "maxMs": 1.793
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 43.872,
+          "p95Ms": 48.656,
+          "minMs": 36.482,
+          "maxMs": 48.656
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 207.338,
+        "p95Ms": 220.668,
+        "minMs": 198.904,
+        "maxMs": 220.668
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 163.862,
+        "p95Ms": 174.581,
+        "minMs": 152.182,
+        "maxMs": 174.581
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Consultations",
+      "path": "/consultations",
+      "status": 200,
+      "bytes": 194084,
+      "firstHandleMs": 106.881,
+      "warm": {
+        "samples": 5,
+        "medianMs": 102.851,
+        "p95Ms": 110.308,
+        "minMs": 98.59,
+        "maxMs": 110.308
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.023,
+        "p95Ms": 0.055,
+        "minMs": 0.014,
+        "maxMs": 0.055
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 7.171,
+          "p95Ms": 9.063,
+          "minMs": 6.302,
+          "maxMs": 9.063
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 61.768,
+          "p95Ms": 65.716,
+          "minMs": 58.091,
+          "maxMs": 65.716
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 69.2,
+          "p95Ms": 75.065,
+          "minMs": 64.678,
+          "maxMs": 75.065
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "visible_tallies": {
+          "samples": 5,
+          "medianMs": 9.833,
+          "p95Ms": 10.199,
+          "minMs": 9.555,
+          "maxMs": 10.199
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 10.224,
+          "p95Ms": 10.574,
+          "minMs": 9.93,
+          "maxMs": 10.574
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 5.704,
+          "p95Ms": 6.897,
+          "minMs": 5.602,
+          "maxMs": 6.897
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 102.658,
+          "p95Ms": 109.847,
+          "minMs": 98.422,
+          "maxMs": 109.847
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 289.773,
+        "p95Ms": 320.916,
+        "minMs": 260.448,
+        "maxMs": 320.916
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 249.309,
+        "p95Ms": 263.982,
+        "minMs": 221.251,
+        "maxMs": 263.982
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Expériences",
+      "path": "/experiences",
+      "status": 200,
+      "bytes": 33323,
+      "firstHandleMs": 64.738,
+      "warm": {
+        "samples": 5,
+        "medianMs": 47.83,
+        "p95Ms": 49.236,
+        "minMs": 47.204,
+        "maxMs": 49.236
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.019,
+        "p95Ms": 0.022,
+        "minMs": 0.015,
+        "maxMs": 0.022
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 6.096,
+          "p95Ms": 7.689,
+          "minMs": 5.997,
+          "maxMs": 7.689
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 30.851,
+          "p95Ms": 31.333,
+          "minMs": 29.992,
+          "maxMs": 31.333
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 37.754,
+          "p95Ms": 37.915,
+          "minMs": 37.151,
+          "maxMs": 37.915
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.005,
+          "maxMs": 0.007
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 0.229,
+          "p95Ms": 0.362,
+          "minMs": 0.209,
+          "maxMs": 0.362
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 1.231,
+          "p95Ms": 1.303,
+          "minMs": 0.983,
+          "maxMs": 1.303
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 47.693,
+          "p95Ms": 49.083,
+          "minMs": 47.05,
+          "maxMs": 49.083
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 222.618,
+        "p95Ms": 238.757,
+        "minMs": 220.174,
+        "maxMs": 238.757
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 182.641,
+        "p95Ms": 192.622,
+        "minMs": 173.908,
+        "maxMs": 192.622
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Convergence",
+      "path": "/convergence",
+      "status": 200,
+      "bytes": 81626,
+      "firstHandleMs": 57.09,
+      "warm": {
+        "samples": 5,
+        "medianMs": 46.565,
+        "p95Ms": 47.076,
+        "minMs": 43.634,
+        "maxMs": 47.076
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.014,
+        "p95Ms": 0.014,
+        "minMs": 0.013,
+        "maxMs": 0.014
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 5.729,
+          "p95Ms": 6.467,
+          "minMs": 5.34,
+          "maxMs": 6.467
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 28.173,
+          "p95Ms": 29.171,
+          "minMs": 26.78,
+          "maxMs": 29.171
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 34.192,
+          "p95Ms": 35.259,
+          "minMs": 32.361,
+          "maxMs": 35.259
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.055,
+          "minMs": 0.006,
+          "maxMs": 0.055
+        },
+        "convergence": {
+          "samples": 5,
+          "medianMs": 1.761,
+          "p95Ms": 1.899,
+          "minMs": 1.654,
+          "maxMs": 1.899
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 2.549,
+          "p95Ms": 2.853,
+          "minMs": 2.337,
+          "maxMs": 2.853
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 1.794,
+          "p95Ms": 1.95,
+          "minMs": 1.667,
+          "maxMs": 1.95
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 46.408,
+          "p95Ms": 46.915,
+          "minMs": 43.468,
+          "maxMs": 46.915
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 227.443,
+        "p95Ms": 236.928,
+        "minMs": 226.188,
+        "maxMs": 236.928
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 180.482,
+        "p95Ms": 186.72,
+        "minMs": 180.381,
+        "maxMs": 186.72
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Mémoire",
+      "path": "/memoire",
+      "status": 200,
+      "bytes": 111708,
+      "firstHandleMs": 47.642,
+      "warm": {
+        "samples": 5,
+        "medianMs": 57.465,
+        "p95Ms": 61.179,
+        "minMs": 52.753,
+        "maxMs": 61.179
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.016,
+        "p95Ms": 0.02,
+        "minMs": 0.013,
+        "maxMs": 0.02
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 6.404,
+          "p95Ms": 6.695,
+          "minMs": 5.369,
+          "maxMs": 6.695
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 36.045,
+          "p95Ms": 38.647,
+          "minMs": 30.882,
+          "maxMs": 38.647
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 42.3,
+          "p95Ms": 45.517,
+          "minMs": 37.119,
+          "maxMs": 45.517
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.006,
+          "maxMs": 0.006
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 0.228,
+          "p95Ms": 0.284,
+          "minMs": 0.215,
+          "maxMs": 0.284
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 4.296,
+          "p95Ms": 5.825,
+          "minMs": 3.89,
+          "maxMs": 5.825
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 56.942,
+          "p95Ms": 60.992,
+          "minMs": 52.457,
+          "maxMs": 60.992
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 267.65,
+        "p95Ms": 283.451,
+        "minMs": 230.996,
+        "maxMs": 283.451
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 199.405,
+        "p95Ms": 227.388,
+        "minMs": 178.105,
+        "maxMs": 227.388
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Transparence",
+      "path": "/transparence",
+      "status": 200,
+      "bytes": 11417,
+      "firstHandleMs": 54.818,
+      "warm": {
+        "samples": 5,
+        "medianMs": 47.614,
+        "p95Ms": 50.818,
+        "minMs": 46.052,
+        "maxMs": 50.818
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.014,
+        "p95Ms": 0.017,
+        "minMs": 0.012,
+        "maxMs": 0.017
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 6.495,
+          "p95Ms": 7.464,
+          "minMs": 5.765,
+          "maxMs": 7.464
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 31.436,
+          "p95Ms": 32.388,
+          "minMs": 29.366,
+          "maxMs": 32.388
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 37.852,
+          "p95Ms": 39.291,
+          "minMs": 35.541,
+          "maxMs": 39.291
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.005,
+          "maxMs": 0.007
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 0.278,
+          "p95Ms": 0.402,
+          "minMs": 0.214,
+          "maxMs": 0.402
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 0.715,
+          "p95Ms": 0.993,
+          "minMs": 0.463,
+          "maxMs": 0.993
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 47.478,
+          "p95Ms": 50.675,
+          "minMs": 45.913,
+          "maxMs": 50.675
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 250.952,
+        "p95Ms": 273.087,
+        "minMs": 249.832,
+        "maxMs": 273.087
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 199.647,
+        "p95Ms": 201.102,
+        "minMs": 196.102,
+        "maxMs": 201.102
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Infrastructure",
+      "path": "/infrastructure",
+      "status": 200,
+      "bytes": 11409,
+      "firstHandleMs": 53.569,
+      "warm": {
+        "samples": 5,
+        "medianMs": 44.149,
+        "p95Ms": 53.41,
+        "minMs": 42.209,
+        "maxMs": 53.41
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.014,
+        "p95Ms": 0.017,
+        "minMs": 0.013,
+        "maxMs": 0.017
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 6.05,
+          "p95Ms": 6.911,
+          "minMs": 5.278,
+          "maxMs": 6.911
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 28.65,
+          "p95Ms": 35.258,
+          "minMs": 27.147,
+          "maxMs": 35.258
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 35.691,
+          "p95Ms": 41.536,
+          "minMs": 32.602,
+          "maxMs": 41.536
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.005,
+          "maxMs": 0.006
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 0.225,
+          "p95Ms": 0.486,
+          "minMs": 0.215,
+          "maxMs": 0.486
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 0.571,
+          "p95Ms": 0.79,
+          "minMs": 0.46,
+          "maxMs": 0.79
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 43.999,
+          "p95Ms": 53.113,
+          "minMs": 42.078,
+          "maxMs": 53.113
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 229.291,
+        "p95Ms": 230.289,
+        "minMs": 205.412,
+        "maxMs": 230.289
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 171.223,
+        "p95Ms": 182.261,
+        "minMs": 162.177,
+        "maxMs": 182.261
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Gouvernance",
+      "path": "/gouvernance",
+      "status": 200,
+      "bytes": 8810,
+      "firstHandleMs": 48.6,
+      "warm": {
+        "samples": 5,
+        "medianMs": 50.985,
+        "p95Ms": 59.188,
+        "minMs": 50.178,
+        "maxMs": 59.188
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.014,
+        "p95Ms": 0.015,
+        "minMs": 0.013,
+        "maxMs": 0.015
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 6.895,
+          "p95Ms": 7.84,
+          "minMs": 5.84,
+          "maxMs": 7.84
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 34.196,
+          "p95Ms": 40.681,
+          "minMs": 32.765,
+          "maxMs": 40.681
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 41.018,
+          "p95Ms": 47.756,
+          "minMs": 40.21,
+          "maxMs": 47.756
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.008,
+          "minMs": 0.006,
+          "maxMs": 0.008
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 0.22,
+          "p95Ms": 0.407,
+          "minMs": 0.217,
+          "maxMs": 0.407
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 0.723,
+          "p95Ms": 0.757,
+          "minMs": 0.487,
+          "maxMs": 0.757
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 50.741,
+          "p95Ms": 59.052,
+          "minMs": 49.873,
+          "maxMs": 59.052
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 226.087,
+        "p95Ms": 230.99,
+        "minMs": 202.439,
+        "maxMs": 230.99
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 179.336,
+        "p95Ms": 180.827,
+        "minMs": 158.209,
+        "maxMs": 180.827
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Participer",
+      "path": "/participer",
+      "status": 200,
+      "bytes": 471230,
+      "firstHandleMs": 61.023,
+      "warm": {
+        "samples": 5,
+        "medianMs": 54.424,
+        "p95Ms": 56.081,
+        "minMs": 51.663,
+        "maxMs": 56.081
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.013,
+        "p95Ms": 0.014,
+        "minMs": 0.012,
+        "maxMs": 0.014
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 5.907,
+          "p95Ms": 6.974,
+          "minMs": 5.625,
+          "maxMs": 6.974
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 30.515,
+          "p95Ms": 31.091,
+          "minMs": 28.907,
+          "maxMs": 31.091
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 36.567,
+          "p95Ms": 37.422,
+          "minMs": 35.021,
+          "maxMs": 37.422
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.005,
+          "maxMs": 0.006
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 0.246,
+          "p95Ms": 2.421,
+          "minMs": 0.209,
+          "maxMs": 2.421
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 7.731,
+          "p95Ms": 8.454,
+          "minMs": 7.367,
+          "maxMs": 8.454
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 54.293,
+          "p95Ms": 55.88,
+          "minMs": 51.532,
+          "maxMs": 55.88
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 246.36,
+        "p95Ms": 257.092,
+        "minMs": 236.025,
+        "maxMs": 257.092
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 190.157,
+        "p95Ms": 202.806,
+        "minMs": 188.59,
+        "maxMs": 202.806
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Charte",
+      "path": "/charte",
+      "status": 200,
+      "bytes": 34578,
+      "firstHandleMs": 86.148,
+      "warm": {
+        "samples": 5,
+        "medianMs": 55.01,
+        "p95Ms": 58.453,
+        "minMs": 46.542,
+        "maxMs": 58.453
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.014,
+        "p95Ms": 0.014,
+        "minMs": 0.013,
+        "maxMs": 0.014
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 5.468,
+          "p95Ms": 6.685,
+          "minMs": 4.901,
+          "maxMs": 6.685
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 30.757,
+          "p95Ms": 34.416,
+          "minMs": 26.11,
+          "maxMs": 34.416
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 37.61,
+          "p95Ms": 40.036,
+          "minMs": 31.173,
+          "maxMs": 40.036
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.005,
+          "maxMs": 0.006
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 7.88,
+          "p95Ms": 8.761,
+          "minMs": 6.818,
+          "maxMs": 8.761
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 0.6,
+          "p95Ms": 1.057,
+          "minMs": 0.437,
+          "maxMs": 1.057
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 54.882,
+          "p95Ms": 58.319,
+          "minMs": 46.406,
+          "maxMs": 58.319
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 280.909,
+        "p95Ms": 331.804,
+        "minMs": 251.958,
+        "maxMs": 331.804
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 217.002,
+        "p95Ms": 227.787,
+        "minMs": 205.047,
+        "maxMs": 227.787
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Récits",
+      "path": "/recits",
+      "status": 200,
+      "bytes": 308687,
+      "firstHandleMs": 50.223,
+      "warm": {
+        "samples": 5,
+        "medianMs": 51.325,
+        "p95Ms": 58.28,
+        "minMs": 48.832,
+        "maxMs": 58.28
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.013,
+        "p95Ms": 0.015,
+        "minMs": 0.013,
+        "maxMs": 0.015
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 5.77,
+          "p95Ms": 6.208,
+          "minMs": 5.063,
+          "maxMs": 6.208
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 29.027,
+          "p95Ms": 35.141,
+          "minMs": 27.182,
+          "maxMs": 35.141
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 35.405,
+          "p95Ms": 41.186,
+          "minMs": 32.409,
+          "maxMs": 41.186
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.005,
+          "maxMs": 0.006
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 1.484,
+          "p95Ms": 2.102,
+          "minMs": 1.258,
+          "maxMs": 2.102
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 6.722,
+          "p95Ms": 7.109,
+          "minMs": 5.22,
+          "maxMs": 7.109
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 51.158,
+          "p95Ms": 58.127,
+          "minMs": 48.674,
+          "maxMs": 58.127
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 217.477,
+        "p95Ms": 303.518,
+        "minMs": 207.673,
+        "maxMs": 303.518
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 174.496,
+        "p95Ms": 178.154,
+        "minMs": 155.779,
+        "maxMs": 178.154
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Services et missions",
+      "path": "/services-et-missions",
+      "status": 200,
+      "bytes": 69242,
+      "firstHandleMs": 47.731,
+      "warm": {
+        "samples": 5,
+        "medianMs": 49.347,
+        "p95Ms": 60.78,
+        "minMs": 45.13,
+        "maxMs": 60.78
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.013,
+        "p95Ms": 0.017,
+        "minMs": 0.013,
+        "maxMs": 0.017
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 6.064,
+          "p95Ms": 7.26,
+          "minMs": 5.458,
+          "maxMs": 7.26
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 31.125,
+          "p95Ms": 40.708,
+          "minMs": 29.482,
+          "maxMs": 40.708
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 37.351,
+          "p95Ms": 47.213,
+          "minMs": 35.109,
+          "maxMs": 47.213
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.006,
+          "maxMs": 0.006
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 0.601,
+          "p95Ms": 0.698,
+          "minMs": 0.494,
+          "maxMs": 0.698
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 1.424,
+          "p95Ms": 2.003,
+          "minMs": 1.403,
+          "maxMs": 2.003
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 49.22,
+          "p95Ms": 60.641,
+          "minMs": 44.967,
+          "maxMs": 60.641
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 200.09,
+        "p95Ms": 217.506,
+        "minMs": 188.674,
+        "maxMs": 217.506
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 159.853,
+        "p95Ms": 168.745,
+        "minMs": 148.177,
+        "maxMs": 168.745
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Budget",
+      "path": "/budget-et-priorites",
+      "status": 200,
+      "bytes": 231931,
+      "firstHandleMs": 71.642,
+      "warm": {
+        "samples": 5,
+        "medianMs": 62.254,
+        "p95Ms": 77.667,
+        "minMs": 54.369,
+        "maxMs": 77.667
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.016,
+        "p95Ms": 0.084,
+        "minMs": 0.013,
+        "maxMs": 0.084
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 6.882,
+          "p95Ms": 10.421,
+          "minMs": 5.71,
+          "maxMs": 10.421
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 39.229,
+          "p95Ms": 44.449,
+          "minMs": 29.683,
+          "maxMs": 44.449
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 45.465,
+          "p95Ms": 55.063,
+          "minMs": 35.603,
+          "maxMs": 55.063
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 5.287,
+          "p95Ms": 6.571,
+          "minMs": 4.53,
+          "maxMs": 6.571
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 2.938,
+          "p95Ms": 4.109,
+          "minMs": 2.396,
+          "maxMs": 4.109
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 61.95,
+          "p95Ms": 77.293,
+          "minMs": 54.033,
+          "maxMs": 77.293
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 240.857,
+        "p95Ms": 263.575,
+        "minMs": 217.166,
+        "maxMs": 263.575
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 187.178,
+        "p95Ms": 195.138,
+        "minMs": 170.635,
+        "maxMs": 195.138
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Besoins et devis",
+      "path": "/besoins-et-devis",
+      "status": 200,
+      "bytes": 10046,
+      "firstHandleMs": 71.115,
+      "warm": {
+        "samples": 5,
+        "medianMs": 60.526,
+        "p95Ms": 62.596,
+        "minMs": 59.99,
+        "maxMs": 62.596
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.018,
+        "p95Ms": 0.019,
+        "minMs": 0.017,
+        "maxMs": 0.019
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 7.391,
+          "p95Ms": 8.009,
+          "minMs": 7.356,
+          "maxMs": 8.009
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 40.498,
+          "p95Ms": 42.293,
+          "minMs": 40.143,
+          "maxMs": 42.293
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 48.357,
+          "p95Ms": 49.891,
+          "minMs": 48.051,
+          "maxMs": 49.891
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.007,
+          "p95Ms": 0.008,
+          "minMs": 0.006,
+          "maxMs": 0.008
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 0.323,
+          "p95Ms": 0.367,
+          "minMs": 0.31,
+          "maxMs": 0.367
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 0.724,
+          "p95Ms": 0.755,
+          "minMs": 0.692,
+          "maxMs": 0.755
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 60.351,
+          "p95Ms": 62.314,
+          "minMs": 59.817,
+          "maxMs": 62.314
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 196.169,
+        "p95Ms": 205.098,
+        "minMs": 181.798,
+        "maxMs": 205.098
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 146.813,
+        "p95Ms": 162.563,
+        "minMs": 141.204,
+        "maxMs": 162.563
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Proposition détaillée",
+      "path": "/proposals/fiche/p1",
+      "status": 200,
+      "bytes": 47949,
+      "firstHandleMs": 65.489,
+      "warm": {
+        "samples": 5,
+        "medianMs": 63.161,
+        "p95Ms": 73.869,
+        "minMs": 59.255,
+        "maxMs": 73.869
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.017,
+        "p95Ms": 0.024,
+        "minMs": 0.014,
+        "maxMs": 0.024
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 7.427,
+          "p95Ms": 7.835,
+          "minMs": 7.028,
+          "maxMs": 7.835
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 41.227,
+          "p95Ms": 46.692,
+          "minMs": 37.854,
+          "maxMs": 46.692
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 48.923,
+          "p95Ms": 54.74,
+          "minMs": 45.035,
+          "maxMs": 54.74
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.007,
+          "p95Ms": 0.008,
+          "minMs": 0.005,
+          "maxMs": 0.008
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 0.329,
+          "p95Ms": 0.438,
+          "minMs": 0.288,
+          "maxMs": 0.438
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 2.187,
+          "p95Ms": 2.76,
+          "minMs": 1.71,
+          "maxMs": 2.76
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 62.983,
+          "p95Ms": 73.32,
+          "minMs": 59.114,
+          "maxMs": 73.32
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 244.163,
+        "p95Ms": 264.721,
+        "minMs": 175.836,
+        "maxMs": 264.721
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 193.205,
+        "p95Ms": 201.3,
+        "minMs": 139.488,
+        "maxMs": 201.3
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Consultation détaillée",
+      "path": "/consultations/fiche/c1",
+      "status": 200,
+      "bytes": 94286,
+      "firstHandleMs": 111.759,
+      "warm": {
+        "samples": 5,
+        "medianMs": 101.855,
+        "p95Ms": 106.122,
+        "minMs": 97.367,
+        "maxMs": 106.122
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.014,
+        "p95Ms": 0.02,
+        "minMs": 0.013,
+        "maxMs": 0.02
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 6.161,
+          "p95Ms": 6.732,
+          "minMs": 5.401,
+          "maxMs": 6.732
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 63.603,
+          "p95Ms": 67.898,
+          "minMs": 61.02,
+          "maxMs": 67.898
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 69.467,
+          "p95Ms": 74.375,
+          "minMs": 66.65,
+          "maxMs": 74.375
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.005,
+          "maxMs": 0.006
+        },
+        "visible_tallies": {
+          "samples": 5,
+          "medianMs": 5.956,
+          "p95Ms": 6.497,
+          "minMs": 5.151,
+          "maxMs": 6.497
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 9.308,
+          "p95Ms": 10.902,
+          "minMs": 9.006,
+          "maxMs": 10.902
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 2.76,
+          "p95Ms": 2.839,
+          "minMs": 2.219,
+          "maxMs": 2.839
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 101.7,
+          "p95Ms": 105.991,
+          "minMs": 97.233,
+          "maxMs": 105.991
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 328.082,
+        "p95Ms": 352.235,
+        "minMs": 321.849,
+        "maxMs": 352.235
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 266.39,
+        "p95Ms": 276.426,
+        "minMs": 266.079,
+        "maxMs": 276.426
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Expérience détaillée",
+      "path": "/experiments/fiche/e1",
+      "status": 200,
+      "bytes": 33328,
+      "firstHandleMs": 48.606,
+      "warm": {
+        "samples": 5,
+        "medianMs": 45.714,
+        "p95Ms": 47.269,
+        "minMs": 41.936,
+        "maxMs": 47.269
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.014,
+        "p95Ms": 0.047,
+        "minMs": 0.013,
+        "maxMs": 0.047
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 5.198,
+          "p95Ms": 5.995,
+          "minMs": 5.068,
+          "maxMs": 5.995
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 30.979,
+          "p95Ms": 32.134,
+          "minMs": 27.57,
+          "maxMs": 32.134
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 36.202,
+          "p95Ms": 38.28,
+          "minMs": 33.25,
+          "maxMs": 38.28
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.005,
+          "maxMs": 0.006
+        },
+        "page_data": {
+          "samples": 5,
+          "medianMs": 0.251,
+          "p95Ms": 0.269,
+          "minMs": 0.209,
+          "maxMs": 0.269
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 1.116,
+          "p95Ms": 1.189,
+          "minMs": 0.935,
+          "maxMs": 1.189
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 45.552,
+          "p95Ms": 47.131,
+          "minMs": 41.798,
+          "maxMs": 47.131
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 221.419,
+        "p95Ms": 233.119,
+        "minMs": 211.399,
+        "maxMs": 233.119
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 175.203,
+        "p95Ms": 182.801,
+        "minMs": 170.538,
+        "maxMs": 182.801
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Personnage et raisonnement",
+      "path": "/characters/u1",
+      "status": 200,
+      "bytes": 24297,
+      "firstHandleMs": 250.384,
+      "warm": {
+        "samples": 5,
+        "medianMs": 229.07,
+        "p95Ms": 265.803,
+        "minMs": 219.322,
+        "maxMs": 265.803
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.015,
+        "p95Ms": 0.019,
+        "minMs": 0.014,
+        "maxMs": 0.019
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 10.515,
+          "p95Ms": 13.301,
+          "minMs": 8.06,
+          "maxMs": 13.301
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 145.653,
+          "p95Ms": 176.609,
+          "minMs": 144.234,
+          "maxMs": 176.609
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 156.694,
+          "p95Ms": 190.354,
+          "minMs": 153.861,
+          "maxMs": 190.354
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 26.739,
+          "p95Ms": 29.238,
+          "minMs": 24.917,
+          "maxMs": 29.238
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 0.803,
+          "p95Ms": 0.928,
+          "minMs": 0.733,
+          "maxMs": 0.928
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 228.816,
+          "p95Ms": 265.628,
+          "minMs": 219.071,
+          "maxMs": 265.628
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 514.369,
+        "p95Ms": 556.669,
+        "minMs": 503.186,
+        "maxMs": 556.669
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 451.753,
+        "p95Ms": 462.684,
+        "minMs": 450.354,
+        "maxMs": 462.684
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Connexion",
+      "path": "/citizen/login",
+      "status": 200,
+      "bytes": 1676,
+      "firstHandleMs": 3.291,
+      "warm": {
+        "samples": 5,
+        "medianMs": 0.695,
+        "p95Ms": 1.279,
+        "minMs": 0.467,
+        "maxMs": 1.279
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.006,
+        "p95Ms": 0.007,
+        "minMs": 0.005,
+        "maxMs": 0.007
+      },
+      "phases": {
+        "request": {
+          "samples": 5,
+          "medianMs": 0.551,
+          "p95Ms": 1.192,
+          "minMs": 0.401,
+          "maxMs": 1.192
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 165.246,
+        "p95Ms": 171.986,
+        "minMs": 138.374,
+        "maxMs": 171.986
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 117.902,
+        "p95Ms": 128.549,
+        "minMs": 100.719,
+        "maxMs": 128.549
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Vérification d’intégrité",
+      "path": "/verify",
+      "status": 200,
+      "bytes": 9431,
+      "firstHandleMs": 659.209,
+      "warm": {
+        "samples": 5,
+        "medianMs": 676.824,
+        "p95Ms": 830.79,
+        "minMs": 633.531,
+        "maxMs": 830.79
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.016,
+        "p95Ms": 0.019,
+        "minMs": 0.015,
+        "maxMs": 0.019
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 10.066,
+          "p95Ms": 12.624,
+          "minMs": 8.174,
+          "maxMs": 12.624
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 171.425,
+          "p95Ms": 203.894,
+          "minMs": 154.914,
+          "maxMs": 203.894
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 182.053,
+          "p95Ms": 216.424,
+          "minMs": 163.709,
+          "maxMs": 216.424
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 28.447,
+          "p95Ms": 37.737,
+          "minMs": 27.361,
+          "maxMs": 37.737
+        },
+        "twig": {
+          "samples": 5,
+          "medianMs": 1.186,
+          "p95Ms": 1.403,
+          "minMs": 0.873,
+          "maxMs": 1.403
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 676.506,
+          "p95Ms": 830.638,
+          "minMs": 633.376,
+          "maxMs": 830.638
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 1095.899,
+        "p95Ms": 1204.322,
+        "minMs": 1013.256,
+        "maxMs": 1204.322
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 1041.085,
+        "p95Ms": 1156.506,
+        "minMs": 955.032,
+        "maxMs": 1156.506
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "API état",
+      "path": "/api/v1/state",
+      "status": 200,
+      "bytes": 16672214,
+      "firstHandleMs": 459.769,
+      "warm": {
+        "samples": 5,
+        "medianMs": 468.16,
+        "p95Ms": 506.127,
+        "minMs": 400.633,
+        "maxMs": 506.127
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.017,
+        "p95Ms": 0.018,
+        "minMs": 0.015,
+        "maxMs": 0.018
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 10.696,
+          "p95Ms": 11.48,
+          "minMs": 9.493,
+          "maxMs": 11.48
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 191.204,
+          "p95Ms": 213.803,
+          "minMs": 148.839,
+          "maxMs": 213.803
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 202.519,
+          "p95Ms": 226.047,
+          "minMs": 160.264,
+          "maxMs": 226.047
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 34.905,
+          "p95Ms": 39.019,
+          "minMs": 30.026,
+          "maxMs": 39.019
+        },
+        "json_encode": {
+          "samples": 5,
+          "medianMs": 179.226,
+          "p95Ms": 193.021,
+          "minMs": 156.763,
+          "maxMs": 193.021
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 468.005,
+          "p95Ms": 505.916,
+          "minMs": 400.446,
+          "maxMs": 505.916
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 610.67,
+        "p95Ms": 673.933,
+        "minMs": 461.338,
+        "maxMs": 673.933
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 557.097,
+        "p95Ms": 619.192,
+        "minMs": 418.353,
+        "maxMs": 619.192
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "API propositions",
+      "path": "/api/v1/proposals",
+      "status": 200,
+      "bytes": 111498,
+      "firstHandleMs": 114.023,
+      "warm": {
+        "samples": 5,
+        "medianMs": 107.67,
+        "p95Ms": 117.92,
+        "minMs": 97.882,
+        "maxMs": 117.92
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.014,
+        "p95Ms": 0.017,
+        "minMs": 0.013,
+        "maxMs": 0.017
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 6.342,
+          "p95Ms": 7.986,
+          "minMs": 5.925,
+          "maxMs": 7.986
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 74.523,
+          "p95Ms": 83.699,
+          "minMs": 69.8,
+          "maxMs": 83.699
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 82.659,
+          "p95Ms": 90.258,
+          "minMs": 76.047,
+          "maxMs": 90.258
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "json_encode": {
+          "samples": 5,
+          "medianMs": 0.87,
+          "p95Ms": 1.03,
+          "minMs": 0.826,
+          "maxMs": 1.03
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 107.461,
+          "p95Ms": 117.778,
+          "minMs": 97.751,
+          "maxMs": 117.778
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 235.116,
+        "p95Ms": 238.324,
+        "minMs": 225.122,
+        "maxMs": 238.324
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 189.425,
+        "p95Ms": 195.994,
+        "minMs": 182.927,
+        "maxMs": 195.994
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "API résultats",
+      "path": "/api/v1/results",
+      "status": 200,
+      "bytes": 83817,
+      "firstHandleMs": 175.57,
+      "warm": {
+        "samples": 5,
+        "medianMs": 175.516,
+        "p95Ms": 180.068,
+        "minMs": 164.327,
+        "maxMs": 180.068
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.017,
+        "p95Ms": 0.019,
+        "minMs": 0.014,
+        "maxMs": 0.019
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 8.751,
+          "p95Ms": 9.073,
+          "minMs": 7.849,
+          "maxMs": 9.073
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 96.214,
+          "p95Ms": 98.263,
+          "minMs": 85.429,
+          "maxMs": 98.263
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 105.436,
+          "p95Ms": 107.721,
+          "minMs": 93.695,
+          "maxMs": 107.721
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 37.641,
+          "p95Ms": 38.541,
+          "minMs": 32.253,
+          "maxMs": 38.541
+        },
+        "json_encode": {
+          "samples": 5,
+          "medianMs": 1.029,
+          "p95Ms": 1.105,
+          "minMs": 0.862,
+          "maxMs": 1.105
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 175.272,
+          "p95Ms": 179.866,
+          "minMs": 164.174,
+          "maxMs": 179.866
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 305.787,
+        "p95Ms": 324.077,
+        "minMs": 280.726,
+        "maxMs": 324.077
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 247.275,
+        "p95Ms": 266.135,
+        "minMs": 240.733,
+        "maxMs": 266.135
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Export mémoire",
+      "path": "/export/memory",
+      "status": 200,
+      "bytes": 16672173,
+      "firstHandleMs": 436.852,
+      "warm": {
+        "samples": 5,
+        "medianMs": 456.073,
+        "p95Ms": 533.475,
+        "minMs": 439.294,
+        "maxMs": 533.475
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.016,
+        "p95Ms": 0.018,
+        "minMs": 0.014,
+        "maxMs": 0.018
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 9.345,
+          "p95Ms": 11.516,
+          "minMs": 7.996,
+          "maxMs": 11.516
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 198.287,
+          "p95Ms": 226.979,
+          "minMs": 164.81,
+          "maxMs": 226.979
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 208.562,
+          "p95Ms": 237.152,
+          "minMs": 173.743,
+          "maxMs": 237.152
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 35.38,
+          "p95Ms": 39.783,
+          "minMs": 32.187,
+          "maxMs": 39.783
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 455.915,
+          "p95Ms": 533.229,
+          "minMs": 439.16,
+          "maxMs": 533.229
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 542.325,
+        "p95Ms": 593.683,
+        "minMs": 513.626,
+        "maxMs": 593.683
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 484.678,
+        "p95Ms": 543.578,
+        "minMs": 471.144,
+        "maxMs": 543.578
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Actualisation courte (nouvelle)",
+      "path": "/api/v1/live-results",
+      "status": 200,
+      "bytes": 29633,
+      "firstHandleMs": 143.771,
+      "warm": {
+        "samples": 5,
+        "medianMs": 160.982,
+        "p95Ms": 173.773,
+        "minMs": 153.75,
+        "maxMs": 173.773
+      },
+      "terminate": {
+        "samples": 5,
+        "medianMs": 0.014,
+        "p95Ms": 0.016,
+        "minMs": 0.013,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 5,
+          "medianMs": 6.986,
+          "p95Ms": 11.15,
+          "minMs": 5.785,
+          "maxMs": 11.15
+        },
+        "json_decode": {
+          "samples": 5,
+          "medianMs": 85.768,
+          "p95Ms": 102.719,
+          "minMs": 76.962,
+          "maxMs": 102.719
+        },
+        "workspace": {
+          "samples": 5,
+          "medianMs": 93.413,
+          "p95Ms": 114.398,
+          "minMs": 84.403,
+          "maxMs": 114.398
+        },
+        "public_state": {
+          "samples": 5,
+          "medianMs": 34.376,
+          "p95Ms": 39.035,
+          "minMs": 31.563,
+          "maxMs": 39.035
+        },
+        "json_encode": {
+          "samples": 5,
+          "medianMs": 0.193,
+          "p95Ms": 0.375,
+          "minMs": 0.186,
+          "maxMs": 0.375
+        },
+        "request": {
+          "samples": 5,
+          "medianMs": 160.681,
+          "p95Ms": 170.172,
+          "minMs": 153.603,
+          "maxMs": 170.172
+        }
+      },
+      "freshProcess": {
+        "samples": 3,
+        "medianMs": 288.664,
+        "p95Ms": 337.022,
+        "minMs": 250.689,
+        "maxMs": 337.022
+      },
+      "freshHandle": {
+        "samples": 3,
+        "medianMs": 251.74,
+        "p95Ms": 289.169,
+        "minMs": 210.623,
+        "maxMs": 289.169
+      },
+      "freshStatuses": [
+        200
+      ]
+    },
+    {
+      "label": "Action : tender.create",
+      "path": "/action/tender.create",
+      "status": 200,
+      "bytes": 19628,
+      "firstHandleMs": 160.98,
+      "warm": {
+        "samples": 3,
+        "medianMs": 141.415,
+        "p95Ms": 158.639,
+        "minMs": 116.499,
+        "maxMs": 158.639
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.018,
+        "p95Ms": 0.09,
+        "minMs": 0.017,
+        "maxMs": 0.09
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.1,
+          "p95Ms": 11.136,
+          "minMs": 5.938,
+          "maxMs": 11.136
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 92.425,
+          "p95Ms": 98.959,
+          "minMs": 73.903,
+          "maxMs": 98.959
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 98.798,
+          "p95Ms": 106.788,
+          "minMs": 85.477,
+          "maxMs": 106.788
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 3.555,
+          "p95Ms": 4.32,
+          "minMs": 2.728,
+          "maxMs": 4.32
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 141.183,
+          "p95Ms": 158.243,
+          "minMs": 115.948,
+          "maxMs": 158.243
+        }
+      }
+    },
+    {
+      "label": "Action : tender.question",
+      "path": "/action/tender.question",
+      "status": 200,
+      "bytes": 10217,
+      "firstHandleMs": 136.659,
+      "warm": {
+        "samples": 3,
+        "medianMs": 127.047,
+        "p95Ms": 127.186,
+        "minMs": 122.295,
+        "maxMs": 127.186
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.016,
+        "minMs": 0.015,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.283,
+          "p95Ms": 8.428,
+          "minMs": 7.186,
+          "maxMs": 8.428
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 83.759,
+          "p95Ms": 86.74,
+          "minMs": 72.217,
+          "maxMs": 86.74
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 92.675,
+          "p95Ms": 94.729,
+          "minMs": 79.858,
+          "maxMs": 94.729
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.365,
+          "p95Ms": 1.389,
+          "minMs": 1.319,
+          "maxMs": 1.389
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 126.819,
+          "p95Ms": 126.907,
+          "minMs": 122.094,
+          "maxMs": 126.907
+        }
+      }
+    },
+    {
+      "label": "Action : tender.answer",
+      "path": "/action/tender.answer",
+      "status": 200,
+      "bytes": 10365,
+      "firstHandleMs": 132.335,
+      "warm": {
+        "samples": 3,
+        "medianMs": 122.216,
+        "p95Ms": 123.555,
+        "minMs": 117.634,
+        "maxMs": 123.555
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.058,
+        "minMs": 0.014,
+        "maxMs": 0.058
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.944,
+          "p95Ms": 7.838,
+          "minMs": 6.858,
+          "maxMs": 7.838
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 79.366,
+          "p95Ms": 83.02,
+          "minMs": 69.954,
+          "maxMs": 83.02
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 86.78,
+          "p95Ms": 91.39,
+          "minMs": 77.54,
+          "maxMs": 91.39
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.011,
+          "minMs": 0.006,
+          "maxMs": 0.011
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.061,
+          "p95Ms": 1.134,
+          "minMs": 1.051,
+          "maxMs": 1.134
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 122.013,
+          "p95Ms": 123.241,
+          "minMs": 117.376,
+          "maxMs": 123.241
+        }
+      }
+    },
+    {
+      "label": "Action : tender.bid",
+      "path": "/action/tender.bid",
+      "status": 200,
+      "bytes": 12476,
+      "firstHandleMs": 144.252,
+      "warm": {
+        "samples": 3,
+        "medianMs": 115.411,
+        "p95Ms": 129.227,
+        "minMs": 108.639,
+        "maxMs": 129.227
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.015,
+        "minMs": 0.015,
+        "maxMs": 0.015
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.843,
+          "p95Ms": 7.012,
+          "minMs": 6.657,
+          "maxMs": 7.012
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 74.186,
+          "p95Ms": 84.126,
+          "minMs": 69.781,
+          "maxMs": 84.126
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 81.268,
+          "p95Ms": 91.691,
+          "minMs": 77.069,
+          "maxMs": 91.691
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.006,
+          "maxMs": 0.006
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 2.034,
+          "p95Ms": 2.144,
+          "minMs": 1.84,
+          "maxMs": 2.144
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 115.184,
+          "p95Ms": 128.755,
+          "minMs": 108.321,
+          "maxMs": 128.755
+        }
+      }
+    },
+    {
+      "label": "Action : tender.withdraw",
+      "path": "/action/tender.withdraw",
+      "status": 200,
+      "bytes": 9957,
+      "firstHandleMs": 146.585,
+      "warm": {
+        "samples": 3,
+        "medianMs": 128.964,
+        "p95Ms": 143.985,
+        "minMs": 122.39,
+        "maxMs": 143.985
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.019,
+        "minMs": 0.015,
+        "maxMs": 0.019
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.294,
+          "p95Ms": 9.01,
+          "minMs": 7.783,
+          "maxMs": 9.01
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 85.831,
+          "p95Ms": 98.462,
+          "minMs": 82.267,
+          "maxMs": 98.462
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 94.645,
+          "p95Ms": 108.04,
+          "minMs": 90.521,
+          "maxMs": 108.04
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.13,
+          "minMs": 0.007,
+          "maxMs": 0.13
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 0.977,
+          "p95Ms": 1.142,
+          "minMs": 0.89,
+          "maxMs": 1.142
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 128.757,
+          "p95Ms": 143.679,
+          "minMs": 122.185,
+          "maxMs": 143.679
+        }
+      }
+    },
+    {
+      "label": "Action : tender.open",
+      "path": "/action/tender.open",
+      "status": 200,
+      "bytes": 9986,
+      "firstHandleMs": 121.846,
+      "warm": {
+        "samples": 3,
+        "medianMs": 113.969,
+        "p95Ms": 125.647,
+        "minMs": 113.954,
+        "maxMs": 125.647
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.021,
+        "minMs": 0.015,
+        "maxMs": 0.021
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.948,
+          "p95Ms": 7.966,
+          "minMs": 6.41,
+          "maxMs": 7.966
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 75.58,
+          "p95Ms": 83.563,
+          "minMs": 73.893,
+          "maxMs": 83.563
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 82.439,
+          "p95Ms": 91.998,
+          "minMs": 82.33,
+          "maxMs": 91.998
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.213,
+          "p95Ms": 1.394,
+          "minMs": 0.927,
+          "maxMs": 1.394
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 113.765,
+          "p95Ms": 125.44,
+          "minMs": 113.654,
+          "maxMs": 125.44
+        }
+      }
+    },
+    {
+      "label": "Action : tender.evaluate",
+      "path": "/action/tender.evaluate",
+      "status": 200,
+      "bytes": 10665,
+      "firstHandleMs": 120.29,
+      "warm": {
+        "samples": 3,
+        "medianMs": 116.075,
+        "p95Ms": 124.946,
+        "minMs": 113.822,
+        "maxMs": 124.946
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.018,
+        "minMs": 0.014,
+        "maxMs": 0.018
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.82,
+          "p95Ms": 7.097,
+          "minMs": 6.494,
+          "maxMs": 7.097
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 76.324,
+          "p95Ms": 81.953,
+          "minMs": 75.29,
+          "maxMs": 81.953
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 83.333,
+          "p95Ms": 89.213,
+          "minMs": 82.89,
+          "maxMs": 89.213
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.006,
+          "maxMs": 0.006
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.464,
+          "p95Ms": 2.309,
+          "minMs": 1.435,
+          "maxMs": 2.309
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 115.555,
+          "p95Ms": 124.745,
+          "minMs": 113.593,
+          "maxMs": 124.745
+        }
+      }
+    },
+    {
+      "label": "Action : tender.alert",
+      "path": "/action/tender.alert",
+      "status": 200,
+      "bytes": 10246,
+      "firstHandleMs": 120.194,
+      "warm": {
+        "samples": 3,
+        "medianMs": 134.418,
+        "p95Ms": 134.918,
+        "minMs": 104.938,
+        "maxMs": 134.918
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.017,
+        "minMs": 0.016,
+        "maxMs": 0.017
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.745,
+          "p95Ms": 8.082,
+          "minMs": 5.915,
+          "maxMs": 8.082
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 91.778,
+          "p95Ms": 92.623,
+          "minMs": 69.09,
+          "maxMs": 92.623
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 100.376,
+          "p95Ms": 100.991,
+          "minMs": 75.452,
+          "maxMs": 100.991
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.169,
+          "p95Ms": 1.251,
+          "minMs": 0.95,
+          "maxMs": 1.251
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 134.213,
+          "p95Ms": 134.639,
+          "minMs": 104.686,
+          "maxMs": 134.639
+        }
+      }
+    },
+    {
+      "label": "Action : tender.explain",
+      "path": "/action/tender.explain",
+      "status": 200,
+      "bytes": 10377,
+      "firstHandleMs": 111.367,
+      "warm": {
+        "samples": 3,
+        "medianMs": 144.79,
+        "p95Ms": 147.71,
+        "minMs": 142.86,
+        "maxMs": 147.71
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.017,
+        "p95Ms": 0.018,
+        "minMs": 0.017,
+        "maxMs": 0.018
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.522,
+          "p95Ms": 8.876,
+          "minMs": 8.384,
+          "maxMs": 8.876
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 95.923,
+          "p95Ms": 98.238,
+          "minMs": 90.779,
+          "maxMs": 98.238
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 104.892,
+          "p95Ms": 107.755,
+          "minMs": 99.87,
+          "maxMs": 107.755
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.008,
+          "minMs": 0.007,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.586,
+          "p95Ms": 1.588,
+          "minMs": 1.218,
+          "maxMs": 1.588
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 144.494,
+          "p95Ms": 147.399,
+          "minMs": 142.626,
+          "maxMs": 147.399
+        }
+      }
+    },
+    {
+      "label": "Action : tender.participation",
+      "path": "/action/tender.participation",
+      "status": 200,
+      "bytes": 12590,
+      "firstHandleMs": 138.984,
+      "warm": {
+        "samples": 3,
+        "medianMs": 157.112,
+        "p95Ms": 159.993,
+        "minMs": 149.629,
+        "maxMs": 159.993
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.019,
+        "p95Ms": 0.02,
+        "minMs": 0.016,
+        "maxMs": 0.02
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 9.296,
+          "p95Ms": 10.354,
+          "minMs": 7.2,
+          "maxMs": 10.354
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 103.536,
+          "p95Ms": 105.236,
+          "minMs": 98.961,
+          "maxMs": 105.236
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 113.391,
+          "p95Ms": 116.167,
+          "minMs": 106.74,
+          "maxMs": 116.167
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.008,
+          "minMs": 0.008,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 3.041,
+          "p95Ms": 3.105,
+          "minMs": 2.942,
+          "maxMs": 3.105
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 156.772,
+          "p95Ms": 159.739,
+          "minMs": 149.251,
+          "maxMs": 159.739
+        }
+      }
+    },
+    {
+      "label": "Action : tender.volunteer",
+      "path": "/action/tender.volunteer",
+      "status": 200,
+      "bytes": 10411,
+      "firstHandleMs": 153.259,
+      "warm": {
+        "samples": 3,
+        "medianMs": 143.602,
+        "p95Ms": 152.257,
+        "minMs": 118.402,
+        "maxMs": 152.257
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.019,
+        "minMs": 0.016,
+        "maxMs": 0.019
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 9.089,
+          "p95Ms": 10.411,
+          "minMs": 8.241,
+          "maxMs": 10.411
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 96.71,
+          "p95Ms": 101.148,
+          "minMs": 76.4,
+          "maxMs": 101.148
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 106.385,
+          "p95Ms": 112.317,
+          "minMs": 85.189,
+          "maxMs": 112.317
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.008,
+          "minMs": 0.007,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.649,
+          "p95Ms": 1.662,
+          "minMs": 1.357,
+          "maxMs": 1.662
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 143.345,
+          "p95Ms": 151.943,
+          "minMs": 118.158,
+          "maxMs": 151.943
+        }
+      }
+    },
+    {
+      "label": "Action : tender.validate",
+      "path": "/action/tender.validate",
+      "status": 200,
+      "bytes": 10260,
+      "firstHandleMs": 125.388,
+      "warm": {
+        "samples": 3,
+        "medianMs": 117.834,
+        "p95Ms": 125.744,
+        "minMs": 116.159,
+        "maxMs": 125.744
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.015,
+        "minMs": 0.014,
+        "maxMs": 0.015
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.897,
+          "p95Ms": 7.472,
+          "minMs": 6.32,
+          "maxMs": 7.472
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 77.814,
+          "p95Ms": 80.555,
+          "minMs": 75.742,
+          "maxMs": 80.555
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 85.17,
+          "p95Ms": 88.485,
+          "minMs": 82.683,
+          "maxMs": 88.485
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.008,
+          "minMs": 0.006,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.013,
+          "p95Ms": 1.62,
+          "minMs": 0.989,
+          "maxMs": 1.62
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 117.499,
+          "p95Ms": 125.533,
+          "minMs": 115.958,
+          "maxMs": 125.533
+        }
+      }
+    },
+    {
+      "label": "Action : tender.award",
+      "path": "/action/tender.award",
+      "status": 200,
+      "bytes": 10425,
+      "firstHandleMs": 122.485,
+      "warm": {
+        "samples": 3,
+        "medianMs": 132.235,
+        "p95Ms": 132.775,
+        "minMs": 118.803,
+        "maxMs": 132.775
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.014,
+        "p95Ms": 0.015,
+        "minMs": 0.014,
+        "maxMs": 0.015
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.206,
+          "p95Ms": 9.081,
+          "minMs": 6.418,
+          "maxMs": 9.081
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 86.452,
+          "p95Ms": 86.842,
+          "minMs": 78.772,
+          "maxMs": 86.842
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 94.837,
+          "p95Ms": 96.352,
+          "minMs": 85.669,
+          "maxMs": 96.352
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.429,
+          "p95Ms": 1.597,
+          "minMs": 1.38,
+          "maxMs": 1.597
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 131.988,
+          "p95Ms": 132.509,
+          "minMs": 118.371,
+          "maxMs": 132.509
+        }
+      }
+    },
+    {
+      "label": "Action : tender.amend",
+      "path": "/action/tender.amend",
+      "status": 200,
+      "bytes": 10474,
+      "firstHandleMs": 125.602,
+      "warm": {
+        "samples": 3,
+        "medianMs": 112.816,
+        "p95Ms": 115.618,
+        "minMs": 109.886,
+        "maxMs": 115.618
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.015,
+        "minMs": 0.014,
+        "maxMs": 0.015
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.439,
+          "p95Ms": 6.512,
+          "minMs": 6.324,
+          "maxMs": 6.512
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 74.082,
+          "p95Ms": 77.084,
+          "minMs": 72.931,
+          "maxMs": 77.084
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 80.911,
+          "p95Ms": 84.058,
+          "minMs": 79.96,
+          "maxMs": 84.058
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.109,
+          "p95Ms": 1.261,
+          "minMs": 1.086,
+          "maxMs": 1.261
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 112.461,
+          "p95Ms": 115.273,
+          "minMs": 109.669,
+          "maxMs": 115.273
+        }
+      }
+    },
+    {
+      "label": "Action : tender.approve",
+      "path": "/action/tender.approve",
+      "status": 200,
+      "bytes": 10161,
+      "firstHandleMs": 116.609,
+      "warm": {
+        "samples": 3,
+        "medianMs": 132.258,
+        "p95Ms": 201.539,
+        "minMs": 130.667,
+        "maxMs": 201.539
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.017,
+        "minMs": 0.014,
+        "maxMs": 0.017
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.07,
+          "p95Ms": 8.126,
+          "minMs": 5.957,
+          "maxMs": 8.126
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 90.057,
+          "p95Ms": 135.499,
+          "minMs": 87.182,
+          "maxMs": 135.499
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 97.628,
+          "p95Ms": 151.107,
+          "minMs": 95.774,
+          "maxMs": 151.107
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.011,
+          "minMs": 0.006,
+          "maxMs": 0.011
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.523,
+          "p95Ms": 1.696,
+          "minMs": 1.224,
+          "maxMs": 1.696
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 132.025,
+          "p95Ms": 201.339,
+          "minMs": 130.395,
+          "maxMs": 201.339
+        }
+      }
+    },
+    {
+      "label": "Action : tender.delivery",
+      "path": "/action/tender.delivery",
+      "status": 200,
+      "bytes": 10898,
+      "firstHandleMs": 138.548,
+      "warm": {
+        "samples": 3,
+        "medianMs": 154.567,
+        "p95Ms": 155.354,
+        "minMs": 139.804,
+        "maxMs": 155.354
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.02,
+        "minMs": 0.015,
+        "maxMs": 0.02
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.068,
+          "p95Ms": 8.849,
+          "minMs": 7.798,
+          "maxMs": 8.849
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 102.473,
+          "p95Ms": 103.573,
+          "minMs": 93.683,
+          "maxMs": 103.573
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 111.242,
+          "p95Ms": 111.98,
+          "minMs": 103.065,
+          "maxMs": 111.98
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.009,
+          "minMs": 0.006,
+          "maxMs": 0.009
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.639,
+          "p95Ms": 2.18,
+          "minMs": 1.382,
+          "maxMs": 2.18
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 154.226,
+          "p95Ms": 154.564,
+          "minMs": 139.542,
+          "maxMs": 154.564
+        }
+      }
+    },
+    {
+      "label": "Action : tender.inspect",
+      "path": "/action/tender.inspect",
+      "status": 200,
+      "bytes": 10234,
+      "firstHandleMs": 138.115,
+      "warm": {
+        "samples": 3,
+        "medianMs": 138.461,
+        "p95Ms": 151.575,
+        "minMs": 130.832,
+        "maxMs": 151.575
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.017,
+        "p95Ms": 0.019,
+        "minMs": 0.015,
+        "maxMs": 0.019
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.861,
+          "p95Ms": 8.115,
+          "minMs": 7.252,
+          "maxMs": 8.115
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 88.738,
+          "p95Ms": 97.267,
+          "minMs": 85.607,
+          "maxMs": 97.267
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 97.344,
+          "p95Ms": 106.13,
+          "minMs": 93.366,
+          "maxMs": 106.13
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.008,
+          "minMs": 0.006,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.311,
+          "p95Ms": 1.436,
+          "minMs": 1.218,
+          "maxMs": 1.436
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 138.204,
+          "p95Ms": 151.062,
+          "minMs": 130.34,
+          "maxMs": 151.062
+        }
+      }
+    },
+    {
+      "label": "Action : tender.pay",
+      "path": "/action/tender.pay",
+      "status": 200,
+      "bytes": 10242,
+      "firstHandleMs": 143.577,
+      "warm": {
+        "samples": 3,
+        "medianMs": 160.291,
+        "p95Ms": 164.004,
+        "minMs": 143.243,
+        "maxMs": 164.004
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.02,
+        "p95Ms": 0.02,
+        "minMs": 0.019,
+        "maxMs": 0.02
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 9.073,
+          "p95Ms": 10.126,
+          "minMs": 6.735,
+          "maxMs": 10.126
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 107.123,
+          "p95Ms": 110.416,
+          "minMs": 94.932,
+          "maxMs": 110.416
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 117.873,
+          "p95Ms": 120.168,
+          "minMs": 102.207,
+          "maxMs": 120.168
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.009,
+          "p95Ms": 0.048,
+          "minMs": 0.008,
+          "maxMs": 0.048
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.595,
+          "p95Ms": 1.762,
+          "minMs": 1.527,
+          "maxMs": 1.762
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 159.986,
+          "p95Ms": 163.674,
+          "minMs": 143.012,
+          "maxMs": 163.674
+        }
+      }
+    },
+    {
+      "label": "Action : tender.cancel",
+      "path": "/action/tender.cancel",
+      "status": 200,
+      "bytes": 10264,
+      "firstHandleMs": 160.708,
+      "warm": {
+        "samples": 3,
+        "medianMs": 159.687,
+        "p95Ms": 160.06,
+        "minMs": 145.535,
+        "maxMs": 160.06
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.018,
+        "minMs": 0.015,
+        "maxMs": 0.018
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.984,
+          "p95Ms": 9.066,
+          "minMs": 6.156,
+          "maxMs": 9.066
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 107.351,
+          "p95Ms": 108.494,
+          "minMs": 91.788,
+          "maxMs": 108.494
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 117.021,
+          "p95Ms": 118.087,
+          "minMs": 98.372,
+          "maxMs": 118.087
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.009,
+          "minMs": 0.006,
+          "maxMs": 0.009
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.654,
+          "p95Ms": 1.873,
+          "minMs": 1.486,
+          "maxMs": 1.873
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 159.407,
+          "p95Ms": 159.783,
+          "minMs": 145.32,
+          "maxMs": 159.783
+        }
+      }
+    },
+    {
+      "label": "Action : mission.cancel",
+      "path": "/action/mission.cancel",
+      "status": 200,
+      "bytes": 10003,
+      "firstHandleMs": 125.023,
+      "warm": {
+        "samples": 3,
+        "medianMs": 108.996,
+        "p95Ms": 110.204,
+        "minMs": 108.609,
+        "maxMs": 110.204
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.015,
+        "minMs": 0.013,
+        "maxMs": 0.015
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 5.856,
+          "p95Ms": 6.323,
+          "minMs": 5.748,
+          "maxMs": 6.323
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 72.018,
+          "p95Ms": 72.282,
+          "minMs": 71.723,
+          "maxMs": 72.282
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 78.358,
+          "p95Ms": 79.108,
+          "minMs": 77.927,
+          "maxMs": 79.108
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.013,
+          "p95Ms": 1.018,
+          "minMs": 1.013,
+          "maxMs": 1.018
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 108.806,
+          "p95Ms": 109.985,
+          "minMs": 108.433,
+          "maxMs": 109.985
+        }
+      }
+    },
+    {
+      "label": "Action : worker.profile",
+      "path": "/action/worker.profile",
+      "status": 200,
+      "bytes": 12655,
+      "firstHandleMs": 112.548,
+      "warm": {
+        "samples": 3,
+        "medianMs": 137.952,
+        "p95Ms": 147.823,
+        "minMs": 114.833,
+        "maxMs": 147.823
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.016,
+        "minMs": 0.015,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.165,
+          "p95Ms": 8.2,
+          "minMs": 5.725,
+          "maxMs": 8.2
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 92.782,
+          "p95Ms": 100.531,
+          "minMs": 74.725,
+          "maxMs": 100.531
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 101.449,
+          "p95Ms": 106.852,
+          "minMs": 81.422,
+          "maxMs": 106.852
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.009,
+          "minMs": 0.006,
+          "maxMs": 0.009
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.613,
+          "p95Ms": 2.112,
+          "minMs": 1.528,
+          "maxMs": 2.112
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 137.694,
+          "p95Ms": 147.591,
+          "minMs": 114.568,
+          "maxMs": 147.591
+        }
+      }
+    },
+    {
+      "label": "Action : worker.availability",
+      "path": "/action/worker.availability",
+      "status": 200,
+      "bytes": 9820,
+      "firstHandleMs": 150.957,
+      "warm": {
+        "samples": 3,
+        "medianMs": 153.813,
+        "p95Ms": 155.659,
+        "minMs": 148.847,
+        "maxMs": 155.659
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.018,
+        "p95Ms": 0.018,
+        "minMs": 0.015,
+        "maxMs": 0.018
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.929,
+          "p95Ms": 9.054,
+          "minMs": 7.463,
+          "maxMs": 9.054
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 103.418,
+          "p95Ms": 104.615,
+          "minMs": 98.887,
+          "maxMs": 104.615
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 112.952,
+          "p95Ms": 114.253,
+          "minMs": 107.067,
+          "maxMs": 114.253
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.009,
+          "minMs": 0.007,
+          "maxMs": 0.009
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.356,
+          "p95Ms": 1.497,
+          "minMs": 1.329,
+          "maxMs": 1.497
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 153.556,
+          "p95Ms": 155.396,
+          "minMs": 148.628,
+          "maxMs": 155.396
+        }
+      }
+    },
+    {
+      "label": "Action : mission.create",
+      "path": "/action/mission.create",
+      "status": 200,
+      "bytes": 13487,
+      "firstHandleMs": 162.704,
+      "warm": {
+        "samples": 3,
+        "medianMs": 163.664,
+        "p95Ms": 166.302,
+        "minMs": 163.553,
+        "maxMs": 166.302
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.019,
+        "p95Ms": 0.019,
+        "minMs": 0.019,
+        "maxMs": 0.019
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 9.175,
+          "p95Ms": 9.58,
+          "minMs": 8.895,
+          "maxMs": 9.58
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 107.541,
+          "p95Ms": 111.756,
+          "minMs": 106.462,
+          "maxMs": 111.756
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 117.722,
+          "p95Ms": 121.439,
+          "minMs": 116.194,
+          "maxMs": 121.439
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.009,
+          "minMs": 0.008,
+          "maxMs": 0.009
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 3.055,
+          "p95Ms": 3.081,
+          "minMs": 2.891,
+          "maxMs": 3.081
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 163.301,
+          "p95Ms": 165.926,
+          "minMs": 163.168,
+          "maxMs": 165.926
+        }
+      }
+    },
+    {
+      "label": "Action : mission.offer",
+      "path": "/action/mission.offer",
+      "status": 200,
+      "bytes": 9910,
+      "firstHandleMs": 164.991,
+      "warm": {
+        "samples": 3,
+        "medianMs": 159.939,
+        "p95Ms": 162.931,
+        "minMs": 149.265,
+        "maxMs": 162.931
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.018,
+        "p95Ms": 0.019,
+        "minMs": 0.016,
+        "maxMs": 0.019
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 9.08,
+          "p95Ms": 9.142,
+          "minMs": 8.481,
+          "maxMs": 9.142
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 110.479,
+          "p95Ms": 113.551,
+          "minMs": 100.155,
+          "maxMs": 113.551
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 120.167,
+          "p95Ms": 123.252,
+          "minMs": 109.176,
+          "maxMs": 123.252
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.009,
+          "minMs": 0.007,
+          "maxMs": 0.009
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.555,
+          "p95Ms": 1.69,
+          "minMs": 1.298,
+          "maxMs": 1.69
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 159.639,
+          "p95Ms": 162.644,
+          "minMs": 149.029,
+          "maxMs": 162.644
+        }
+      }
+    },
+    {
+      "label": "Action : mission.respond",
+      "path": "/action/mission.respond",
+      "status": 200,
+      "bytes": 9905,
+      "firstHandleMs": 152.973,
+      "warm": {
+        "samples": 3,
+        "medianMs": 141.143,
+        "p95Ms": 151.566,
+        "minMs": 133.976,
+        "maxMs": 151.566
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.084,
+        "minMs": 0.014,
+        "maxMs": 0.084
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.128,
+          "p95Ms": 13.101,
+          "minMs": 7.945,
+          "maxMs": 13.101
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 90.489,
+          "p95Ms": 97.594,
+          "minMs": 86.95,
+          "maxMs": 97.594
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 99.086,
+          "p95Ms": 113.454,
+          "minMs": 95.483,
+          "maxMs": 113.454
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.056,
+          "minMs": 0.006,
+          "maxMs": 0.056
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.19,
+          "p95Ms": 3.854,
+          "minMs": 1.17,
+          "maxMs": 3.854
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 140.806,
+          "p95Ms": 151.343,
+          "minMs": 133.695,
+          "maxMs": 151.343
+        }
+      }
+    },
+    {
+      "label": "Action : mission.progress",
+      "path": "/action/mission.progress",
+      "status": 200,
+      "bytes": 9989,
+      "firstHandleMs": 157.422,
+      "warm": {
+        "samples": 3,
+        "medianMs": 135.212,
+        "p95Ms": 142.856,
+        "minMs": 130.218,
+        "maxMs": 142.856
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.014,
+        "p95Ms": 0.014,
+        "minMs": 0.014,
+        "maxMs": 0.014
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.654,
+          "p95Ms": 7.057,
+          "minMs": 5.784,
+          "maxMs": 7.057
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 92.12,
+          "p95Ms": 93.755,
+          "minMs": 85.044,
+          "maxMs": 93.755
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 99.308,
+          "p95Ms": 101.587,
+          "minMs": 91.473,
+          "maxMs": 101.587
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.333,
+          "p95Ms": 1.359,
+          "minMs": 1.203,
+          "maxMs": 1.359
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 134.997,
+          "p95Ms": 142.61,
+          "minMs": 130.023,
+          "maxMs": 142.61
+        }
+      }
+    },
+    {
+      "label": "Action : mission.review",
+      "path": "/action/mission.review",
+      "status": 200,
+      "bytes": 9740,
+      "firstHandleMs": 157.755,
+      "warm": {
+        "samples": 3,
+        "medianMs": 147.782,
+        "p95Ms": 155.389,
+        "minMs": 132.425,
+        "maxMs": 155.389
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.016,
+        "minMs": 0.015,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.841,
+          "p95Ms": 8.356,
+          "minMs": 6.487,
+          "maxMs": 8.356
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 93.861,
+          "p95Ms": 97.188,
+          "minMs": 88.866,
+          "maxMs": 97.188
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 100.922,
+          "p95Ms": 106.099,
+          "minMs": 96.243,
+          "maxMs": 106.099
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.008,
+          "minMs": 0.006,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.129,
+          "p95Ms": 1.321,
+          "minMs": 1.087,
+          "maxMs": 1.321
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 147.569,
+          "p95Ms": 155.169,
+          "minMs": 132.215,
+          "maxMs": 155.169
+        }
+      }
+    },
+    {
+      "label": "Action : account.create",
+      "path": "/action/account.create",
+      "status": 200,
+      "bytes": 16819,
+      "firstHandleMs": 132.326,
+      "warm": {
+        "samples": 3,
+        "medianMs": 137.15,
+        "p95Ms": 144.158,
+        "minMs": 137.118,
+        "maxMs": 144.158
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.016,
+        "minMs": 0.014,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.555,
+          "p95Ms": 8.21,
+          "minMs": 6.374,
+          "maxMs": 8.21
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 89.021,
+          "p95Ms": 94.062,
+          "minMs": 86.413,
+          "maxMs": 94.062
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 96.096,
+          "p95Ms": 100.944,
+          "minMs": 95.238,
+          "maxMs": 100.944
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.006,
+          "maxMs": 0.006
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 3.059,
+          "p95Ms": 3.129,
+          "minMs": 2.86,
+          "maxMs": 3.129
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 136.87,
+          "p95Ms": 143.871,
+          "minMs": 136.837,
+          "maxMs": 143.871
+        }
+      }
+    },
+    {
+      "label": "Action : account.append",
+      "path": "/action/account.append",
+      "status": 200,
+      "bytes": 13539,
+      "firstHandleMs": 147.537,
+      "warm": {
+        "samples": 3,
+        "medianMs": 149.784,
+        "p95Ms": 179.617,
+        "minMs": 148.408,
+        "maxMs": 179.617
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.021,
+        "minMs": 0.015,
+        "maxMs": 0.021
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.163,
+          "p95Ms": 7.476,
+          "minMs": 6.663,
+          "maxMs": 7.476
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 96.701,
+          "p95Ms": 129.286,
+          "minMs": 94.886,
+          "maxMs": 129.286
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 104.688,
+          "p95Ms": 136.383,
+          "minMs": 102.605,
+          "maxMs": 136.383
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 2.986,
+          "p95Ms": 3.095,
+          "minMs": 2.842,
+          "maxMs": 3.095
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 149.569,
+          "p95Ms": 179.216,
+          "minMs": 148.145,
+          "maxMs": 179.216
+        }
+      }
+    },
+    {
+      "label": "Action : simulation.advance",
+      "path": "/action/simulation.advance",
+      "status": 200,
+      "bytes": 9718,
+      "firstHandleMs": 150.011,
+      "warm": {
+        "samples": 3,
+        "medianMs": 145.81,
+        "p95Ms": 149.269,
+        "minMs": 144.336,
+        "maxMs": 149.269
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.016,
+        "minMs": 0.015,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.976,
+          "p95Ms": 8.102,
+          "minMs": 6.971,
+          "maxMs": 8.102
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 99.943,
+          "p95Ms": 100.231,
+          "minMs": 94.756,
+          "maxMs": 100.231
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 107.429,
+          "p95Ms": 108.793,
+          "minMs": 103.595,
+          "maxMs": 108.793
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.008,
+          "minMs": 0.006,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 0.716,
+          "p95Ms": 0.741,
+          "minMs": 0.704,
+          "maxMs": 0.741
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 145.49,
+          "p95Ms": 149.052,
+          "minMs": 144.138,
+          "maxMs": 149.052
+        }
+      }
+    },
+    {
+      "label": "Action : proposal.transition",
+      "path": "/action/proposal.transition",
+      "status": 200,
+      "bytes": 10271,
+      "firstHandleMs": 157.544,
+      "warm": {
+        "samples": 3,
+        "medianMs": 164.088,
+        "p95Ms": 164.926,
+        "minMs": 161.254,
+        "maxMs": 164.926
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.019,
+        "p95Ms": 0.062,
+        "minMs": 0.019,
+        "maxMs": 0.062
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.989,
+          "p95Ms": 9.123,
+          "minMs": 8.922,
+          "maxMs": 9.123
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 110.301,
+          "p95Ms": 111.376,
+          "minMs": 107.365,
+          "maxMs": 111.376
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 120.015,
+          "p95Ms": 120.925,
+          "minMs": 116.87,
+          "maxMs": 120.925
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.009,
+          "minMs": 0.007,
+          "maxMs": 0.009
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.789,
+          "p95Ms": 1.792,
+          "minMs": 1.705,
+          "maxMs": 1.792
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 163.76,
+          "p95Ms": 164.623,
+          "minMs": 160.913,
+          "maxMs": 164.623
+        }
+      }
+    },
+    {
+      "label": "Action : proposal.reformulate",
+      "path": "/action/proposal.reformulate",
+      "status": 200,
+      "bytes": 10316,
+      "firstHandleMs": 169.336,
+      "warm": {
+        "samples": 3,
+        "medianMs": 163.358,
+        "p95Ms": 163.791,
+        "minMs": 161.72,
+        "maxMs": 163.791
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.019,
+        "p95Ms": 0.02,
+        "minMs": 0.016,
+        "maxMs": 0.02
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 9.024,
+          "p95Ms": 9.15,
+          "minMs": 8.497,
+          "maxMs": 9.15
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 109.364,
+          "p95Ms": 110.045,
+          "minMs": 107.402,
+          "maxMs": 110.045
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 119.073,
+          "p95Ms": 119.674,
+          "minMs": 116.535,
+          "maxMs": 119.674
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.008,
+          "minMs": 0.008,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.756,
+          "p95Ms": 1.935,
+          "minMs": 1.442,
+          "maxMs": 1.935
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 163.024,
+          "p95Ms": 163.493,
+          "minMs": 161.434,
+          "maxMs": 163.493
+        }
+      }
+    },
+    {
+      "label": "Action : governance.enact",
+      "path": "/action/governance.enact",
+      "status": 200,
+      "bytes": 9744,
+      "firstHandleMs": 152.521,
+      "warm": {
+        "samples": 3,
+        "medianMs": 131.76,
+        "p95Ms": 144.524,
+        "minMs": 130.948,
+        "maxMs": 144.524
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.018,
+        "p95Ms": 0.02,
+        "minMs": 0.016,
+        "maxMs": 0.02
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.339,
+          "p95Ms": 7.519,
+          "minMs": 7.176,
+          "maxMs": 7.519
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 86.957,
+          "p95Ms": 96.621,
+          "minMs": 86.902,
+          "maxMs": 96.621
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 95.051,
+          "p95Ms": 104.225,
+          "minMs": 94.773,
+          "maxMs": 104.225
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.007,
+          "minMs": 0.007,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 0.931,
+          "p95Ms": 1.028,
+          "minMs": 0.899,
+          "maxMs": 1.028
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 131.531,
+          "p95Ms": 144.286,
+          "minMs": 130.579,
+          "maxMs": 144.286
+        }
+      }
+    },
+    {
+      "label": "Action : moderation.decide",
+      "path": "/action/moderation.decide",
+      "status": 200,
+      "bytes": 11368,
+      "firstHandleMs": 160.609,
+      "warm": {
+        "samples": 3,
+        "medianMs": 161.773,
+        "p95Ms": 165.77,
+        "minMs": 158.505,
+        "maxMs": 165.77
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.019,
+        "p95Ms": 0.02,
+        "minMs": 0.016,
+        "maxMs": 0.02
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.5,
+          "p95Ms": 8.719,
+          "minMs": 8.297,
+          "maxMs": 8.719
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 106.253,
+          "p95Ms": 109.887,
+          "minMs": 103.675,
+          "maxMs": 109.887
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 115.586,
+          "p95Ms": 119.006,
+          "minMs": 112.51,
+          "maxMs": 119.006
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.009,
+          "minMs": 0.007,
+          "maxMs": 0.009
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 2.247,
+          "p95Ms": 2.559,
+          "minMs": 2.158,
+          "maxMs": 2.559
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 161.433,
+          "p95Ms": 165.477,
+          "minMs": 158.243,
+          "maxMs": 165.477
+        }
+      }
+    },
+    {
+      "label": "Action : moderation.confirm",
+      "path": "/action/moderation.confirm",
+      "status": 200,
+      "bytes": 9724,
+      "firstHandleMs": 169.743,
+      "warm": {
+        "samples": 3,
+        "medianMs": 172.608,
+        "p95Ms": 183.189,
+        "minMs": 171.925,
+        "maxMs": 183.189
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.02,
+        "p95Ms": 0.021,
+        "minMs": 0.019,
+        "maxMs": 0.021
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 9.215,
+          "p95Ms": 12.365,
+          "minMs": 8.878,
+          "maxMs": 12.365
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 115.952,
+          "p95Ms": 116.306,
+          "minMs": 115.381,
+          "maxMs": 116.306
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 125.815,
+          "p95Ms": 128.99,
+          "minMs": 125.23,
+          "maxMs": 128.99
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.009,
+          "p95Ms": 0.009,
+          "minMs": 0.009,
+          "maxMs": 0.009
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.364,
+          "p95Ms": 1.673,
+          "minMs": 1.046,
+          "maxMs": 1.673
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 172.283,
+          "p95Ms": 182.895,
+          "minMs": 171.605,
+          "maxMs": 182.895
+        }
+      }
+    },
+    {
+      "label": "Action : moderation.resolve",
+      "path": "/action/moderation.resolve",
+      "status": 200,
+      "bytes": 9984,
+      "firstHandleMs": 197.309,
+      "warm": {
+        "samples": 3,
+        "medianMs": 170.419,
+        "p95Ms": 173.729,
+        "minMs": 167.499,
+        "maxMs": 173.729
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.02,
+        "p95Ms": 0.02,
+        "minMs": 0.019,
+        "maxMs": 0.02
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 9.014,
+          "p95Ms": 9.364,
+          "minMs": 8.542,
+          "maxMs": 9.364
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 114.926,
+          "p95Ms": 119.449,
+          "minMs": 113.315,
+          "maxMs": 119.449
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 124.519,
+          "p95Ms": 128.586,
+          "minMs": 123.301,
+          "maxMs": 128.586
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.009,
+          "minMs": 0.008,
+          "maxMs": 0.009
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.597,
+          "p95Ms": 1.701,
+          "minMs": 1.571,
+          "maxMs": 1.701
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 170.084,
+          "p95Ms": 173.417,
+          "minMs": 167.181,
+          "maxMs": 173.417
+        }
+      }
+    },
+    {
+      "label": "Action : integrity.review",
+      "path": "/action/integrity.review",
+      "status": 200,
+      "bytes": 10115,
+      "firstHandleMs": 160.207,
+      "warm": {
+        "samples": 3,
+        "medianMs": 148.471,
+        "p95Ms": 152.494,
+        "minMs": 133.858,
+        "maxMs": 152.494
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.017,
+        "minMs": 0.014,
+        "maxMs": 0.017
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.262,
+          "p95Ms": 8.332,
+          "minMs": 8.239,
+          "maxMs": 8.332
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 102.362,
+          "p95Ms": 102.963,
+          "minMs": 85.75,
+          "maxMs": 102.963
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 111.104,
+          "p95Ms": 111.774,
+          "minMs": 94.673,
+          "maxMs": 111.774
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.267,
+          "p95Ms": 1.307,
+          "minMs": 1.104,
+          "maxMs": 1.307
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 148.231,
+          "p95Ms": 152.198,
+          "minMs": 133.613,
+          "maxMs": 152.198
+        }
+      }
+    },
+    {
+      "label": "Action : consultation.review",
+      "path": "/action/consultation.review",
+      "status": 200,
+      "bytes": 9957,
+      "firstHandleMs": 171.426,
+      "warm": {
+        "samples": 3,
+        "medianMs": 149.292,
+        "p95Ms": 167.924,
+        "minMs": 139.83,
+        "maxMs": 167.924
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.016,
+        "minMs": 0.015,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.005,
+          "p95Ms": 9.105,
+          "minMs": 7.446,
+          "maxMs": 9.105
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 98.239,
+          "p95Ms": 105.386,
+          "minMs": 91.75,
+          "maxMs": 105.386
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 107.955,
+          "p95Ms": 113.385,
+          "minMs": 100.334,
+          "maxMs": 113.385
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.007,
+          "minMs": 0.007,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.759,
+          "p95Ms": 2.247,
+          "minMs": 1.197,
+          "maxMs": 2.247
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 148.946,
+          "p95Ms": 167.617,
+          "minMs": 139.576,
+          "maxMs": 167.617
+        }
+      }
+    },
+    {
+      "label": "Action : citizen.preferences",
+      "path": "/action/citizen.preferences",
+      "status": 200,
+      "bytes": 9971,
+      "firstHandleMs": 162.54,
+      "warm": {
+        "samples": 3,
+        "medianMs": 149.557,
+        "p95Ms": 156.904,
+        "minMs": 141.313,
+        "maxMs": 156.904
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.016,
+        "minMs": 0.014,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.21,
+          "p95Ms": 8.103,
+          "minMs": 7.122,
+          "maxMs": 8.103
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 94.735,
+          "p95Ms": 104.278,
+          "minMs": 94.667,
+          "maxMs": 104.278
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 102.591,
+          "p95Ms": 112.873,
+          "minMs": 102.498,
+          "maxMs": 112.873
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.247,
+          "p95Ms": 1.564,
+          "minMs": 1.21,
+          "maxMs": 1.564
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 149.32,
+          "p95Ms": 156.678,
+          "minMs": 141.087,
+          "maxMs": 156.678
+        }
+      }
+    },
+    {
+      "label": "Action : citizen.create",
+      "path": "/action/citizen.create",
+      "status": 200,
+      "bytes": 9843,
+      "firstHandleMs": 150.16,
+      "warm": {
+        "samples": 3,
+        "medianMs": 143.307,
+        "p95Ms": 144.336,
+        "minMs": 140.102,
+        "maxMs": 144.336
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.016,
+        "minMs": 0.014,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.362,
+          "p95Ms": 8.287,
+          "minMs": 7.331,
+          "maxMs": 8.287
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 91.692,
+          "p95Ms": 94.545,
+          "minMs": 91.58,
+          "maxMs": 94.545
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 100.464,
+          "p95Ms": 102.62,
+          "minMs": 99.521,
+          "maxMs": 102.62
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.279,
+          "p95Ms": 1.324,
+          "minMs": 1.003,
+          "maxMs": 1.324
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 143.099,
+          "p95Ms": 144.083,
+          "minMs": 139.881,
+          "maxMs": 144.083
+        }
+      }
+    },
+    {
+      "label": "Action : citizen.consent",
+      "path": "/action/citizen.consent",
+      "status": 200,
+      "bytes": 9630,
+      "firstHandleMs": 137.342,
+      "warm": {
+        "samples": 3,
+        "medianMs": 142.407,
+        "p95Ms": 144.579,
+        "minMs": 140.425,
+        "maxMs": 144.579
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.017,
+        "minMs": 0.014,
+        "maxMs": 0.017
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.343,
+          "p95Ms": 8.252,
+          "minMs": 7.002,
+          "maxMs": 8.252
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 97.977,
+          "p95Ms": 98.129,
+          "minMs": 93.983,
+          "maxMs": 98.129
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 105.45,
+          "p95Ms": 107.065,
+          "minMs": 101.885,
+          "maxMs": 107.065
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.012,
+          "minMs": 0.007,
+          "maxMs": 0.012
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.217,
+          "p95Ms": 1.327,
+          "minMs": 0.881,
+          "maxMs": 1.327
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 142.161,
+          "p95Ms": 144.247,
+          "minMs": 140.203,
+          "maxMs": 144.247
+        }
+      }
+    },
+    {
+      "label": "Action : citizen.withdraw",
+      "path": "/action/citizen.withdraw",
+      "status": 200,
+      "bytes": 9350,
+      "firstHandleMs": 181.167,
+      "warm": {
+        "samples": 3,
+        "medianMs": 168.783,
+        "p95Ms": 176.016,
+        "minMs": 153.876,
+        "maxMs": 176.016
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.019,
+        "p95Ms": 0.02,
+        "minMs": 0.016,
+        "maxMs": 0.02
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.844,
+          "p95Ms": 9.563,
+          "minMs": 7.9,
+          "maxMs": 9.563
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 118.773,
+          "p95Ms": 119.744,
+          "minMs": 98.667,
+          "maxMs": 119.744
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 128.473,
+          "p95Ms": 128.975,
+          "minMs": 108.22,
+          "maxMs": 128.975
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.009,
+          "p95Ms": 0.01,
+          "minMs": 0.007,
+          "maxMs": 0.01
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.065,
+          "p95Ms": 1.084,
+          "minMs": 0.812,
+          "maxMs": 1.084
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 168.426,
+          "p95Ms": 175.672,
+          "minMs": 153.67,
+          "maxMs": 175.672
+        }
+      }
+    },
+    {
+      "label": "Action : citizen.update",
+      "path": "/action/citizen.update",
+      "status": 200,
+      "bytes": 9872,
+      "firstHandleMs": 178.372,
+      "warm": {
+        "samples": 3,
+        "medianMs": 172.665,
+        "p95Ms": 179.736,
+        "minMs": 162.389,
+        "maxMs": 179.736
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.02,
+        "p95Ms": 0.02,
+        "minMs": 0.02,
+        "maxMs": 0.02
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 9.212,
+          "p95Ms": 9.619,
+          "minMs": 7.244,
+          "maxMs": 9.619
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 115.055,
+          "p95Ms": 121.793,
+          "minMs": 110.451,
+          "maxMs": 121.793
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 125.251,
+          "p95Ms": 131.601,
+          "minMs": 118.228,
+          "maxMs": 131.601
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.01,
+          "minMs": 0.008,
+          "maxMs": 0.01
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.551,
+          "p95Ms": 1.561,
+          "minMs": 1.493,
+          "maxMs": 1.561
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 172.364,
+          "p95Ms": 179.459,
+          "minMs": 162.104,
+          "maxMs": 179.459
+        }
+      }
+    },
+    {
+      "label": "Action : citizen.erase",
+      "path": "/action/citizen.erase",
+      "status": 200,
+      "bytes": 9673,
+      "firstHandleMs": 165.522,
+      "warm": {
+        "samples": 3,
+        "medianMs": 183.748,
+        "p95Ms": 206.303,
+        "minMs": 146.014,
+        "maxMs": 206.303
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.016,
+        "minMs": 0.016,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 11.751,
+          "p95Ms": 15.822,
+          "minMs": 6.661,
+          "maxMs": 15.822
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 106.849,
+          "p95Ms": 122.996,
+          "minMs": 90.432,
+          "maxMs": 122.996
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 119.264,
+          "p95Ms": 139.451,
+          "minMs": 97.708,
+          "maxMs": 139.451
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.008,
+          "minMs": 0.007,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.161,
+          "p95Ms": 1.683,
+          "minMs": 0.76,
+          "maxMs": 1.683
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 183.295,
+          "p95Ms": 205.993,
+          "minMs": 145.766,
+          "maxMs": 205.993
+        }
+      }
+    },
+    {
+      "label": "Action : proposal.create",
+      "path": "/action/proposal.create",
+      "status": 200,
+      "bytes": 27816,
+      "firstHandleMs": 166.127,
+      "warm": {
+        "samples": 3,
+        "medianMs": 160.387,
+        "p95Ms": 166.845,
+        "minMs": 148.529,
+        "maxMs": 166.845
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.015,
+        "minMs": 0.015,
+        "maxMs": 0.015
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.952,
+          "p95Ms": 8.015,
+          "minMs": 6.813,
+          "maxMs": 8.015
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 99.674,
+          "p95Ms": 102.036,
+          "minMs": 91.273,
+          "maxMs": 102.036
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 108.221,
+          "p95Ms": 109.669,
+          "minMs": 98.598,
+          "maxMs": 109.669
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 6.089,
+          "p95Ms": 6.84,
+          "minMs": 5.51,
+          "maxMs": 6.84
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 159.83,
+          "p95Ms": 166.54,
+          "minMs": 148.174,
+          "maxMs": 166.54
+        }
+      }
+    },
+    {
+      "label": "Action : proposal.publish",
+      "path": "/action/proposal.publish",
+      "status": 200,
+      "bytes": 9445,
+      "firstHandleMs": 164.083,
+      "warm": {
+        "samples": 3,
+        "medianMs": 160.715,
+        "p95Ms": 165.197,
+        "minMs": 153.275,
+        "maxMs": 165.197
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.018,
+        "p95Ms": 0.02,
+        "minMs": 0.015,
+        "maxMs": 0.02
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.846,
+          "p95Ms": 8.873,
+          "minMs": 6.368,
+          "maxMs": 8.873
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 110.825,
+          "p95Ms": 113.168,
+          "minMs": 104.872,
+          "maxMs": 113.168
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 120.285,
+          "p95Ms": 122.583,
+          "minMs": 111.812,
+          "maxMs": 122.583
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.009,
+          "minMs": 0.007,
+          "maxMs": 0.009
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.227,
+          "p95Ms": 1.304,
+          "minMs": 1.08,
+          "maxMs": 1.304
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 160.463,
+          "p95Ms": 164.891,
+          "minMs": 153.095,
+          "maxMs": 164.891
+        }
+      }
+    },
+    {
+      "label": "Action : proposal.revise",
+      "path": "/action/proposal.revise",
+      "status": 200,
+      "bytes": 28849,
+      "firstHandleMs": 187.311,
+      "warm": {
+        "samples": 3,
+        "medianMs": 177.891,
+        "p95Ms": 178.07,
+        "minMs": 169.719,
+        "maxMs": 178.07
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.02,
+        "p95Ms": 0.043,
+        "minMs": 0.02,
+        "maxMs": 0.043
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 9.223,
+          "p95Ms": 9.611,
+          "minMs": 6.231,
+          "maxMs": 9.611
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 109.91,
+          "p95Ms": 109.977,
+          "minMs": 96.621,
+          "maxMs": 109.977
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 116.746,
+          "p95Ms": 119.758,
+          "minMs": 106.892,
+          "maxMs": 119.758
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.008,
+          "minMs": 0.007,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 8.95,
+          "p95Ms": 9.166,
+          "minMs": 8.923,
+          "maxMs": 9.166
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 177.494,
+          "p95Ms": 177.574,
+          "minMs": 167.503,
+          "maxMs": 177.574
+        }
+      }
+    },
+    {
+      "label": "Action : proposal.source",
+      "path": "/action/proposal.source",
+      "status": 200,
+      "bytes": 10322,
+      "firstHandleMs": 167.469,
+      "warm": {
+        "samples": 3,
+        "medianMs": 155.454,
+        "p95Ms": 157.505,
+        "minMs": 144.563,
+        "maxMs": 157.505
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.017,
+        "p95Ms": 0.05,
+        "minMs": 0.016,
+        "maxMs": 0.05
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.419,
+          "p95Ms": 8.622,
+          "minMs": 8.327,
+          "maxMs": 8.622
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 104.192,
+          "p95Ms": 105.477,
+          "minMs": 102.069,
+          "maxMs": 105.477
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 113.053,
+          "p95Ms": 114.64,
+          "minMs": 111.175,
+          "maxMs": 114.64
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.008,
+          "minMs": 0.006,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.531,
+          "p95Ms": 1.665,
+          "minMs": 1.312,
+          "maxMs": 1.665
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 155.233,
+          "p95Ms": 157.24,
+          "minMs": 144.299,
+          "maxMs": 157.24
+        }
+      }
+    },
+    {
+      "label": "Action : proposal.node",
+      "path": "/action/proposal.node",
+      "status": 200,
+      "bytes": 10428,
+      "firstHandleMs": 155.823,
+      "warm": {
+        "samples": 3,
+        "medianMs": 140.396,
+        "p95Ms": 147.208,
+        "minMs": 139.127,
+        "maxMs": 147.208
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.016,
+        "minMs": 0.015,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.404,
+          "p95Ms": 7.906,
+          "minMs": 7.016,
+          "maxMs": 7.906
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 92.185,
+          "p95Ms": 92.273,
+          "minMs": 92.101,
+          "maxMs": 92.273
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 100.454,
+          "p95Ms": 100.487,
+          "minMs": 99.761,
+          "maxMs": 100.487
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.685,
+          "p95Ms": 2.138,
+          "minMs": 1.314,
+          "maxMs": 2.138
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 140.132,
+          "p95Ms": 146.906,
+          "minMs": 138.902,
+          "maxMs": 146.906
+        }
+      }
+    },
+    {
+      "label": "Action : proposal.edge",
+      "path": "/action/proposal.edge",
+      "status": 200,
+      "bytes": 10691,
+      "firstHandleMs": 153.069,
+      "warm": {
+        "samples": 3,
+        "medianMs": 135.916,
+        "p95Ms": 137.414,
+        "minMs": 128.978,
+        "maxMs": 137.414
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.017,
+        "minMs": 0.015,
+        "maxMs": 0.017
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.525,
+          "p95Ms": 8.49,
+          "minMs": 7.016,
+          "maxMs": 8.49
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 88.839,
+          "p95Ms": 89.116,
+          "minMs": 84.268,
+          "maxMs": 89.116
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 96.425,
+          "p95Ms": 98.106,
+          "minMs": 92.247,
+          "maxMs": 98.106
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.008,
+          "minMs": 0.006,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.668,
+          "p95Ms": 1.738,
+          "minMs": 1.451,
+          "maxMs": 1.738
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 135.676,
+          "p95Ms": 137.176,
+          "minMs": 128.766,
+          "maxMs": 137.176
+        }
+      }
+    },
+    {
+      "label": "Action : territory.revise",
+      "path": "/action/territory.revise",
+      "status": 200,
+      "bytes": 10684,
+      "firstHandleMs": 131.251,
+      "warm": {
+        "samples": 3,
+        "medianMs": 130.4,
+        "p95Ms": 154.24,
+        "minMs": 127.876,
+        "maxMs": 154.24
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.014,
+        "p95Ms": 0.078,
+        "minMs": 0.014,
+        "maxMs": 0.078
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.796,
+          "p95Ms": 7.648,
+          "minMs": 6.733,
+          "maxMs": 7.648
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 85.203,
+          "p95Ms": 101.335,
+          "minMs": 85.053,
+          "maxMs": 101.335
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 92.642,
+          "p95Ms": 109.568,
+          "minMs": 92.399,
+          "maxMs": 109.568
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.009,
+          "minMs": 0.006,
+          "maxMs": 0.009
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.624,
+          "p95Ms": 2.508,
+          "minMs": 1.482,
+          "maxMs": 2.508
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 130.037,
+          "p95Ms": 153.959,
+          "minMs": 127.645,
+          "maxMs": 153.959
+        }
+      }
+    },
+    {
+      "label": "Action : territory.adapt",
+      "path": "/action/territory.adapt",
+      "status": 200,
+      "bytes": 11608,
+      "firstHandleMs": 134.116,
+      "warm": {
+        "samples": 3,
+        "medianMs": 137.641,
+        "p95Ms": 144.979,
+        "minMs": 132.791,
+        "maxMs": 144.979
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.016,
+        "minMs": 0.014,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.478,
+          "p95Ms": 7.017,
+          "minMs": 5.722,
+          "maxMs": 7.017
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 89.59,
+          "p95Ms": 93.506,
+          "minMs": 87.041,
+          "maxMs": 93.506
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 97.1,
+          "p95Ms": 100.581,
+          "minMs": 93.316,
+          "maxMs": 100.581
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.005,
+          "maxMs": 0.006
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.926,
+          "p95Ms": 2.445,
+          "minMs": 1.794,
+          "maxMs": 2.445
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 137.331,
+          "p95Ms": 144.784,
+          "minMs": 132.545,
+          "maxMs": 144.784
+        }
+      }
+    },
+    {
+      "label": "Action : consultation.open",
+      "path": "/action/consultation.open",
+      "status": 200,
+      "bytes": 10444,
+      "firstHandleMs": 146.699,
+      "warm": {
+        "samples": 3,
+        "medianMs": 132.565,
+        "p95Ms": 143.903,
+        "minMs": 130.16,
+        "maxMs": 143.903
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.014,
+        "p95Ms": 0.015,
+        "minMs": 0.013,
+        "maxMs": 0.015
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.365,
+          "p95Ms": 8.246,
+          "minMs": 6.251,
+          "maxMs": 8.246
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 86.619,
+          "p95Ms": 95.634,
+          "minMs": 84.703,
+          "maxMs": 95.634
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 93.32,
+          "p95Ms": 104.355,
+          "minMs": 91.542,
+          "maxMs": 104.355
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.033,
+          "minMs": 0.006,
+          "maxMs": 0.033
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.269,
+          "p95Ms": 1.815,
+          "minMs": 1.006,
+          "maxMs": 1.815
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 132.274,
+          "p95Ms": 143.665,
+          "minMs": 129.967,
+          "maxMs": 143.665
+        }
+      }
+    },
+    {
+      "label": "Action : consultation.close",
+      "path": "/action/consultation.close",
+      "status": 200,
+      "bytes": 9742,
+      "firstHandleMs": 130.956,
+      "warm": {
+        "samples": 3,
+        "medianMs": 127.148,
+        "p95Ms": 148.95,
+        "minMs": 126.195,
+        "maxMs": 148.95
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.014,
+        "p95Ms": 0.051,
+        "minMs": 0.014,
+        "maxMs": 0.051
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.432,
+          "p95Ms": 8.876,
+          "minMs": 6.137,
+          "maxMs": 8.876
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 83.626,
+          "p95Ms": 105.324,
+          "minMs": 82.091,
+          "maxMs": 105.324
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 90.197,
+          "p95Ms": 114.64,
+          "minMs": 89.969,
+          "maxMs": 114.64
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.006,
+          "maxMs": 0.006
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 0.918,
+          "p95Ms": 0.942,
+          "minMs": 0.904,
+          "maxMs": 0.942
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 126.617,
+          "p95Ms": 148.687,
+          "minMs": 125.995,
+          "maxMs": 148.687
+        }
+      }
+    },
+    {
+      "label": "Action : vote.cast",
+      "path": "/action/vote.cast",
+      "status": 200,
+      "bytes": 10584,
+      "firstHandleMs": 148.341,
+      "warm": {
+        "samples": 3,
+        "medianMs": 163.368,
+        "p95Ms": 172.252,
+        "minMs": 136.038,
+        "maxMs": 172.252
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.02,
+        "minMs": 0.015,
+        "maxMs": 0.02
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.434,
+          "p95Ms": 8.897,
+          "minMs": 7.08,
+          "maxMs": 8.897
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 110.577,
+          "p95Ms": 119.541,
+          "minMs": 84.63,
+          "maxMs": 119.541
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 120.012,
+          "p95Ms": 127.52,
+          "minMs": 92.508,
+          "maxMs": 127.52
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.353,
+          "p95Ms": 1.427,
+          "minMs": 1.088,
+          "maxMs": 1.427
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 163.096,
+          "p95Ms": 171.846,
+          "minMs": 135.819,
+          "maxMs": 171.846
+        }
+      }
+    },
+    {
+      "label": "Action : experiment.create",
+      "path": "/action/experiment.create",
+      "status": 200,
+      "bytes": 11461,
+      "firstHandleMs": 161.2,
+      "warm": {
+        "samples": 3,
+        "medianMs": 147.704,
+        "p95Ms": 173.639,
+        "minMs": 141.289,
+        "maxMs": 173.639
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.018,
+        "minMs": 0.015,
+        "maxMs": 0.018
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 9.329,
+          "p95Ms": 10.719,
+          "minMs": 8.724,
+          "maxMs": 10.719
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 94.778,
+          "p95Ms": 114.979,
+          "minMs": 92.869,
+          "maxMs": 114.979
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 105.922,
+          "p95Ms": 124.781,
+          "minMs": 102.057,
+          "maxMs": 124.781
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.948,
+          "p95Ms": 2.568,
+          "minMs": 1.926,
+          "maxMs": 2.568
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 145.337,
+          "p95Ms": 173.217,
+          "minMs": 141.045,
+          "maxMs": 173.217
+        }
+      }
+    },
+    {
+      "label": "Action : observation.add",
+      "path": "/action/observation.add",
+      "status": 200,
+      "bytes": 10843,
+      "firstHandleMs": 173.698,
+      "warm": {
+        "samples": 3,
+        "medianMs": 157.011,
+        "p95Ms": 160.113,
+        "minMs": 146.653,
+        "maxMs": 160.113
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.018,
+        "p95Ms": 0.118,
+        "minMs": 0.016,
+        "maxMs": 0.118
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.075,
+          "p95Ms": 12.138,
+          "minMs": 6.497,
+          "maxMs": 12.138
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 103.334,
+          "p95Ms": 107.867,
+          "minMs": 93.514,
+          "maxMs": 107.867
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 116.346,
+          "p95Ms": 116.412,
+          "minMs": 100.622,
+          "maxMs": 116.412
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.007,
+          "p95Ms": 0.008,
+          "minMs": 0.006,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.956,
+          "p95Ms": 2.056,
+          "minMs": 1.511,
+          "maxMs": 2.056
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 156.588,
+          "p95Ms": 159.841,
+          "minMs": 146.405,
+          "maxMs": 159.841
+        }
+      }
+    },
+    {
+      "label": "Action : experiment.evaluate",
+      "path": "/action/experiment.evaluate",
+      "status": 200,
+      "bytes": 9974,
+      "firstHandleMs": 163.217,
+      "warm": {
+        "samples": 3,
+        "medianMs": 166.398,
+        "p95Ms": 181.293,
+        "minMs": 158.633,
+        "maxMs": 181.293
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.018,
+        "p95Ms": 0.019,
+        "minMs": 0.018,
+        "maxMs": 0.019
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.931,
+          "p95Ms": 9.03,
+          "minMs": 6.969,
+          "maxMs": 9.03
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 111.278,
+          "p95Ms": 116.099,
+          "minMs": 107.147,
+          "maxMs": 116.099
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 120.774,
+          "p95Ms": 125.768,
+          "minMs": 114.701,
+          "maxMs": 125.768
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.008,
+          "p95Ms": 0.011,
+          "minMs": 0.008,
+          "maxMs": 0.011
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.545,
+          "p95Ms": 1.592,
+          "minMs": 1.54,
+          "maxMs": 1.592
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 166.071,
+          "p95Ms": 181.015,
+          "minMs": 158.407,
+          "maxMs": 181.015
+        }
+      }
+    },
+    {
+      "label": "Action : finance.add",
+      "path": "/action/finance.add",
+      "status": 200,
+      "bytes": 10227,
+      "firstHandleMs": 120.181,
+      "warm": {
+        "samples": 3,
+        "medianMs": 120.234,
+        "p95Ms": 131.583,
+        "minMs": 117.634,
+        "maxMs": 131.583
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.016,
+        "minMs": 0.014,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.107,
+          "p95Ms": 6.132,
+          "minMs": 5.897,
+          "maxMs": 6.132
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 79.432,
+          "p95Ms": 80.87,
+          "minMs": 78.366,
+          "maxMs": 80.87
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 85.805,
+          "p95Ms": 87.45,
+          "minMs": 84.948,
+          "maxMs": 87.45
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.006,
+          "maxMs": 0.006
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.23,
+          "p95Ms": 1.306,
+          "minMs": 1.142,
+          "maxMs": 1.306
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 119.991,
+          "p95Ms": 131.349,
+          "minMs": 117.452,
+          "maxMs": 131.349
+        }
+      }
+    },
+    {
+      "label": "Action : governance.propose",
+      "path": "/action/governance.propose",
+      "status": 200,
+      "bytes": 10681,
+      "firstHandleMs": 178.229,
+      "warm": {
+        "samples": 3,
+        "medianMs": 129.725,
+        "p95Ms": 145.163,
+        "minMs": 124.08,
+        "maxMs": 145.163
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.062,
+        "minMs": 0.015,
+        "maxMs": 0.062
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.648,
+          "p95Ms": 8.659,
+          "minMs": 5.857,
+          "maxMs": 8.659
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 83.775,
+          "p95Ms": 99.588,
+          "minMs": 80.979,
+          "maxMs": 99.588
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 91.704,
+          "p95Ms": 108.56,
+          "minMs": 87.096,
+          "maxMs": 108.56
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.006,
+          "maxMs": 0.006
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.837,
+          "p95Ms": 2.005,
+          "minMs": 1.779,
+          "maxMs": 2.005
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 129.45,
+          "p95Ms": 144.879,
+          "minMs": 123.855,
+          "maxMs": 144.879
+        }
+      }
+    },
+    {
+      "label": "Action : governance.approve",
+      "path": "/action/governance.approve",
+      "status": 200,
+      "bytes": 9483,
+      "firstHandleMs": 131.896,
+      "warm": {
+        "samples": 3,
+        "medianMs": 130.122,
+        "p95Ms": 136.508,
+        "minMs": 126.156,
+        "maxMs": 136.508
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.016,
+        "minMs": 0.015,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.435,
+          "p95Ms": 6.61,
+          "minMs": 6.302,
+          "maxMs": 6.61
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 83.47,
+          "p95Ms": 91.42,
+          "minMs": 83.437,
+          "maxMs": 91.42
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 90.312,
+          "p95Ms": 98.678,
+          "minMs": 90.309,
+          "maxMs": 98.678
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.006,
+          "maxMs": 0.006
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.009,
+          "p95Ms": 1.239,
+          "minMs": 0.793,
+          "maxMs": 1.239
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 129.911,
+          "p95Ms": 136.256,
+          "minMs": 125.912,
+          "maxMs": 136.256
+        }
+      }
+    },
+    {
+      "label": "Action : moderation.report",
+      "path": "/action/moderation.report",
+      "status": 200,
+      "bytes": 9814,
+      "firstHandleMs": 130.48,
+      "warm": {
+        "samples": 3,
+        "medianMs": 126.801,
+        "p95Ms": 128.875,
+        "minMs": 122.665,
+        "maxMs": 128.875
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.016,
+        "minMs": 0.015,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.632,
+          "p95Ms": 6.743,
+          "minMs": 6.167,
+          "maxMs": 6.743
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 83.513,
+          "p95Ms": 85.126,
+          "minMs": 80.592,
+          "maxMs": 85.126
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 90.618,
+          "p95Ms": 92.414,
+          "minMs": 87.23,
+          "maxMs": 92.414
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 0.955,
+          "p95Ms": 1.278,
+          "minMs": 0.953,
+          "maxMs": 1.278
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 126.584,
+          "p95Ms": 128.663,
+          "minMs": 122.468,
+          "maxMs": 128.663
+        }
+      }
+    },
+    {
+      "label": "Action : moderation.appeal",
+      "path": "/action/moderation.appeal",
+      "status": 200,
+      "bytes": 9713,
+      "firstHandleMs": 134.552,
+      "warm": {
+        "samples": 3,
+        "medianMs": 146.563,
+        "p95Ms": 146.934,
+        "minMs": 142.307,
+        "maxMs": 146.934
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.021,
+        "minMs": 0.014,
+        "maxMs": 0.021
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 7.696,
+          "p95Ms": 9.877,
+          "minMs": 6.367,
+          "maxMs": 9.877
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 93.667,
+          "p95Ms": 96.915,
+          "minMs": 93.316,
+          "maxMs": 96.915
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 103.682,
+          "p95Ms": 103.726,
+          "minMs": 102.136,
+          "maxMs": 103.726
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.077,
+          "minMs": 0.006,
+          "maxMs": 0.077
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.193,
+          "p95Ms": 1.22,
+          "minMs": 0.92,
+          "maxMs": 1.22
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 145.926,
+          "p95Ms": 146.634,
+          "minMs": 141.974,
+          "maxMs": 146.634
+        }
+      }
+    },
+    {
+      "label": "Action : integrity.alert",
+      "path": "/action/integrity.alert",
+      "status": 200,
+      "bytes": 9611,
+      "firstHandleMs": 146.177,
+      "warm": {
+        "samples": 3,
+        "medianMs": 151.252,
+        "p95Ms": 154.319,
+        "minMs": 130.9,
+        "maxMs": 154.319
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.017,
+        "minMs": 0.015,
+        "maxMs": 0.017
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.746,
+          "p95Ms": 9.838,
+          "minMs": 6.637,
+          "maxMs": 9.838
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 93.716,
+          "p95Ms": 100.924,
+          "minMs": 86.296,
+          "maxMs": 100.924
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 101.135,
+          "p95Ms": 111.425,
+          "minMs": 93.376,
+          "maxMs": 111.425
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.006,
+          "maxMs": 0.006
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.179,
+          "p95Ms": 1.694,
+          "minMs": 0.98,
+          "maxMs": 1.694
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 151.067,
+          "p95Ms": 154.041,
+          "minMs": 130.687,
+          "maxMs": 154.041
+        }
+      }
+    },
+    {
+      "label": "Action : node.configure",
+      "path": "/action/node.configure",
+      "status": 200,
+      "bytes": 10154,
+      "firstHandleMs": 147.39,
+      "warm": {
+        "samples": 3,
+        "medianMs": 148.081,
+        "p95Ms": 150.926,
+        "minMs": 143.729,
+        "maxMs": 150.926
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.016,
+        "p95Ms": 0.036,
+        "minMs": 0.014,
+        "maxMs": 0.036
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.278,
+          "p95Ms": 7.543,
+          "minMs": 6.198,
+          "maxMs": 7.543
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 97.521,
+          "p95Ms": 97.806,
+          "minMs": 95.158,
+          "maxMs": 97.806
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 104.264,
+          "p95Ms": 105.864,
+          "minMs": 101.962,
+          "maxMs": 105.864
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.006,
+          "minMs": 0.006,
+          "maxMs": 0.006
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.07,
+          "p95Ms": 1.859,
+          "minMs": 0.986,
+          "maxMs": 1.859
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 147.826,
+          "p95Ms": 150.612,
+          "minMs": 143.364,
+          "maxMs": 150.612
+        }
+      }
+    },
+    {
+      "label": "Action : node.sync",
+      "path": "/action/node.sync",
+      "status": 200,
+      "bytes": 9715,
+      "firstHandleMs": 148.688,
+      "warm": {
+        "samples": 3,
+        "medianMs": 151.369,
+        "p95Ms": 157.176,
+        "minMs": 148.218,
+        "maxMs": 157.176
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.018,
+        "p95Ms": 0.019,
+        "minMs": 0.018,
+        "maxMs": 0.019
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 8.931,
+          "p95Ms": 8.976,
+          "minMs": 8.377,
+          "maxMs": 8.976
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 100.352,
+          "p95Ms": 109.157,
+          "minMs": 94.09,
+          "maxMs": 109.157
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 109.794,
+          "p95Ms": 118.571,
+          "minMs": 103.023,
+          "maxMs": 118.571
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.008,
+          "minMs": 0.006,
+          "maxMs": 0.008
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.096,
+          "p95Ms": 1.166,
+          "minMs": 0.858,
+          "maxMs": 1.166
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 151.1,
+          "p95Ms": 156.933,
+          "minMs": 147.967,
+          "maxMs": 156.933
+        }
+      }
+    },
+    {
+      "label": "Action : resource.add",
+      "path": "/action/resource.add",
+      "status": 200,
+      "bytes": 9786,
+      "firstHandleMs": 155.559,
+      "warm": {
+        "samples": 3,
+        "medianMs": 149.861,
+        "p95Ms": 156.187,
+        "minMs": 146.405,
+        "maxMs": 156.187
+      },
+      "terminate": {
+        "samples": 3,
+        "medianMs": 0.015,
+        "p95Ms": 0.016,
+        "minMs": 0.015,
+        "maxMs": 0.016
+      },
+      "phases": {
+        "db_read": {
+          "samples": 3,
+          "medianMs": 6.583,
+          "p95Ms": 8.247,
+          "minMs": 6.466,
+          "maxMs": 8.247
+        },
+        "json_decode": {
+          "samples": 3,
+          "medianMs": 97.408,
+          "p95Ms": 100.472,
+          "minMs": 96.944,
+          "maxMs": 100.472
+        },
+        "workspace": {
+          "samples": 3,
+          "medianMs": 105.621,
+          "p95Ms": 107.364,
+          "minMs": 104.424,
+          "maxMs": 107.364
+        },
+        "public_state": {
+          "samples": 3,
+          "medianMs": 0.006,
+          "p95Ms": 0.007,
+          "minMs": 0.006,
+          "maxMs": 0.007
+        },
+        "twig": {
+          "samples": 3,
+          "medianMs": 1.523,
+          "p95Ms": 1.822,
+          "minMs": 1.353,
+          "maxMs": 1.822
+        },
+        "request": {
+          "samples": 3,
+          "medianMs": 149.64,
+          "p95Ms": 155.964,
+          "minMs": 146.086,
+          "maxMs": 155.964
+        }
+      }
+    }
+  ],
+  "firstWorkspaceAndRequest": {
+    "status": 200,
+    "handleMs": 427.758174,
+    "terminateMs": 0.019997,
+    "bytes": 45196,
+    "phases": {
+      "db_read": {
+        "ms": 0.834106,
+        "calls": 2
+      },
+      "json_decode": {
+        "ms": 34.963613,
+        "calls": 1
+      },
+      "workspace": {
+        "ms": 309.047451,
+        "calls": 1
+      },
+      "public_state": {
+        "ms": 0.009649,
+        "calls": 1
+      },
+      "page_data": {
+        "ms": 0.264744,
+        "calls": 1
+      },
+      "twig": {
+        "ms": 6.787349,
+        "calls": 1
+      },
+      "request": {
+        "ms": 403.862336,
+        "calls": 1
+      }
+    }
+  },
+  "scale": 5,
+  "neighbors": 0,
+  "databaseBytes": 47222784,
+  "writeSamples": [
+    {
+      "readMs": 196.333074,
+      "applyMs": 1013.113689,
+      "saveMs": 1017.507505
+    },
+    {
+      "readMs": 265.288286,
+      "applyMs": 1103.739621,
+      "saveMs": 736.34447
+    },
+    {
+      "readMs": 202.242585,
+      "applyMs": 1100.40096,
+      "saveMs": 801.474337
+    }
+  ],
+  "projectionBytes": {
+    "source": 16115181,
+    "page": 6469962,
+    "overview": 3109263
+  },
+  "peakMemoryBytes": 302772224,
+  "writeSamplesBeforeIncremental": [
+    {
+      "readMs": 258.233706,
+      "applyMs": 1137.264665,
+      "saveMs": 1793.042335
+    },
+    {
+      "readMs": 226.504402,
+      "applyMs": 1062.524287,
+      "saveMs": 1651.697469
+    },
+    {
+      "readMs": 234.148942,
+      "applyMs": 1024.491108,
+      "saveMs": 1207.491321
+    }
+  ]
+}
