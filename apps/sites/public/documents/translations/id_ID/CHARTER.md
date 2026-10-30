@@ -1,6 +1,15 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Kekuasaan berada di tangan rakyat
-**PIAGAM PENDIRIAN — Versi 1.0 — 29 Oktober 2026**
+**PIAGAM PENDIRIAN — Versi 1.1 — 29 Oktober 2026**
+
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Pelengkap bagi lembaga yang sudah ada**
+>
+> Proyek fiktif ini mengasumsikan adanya sistem negara yang telah berjalan. Proyek ini dirancang sebagai pelengkap lembaga yang sudah ada, beserta kerangka hukum, layanan publik, dan jaminan perlindungannya; proyek ini bukan sistem pemerintahan yang berdiri sendiri.
+>
+> Peran pelengkap ini harus dipertahankan selama informasi yang tersedia belum memungkinkan pengkajian yang memadai atas rangkaian sebab dan akibat. Pengetahuan yang menyeluruh tidak dapat dijamin: ketidakpastian, dampak yang tidak terduga, dan revisi harus tetap terlihat. Tidak ada pemungutan suara dalam simulator yang memiliki akibat hukum.
+<!-- institutional-complement:end -->
 
 *“Jangan ada yang dihukum karena berpikir berbeda. Setiap orang cukup diajak menjelaskan jalannya, agar semua dapat belajar dari akibat keputusan mereka sendiri.”*
 
@@ -57,7 +66,13 @@ Setiap usulan memiliki penjelasan dalam bahasa Prancis yang sederhana, dapat dil
 
 ## BAGIAN IV — KEPUTUSAN BERSAMA
 ### Pasal 11 — Hak suara
-Setiap peserta yang memenuhi syarat mendapat satu suara: setuju, menolak, atau abstain. Syarat, durasi, perhitungan, kuorum jika ada, dan kriteria keputusan diumumkan sebelumnya. Akun atau perangkat tambahan tidak menambah suara.
+
+Setiap warga yang memenuhi syarat dapat menjelaskan penalarannya dan memilih SETUJU, MENOLAK, atau ABSTAIN. Namun untuk pengesahan, setiap keluarga yang dinyatakan dan memenuhi syarat dihitung paling banyak satu suara, berapa pun jumlah anggotanya.
+
+Pilihan keluarga mengikuti mayoritas ketat pilihan SETUJU dan MENOLAK dari anggota yang berpartisipasi. Hasil seri atau hanya abstain menghasilkan satu abstain keluarga; tanpa peserta keluarga tidak berpartisipasi. Kuorum dan mayoritas dihitung per keluarga.
+
+Keanggotaan dan aturan diumumkan serta dibekukan sebelum dibuka. Satu orang hanya terkait dengan satu keluarga dalam konsultasi yang sama. Konsultasi historis mempertahankan aturan. Kelompok fiktif dinyatakan, bukan disimpulkan dari nama.
+
 ### Pasal 12 — Keterbukaan partisipasi
 Dalam konsultasi percobaan, partisipasi dengan nama asli bersifat sukarela. Sebelum memilih, warga diberi tahu bahwa identitas publik, pilihan, dan alasannya dapat diakses. Harus ada perlindungan hukum, termasuk persetujuan dan perlindungan data. Tidak memilih dengan nama tidak menghilangkan hak membaca usulan dan hasil. Konsultasi ini bukan pemilu resmi dan tidak menggantikan kerahasiaan suara menurut hukum.
 ### Pasal 13 — Otonomi wilayah
@@ -100,6 +115,6 @@ Kami tidak mendirikan Démos Kratos untuk menentukan siapa benar atau salah. Kam
 
 *“Jangan paksakan jalanmu. Terangi jalanmu sendiri dan biarkan akibatnya mengajar setiap orang.”*
 
-**Status:** Rancangan piagam pendirian · **Versi:** 1.0 · **Tanggal:** 29 Oktober 2026 · **Wilayah awal:** Prancis · **Prinsip:** Konvergensi emergen · **Sifat:** Proyek bebas, kolaboratif, publik, eksperimental.
+**Status:** Rancangan piagam pendirian · **Versi:** 1.1 · **Tanggal:** 29 Oktober 2026 · **Wilayah awal:** Prancis · **Prinsip:** Konvergensi emergen · **Sifat:** Proyek bebas, kolaboratif, publik, eksperimental.
 
 > Terjemahan kerja. Jika ada perbedaan, lihat [naskah Prancis asli](../../../CHARTER.md).

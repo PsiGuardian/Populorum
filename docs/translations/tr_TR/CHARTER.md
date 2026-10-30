@@ -2,6 +2,15 @@
 ### Δῆμος Κράτος — İktidar halka aittir
 **KURUCU ŞART — Sürüm 1.1 — 29 Ekim 2026**
 
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Mevcut kurumları tamamlayan bir proje**
+>
+> Bu kurgusal proje, hâlihazırda kurulmuş bir devlet sisteminin varlığını esas alır. Mevcut kurumları, hukuki çerçeveleri, kamu hizmetleri ve güvenceleriyle birlikte tamamlamak üzere tasarlanmıştır; bağımsız bir yönetim sistemi oluşturmaz.
+>
+> Mevcut bilgiler neden ve sonuç zincirlerinin yeterince incelenmesine olanak vermediği sürece bu tamamlayıcı rol korunmalıdır. Eksiksiz bilgi garanti edilemez: belirsizlikler, öngörülemeyen etkiler ve revizyonlar görünür kalmalıdır. Simülatördeki hiçbir oylamanın hukuki etkisi yoktur.
+<!-- institutional-complement:end -->
+
 *“Kimse farklı düşündüğü için mahkûm edilmesin. Herkes yalnızca kendi yolunu açıklamaya davet edilsin ki herkes kendi kararlarının sonuçlarından öğrenebilsin.”*
 
 *Gladyatör filminde tasvir edilen Marcus Aurelius'tan esinlenen Stoacı ruhta Démos Kratos'un özgün ilkesi.*

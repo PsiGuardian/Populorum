@@ -1,6 +1,15 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Puterea aparține poporului
-**CARTA FONDATOARE — Versiunea 1.0 — 29 octombrie 2026**
+**CARTA FONDATOARE — Versiunea 1.1 — 29 octombrie 2026**
+
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **O completare a instituțiilor existente**
+>
+> Acest proiect fictiv presupune existența unui sistem de stat deja funcțional. Este conceput ca o completare a instituțiilor existente, cu cadrul lor legal, serviciile publice și garanțiile lor; nu constituie un sistem autonom de guvernare.
+>
+> Acest rol complementar trebuie menținut atât timp cât informațiile disponibile nu permit examinarea suficientă a lanțurilor de cauze și consecințe. Cunoașterea exhaustivă nu poate fi garantată: incertitudinile, efectele neprevăzute și revizuirile trebuie să rămână vizibile. Niciun vot din simulator nu are efecte juridice.
+<!-- institutional-complement:end -->
 
 *„Nimeni să nu fie condamnat pentru că gândește altfel. Fiecare să fie doar invitat să-și explice drumul, pentru ca toți să poată învăța din consecințele propriilor decizii.”*
 
@@ -57,7 +66,13 @@ Fiecare propunere conține o explicație în franceză simplă, eventual complet
 
 ## TITLUL IV — DECIZIA COLECTIVĂ
 ### Articolul 11 — Dreptul de vot
-Fiecare participant eligibil are un singur vot: pentru, contra sau abținere. Condițiile, durata, numărarea, cvorumul eventual și criteriile se publică înainte. Conturile și dispozitivele multiple nu aduc voturi suplimentare.
+
+Fiecare cetățean eligibil poate explica raționamentul și alege PENTRU, ÎMPOTRIVĂ sau ABȚINERE. Pentru adoptare, fiecare familie declarată și eligibilă are cel mult un vot, indiferent de mărime.
+
+Alegerea familiei urmează majoritatea strictă a pozițiilor PENTRU și ÎMPOTRIVĂ ale membrilor participanți. Egalitatea sau numai abțineri produce o abținere familială; fără participanți, familia nu participă. Cvorumul și majoritatea se calculează pe familii.
+
+Apartenența și regulile sunt publicate și înghețate înainte de deschidere. O persoană aparține unei singure familii în aceeași consultare. Consultările istorice își păstrează regulile. Grupurile fictive sunt declarate, nu deduse din nume.
+
 ### Articolul 12 — Transparența participării
 În consultările experimentale participarea nominală este voluntară. Participanții află înainte că identitatea publică, alegerea și motivele lor pot deveni vizibile. Sunt necesare garanții legale privind consimțământul și datele personale. Cine nu participă nominal poate citi în continuare propunerile și rezultatele. Consultările nu sunt alegeri oficiale și nu înlocuiesc secretul votului impus de lege.
 ### Articolul 13 — Autonomia teritorială
@@ -100,6 +115,6 @@ Nu înființăm Démos Kratos pentru a decide cine are dreptate. Dorim ca fiecar
 
 *„Nu-ți impune drumul. Luminează-l pe al tău și lasă consecințele să-i învețe pe toți.”*
 
-**Statut:** Cartă fondatoare propusă · **Versiune:** 1.0 · **Data:** 29 octombrie 2026 · **Teritoriu inițial:** Franța · **Principiu:** Convergență emergentă · **Natură:** Proiect liber, colaborativ, public și experimental.
+**Statut:** Cartă fondatoare propusă · **Versiune:** 1.1 · **Data:** 29 octombrie 2026 · **Teritoriu inițial:** Franța · **Principiu:** Convergență emergentă · **Natură:** Proiect liber, colaborativ, public și experimental.
 
 > Traducere de lucru. În caz de divergență, consultați [originalul francez](../../../CHARTER.md).

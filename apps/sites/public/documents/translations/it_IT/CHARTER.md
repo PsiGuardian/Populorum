@@ -1,7 +1,16 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Il potere appartiene al popolo
 
-**CARTA FONDATIVA — Versione 1.0 — 29 ottobre 2026**
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Un complemento alle istituzioni esistenti**
+>
+> Questo progetto fittizio presuppone un sistema statale già esistente. È concepito come complemento alle istituzioni esistenti, con il loro quadro giuridico, i loro servizi pubblici e le loro garanzie; non costituisce un sistema autonomo di governo.
+>
+> Questo ruolo complementare deve essere mantenuto finché le informazioni disponibili non consentano di esaminare in modo sufficiente le catene di cause e conseguenze. Non è possibile garantire una conoscenza esaustiva: incertezze, effetti imprevisti e revisioni devono restare visibili. Nessun voto nel simulatore ha effetti giuridici.
+<!-- institutional-complement:end -->
+
+**CARTA FONDATIVA — Versione 1.1 — 29 ottobre 2026**
 
 *«Che nessuno sia condannato per aver pensato diversamente. Che sia soltanto invitato a spiegare il proprio percorso, affinché ciascuno possa imparare dalle conseguenze delle proprie decisioni».*
 
@@ -72,7 +81,12 @@ Le proposte devono essere comprensibili, con una spiegazione in francese semplic
 ## TITOLO IV — DECISIONE COLLETTIVA
 
 ### Articolo 11 — Diritto di voto
-Ogni avente diritto dispone di un voto favorevole, contrario o di astensione. Prima dell'apertura vengono pubblicati ammissibilità, durata, spoglio, eventuale quorum e criteri decisionali. Account e dispositivi multipli non attribuiscono altri voti.
+
+Ogni cittadino ammissibile può esporre il proprio ragionamento e scegliere A FAVORE, CONTRO o ASTENSIONE. Per l’adozione, ogni famiglia dichiarata e ammissibile conta al massimo un voto, indipendentemente dalle dimensioni.
+
+La scelta familiare segue la maggioranza stretta delle posizioni A FAVORE e CONTRO espresse dai partecipanti. Parità o sole astensioni producono un’astensione familiare; senza partecipanti la famiglia non partecipa. Quorum e maggioranza si calcolano sulle famiglie.
+
+Appartenenza e regole sono pubblicate e fissate prima dell’apertura. Una persona non appartiene a due famiglie nella stessa consultazione. Le consultazioni storiche conservano le loro regole. I gruppi fittizi sono dichiarati, non dedotti dal cognome.
 
 ### Articolo 12 — Trasparenza delle partecipazioni
 Nelle consultazioni sperimentali la partecipazione nominativa è volontaria. Prima del voto si informa che identità pubblica, scelta e motivazioni possono essere accessibili agli altri. Sono necessarie garanzie legali, specialmente consenso e protezione dei dati. Chi non vota nominativamente può comunque consultare proposte e risultati. Le consultazioni non sono elezioni ufficiali e non sostituiscono il segreto del voto previsto dalla legge.
@@ -132,7 +146,7 @@ Non fondiamo Démos Kratos per stabilire chi ha ragione e chi torto. Vogliamo ch
 ---
 
 **Stato:** Proposta di carta fondativa di una democrazia partecipativa sperimentale.  
-**Versione:** 1.0 · **Data:** 29 ottobre 2026.  
+**Versione:** 1.1 · **Data:** 29 ottobre 2026.\
 **Territorio iniziale:** Francia · **Principio centrale:** Convergenza emergente.  
 **Natura:** Progetto libero, collaborativo, pubblico e sperimentale.
 

@@ -2,6 +2,15 @@
 ### Δῆμος Κράτος — Władza należy do ludu
 **KARTA ZAŁOŻYCIELSKA — Wersja 1.1 — 29 października 2026 r.**
 
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Uzupełnienie istniejących instytucji**
+>
+> Ten fikcyjny projekt zakłada istnienie działającego systemu państwowego. Został pomyślany jako uzupełnienie istniejących instytucji, wraz z ich ramami prawnymi, usługami publicznymi i gwarancjami; nie stanowi samodzielnego systemu sprawowania władzy.
+>
+> Ta uzupełniająca rola musi zostać zachowana tak długo, jak dostępne informacje nie pozwalają wystarczająco zbadać łańcuchów przyczyn i skutków. Nie można zagwarantować wyczerpującej wiedzy: niepewności, nieprzewidziane skutki i zmiany muszą pozostawać widoczne. Żadne głosowanie w symulatorze nie wywołuje skutków prawnych.
+<!-- institutional-complement:end -->
+
 *„Niech nikt nie będzie potępiany za to, że myśli inaczej. Niech zostanie jedynie zaproszony do wyjaśnienia swojej drogi, aby każdy mógł uczyć się z konsekwencji własnych decyzji”.*
 
 *Oryginalne motto Démos Kratos w duchu stoickim, inspirowane Markiem Aureliuszem przedstawionym w filmie Gladiator.*

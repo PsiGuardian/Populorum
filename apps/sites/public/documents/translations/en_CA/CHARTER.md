@@ -1,7 +1,16 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Power belongs to the people
 
-**FOUNDING CHARTER — Version 1.0 — 29 October 2026**
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **A complement to existing institutions**
+>
+> This fictional project assumes that a system of State institutions is already in place. It is designed to complement existing institutions, together with their legal framework, public services and safeguards; it is not a standalone system of government.
+>
+> This complementary role must be maintained for as long as the available information does not allow chains of causes and consequences to be examined sufficiently. Exhaustive knowledge cannot be guaranteed: uncertainties, unforeseen effects and revisions must remain visible. No vote in the simulator has any legal effect.
+<!-- institutional-complement:end -->
+
+**FOUNDING CHARTER — Version 1.1 — 29 October 2026**
 
 *“Let no one be condemned for thinking differently. Let each person simply be invited to explain their path, so that everyone may learn from the consequences of their own decisions.”*
 
@@ -157,13 +166,13 @@ No citizen should be excluded from understanding a proposal by artificially comp
 
 ### Article 11 — Right to vote
 
-Each citizen eligible for a consultation has one vote.
+Each eligible citizen may explain their reasoning and individually choose FOR, AGAINST or ABSTAIN. For adoption, however, each declared eligible family contributes at most one vote, regardless of its size.
 
-They may vote for or against a proposal, or abstain.
+The family choice follows a strict majority of its participating members’ FOR and AGAINST positions. A tie, or abstentions only, produces one family abstention. A family with no participant is non-participating. Adoption quorum and majority are calculated across families.
 
-Before opening, the consultation must specify its eligibility rules, duration, counting method, any quorum and decision criteria.
+Family membership, aggregation, eligibility, schedule and decision criteria are published and frozen before opening. A citizen may belong to only one family in the same consultation. A position without an eligible family remains visible but has no adoption weight. Extra accounts or devices confer no extra votes.
 
-Multiple accounts or devices cannot confer additional votes.
+This experimental rule applies to new consultations in this edition; historical consultations retain their frozen rules. Fictional groups are declared, never inferred from names, genealogy or sensitive data.
 
 ### Article 12 — Transparency of participation
 
@@ -336,7 +345,7 @@ We wish them to live together, learn from experience and make informed decisions
 
 **Status:** Proposed founding charter for an experimental participatory-democracy system.
 
-**Version:** 1.0
+**Version:** 1.1
 
 **Date:** 29 October 2026
 

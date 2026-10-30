@@ -1,8 +1,17 @@
 # Démos Kratos — Charte fondatrice / Founding Charter
 
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Un complément aux institutions existantes**
+>
+> Ce projet fictif suppose un système d’État déjà en place. Il est conçu en complément des institutions existantes, avec leur cadre légal, leurs services publics et leurs garanties ; il ne constitue pas un dispositif autonome de gouvernement.
+>
+> Ce rôle complémentaire doit être maintenu tant que les informations disponibles ne permettent pas d’examiner suffisamment les chaînes de causes et de conséquences. Une connaissance exhaustive ne peut pas être garantie : incertitudes, effets imprévus et révisions doivent rester visibles. Aucun vote du simulateur n’a d’effet juridique.
+<!-- institutional-complement:end -->
+
 **Source de référence / Authoritative source:** [Texte français — CHARTER.md](../../CHARTER.md)
 
-**Version / Version:** 1.0 · **Date:** 2026-10-29
+**Charte / Charter:** 1.1 · **Notice informative / Informational notice:** 2026-10-30
 
 Les documents ci-dessous suivent les **28 locales** du projet Profiler Shield. Chaque version conserve les **24 articles**, leurs titres thématiques et la structure des causes et conséquences. Ce sont des **traductions de travail et adaptations rédactionnelles**, non validées par des traducteurs juridiques. Elles peuvent condenser certains passages : pour toute interprétation précise, consulter la version française intégrale. Toute correction linguistique est bienvenue au moyen d'une contribution GitHub.
 

@@ -1,7 +1,16 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Le pouvoir appartient au peuple
 
-**CHARTE FONDATRICE — Version 1.0 — 29 octobre 2026**
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Un complément aux institutions existantes**
+>
+> Ce projet fictif suppose un système d’État déjà en place. Il est conçu en complément des institutions existantes, avec leur cadre légal, leurs services publics et leurs garanties ; il ne constitue pas un dispositif autonome de gouvernement.
+>
+> Ce rôle complémentaire doit être maintenu tant que les informations disponibles ne permettent pas d’examiner suffisamment les chaînes de causes et de conséquences. Une connaissance exhaustive ne peut pas être garantie : incertitudes, effets imprévus et révisions doivent rester visibles. Aucun vote du simulateur n’a d’effet juridique.
+<!-- institutional-complement:end -->
+
+**CHARTE FONDATRICE — Version 1.1 — 29 octobre 2026**
 
 *« Que nul ne soit condamné pour avoir pensé autrement. Qu'il soit seulement invité à expliquer son chemin, et que chacun puisse apprendre des conséquences de ses propres décisions. »*
 
@@ -161,13 +170,13 @@ Aucun citoyen ne doit être exclu de la compréhension d'une proposition par la 
 
 ### Article 11 — Du droit de vote
 
-Chaque citoyen admissible à une consultation dispose d'une voix.
+Chaque citoyen admissible peut exposer son raisonnement et exprimer individuellement POUR, CONTRE ou ABSTENTION. Pour l’adoption d’une proposition, chaque famille déclarée et admissible ne compte cependant qu’une seule voix, quelle que soit sa taille.
 
-Il peut voter en faveur d'une proposition, voter contre ou s'abstenir.
+La décision familiale résulte de la majorité stricte des POUR et CONTRE exprimés par ses membres participants. Une égalité, ou uniquement des abstentions, produit une abstention familiale. Sans participation, la famille ne compte pas comme participante. Le quorum et la majorité d’adoption portent sur les familles.
 
-La consultation doit préciser avant son ouverture les conditions de participation, sa durée, les modalités de dépouillement, le quorum éventuel et les critères de décision.
+Les rattachements familiaux, la règle d’agrégation, les conditions de participation, la durée et les critères de décision sont publiés et figés avant l’ouverture. Un citoyen ne peut être rattaché qu’à une famille pour la même consultation. Une opinion sans famille admissible reste consultable sans poids d’adoption. Les comptes et appareils supplémentaires n’apportent aucune voix supplémentaire.
 
-Le nombre de voix ne peut être augmenté par la multiplication des comptes ou des appareils.
+Cette règle expérimentale s’applique aux nouvelles consultations de ce millésime ; les consultations historiques conservent leurs règles figées. Les groupes fictifs sont déclarés, sans déduction à partir du nom, de la généalogie ou d’une donnée sensible.
 
 ### Article 12 — De la transparence des participations
 
@@ -342,7 +351,7 @@ Nous souhaitons qu'ils puissent vivre ensemble, apprendre de leurs expériences 
 
 **Statut :** Charte fondatrice proposée pour un système expérimental de démocratie participative.
 
-**Version :** 1.0
+**Version :** 1.1
 
 **Date :** 29 octobre 2026
 

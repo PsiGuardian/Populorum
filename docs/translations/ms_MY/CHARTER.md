@@ -2,6 +2,15 @@
 ### Δῆμος Κράτος — Kuasa milik rakyat
 **PIAGAM PENGASASAN — Versi 1.1 — 29 Oktober 2026**
 
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Pelengkap kepada institusi sedia ada**
+>
+> Projek fiksyen ini mengandaikan adanya sistem negara yang telah pun diwujudkan. Projek ini direka sebagai pelengkap kepada institusi sedia ada, bersama-sama kerangka undang-undang, perkhidmatan awam dan jaminan perlindungannya; projek ini bukan suatu sistem pemerintahan yang berdiri sendiri.
+>
+> Peranan pelengkap ini mesti dikekalkan selagi maklumat yang tersedia belum membolehkan penelitian yang mencukupi terhadap rantaian sebab dan akibat. Pengetahuan yang menyeluruh tidak dapat dijamin: ketidakpastian, kesan yang tidak dijangka dan semakan mesti terus dipaparkan. Tiada undian dalam simulator yang mempunyai kesan undang-undang.
+<!-- institutional-complement:end -->
+
 *“Jangan ada sesiapa dihukum kerana berfikir secara berbeza. Jemputlah setiap orang menerangkan jalannya supaya semua dapat belajar daripada akibat keputusan sendiri.”*
 
 *Cogan kata asal Démos Kratos dalam semangat Stoik, diilhamkan oleh Marcus Aurelius seperti digambarkan dalam filem Gladiator.*

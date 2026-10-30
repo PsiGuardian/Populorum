@@ -2,6 +2,15 @@
 ### Δῆμος Κράτος — Quyền lực thuộc về nhân dân
 **HIẾN CHƯƠNG SÁNG LẬP — Phiên bản 1.1 — 29 tháng 10 năm 2026**
 
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Bổ sung cho các thể chế hiện có**
+>
+> Dự án giả tưởng này giả định rằng một hệ thống nhà nước đã tồn tại. Dự án được thiết kế để bổ sung cho các thể chế hiện có, cùng với khuôn khổ pháp luật, dịch vụ công và các cơ chế bảo đảm của chúng; đây không phải là một hệ thống quản trị nhà nước độc lập.
+>
+> Vai trò bổ sung này phải được duy trì chừng nào thông tin hiện có chưa cho phép xem xét đầy đủ các chuỗi nguyên nhân và hệ quả. Không thể bảo đảm tri thức toàn diện: những điều chưa chắc chắn, tác động ngoài dự kiến và các lần sửa đổi phải luôn được thể hiện rõ. Không có cuộc bỏ phiếu nào trong trình mô phỏng có hiệu lực pháp lý.
+<!-- institutional-complement:end -->
+
 *“Không ai phải bị lên án chỉ vì suy nghĩ khác biệt. Hãy chỉ mời mỗi người giải thích con đường của mình, để mọi người có thể học từ hậu quả của chính những quyết định mình đưa ra.”*
 
 *Khẩu hiệu gốc của Démos Kratos, theo tinh thần khắc kỷ lấy cảm hứng từ Marcus Aurelius như được khắc họa trong phim Gladiator.*

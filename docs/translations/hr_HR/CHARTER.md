@@ -2,6 +2,15 @@
 ### Δῆμος Κράτος — Vlast pripada narodu
 **OSNIVAČKA POVELJA — Verzija 1.1 — 29. listopada 2026.**
 
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Dopuna postojećim institucijama**
+>
+> Ovaj fiktivni projekt pretpostavlja već uspostavljen državni sustav. Osmišljen je kao dopuna postojećim institucijama, s njihovim pravnim okvirom, javnim službama i jamstvima; ne predstavlja samostalan sustav upravljanja državom.
+>
+> Ta dopunska uloga mora se zadržati dok dostupne informacije ne omoguće dovoljno temeljito ispitivanje lanaca uzroka i posljedica. Iscrpno znanje ne može se zajamčiti: neizvjesnosti, nepredviđeni učinci i revizije moraju ostati vidljivi. Nijedno glasovanje u simulatoru nema pravni učinak.
+<!-- institutional-complement:end -->
+
 *„Neka nitko ne bude osuđen zato što misli drukčije. Neka ga se samo pozove da objasni svoj put, kako bi svatko mogao učiti iz posljedica vlastitih odluka.”*
 
 *Izvorni moto Démos Kratosa u stoičkom duhu nadahnutom Markom Aurelijem kako je prikazan u filmu Gladijator.*

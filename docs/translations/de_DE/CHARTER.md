@@ -1,6 +1,15 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Die Macht gehört dem Volk
 
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Eine Ergänzung zu bestehenden Institutionen**
+>
+> Dieses fiktive Projekt setzt ein bereits bestehendes staatliches System voraus. Es soll die bestehenden Institutionen mit ihrem rechtlichen Rahmen, ihren öffentlichen Diensten und ihren Schutzgarantien ergänzen; es stellt kein eigenständiges Regierungssystem dar.
+>
+> Diese ergänzende Rolle muss beibehalten werden, solange die verfügbaren Informationen keine hinreichende Untersuchung der Ketten von Ursachen und Folgen ermöglichen. Vollständiges Wissen lässt sich nicht garantieren: Unsicherheiten, unvorhergesehene Auswirkungen und Überarbeitungen müssen sichtbar bleiben. Keine Abstimmung im Simulator hat rechtliche Wirkung.
+<!-- institutional-complement:end -->
+
 **GRÜNDUNGSCHARTA — Version 1.1 — 29. Oktober 2026**
 
 *„Niemand soll verurteilt werden, weil er anders denkt. Jeder soll lediglich eingeladen werden, seinen Weg zu erklären, damit alle aus den Folgen ihrer eigenen Entscheidungen lernen können.“*

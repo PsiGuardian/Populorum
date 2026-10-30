@@ -2,6 +2,15 @@
 ### Δῆμος Κράτος — Puterea aparține poporului
 **CARTA FONDATOARE — Versiunea 1.1 — 29 octombrie 2026**
 
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **O completare a instituțiilor existente**
+>
+> Acest proiect fictiv presupune existența unui sistem de stat deja funcțional. Este conceput ca o completare a instituțiilor existente, cu cadrul lor legal, serviciile publice și garanțiile lor; nu constituie un sistem autonom de guvernare.
+>
+> Acest rol complementar trebuie menținut atât timp cât informațiile disponibile nu permit examinarea suficientă a lanțurilor de cauze și consecințe. Cunoașterea exhaustivă nu poate fi garantată: incertitudinile, efectele neprevăzute și revizuirile trebuie să rămână vizibile. Niciun vot din simulator nu are efecte juridice.
+<!-- institutional-complement:end -->
+
 *„Nimeni să nu fie condamnat pentru că gândește altfel. Fiecare să fie doar invitat să-și explice drumul, pentru ca toți să poată învăța din consecințele propriilor decizii.”*
 
 *Motto original Démos Kratos, în spirit stoic inspirat de Marcus Aurelius așa cum este prezentat în filmul Gladiator.*

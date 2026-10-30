@@ -2,6 +2,15 @@
 ### Δῆμος Κράτος — Moc patrí ľudu
 **ZAKLADATEĽSKÁ CHARTA — Verzia 1.1 — 29. októbra 2026**
 
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Doplnok k existujúcim inštitúciám**
+>
+> Tento fiktívny projekt predpokladá už fungujúci štátny systém. Je navrhnutý ako doplnok existujúcich inštitúcií s ich právnym rámcom, verejnými službami a zárukami; nepredstavuje samostatný systém vládnutia.
+>
+> Táto doplnková úloha musí zostať zachovaná, kým dostupné informácie neumožnia dostatočne preskúmať reťazce príčin a následkov. Úplné poznanie nemožno zaručiť: neistoty, nepredvídané účinky a revízie musia zostať viditeľné. Žiadne hlasovanie v simulátore nemá právne účinky.
+<!-- institutional-complement:end -->
+
 *„Nech nik nie je odsúdený za to, že myslí inak. Nech je iba pozvaný vysvetliť svoju cestu, aby sa každý mohol učiť z dôsledkov svojich vlastných rozhodnutí.“*
 
 *Pôvodné motto Démos Kratos v stoickom duchu inšpirované Markom Auréliom tak, ako ho zobrazuje film Gladiátor.*

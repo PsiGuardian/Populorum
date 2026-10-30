@@ -1,6 +1,15 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — De macht behoort aan het volk
-**OPRICHTINGSCHARTER — Versie 1.0 — 29 oktober 2026**
+**OPRICHTINGSCHARTER — Versie 1.1 — 29 oktober 2026**
+
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Een aanvulling op bestaande instellingen**
+>
+> Dit fictieve project gaat ervan uit dat er al een staatsbestel bestaat. Het is bedoeld als aanvulling op bestaande instellingen, met hun wettelijke kader, openbare diensten en waarborgen; het vormt geen zelfstandig bestuurssysteem.
+>
+> Deze aanvullende rol moet behouden blijven zolang de beschikbare informatie het niet mogelijk maakt om de ketens van oorzaken en gevolgen voldoende te onderzoeken. Volledige kennis kan niet worden gegarandeerd: onzekerheden, onvoorziene effecten en herzieningen moeten zichtbaar blijven. Geen enkele stemming in de simulator heeft rechtsgevolgen.
+<!-- institutional-complement:end -->
 
 *‘Laat niemand veroordeeld worden omdat die anders denkt. Nodig ieder slechts uit om zijn eigen weg uit te leggen, zodat iedereen kan leren van de gevolgen van zijn eigen beslissingen.’*
 
@@ -57,7 +66,13 @@ Voorstellen bevatten een uitleg in eenvoudig Frans, eventueel aangevuld met omga
 
 ## TITEL IV — COLLECTIEVE BESLUITVORMING
 ### Artikel 11 — Stemrecht
-Iedere gerechtigde heeft één stem: voor, tegen of onthouding. Toelating, duur, telling, eventueel quorum en besliscriteria worden vooraf bekendgemaakt. Extra accounts of apparaten geven geen extra stemmen.
+
+Elke bevoegde burger mag een redenering delen en VOOR, TEGEN of ONTHOUDING kiezen. Voor aanvaarding telt elk verklaard, bevoegd gezin echter hoogstens één stem, ongeacht de grootte.
+
+De gezinskeuze volgt de strikte meerderheid van de deelnemende VOOR- en TEGEN-posities. Een gelijkspel of alleen onthoudingen geeft één gezinsonthouding; zonder deelnemers neemt het gezin niet deel. Quorum en meerderheid worden per gezin berekend.
+
+Gezinslidmaatschap en regels worden vooraf gepubliceerd en vastgezet. Niemand behoort in dezelfde raadpleging tot twee gezinnen. Historische raadplegingen behouden hun regels. Fictieve groepen worden verklaard, niet uit namen afgeleid.
+
 ### Artikel 12 — Openheid van deelname
 Bij experimentele raadplegingen is deelname onder eigen naam vrijwillig. Deelnemers weten vooraf dat publieke identiteit, keuze en toelichting zichtbaar kunnen worden. Wettelijke waarborgen voor toestemming en persoonsgegevens zijn vereist. Zonder nominatieve stem blijft inzage in openbare voorstellen en resultaten mogelijk. Dit zijn geen officiële verkiezingen; wettelijke stemgeheimen blijven gelden.
 ### Artikel 13 — Gemeentelijke autonomie
@@ -100,6 +115,6 @@ Démos Kratos is niet opgericht om te bepalen wie gelijk heeft. Ieder mag zijn e
 
 *‘Dring jouw weg niet op. Verlicht je eigen weg en laat de gevolgen iedereen iets leren.’*
 
-**Status:** Voorgesteld oprichtingscharter · **Versie:** 1.0 · **Datum:** 29 oktober 2026 · **Eerste proefgebied:** Frankrijk · **Kernprincipe:** Emergente convergentie · **Aard:** Vrij, gezamenlijk, openbaar en experimenteel project.
+**Status:** Voorgesteld oprichtingscharter · **Versie:** 1.1 · **Datum:** 29 oktober 2026 · **Eerste proefgebied:** Frankrijk · **Kernprincipe:** Emergente convergentie · **Aard:** Vrij, gezamenlijk, openbaar en experimenteel project.
 
 > Werkvertaling. Raadpleeg bij verschillen het [Franse origineel](../../../CHARTER.md).

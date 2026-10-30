@@ -2,6 +2,15 @@
 ### Δῆμος Κράτος — De macht behoort aan het volk
 **OPRICHTINGSCHARTER — Versie 1.1 — 29 oktober 2026**
 
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Een aanvulling op bestaande instellingen**
+>
+> Dit fictieve project gaat ervan uit dat er al een staatsbestel bestaat. Het is bedoeld als aanvulling op bestaande instellingen, met hun wettelijke kader, openbare diensten en waarborgen; het vormt geen zelfstandig bestuurssysteem.
+>
+> Deze aanvullende rol moet behouden blijven zolang de beschikbare informatie het niet mogelijk maakt om de ketens van oorzaken en gevolgen voldoende te onderzoeken. Volledige kennis kan niet worden gegarandeerd: onzekerheden, onvoorziene effecten en herzieningen moeten zichtbaar blijven. Geen enkele stemming in de simulator heeft rechtsgevolgen.
+<!-- institutional-complement:end -->
+
 *‘Laat niemand veroordeeld worden omdat die anders denkt. Nodig ieder slechts uit om zijn eigen weg uit te leggen, zodat iedereen kan leren van de gevolgen van zijn eigen beslissingen.’*
 
 *Oorspronkelijk motto van Démos Kratos, in een stoïcijnse geest geïnspireerd door Marcus Aurelius zoals verbeeld in de film Gladiator.*

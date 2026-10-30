@@ -1,6 +1,15 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Le pouvoir appartient au peuple
 
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **Un complément aux institutions existantes**
+>
+> Ce projet fictif suppose un système d’État déjà en place. Il est conçu en complément des institutions existantes, avec leur cadre légal, leurs services publics et leurs garanties ; il ne constitue pas un dispositif autonome de gouvernement.
+>
+> Ce rôle complémentaire doit être maintenu tant que les informations disponibles ne permettent pas d’examiner suffisamment les chaînes de causes et de conséquences. Une connaissance exhaustive ne peut pas être garantie : incertitudes, effets imprévus et révisions doivent rester visibles. Aucun vote du simulateur n’a d’effet juridique.
+<!-- institutional-complement:end -->
+
 **CHARTE FONDATRICE — Version 1.1 — 29 octobre 2026**
 
 *« Que nul ne soit condamné pour avoir pensé autrement. Qu'il soit seulement invité à expliquer son chemin, et que chacun puisse apprendre des conséquences de ses propres décisions. »*

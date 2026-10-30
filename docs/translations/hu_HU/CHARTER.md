@@ -2,6 +2,15 @@
 ### Δῆμος Κράτος — A hatalom a népé
 **ALAPÍTÓ OKIRAT — 1.1 verzió — 2026. október 29.**
 
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **A meglévő intézmények kiegészítése**
+>
+> Ez a fiktív projekt egy már működő állami rendszert feltételez. A meglévő intézmények, jogi keretük, közszolgáltatásaik és garanciáik kiegészítésére szolgál; nem alkot önálló kormányzási rendszert.
+>
+> Ezt a kiegészítő szerepet mindaddig fenn kell tartani, amíg a rendelkezésre álló információk nem teszik lehetővé az okok és következmények láncolatának kellően alapos vizsgálatát. A teljes körű tudás nem garantálható: a bizonytalanságoknak, az előre nem látott hatásoknak és a felülvizsgálatoknak láthatónak kell maradniuk. A szimulátorban leadott egyetlen szavazatnak sincs joghatása.
+<!-- institutional-complement:end -->
+
 *„Senkit ne ítéljenek el azért, mert másként gondolkodik. Csupán kérjék meg, hogy magyarázza el saját útját, hogy mindenki tanulhasson saját döntéseinek következményeiből.”*
 
 *A Démos Kratos eredeti jelmondata, Marcus Aurelius sztoikus szellemiségét idézve, ahogyan a Gladiátor című film ábrázolja.*

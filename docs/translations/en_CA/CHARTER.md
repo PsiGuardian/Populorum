@@ -1,6 +1,15 @@
 # DÉMOS KRATOS
 ### Δῆμος Κράτος — Power belongs to the people
 
+<!-- institutional-complement:start -->
+> [!NOTE]
+> **A complement to existing institutions**
+>
+> This fictional project assumes that a system of State institutions is already in place. It is designed to complement existing institutions, together with their legal framework, public services and safeguards; it is not a standalone system of government.
+>
+> This complementary role must be maintained for as long as the available information does not allow chains of causes and consequences to be examined sufficiently. Exhaustive knowledge cannot be guaranteed: uncertainties, unforeseen effects and revisions must remain visible. No vote in the simulator has any legal effect.
+<!-- institutional-complement:end -->
+
 **FOUNDING CHARTER — Version 1.1 — 29 October 2026**
 
 *“Let no one be condemned for thinking differently. Let each person simply be invited to explain their path, so that everyone may learn from the consequences of their own decisions.”*
