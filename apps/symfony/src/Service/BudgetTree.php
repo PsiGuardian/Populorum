@@ -16,7 +16,7 @@ final class BudgetTree
         "Remboursements d'emprunts hors GAD", "Autres dépenses d'investissement",
     ];
 
-    public function __construct(private readonly BudgetCatalog $catalog, private readonly BudgetTrace $trace, private readonly BudgetEvidenceCatalog $evidence, private readonly PublicProcurement $procurement)
+    public function __construct(private readonly BudgetCatalog $catalog, private readonly BudgetTrace $trace, private readonly BudgetEvidenceCatalog $evidence, private readonly PublicProcurementData $procurement)
     {
     }
 

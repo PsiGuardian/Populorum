@@ -60,7 +60,7 @@ final class DemoController extends AbstractController
         private \App\Service\GeographyCatalog $geography,
         private \App\Service\TerritorySelection $territorySelection,
         private \App\Service\BudgetEvidenceCatalog $budgetEvidence,
-        private \App\Service\PublicProcurement $publicProcurement,
+        private \App\Service\PublicProcurementData $publicProcurement,
     ) {
     }
 

@@ -70,7 +70,7 @@ final class BudgetExplorer
             if (!in_array($key, $definition['accounts'], true)) {
                 continue;
             }
-            $description = self::DESCRIPTIONS[$key] ?? '';
+            $description = self::DESCRIPTIONS[$key];
             if ($term !== '' && !preg_match('/' . preg_quote($term, '/') . '/iu', $key . ' ' . $description)) {
                 continue;
             }
