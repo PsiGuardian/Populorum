@@ -4,40 +4,40 @@ Application native **PHP 8.4 / Symfony 8.1 / Doctrine / Twig / Symfony Form et V
 
 Le projet reste une simulation fictive. Les seules communes initiales sont **Paris (75056), Marseille (13055), Le Havre (76351)**. Leurs noms, rattachements et codes communaux viennent du COG INSEE 2026. Les 300 personnages (100 par ville), les 27 projets expérimentaux (neuf par ville), votes et résultats sont fictifs. Les projets s’appuient sur des sources publiques datées, distinctes des hypothèses et résultats inventés. Voir [recherche et fixtures](docs/MUNICIPAL_FIXTURES.md).
 
-## Traductions — 28 locales
+## Installation — 28 locales
 
-Retrouvez la charte fondatrice et le cadre du projet dans les 28 locales documentaires, comme dans le [README principal](../../README.md).
+Choisissez votre langue pour lire le guide d’installation et de mise à jour : prérequis, démarrage local, mises à jour et dépannage.
 
-| Langue | Locale |
+| Langue | Guide d’installation |
 |---|---|
-| 🇫🇷 Français | [`fr_FR`](../../docs/translations/fr_FR/CHARTER.md) |
-| 🇬🇧 English (UK) | [`en_GB`](../../docs/translations/en_GB/CHARTER.md) |
-| 🇺🇸 English (US) | [`en_US`](../../docs/translations/en_US/CHARTER.md) |
-| 🇨🇦 English (Canada) | [`en_CA`](../../docs/translations/en_CA/CHARTER.md) |
-| 🇮🇪 English (Ireland) | [`en_IE`](../../docs/translations/en_IE/CHARTER.md) |
-| 🇪🇸 Español | [`es_ES`](../../docs/translations/es_ES/CHARTER.md) |
-| 🇩🇪 Deutsch | [`de_DE`](../../docs/translations/de_DE/CHARTER.md) |
-| 🇮🇹 Italiano | [`it_IT`](../../docs/translations/it_IT/CHARTER.md) |
-| 🇵🇹 Português | [`pt_PT`](../../docs/translations/pt_PT/CHARTER.md) |
-| 🇳🇱 Nederlands | [`nl_NL`](../../docs/translations/nl_NL/CHARTER.md) |
-| 🇵🇱 Polski | [`pl_PL`](../../docs/translations/pl_PL/CHARTER.md) |
-| 🇨🇿 Čeština | [`cs_CZ`](../../docs/translations/cs_CZ/CHARTER.md) |
-| 🇸🇰 Slovenčina | [`sk_SK`](../../docs/translations/sk_SK/CHARTER.md) |
-| 🇭🇺 Magyar | [`hu_HU`](../../docs/translations/hu_HU/CHARTER.md) |
-| 🇭🇷 Hrvatski | [`hr_HR`](../../docs/translations/hr_HR/CHARTER.md) |
-| 🇷🇴 Română | [`ro_RO`](../../docs/translations/ro_RO/CHARTER.md) |
-| 🇬🇷 Ελληνικά | [`el_GR`](../../docs/translations/el_GR/CHARTER.md) |
-| 🇷🇺 Русский | [`ru_RU`](../../docs/translations/ru_RU/CHARTER.md) |
-| 🇹🇷 Türkçe | [`tr_TR`](../../docs/translations/tr_TR/CHARTER.md) |
-| 🇸🇦 العربية | [`ar_SA`](../../docs/translations/ar_SA/CHARTER.md) |
-| 🇮🇳 हिन्दी | [`hi_IN`](../../docs/translations/hi_IN/CHARTER.md) |
-| 🇯🇵 日本語 | [`ja_JP`](../../docs/translations/ja_JP/CHARTER.md) |
-| 🇨🇳 简体中文 | [`zh_CN`](../../docs/translations/zh_CN/CHARTER.md) |
-| 🇮🇩 Bahasa Indonesia | [`id_ID`](../../docs/translations/id_ID/CHARTER.md) |
-| 🇲🇾 Bahasa Melayu | [`ms_MY`](../../docs/translations/ms_MY/CHARTER.md) |
-| 🇻🇳 Tiếng Việt | [`vi_VN`](../../docs/translations/vi_VN/CHARTER.md) |
-| 🇬🇪 ქართული | [`ka_GE`](../../docs/translations/ka_GE/CHARTER.md) |
-| 🇲🇳 Монгол | [`mn_MN`](../../docs/translations/mn_MN/CHARTER.md) |
+| 🇫🇷 Français | [`fr_FR`](docs/translations/fr_FR/INSTALLATION.md) |
+| 🇬🇧 English (UK) | [`en_GB`](docs/translations/en_GB/INSTALLATION.md) |
+| 🇺🇸 English (US) | [`en_US`](docs/translations/en_US/INSTALLATION.md) |
+| 🇨🇦 English (Canada) | [`en_CA`](docs/translations/en_CA/INSTALLATION.md) |
+| 🇮🇪 English (Ireland) | [`en_IE`](docs/translations/en_IE/INSTALLATION.md) |
+| 🇪🇸 Español | [`es_ES`](docs/translations/es_ES/INSTALLATION.md) |
+| 🇩🇪 Deutsch | [`de_DE`](docs/translations/de_DE/INSTALLATION.md) |
+| 🇮🇹 Italiano | [`it_IT`](docs/translations/it_IT/INSTALLATION.md) |
+| 🇵🇹 Português | [`pt_PT`](docs/translations/pt_PT/INSTALLATION.md) |
+| 🇳🇱 Nederlands | [`nl_NL`](docs/translations/nl_NL/INSTALLATION.md) |
+| 🇵🇱 Polski | [`pl_PL`](docs/translations/pl_PL/INSTALLATION.md) |
+| 🇨🇿 Čeština | [`cs_CZ`](docs/translations/cs_CZ/INSTALLATION.md) |
+| 🇸🇰 Slovenčina | [`sk_SK`](docs/translations/sk_SK/INSTALLATION.md) |
+| 🇭🇺 Magyar | [`hu_HU`](docs/translations/hu_HU/INSTALLATION.md) |
+| 🇭🇷 Hrvatski | [`hr_HR`](docs/translations/hr_HR/INSTALLATION.md) |
+| 🇷🇴 Română | [`ro_RO`](docs/translations/ro_RO/INSTALLATION.md) |
+| 🇬🇷 Ελληνικά | [`el_GR`](docs/translations/el_GR/INSTALLATION.md) |
+| 🇷🇺 Русский | [`ru_RU`](docs/translations/ru_RU/INSTALLATION.md) |
+| 🇹🇷 Türkçe | [`tr_TR`](docs/translations/tr_TR/INSTALLATION.md) |
+| 🇸🇦 العربية | [`ar_SA`](docs/translations/ar_SA/INSTALLATION.md) |
+| 🇮🇳 हिन्दी | [`hi_IN`](docs/translations/hi_IN/INSTALLATION.md) |
+| 🇯🇵 日本語 | [`ja_JP`](docs/translations/ja_JP/INSTALLATION.md) |
+| 🇨🇳 简体中文 | [`zh_CN`](docs/translations/zh_CN/INSTALLATION.md) |
+| 🇮🇩 Bahasa Indonesia | [`id_ID`](docs/translations/id_ID/INSTALLATION.md) |
+| 🇲🇾 Bahasa Melayu | [`ms_MY`](docs/translations/ms_MY/INSTALLATION.md) |
+| 🇻🇳 Tiếng Việt | [`vi_VN`](docs/translations/vi_VN/INSTALLATION.md) |
+| 🇬🇪 ქართული | [`ka_GE`](docs/translations/ka_GE/INSTALLATION.md) |
+| 🇲🇳 Монгол | [`mn_MN`](docs/translations/mn_MN/INSTALLATION.md) |
 
 ## Installation sur Arch Linux
 
