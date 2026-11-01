@@ -272,12 +272,20 @@ def main():
         import_all(opts.download_dir,opts.staging,opts.public)
     if opts.command=='verify':
         print('Base de travail :',db_info(opts.staging,deep=True))
-        if opts.public.exists():print('Base publique :',db_info(opts.public))
+        if opts.public.exists():
+            if opts.public.stat().st_size == 0:
+                print('Base publique : fichier vide (0 octet), index non publié.')
+            else:
+                print('Base publique :',db_info(opts.public))
     if opts.command=='publish':publish(opts.staging,opts.public,opts.site_stopped)
     if opts.command=='status':
         for name,p in [('publique',opts.public),('travail',opts.staging)]:
-            if p.exists():print(name,p,db_info(p))
-            else:print(name,'absente')
+            if not p.exists():
+                print(name,'absente')
+            elif p == opts.public and p.stat().st_size == 0:
+                print(name,p,'fichier vide (0 octet), index non publié')
+            else:
+                print(name,p,db_info(p))
         files=list(opts.download_dir.glob('decp-????-??.json')) if opts.download_dir.exists() else []
         partial=list(opts.download_dir.glob('*.part')) if opts.download_dir.exists() else []
         print('Sources téléchargées :',len(files),'sources partielles :',len(partial))

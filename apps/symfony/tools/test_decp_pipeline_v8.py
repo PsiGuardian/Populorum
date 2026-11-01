@@ -44,6 +44,14 @@ def main():
         p.import_all(data,empty_stage,empty_public)
         assert p.db_info(empty_stage)['contracts']==2
         assert empty_public.stat().st_size==0, 'Import altered an empty public index'
+        # CLI verification/status must not reject a valid staging due to an old zero-byte public file.
+        for command in ('status','verify'):
+            checked=subprocess.run(
+                [sys.executable,str(HERE/'decp_pipeline_v8.py'),command,
+                 '--staging',str(empty_stage),'--public',str(empty_public),
+                 '--download-dir',str(data)],
+                check=True,capture_output=True,text=True)
+            assert 'vide' in checked.stdout and 'travail' in checked.stdout.lower()
         try:p.publish(empty_stage,empty_public,True)
         except ValueError as ex:assert 'vide' in str(ex)
         else:raise AssertionError('Publishing over an empty public index was accepted')
