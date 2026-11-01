@@ -45,6 +45,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
             if ($version !== '2026') {
                 return null;
             }
+
             return $this->db = $db;
         } catch (\PDOException) {
             return null;
@@ -56,6 +57,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
         if ($this->hasPostals === null) {
             $this->hasPostals = (bool) $db->query("SELECT 1 FROM sqlite_master WHERE type='table' AND name='postal_codes'")->fetchColumn();
         }
+
         return $this->hasPostals;
     }
 
@@ -66,6 +68,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
         }
         $statement = $db->prepare('SELECT postal_code FROM postal_codes WHERE code = ? ORDER BY postal_code LIMIT 20');
         $statement->execute([$code]);
+
         return $statement->fetchAll(\PDO::FETCH_COLUMN);
     }
 
@@ -91,6 +94,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
                 'pilotId' => $item['id'], 'source' => (string) ($item['sourceUrl'] ?? ''), 'postalCodes' => [],
             ];
         }
+
         return $this->pilots = $list;
     }
 
@@ -106,6 +110,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
             return ['available' => false, 'count' => count($this->pilotList()), 'year' => 2026, 'postals' => false,
                 'label' => 'Référentiel national INSEE non importé : seules les communes pilotes sont visibles.'];
         }
+
         return [
             'available' => true,
             'postals' => $this->hasPostals($db),
@@ -129,11 +134,14 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
                 $row['pilotId'] = $this->pilotList()[$code]['pilotId'] ?? null;
                 $row['source'] = 'https://www.insee.fr/fr/information/8740222';
                 $row['postalCodes'] = $this->postals($db, $code);
+
                 return $row;
             }
+
             // Never substitute a former pilot when a newer COG no longer lists its code.
             return null;
         }
+
         return $this->pilotList()[$code] ?? null;
     }
 
@@ -163,21 +171,23 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
                     . ($hasPostals ? ", (SELECT GROUP_CONCAT(postal_code, ', ') FROM postal_codes p WHERE p.code=communes.code) AS postalCodes" : ", '' AS postalCodes")
                     . ' FROM communes WHERE code = ? LIMIT 1');
                 $q->execute([strtoupper($match[1])]);
+
                 return $q->fetchAll(\PDO::FETCH_ASSOC);
             }
             if (preg_match('/\A[0-9]{5}\z/D', $term)) {
                 if (!$hasPostals) {
                     return []; // Never mislabel an INSEE code as a postal result.
                 }
-                $q = $db->prepare("SELECT communes.code, communes.name, communes.department_name AS department,"
-                    . " communes.region_name AS region,"
+                $q = $db->prepare('SELECT communes.code, communes.name, communes.department_name AS department,'
+                    . ' communes.region_name AS region,'
                     . " (SELECT GROUP_CONCAT(postal_code, ', ') FROM postal_codes p2 WHERE p2.code=communes.code) AS postalCodes"
-                    . " FROM postal_codes p JOIN communes ON communes.code=p.code"
-                    . " WHERE p.postal_code=? ORDER BY communes.name, communes.code LIMIT ? OFFSET ?");
+                    . ' FROM postal_codes p JOIN communes ON communes.code=p.code'
+                    . ' WHERE p.postal_code=? ORDER BY communes.name, communes.code LIMIT ? OFFSET ?');
                 $q->bindValue(1, $term);
                 $q->bindValue(2, $limit, \PDO::PARAM_INT);
                 $q->bindValue(3, $offset, \PDO::PARAM_INT);
                 $q->execute();
+
                 return $q->fetchAll(\PDO::FETCH_ASSOC);
             }
             $postalWhere = $hasPostals
@@ -186,11 +196,11 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
             $postalSelect = $hasPostals
                 ? ", (SELECT GROUP_CONCAT(postal_code, ', ') FROM postal_codes p WHERE p.code=communes.code) AS postalCodes"
                 : ", '' AS postalCodes";
-            $sql = "SELECT code, name, department_name AS department, region_name AS region"
+            $sql = 'SELECT code, name, department_name AS department, region_name AS region'
                 . $postalSelect
                 . " FROM communes WHERE search_name LIKE ? ESCAPE '!' OR code LIKE ? ESCAPE '!'"
                 . $postalWhere
-                . " ORDER BY CASE WHEN code=? THEN 0 WHEN search_name=? THEN 1"
+                . ' ORDER BY CASE WHEN code=? THEN 0 WHEN search_name=? THEN 1'
                 . " WHEN search_name LIKE ? ESCAPE '!' THEN 2 ELSE 3 END, name, code LIMIT ? OFFSET ?";
             $params = ['%' . $escaped . '%', '%' . $escaped . '%'];
             if ($hasPostals) {
@@ -205,6 +215,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
             $stmt->bindValue($index++, $limit, \PDO::PARAM_INT);
             $stmt->bindValue($index, $offset, \PDO::PARAM_INT);
             $stmt->execute();
+
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         }
         if (preg_match('/\A[0-9]{5}\z/D', $term)) {
@@ -213,6 +224,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
         if (preg_match('/\A(?:INSEE|COG)\s*:\s*((?:[0-9]{5}|2[AB][0-9]{3}))\z/iD', $term, $match)) {
             $term = strtoupper($match[1]);
         }
+
         return array_slice(array_values(array_filter(array_map(static fn (array $r): array => [
             'code' => $r['code'], 'name' => $r['name'], 'department' => $r['department'],
             'region' => $r['region'], 'postalCodes' => '',
@@ -230,6 +242,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
             $regions[$k] ??= ['code' => $k, 'name' => $city['region'], 'count' => 0];
             ++$regions[$k]['count'];
         }
+
         return array_values($regions);
     }
 
@@ -241,6 +254,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
         if (($db = $this->connection()) !== null) {
             $q = $db->prepare('SELECT department_code AS code, department_name AS name, COUNT(*) AS count FROM communes WHERE region_code = ? GROUP BY department_code,department_name ORDER BY name');
             $q->execute([$region]);
+
             return $q->fetchAll(\PDO::FETCH_ASSOC);
         }
         $rows = [];
@@ -251,6 +265,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
                 ++$rows[$key]['count'];
             }
         }
+
         return array_values($rows);
     }
 
@@ -265,9 +280,12 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
             $count = $db->prepare('SELECT COUNT(*) FROM communes WHERE region_code = ? AND department_code = ?');
             $count->execute([$region, $department]);
             $q = $db->prepare('SELECT code, name FROM communes WHERE region_code=? AND department_code=? ORDER BY name,code LIMIT ? OFFSET ?');
-            $q->bindValue(1, $region); $q->bindValue(2, $department);
-            $q->bindValue(3, $limit, \PDO::PARAM_INT); $q->bindValue(4, $offset, \PDO::PARAM_INT);
+            $q->bindValue(1, $region);
+            $q->bindValue(2, $department);
+            $q->bindValue(3, $limit, \PDO::PARAM_INT);
+            $q->bindValue(4, $offset, \PDO::PARAM_INT);
             $q->execute();
+
             return ['rows' => $q->fetchAll(\PDO::FETCH_ASSOC), 'total' => (int) $count->fetchColumn()];
         }
         $rows = [];
@@ -276,6 +294,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
                 $rows[] = ['code' => $city['code'], 'name' => $city['name']];
             }
         }
+
         return ['rows' => array_slice($rows, $offset, $limit), 'total' => count($rows)];
     }
 }

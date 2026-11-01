@@ -534,7 +534,7 @@ final class DemoController extends AbstractController
             ));
             $selectedForLedger = $request->query->getString('scope', $request->query->getString('city', '75056'));
             $context['ledgerCode'] = $request->query->getString('ledger_city',
-                in_array($selectedForLedger, ['75056','13055','76351'], true) ? $selectedForLedger : '75056');
+                in_array($selectedForLedger, ['75056', '13055', '76351'], true) ? $selectedForLedger : '75056');
             $context['ledgerPrefix'] = $request->query->getString(
                 'account',
                 '',
@@ -614,7 +614,9 @@ final class DemoController extends AbstractController
         }
         if ($view === 'markets') {
             $scope = $request->query->getString('city', $context['selectedCommune']['code'] ?? '');
-            if ($scope === 'FR') { $scope = ''; }
+            if ($scope === 'FR') {
+                $scope = '';
+            }
             $filters = [
                 'kind' => $request->query->getString('kind', ''),
                 'year' => $request->query->getString('year', ''),
@@ -752,10 +754,9 @@ final class DemoController extends AbstractController
         );
         if ($context['selectedCommune'] !== null && $context['selectedPilotId'] === null) {
             if ($request->isMethod('POST')) {
-                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException(
-                    'Aucune action de simulation n’est ouverte pour la commune sélectionnée.',
-                );
+                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException('Aucune action de simulation n’est ouverte pour la commune sélectionnée.');
             }
+
             return $this->render('pages/no-local-simulation.html.twig', $context);
         }
         $initialData = $this->initialActionData($request, $type, $context);

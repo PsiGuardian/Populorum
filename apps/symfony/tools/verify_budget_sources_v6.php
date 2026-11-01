@@ -6,7 +6,7 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 require_once dirname(__DIR__) . '/src/Service/BudgetEvidenceCatalog.php';
 
 $projectDir = dirname(__DIR__);
-$evidence = new \App\Service\BudgetEvidenceCatalog($projectDir);
+$evidence = new App\Service\BudgetEvidenceCatalog($projectDir);
 $all = $evidence->all();
 $errors = [];
 if (count($all) < 25) {

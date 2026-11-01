@@ -27,6 +27,7 @@ final class BudgetTreeController extends AbstractController
         }
         $response = new JsonResponse($this->tree->children($node, $request->query->getInt('offset', 0)));
         $response->headers->set('Cache-Control', 'private, max-age=120');
+
         return $response;
     }
 
@@ -36,6 +37,7 @@ final class BudgetTreeController extends AbstractController
         $term = $request->query->getString('q', '');
         $response = new JsonResponse(['cities' => $this->catalog->search($term)]);
         $response->headers->set('Cache-Control', 'private, max-age=120');
+
         return $response;
     }
 }

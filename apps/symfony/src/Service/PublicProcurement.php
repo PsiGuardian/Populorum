@@ -34,6 +34,7 @@ final class PublicProcurement
             if ($pdo->query("SELECT value FROM metadata WHERE key='schema'")->fetchColumn() !== 'populorum-decp-1') {
                 return null;
             }
+
             return $this->db = $pdo;
         } catch (\PDOException) {
             return null;
@@ -49,6 +50,7 @@ final class PublicProcurement
         }
         $kinds = $db->query('SELECT kind, COUNT(*) AS n FROM contracts GROUP BY kind')->fetchAll();
         $counts = array_column($kinds, 'n', 'kind');
+
         return [
             'available' => true, 'contracts' => (int) array_sum($counts),
             'markets' => (int) ($counts['market'] ?? 0), 'concessions' => (int) ($counts['concession'] ?? 0),
@@ -67,6 +69,7 @@ final class PublicProcurement
             FROM contracts WHERE kind=? AND notice_date GLOB '[12][0-9][0-9][0-9]-*'
             GROUP BY year ORDER BY year DESC LIMIT 100");
         $query->execute([$kind]);
+
         return $query->fetchAll();
     }
 
@@ -80,6 +83,7 @@ final class PublicProcurement
         }
         $q = $db->prepare("SELECT COUNT(*) FROM contracts WHERE location_type='Code commune' AND location_code=?");
         $q->execute([$insee]);
+
         return (int) $q->fetchColumn();
     }
 
@@ -92,25 +96,30 @@ final class PublicProcurement
         if (!$db) {
             return ['items' => [], 'total' => 0, 'offset' => $offset, 'nextOffset' => null];
         }
-        $where = []; $args = [];
+        $where = [];
+        $args = [];
         $kind = (string) ($filters['kind'] ?? '');
         if (in_array($kind, ['market', 'concession'], true)) {
-            $where[] = 'c.kind=?'; $args[] = $kind;
+            $where[] = 'c.kind=?';
+            $args[] = $kind;
         }
         $year = (string) ($filters['year'] ?? '');
         if (preg_match('/\A(?:19|20)[0-9]{2}\z/', $year)) {
             $where[] = 'c.notice_date>=? AND c.notice_date<?';
-            $args[] = $year . '-01-01'; $args[] = ((int) $year + 1) . '-01-01';
+            $args[] = $year . '-01-01';
+            $args[] = ((int) $year + 1) . '-01-01';
         }
         $buyer = (string) ($filters['buyer'] ?? '');
         if (preg_match('/\A[0-9]{9}(?:[0-9]{5})?\z/', $buyer)) {
             $where[] = '(c.buyer_id=? OR SUBSTR(c.buyer_id,1,9)=?)';
-            $args[] = $buyer; $args[] = substr($buyer, 0, 9);
+            $args[] = $buyer;
+            $args[] = substr($buyer, 0, 9);
         }
         $supplier = (string) ($filters['supplier'] ?? '');
         if (preg_match('/\A[0-9]{9}(?:[0-9]{5})?\z/', $supplier)) {
             $where[] = 'EXISTS (SELECT 1 FROM participants p WHERE p.contract_key=c.contract_key AND (p.identifier=? OR SUBSTR(p.identifier,1,9)=?))';
-            $args[] = $supplier; $args[] = substr($supplier, 0, 9);
+            $args[] = $supplier;
+            $args[] = substr($supplier, 0, 9);
         }
         $city = strtoupper((string) ($filters['city'] ?? ''));
         if (preg_match('/\A(?:[0-9]{5}|2[AB][0-9]{3})\z/D', $city)) {
@@ -152,6 +161,7 @@ final class PublicProcurement
         $stmt->bindValue(count($args) + 2, $offset, \PDO::PARAM_INT);
         $stmt->execute();
         $rows = $stmt->fetchAll();
+
         return ['items' => $rows, 'total' => $total, 'offset' => $offset,
             'nextOffset' => $offset + count($rows) < $total ? $offset + count($rows) : null];
     }
@@ -182,6 +192,7 @@ final class PublicProcurement
             $stmt->execute([$key]);
             $row['concession_finance'] = $stmt->fetch() ?: null;
         }
+
         return $row;
     }
 
@@ -207,7 +218,9 @@ final class PublicProcurement
             ORDER BY i.filename ASC,i.sha256 ASC LIMIT 200');
         $stmt->execute([$contractKey]);
         $items = $stmt->fetchAll();
-        $first = null; $last = null; $known = 0;
+        $first = null;
+        $last = null;
+        $known = 0;
         foreach ($items as $item) {
             if ($item['base_amount_cents'] !== null) {
                 $current = (int) $item['base_amount_cents'];
@@ -217,6 +230,7 @@ final class PublicProcurement
             }
         }
         $complete = count($items) === $references;
+
         return [
             'references' => $references, 'observed' => count($items), 'complete' => $complete,
             'first' => $first, 'last' => $last,
@@ -255,7 +269,7 @@ final class PublicProcurement
         $year = $db->prepare('SELECT COUNT(*) FROM contracts' . $yearWhere);
         $year->execute(array_merge($args, [$accountingYear . '-01-01', ((int) $accountingYear + 1) . '-01-01']));
         $result['contractsInYear'] = (int) $year->fetchColumn();
+
         return $result;
     }
-
 }

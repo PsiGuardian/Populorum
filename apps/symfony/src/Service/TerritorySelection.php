@@ -44,6 +44,7 @@ final class TerritorySelection
         if ($commune === null) {
             $session->remove(self::SESSION_KEY);
         }
+
         return $commune;
     }
 
@@ -53,6 +54,7 @@ final class TerritorySelection
         $session = $request->getSession();
         if ($code === 'FR') {
             $session->remove(self::SESSION_KEY);
+
             return true;
         }
         if (!GeographyCatalog::validCode($code) || $this->geography->find($code) === null) {
@@ -63,6 +65,7 @@ final class TerritorySelection
         $recent = is_array($recent) ? $recent : [];
         $recent = array_values(array_unique(array_merge([$code], array_filter($recent, 'is_string'))));
         $session->set('populorum_recent_communes', array_slice($recent, 0, 5));
+
         return true;
     }
 
@@ -76,6 +79,7 @@ final class TerritorySelection
                 $results[] = $commune;
             }
         }
+
         return $results;
     }
 
@@ -90,6 +94,7 @@ final class TerritorySelection
                 return (string) $territory['id'];
             }
         }
+
         return null;
     }
 
@@ -113,6 +118,7 @@ final class TerritorySelection
                 static fn (array $vote): bool => isset($consultationIds[$vote['consultationId'] ?? ''])
             ));
         }
+
         return $state;
     }
 }

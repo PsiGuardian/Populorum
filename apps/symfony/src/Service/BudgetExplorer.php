@@ -34,7 +34,7 @@ final class BudgetExplorer
         'Frais de personnel' => 'Rémunérations et charges liées aux agents.',
         'Autres dépenses de fonctionnement' => 'Autres charges de fonctionnement distinctes des postes détaillés.',
         "Dépenses d'équipement" => 'Acquisitions et équipements : flux annuel, hors remboursements de dette.',
-        "Autres dépenses d'investissement" => 'Autres flux d’investissement du compte consolidé.', 
+        "Autres dépenses d'investissement" => 'Autres flux d’investissement du compte consolidé.',
         'Achats et charges externes' => 'Achats, fournitures, services et contrats regroupés.',
         "Dépenses d'intervention" => 'Interventions financières et contributions, sans détail des destinataires.',
         'Subventions aux personnes de droit privé' => 'Bénéficiaires de droit privé, qui ne sont pas tous des associations.',

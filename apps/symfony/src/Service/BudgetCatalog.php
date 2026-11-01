@@ -34,6 +34,7 @@ final class BudgetCatalog
             if ($year !== '2025') {
                 return null;
             }
+
             return $this->connection = $pdo;
         } catch (\PDOException) {
             return null;
@@ -57,6 +58,7 @@ final class BudgetCatalog
             }
             $indexed[$code]['rows'][] = $row;
         }
+
         return $indexed;
     }
 
@@ -71,6 +73,7 @@ final class BudgetCatalog
                 'label' => 'Communes recensées dans l’import OFGL 2025 (périmètre communal uniquement, couverture éventuellement incomplète).',
             ];
         }
+
         return [
             'kind' => 'pilot', 'cities' => count($this->pilotRows()), 'year' => '2025',
             'label' => 'Extrait pilote : seuls Paris, Marseille et Le Havre sont chargés. Aucune somme nationale disponible.',
@@ -101,6 +104,7 @@ final class BudgetCatalog
                         'montant_flux' => $row['cross_cents'] / 100, 'exer' => '2025',
                     ];
                 }
+
                 return $this->formatCity([
                     'code' => $city['code'], 'name' => $city['name'], 'region' => $city['region_name'],
                     'regionCode' => $city['region_code'], 'departmentCode' => $city['department_code'],
@@ -115,6 +119,7 @@ final class BudgetCatalog
             if ($geo === null) {
                 return null;
             }
+
             return $this->formatCity([
                 'code' => $geo['code'], 'name' => $geo['name'], 'region' => $geo['region'],
                 'regionCode' => $geo['regionCode'], 'departmentCode' => $geo['departmentCode'],
@@ -125,12 +130,14 @@ final class BudgetCatalog
         foreach ($pilot['rows'] as $row) {
             $amounts[$row['agregat']] = (int) round((float) $row['montant'] * 100);
         }
+
         return $this->formatCity($pilot, $amounts);
     }
 
     private function formatCity(array $city, array $amounts): array
     {
         $geo = $this->geography->find($city['code']);
+
         return [
             'city' => ['code' => $city['code'], 'name' => $geo['name'] ?? $city['name'], 'id' => 'ofgl-' . $city['code']],
             'region' => $geo['region'] ?? $city['region'], 'regionCode' => $geo['regionCode'] ?? ($city['regionCode'] ?? ''),
@@ -161,6 +168,7 @@ final class BudgetCatalog
         }
         // National population is computed only for municipalities with an expense total.
         $population = (int) $db->query("SELECT SUM(m.population) FROM municipalities m JOIN aggregates a ON a.code=m.code AND a.aggregate='Dépenses totales'")->fetchColumn();
+
         return [
             'available' => isset($amounts['Dépenses totales']), 'coverage' => $coverage,
             'totalCents' => $amounts['Dépenses totales'] ?? null, 'population' => $population,

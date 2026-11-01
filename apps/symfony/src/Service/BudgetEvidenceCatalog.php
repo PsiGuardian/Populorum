@@ -70,6 +70,7 @@ final class BudgetEvidenceCatalog
             $entry['transversal'] = ($row['transversal'] ?? false) === true;
             $result[$id] = $entry;
         }
+
         return $this->cache = $result;
     }
 
@@ -85,6 +86,7 @@ final class BudgetEvidenceCatalog
                 $entries[] = $entry;
             }
         }
+
         return $entries;
     }
 
@@ -97,6 +99,7 @@ final class BudgetEvidenceCatalog
                 $grouped[$id] = ['id' => $id, 'label' => $label, 'items' => $items, 'count' => count($items)];
             }
         }
+
         return $grouped;
     }
 

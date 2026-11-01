@@ -128,19 +128,22 @@ final class BudgetTrace
 
     public function recordsForCity(string $code): array
     {
-        return array_values(array_filter($this->records(), static fn(array $r): bool => $r['cityCode'] === $code));
+        return array_values(array_filter($this->records(), static fn (array $r): bool => $r['cityCode'] === $code));
     }
 
     private static function limit(string $value, int $length): string
     {
         $value = trim($value);
+
         return preg_match('/\A.{0,' . $length . '}/us', $value, $match) ? $match[0] : '';
     }
 
     /** Accept only records with identifiers and dated HTTPS sources. Bad rows are omitted. */
     private function readRecords(): array
     {
-        if ($this->cachedRecords !== null) { return $this->cachedRecords; }
+        if ($this->cachedRecords !== null) {
+            return $this->cachedRecords;
+        }
         $file = $this->projectDir . '/data/research/public-funding-links.json';
         if (!is_file($file) || filesize($file) > 20971520) {
             return [];
@@ -214,7 +217,9 @@ final class BudgetTrace
             $seen = [];
             $cursor = $id;
             for ($depth = 0; $depth <= count($out); ++$depth) {
-                if ($cursor === '' || !isset($out[$cursor])) { break; }
+                if ($cursor === '' || !isset($out[$cursor])) {
+                    break;
+                }
                 if (isset($seen[$cursor])) {
                     $out[$cursor]['parentId'] = '';
                     break;
@@ -223,6 +228,7 @@ final class BudgetTrace
                 $cursor = $out[$cursor]['parentId'];
             }
         }
+
         return $this->cachedRecords = array_values($out);
     }
 }

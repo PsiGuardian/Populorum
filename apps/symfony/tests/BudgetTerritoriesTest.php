@@ -14,6 +14,7 @@ final class BudgetTerritoriesTest extends TestCase
     private function catalog(): BudgetCatalog
     {
         $dir = dirname(__DIR__);
+
         return new BudgetCatalog($dir, new PublicBudget($dir));
     }
 

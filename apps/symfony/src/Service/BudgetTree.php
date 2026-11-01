@@ -214,7 +214,10 @@ final class BudgetTree
             $all = $this->trace->records();
             $parent = null;
             foreach ($all as $record) {
-                if ($record['id'] === $match[1]) { $parent = $record; break; }
+                if ($record['id'] === $match[1]) {
+                    $parent = $record;
+                    break;
+                }
             }
             if ($parent !== null) {
                 foreach ($all as $record) {
@@ -227,6 +230,7 @@ final class BudgetTree
                 }
             }
         }
+
         // Lists of municipalities and contracts are paginated to bound responses.
         return ['node' => $id, 'children' => $items, 'offset' => $offset, 'nextOffset' => $total > $offset + count($items) ? $offset + count($items) : null, 'total' => $total ?: count($items)];
     }

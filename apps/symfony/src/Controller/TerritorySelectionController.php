@@ -50,6 +50,7 @@ final class TerritorySelectionController extends AbstractController
             ], Response::HTTP_SEE_OTHER);
         }
         $route = $destination === 'home' ? 'home' : 'site_' . $destination;
+
         return $this->redirectToRoute($route, [], Response::HTTP_SEE_OTHER);
     }
 
@@ -65,6 +66,7 @@ final class TerritorySelectionController extends AbstractController
         ]);
         $response->headers->set('Cache-Control', 'private, max-age=60');
         $response->headers->set('X-Content-Type-Options', 'nosniff');
+
         return $response;
     }
 }
