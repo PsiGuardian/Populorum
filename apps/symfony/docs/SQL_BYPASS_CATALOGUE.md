@@ -29,7 +29,7 @@ Cet inventaire concerne uniquement des essais autorisés et des bases SQLite tem
 | GeographyCatalog.departments / cityPage | region, department, offset, limit | Entrées validées, SQL lié | Oui |
 | BudgetCatalog.city | code commune | SQL lié, lecture seule | Oui |
 | PublicBudget | siren, préfixe compte, page | SQL lié / query_only | À compléter par fixture de balances |
-| DemoDatabase | owner, revision, state, includeVotes | DBAL, révision optimiste, colonne conditionnelle issue d'un booléen interne | Audit des autorisations et des écritures à poursuivre |
+| DemoDatabase | owner, revision, state, includeVotes | DBAL, révision optimiste, colonne conditionnelle issue d'un booléen interne | Contrôles SQL d'isolation et de révision automatisés ; l'audit des autorisations HTTP reste à poursuivre |
 | Importeurs Python DECP | champs JSON, identifiants, dates, chemins fichiers | sqlite3 préparé sur les données, logique UPSERT | Tests d'import existants ; revue injection dynamique à poursuivre |
 | Doctrine et entités | formulaires, scénarios, votes, associations | ORM et contrôles applicatifs | Tests d'isolation et de droits métier à poursuivre |
 
@@ -50,3 +50,9 @@ Depuis apps/symfony :
     composer test
 
 Ne jamais exécuter de tests destructeurs sur une copie de la base nationale ni sur le site public.
+
+## Isolation DBAL (tests supplémentaires)
+
+- SqlWriteIsolationTest couvre les identifiants de compte, les identifiants de scénario et les contenus de propositions face aux charges adversariales.
+- Vérifie que deux scénarios préexistants demeurent distincts, qu'une révision obsolète est rejetée et qu'une proposition contenant des caractères SQL reste une donnée littérale.
+- Les tests opèrent uniquement sur une base SQLite en mémoire. Ils ne remplacent pas un audit des politiques de session, du CSRF ni des contrôles d'accès HTTP.
