@@ -418,6 +418,10 @@ final class PerformanceOptimizationsTest extends TestCase
                 unlink($indexPath);
             }
             unlink($path);
+            $financePath = $directory . '/data/research/municipal-finance-2025.json';
+            if (is_file($financePath)) {
+                unlink($financePath);
+            }
             rmdir(dirname($path));
             rmdir($directory . '/data');
             rmdir($directory);
