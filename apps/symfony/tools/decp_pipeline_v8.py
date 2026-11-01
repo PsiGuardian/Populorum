@@ -172,6 +172,21 @@ def db_info(path:Path, deep:bool=False) -> dict:
     return result
 
 
+def is_empty_public_placeholder(path:Path) -> bool:
+    """Only an empty SQLite shell may be ignored during V8 staging bootstrap.
+
+    A foreign DB with tables or an unreadable DB is never silently discarded.
+    The public file itself is neither modified nor removed.
+    """
+    if path.stat().st_size == 0:
+        return True
+    with closing(sqlite3.connect(f'file:{path.resolve()}?mode=ro',uri=True,timeout=30)) as db:
+        return db.execute(
+            "SELECT 1 FROM sqlite_master WHERE type IN ('table','view','trigger') "
+            "AND name NOT LIKE 'sqlite_%' LIMIT 1"
+        ).fetchone() is None
+
+
 def make_staging(staging:Path=STAGING, public:Path=PUBLIC):
     if staging.exists():
         db_info(staging)
@@ -180,8 +195,8 @@ def make_staging(staging:Path=STAGING, public:Path=PUBLIC):
     if not public.exists():
         print('Nouvelle base de travail (pas de base DECP publique existante).')
         return
-    if public.stat().st_size == 0:
-        print('Index public vide (0 octet) : ignoré pour le nouvel import V8, fichier conservé.')
+    if is_empty_public_placeholder(public):
+        print('Index public sans tables DECP : amorçage indépendant du staging V8 ; fichier public conservé.')
         return
     db_info(public)
     tmp=staging.with_name(staging.name+'.creating')
@@ -231,8 +246,8 @@ def publish(staging:Path=STAGING, public:Path=PUBLIC, stopped:bool=False):
     if not staging.exists():raise ValueError('Aucun index de travail. Importer les données en premier.')
     checkpoint_stage(staging)
     fresh=db_info(staging,deep=True)
-    if public.exists() and public.stat().st_size == 0:
-        raise ValueError('Index public vide (0 octet) : arrêter le site et déplacer manuellement ce fichier avant publication ; rien n’a été remplacé.')
+    if public.exists() and is_empty_public_placeholder(public):
+        raise ValueError('Index public sans tables DECP : arrêter le site et déplacer manuellement ce fichier avant publication ; rien n’a été remplacé.')
     if public.exists():
         # Callers must stop the site first. Refuse if the public journal is still active.
         with closing(sqlite3.connect(public,timeout=10)) as db:
@@ -273,8 +288,8 @@ def main():
     if opts.command=='verify':
         print('Base de travail :',db_info(opts.staging,deep=True))
         if opts.public.exists():
-            if opts.public.stat().st_size == 0:
-                print('Base publique : fichier vide (0 octet), index non publié.')
+            if is_empty_public_placeholder(opts.public):
+                print('Base publique : coquille SQLite sans tables DECP, index non publié.')
             else:
                 print('Base publique :',db_info(opts.public))
     if opts.command=='publish':publish(opts.staging,opts.public,opts.site_stopped)
@@ -282,10 +297,13 @@ def main():
         for name,p in [('publique',opts.public),('travail',opts.staging)]:
             if not p.exists():
                 print(name,'absente')
-            elif p == opts.public and p.stat().st_size == 0:
-                print(name,p,'fichier vide (0 octet), index non publié')
+            elif p == opts.public and is_empty_public_placeholder(p):
+                print(name,p,'coquille SQLite sans tables DECP, index non publié')
             else:
-                print(name,p,db_info(p))
+                try:
+                    print(name,p,db_info(p))
+                except (ValueError,sqlite3.DatabaseError) as exc:
+                    print(name,p,'INDEX INVALIDE :',exc)
         files=list(opts.download_dir.glob('decp-????-??.json')) if opts.download_dir.exists() else []
         partial=list(opts.download_dir.glob('*.part')) if opts.download_dir.exists() else []
         print('Sources téléchargées :',len(files),'sources partielles :',len(partial))
