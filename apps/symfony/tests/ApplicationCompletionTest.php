@@ -740,7 +740,7 @@ final class ApplicationCompletionTest extends TestCase
             $_SERVER['POPULORUM_SCENARIO'] = '';
             $this->session->set('simulation_owner', 'nonpilot-budget-' . bin2hex(random_bytes(6)));
             $page = $this->request('/budget-et-priorites?scope=66134');
-            self::assertSame('66134', $this->session->get(\App\Service\TerritorySelection::SESSION_KEY));
+            self::assertSame('66134', $this->session->get(App\Service\TerritorySelection::SESSION_KEY));
             self::assertSame(200, $page->getStatusCode(), 'Passa must retain access to real public data without a pilot scenario.');
             self::assertStringContainsString('L’arbre des dépenses publiques', $page->getContent());
             self::assertStringContainsString('Passa', $page->getContent());
@@ -752,7 +752,7 @@ final class ApplicationCompletionTest extends TestCase
             // No re-use of an unrelated pilot's detailed ledger on an unknown budget.
             self::assertSame(400, $this->request('/budget-et-priorites?account=6%20OR%201=1')->getStatusCode());
         } finally {
-            $this->session->remove(\App\Service\TerritorySelection::SESSION_KEY);
+            $this->session->remove(App\Service\TerritorySelection::SESSION_KEY);
             if ($created) {
                 unlink($index);
             }
