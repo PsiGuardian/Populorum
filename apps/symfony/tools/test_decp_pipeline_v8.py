@@ -51,9 +51,9 @@ def main():
                  '--staging',str(empty_stage),'--public',str(empty_public),
                  '--download-dir',str(data)],
                 check=True,capture_output=True,text=True)
-            assert 'vide' in checked.stdout and 'travail' in checked.stdout.lower()
+            assert 'sans tables DECP' in checked.stdout and 'travail' in checked.stdout.lower()
         try:p.publish(empty_stage,empty_public,True)
-        except ValueError as ex:assert 'vide' in str(ex)
+        except ValueError as ex:assert 'sans tables DECP' in str(ex)
         else:raise AssertionError('Publishing over an empty public index was accepted')
         assert empty_public.stat().st_size==0
         assert p.db_info(empty_stage)['contracts']==2
