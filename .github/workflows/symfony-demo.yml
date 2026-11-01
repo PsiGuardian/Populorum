@@ -71,7 +71,7 @@ jobs:
           set -euo pipefail
           root="$(mktemp -d /tmp/populorum-release-install-XXXXXX)"
           trap 'rm -rf "$root"' EXIT
-          git archive --format=tar --prefix=Populorum-release/ "$GITHUB_SHA" | tar -xf - -C "$root"
+          git -c safe.directory="$GITHUB_WORKSPACE" archive --format=tar --prefix=Populorum-release/ "$GITHUB_SHA" | tar -xf - -C "$root"
           cd "$root/Populorum-release/apps/symfony"
           test ! -e vendor/autoload.php
           bash tools/install-arch.sh
