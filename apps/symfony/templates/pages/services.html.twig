@@ -99,22 +99,9 @@
             )
             }}#worker-directory"
         >
-            <label for="worker-city">Ville</label><select
-                id="worker-city"
-                name="territory"
-            >
-                <option value="all">
-                    Toutes les villes
-                </option>
-                {% for city in state.territories %}
-                    <option
-                        value="{{ city.id }}"
-                        {{ territory == city.id ? 'selected' : '' }}
-                    >
-                        {{ city.name }}
-                    </option>
-                {% endfor %}
-            </select><label for="worker-skill">Compétence</label><select
+            <input type="hidden" name="territory" value="{{ territory }}">
+            <p>Commune : {{ selectedCommune ? selectedCommune.name : 'France · villes pilotes fictives' }} · <a href="{{ civic_path('site_communes') }}">Changer de commune</a></p>
+            <label for="worker-skill">Compétence</label><select
                 id="worker-skill"
                 name="skill"
             >

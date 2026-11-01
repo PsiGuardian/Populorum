@@ -14,7 +14,7 @@ final class PublicEvidence implements \Symfony\Contracts\Service\ResetInterface
         $this->dataset = null;
     }
 
-    public function __construct(private string $projectDir)
+    public function __construct(private string $projectDir, private GeographyCatalog $geography)
     {
     }
 
@@ -40,9 +40,14 @@ final class PublicEvidence implements \Symfony\Contracts\Service\ResetInterface
             ? $indicator
             : 'Violences physiques hors cadre familial';
         $cities = [];
-        foreach (
-            ['75056' => 'Paris', '13055' => 'Marseille', '76351' => 'Le Havre'] as $code => $name
-        ) {
+        $codes = array_values(array_unique(array_map(
+            static fn (array $row): string => (string) ($row['CODGEO_2026'] ?? ''),
+            $dataset['rows'],
+        )));
+        $codes = array_values(array_filter($codes, GeographyCatalog::validCode(...)));
+        sort($codes);
+        foreach ($codes as $code) {
+            $name = $this->geography->find($code)['name'] ?? $code;
             $years = [];
             foreach ($dataset['rows'] as $row) {
                 if (

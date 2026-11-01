@@ -1,0 +1,294 @@
+{% set explorer = budgetExplorer %}
+{% set trace = budgetTrace %}
+<section class="panel budget-explorer" id="explorateur" aria-labelledby="budget-explorer-title">
+    <div class="budget-heading">
+        <div>
+            <p class="budget-eyebrow">COMPRENDRE · COMPARER · CONTRÔLER</p>
+            <h2 id="budget-explorer-title">Où va l’argent public ?</h2>
+            <p>Choisissez la France ou une commune. Les chiffres sont filtrés selon le périmètre choisi, et chaque montant renvoie à son niveau de preuve. L’ensemble du budget public français dépasse les seuls comptes communaux.</p>
+        </div>
+        <a class="button" href="#budget-parcours">Suivre le parcours de l’argent</a>
+    </div>
+
+    <div class="budget-legend" aria-label="Légende de vérification">
+        <span><span class="budget-dot budget-dot--known" aria-hidden="true"></span> Montant public agrégé</span>
+        <span><span class="budget-dot budget-dot--document" aria-hidden="true"></span> Lien documentaire référencé, à contrôler</span>
+        <span><span class="budget-dot budget-dot--missing" aria-hidden="true"></span> Information à documenter</span>
+    </div>
+
+    <form method="get" action="{{ civic_path('section', {view: 'budget'}) }}#explorateur" class="budget-filter-form" aria-label="Filtrer les comptes publics">
+        <input type="hidden" name="scope" value="{{ explorerScope }}">
+        <div class="budget-scope-info">
+            <strong>{{ explorerScope == 'FR' ? 'France · comptes communaux couverts' : (explorer.city ? explorer.city.city.name : 'Commune sans comptes disponibles') }}</strong>
+            <p>Pour changer de commune, utilisez le sélecteur unique en haut de page. Les filtres ci-dessous portent uniquement sur les comptes de ce périmètre.</p>
+        </div>
+        <div>
+            <label for="be-category">Domaine à examiner</label>
+            <select id="be-category" name="category">
+                {% for key, category in explorer.categories %}
+                    <option value="{{ key }}" {% if explorer.category == key %}selected{% endif %}>{{ category.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="be-sort">Trier les rubriques</label>
+            <select id="be-sort" name="sort">
+                <option value="amount_desc" {% if explorer.sort == 'amount_desc' %}selected{% endif %}>Montant décroissant</option>
+                <option value="amount_asc" {% if explorer.sort == 'amount_asc' %}selected{% endif %}>Montant croissant</option>
+                <option value="label" {% if explorer.sort == 'label' %}selected{% endif %}>Ordre alphabétique</option>
+            </select>
+        </div>
+        <div>
+            <label for="be-term">Rechercher dans les rubriques</label>
+            <input type="search" id="be-term" name="term" maxlength="80" value="{{ explorer.term }}" placeholder="Ex. frais, subventions…">
+        </div>
+        <div class="budget-filter-actions">
+            <button class="button primary" type="submit">Afficher les résultats</button>
+            <a href="{{ civic_path('section', {view: 'budget'}) }}#explorateur" class="button">Effacer les filtres</a>
+        </div>
+    </form>
+
+    <p class="budget-coverage"><strong>Répertoire national des communes (INSEE 2026) :</strong> {{ geoCoverage.count|number_format(0, ',', ' ') }} communes référencées. {% if not geoCoverage.available %}Import national à réaliser.{% else %}Toutes consultables via la recherche, y compris sans comptes disponibles.{% endif %} <a href="{{ civic_path('site_communes') }}">Consulter l’annuaire</a>.</p>
+    <p class="budget-coverage" role="status"><strong>Couverture {{ budgetCoverage.year }} :</strong> {{ budgetCoverage.label }} · {{ budgetCoverage.cities|number_format(0, ',', ' ') }} commune(s) indexée(s).</p>
+    {% if explorerScope == 'FR' and not nationalBudget.available %}
+        <div class="budget-gap" role="status"><strong>Total « France » indisponible.</strong>
+            <p>Le dossier actuel ne contient que les comptes de trois communes. Il serait trompeur d’en faire un total national. L’import national OFGL permet d’étendre le périmètre sans inventer de montants.</p>
+        </div>
+    {% elseif explorer.city is not null %}
+        <div class="budget-kpis">
+            <article>
+                <small>{{ explorerScope == 'FR' ? 'Somme des dépenses communales disponibles' : 'Dépenses communales recensées · ' ~ explorer.city.city.name }} · {{ budgetSource.year|default('année non disponible') }}</small>
+                <strong>{% if explorer.city.totalCents is not null %}{{ (explorer.city.totalCents / 100)|number_format(2, ',', ' ') }} €{% else %}Non disponible{% endif %}</strong>
+            </article>
+            <article>
+                <small>{{ explorerScope == 'FR' ? 'Dépenses par habitant couvert (pas l’impôt payé)' : 'Dépenses par habitant (pas l’impôt payé)' }}</small>
+                <strong>{% if explorer.city.population and explorer.city.totalCents is not null %}{{ (explorer.city.totalCents / 100 / explorer.city.population)|number_format(2, ',', ' ') }} € / hab.{% else %}Non disponible{% endif %}</strong>
+            </article>
+            <article>
+                <small>{{ explorerScope == 'FR' ? 'Population des seules communes couvertes' : 'Population de référence' }}</small>
+                <strong>{{ explorer.city.population is not null ? explorer.city.population|number_format(0, ',', ' ') : 'Non disponible' }}</strong>
+            </article>
+        </div>
+        <div class="budget-results-heading">
+            <h3>{{ explorer.categoryLabel }}</h3>
+            <p>{{ explorer.note }}</p>
+        </div>
+        {% if explorer.category == 'composition' %}
+            <p class="budget-muted"><strong>Contrôle du total :</strong>
+            {% if explorer.compositionCents is null %}ventilation incomplète dans le jeu de données ; total non vérifiable.
+            {% elseif explorer.compositionComplete %}les neuf postes totalisent exactement les dépenses annuelles publiées (tolérance d’arrondi : 0,01 €).
+            {% else %}écart de {{ (explorer.compositionDifferenceCents / 100)|number_format(2, ',', ' ') }} € avec le total publié ; ne pas exploiter comme ventilation exhaustive.
+            {% endif %}</p>
+        {% endif %}
+        {% if not explorer.isDirectlyMeasured %}
+            <div class="budget-gap" role="status">
+                <strong>Montant non isolable dans les fichiers disponibles.</strong>
+                <p>Il ne s’agit pas d’une dépense nulle. Il faut croiser les budgets par fonction, les délibérations, les conventions, les bénéficiaires identifiés et les comptes rendus d’utilisation.</p>
+            </div>
+        {% elseif explorer.rows is empty %}
+            <p role="status">Aucune rubrique trouvée avec cette recherche. Le montant ne peut pas être estimé à partir de ce résultat vide.</p>
+        {% else %}
+            <div class="budget-row-list">
+                {% for item in explorer.rows %}
+                    <article class="budget-row">
+                        <div class="budget-row-top">
+                            <div>
+                                <h4>{{ item.label }}</h4>
+                                <p>{{ item.description }}</p>
+                                {% if item.isStock %}<p class="budget-muted">Encours à une date, pas une dépense annuelle.</p>{% endif %}
+                            </div>
+                            <div class="budget-row-figure">
+                                <strong>{{ (item.amountCents / 100)|number_format(2, ',', ' ') }} €</strong>
+                                {% if item.perResident is not null %}<small>{{ item.perResident|number_format(2, ',', ' ') }} {{ item.isStock ? '€ de dette/hab.' : (item.isRevenue ? '€ de recette/hab.' : '€/hab.') }}</small>{% endif %}
+                            </div>
+                        </div>
+                        {% if item.share is not null %}
+                            <div class="budget-bar" role="img" aria-label="{{ item.share|number_format(1, ',', ' ') }} % des dépenses totales, indicateur de proportion, pas une dépense supplémentaire">
+                                <span style="width: {{ item.share|number_format(2, '.', '') }}%"></span>
+                            </div>
+                            <p class="budget-muted">{{ item.share|number_format(1, ',', ' ') }} % des dépenses totales. Ne pas additionner aux totaux parents.</p>
+                        {% endif %}
+                        <details>
+                            <summary>Voir la ventilation comptable</summary>
+                            <p>Budget principal : {{ (item.mainCents / 100)|number_format(2, ',', ' ') }} € · Budgets annexes : {{ (item.annexCents / 100)|number_format(2, ',', ' ') }} € · Flux croisés à neutraliser : {{ (item.crossCents / 100)|number_format(2, ',', ' ') }} €. Il ne s’agit pas de factures individuelles.</p>
+                        </details>
+                    </article>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endif %}
+
+    {% if explorer.city is null and explorerScope != 'FR' %}<p class="budget-gap" role="status">Commune absente des données chargées. Vérifiez son code INSEE et importez les comptes OFGL pour la rendre consultable. Aucun chiffre national n’est substitué.</p>{% endif %}
+    <p class="budget-muted">Source : <a href="{{ budgetSource.source|default('https://data.ofgl.fr/') }}">OFGL / DGFiP</a> · exercice {{ budgetSource.year|default('non précisé') }} · extrait relevé le {{ budgetSource.retrievedAt|default('date inconnue') }}. Une catégorie non chiffrable ne doit pas être traitée comme un zéro. La somme des sous-totaux n’est pas nécessairement une dépense additionnelle.</p>
+</section>
+
+<section class="panel budget-explorer" id="marches-publics-reels">
+    <div class="budget-heading"><div>
+        <p class="budget-eyebrow">DONNÉES ESSENTIELLES DE LA COMMANDE PUBLIQUE · CONTRATS SIGNÉS</p>
+        <h2>Marchés publics et concessions documentés</h2>
+        {% if publicProcurementCoverage.available %}
+            <p>{{ publicProcurementCoverage.contracts|number_format(0, ',', ' ') }} contrats distincts indexés, dont {{ publicProcurementCoverage.concessions }} concessions, issus de {{ publicProcurementCoverage.files }} fichier(s) consolidé(s).</p>
+        {% else %}
+            <p>Index DECP non importé : les marchés publics nationaux ne sont pas encore accessibles dans cette installation.</p>
+        {% endif %}
+        <p class="budget-muted">Montants attribués ou modifiés, <strong>jamais assimilés à des paiements réalisés</strong>. Les lieux d'exécution par département ou code postal ne sont pas attribués automatiquement à une commune.</p>
+    </div><a class="button" href="{{ civic_path('site_markets') }}">Rechercher les contrats ↗</a></div>
+</section>
+
+{% include 'partials/decp-budget-concordance.html.twig' %}
+
+<section class="panel budget-explorer budget-tree-panel" id="arbre-budget" aria-labelledby="budget-tree-title">
+    <div class="budget-heading">
+        <div>
+            <p class="budget-eyebrow">CARTE DES COMPTES · EXPLORATION PROGRESSIVE</p>
+            <h2 id="budget-tree-title">L’arbre des dépenses publiques</h2>
+            <p>Dépliez les régions, départements, communes, dépenses et pièces justificatives. Les branches se chargent à la demande pour garder l’interface utilisable même avec des dizaines de milliers de communes.</p>
+        </div>
+    </div>
+    <div class="budget-tree-tools">
+        <button type="button" class="button" id="budget-tree-root">Revenir à France</button>
+        {% if explorerScope != 'FR' and explorer.city is not null %}
+            <button type="button" class="button" id="budget-tree-focus">Ouvrir {{ explorer.city.city.name }}</button>
+        {% endif %}
+        <button type="button" class="button" id="budget-tree-evidence">Explorer les sources publiques</button>
+        <button type="button" class="button" id="budget-tree-expand">Déplier deux niveaux</button>
+        <button type="button" class="button" id="budget-tree-collapse">Tout replier</button>
+    </div>
+    <div class="budget-tree-browser" id="budget-tree-browser"
+         data-endpoint="{{ civic_path('budget_tree_nodes') }}"
+         data-focus="{{ explorerScope != 'FR' and explorer.city is not null ? 'city:' ~ explorerScope : '' }}">
+        <p id="budget-tree-status" role="status">Initialisation de l’arbre…</p>
+        <div id="budget-tree-viewport" class="budget-tree-viewport" tabindex="0" role="region" aria-label="Arborescence des dépenses et des justificatifs">
+            <ul id="budget-tree-list" class="budget-tree-list"></ul>
+        </div>
+    </div>
+    <noscript><p>Activez JavaScript pour charger progressivement l’arbre. La consultation des tableaux comptables ci-dessus reste disponible sans JavaScript.</p></noscript>
+    <p class="budget-muted"><strong>Interprétation :</strong> les liens région → commune → poste décrivent une hiérarchie comptable, <strong>pas des virements</strong>. Les transferts documentés figurent dans une branche distincte et ne sont reliés entre eux que si la source justifie la relation. Aucun paiement individuel de contribuable n’est suivi.</p>
+</section>
+
+<section class="panel budget-explorer" id="bibliotheque-publique" aria-labelledby="bibliotheque-publique-title">
+    <div class="budget-heading">
+        <div>
+            <p class="budget-eyebrow">BIBLIOTHÈQUE DOCUMENTAIRE · SOURCES VÉRIFIABLES</p>
+            <h2 id="bibliotheque-publique-title">Documents pour remonter les dépenses</h2>
+            <p>{{ budgetEvidenceCount }} sources publiques référencées pour le périmètre affiché. Ouvrez une rubrique pour retrouver les données, les annexes et les méthodes à croiser.</p>
+        </div>
+        <a href="#arbre-budget" class="button">Voir leur place dans l’arbre</a>
+    </div>
+    <p class="budget-muted"><strong>Attention :</strong> les références sont des points de départ vers des documents et jeux de données réels. Elles ne sont pas des dépenses individualisées importées dans le site. Une source nationale peut s’appliquer à différentes collectivités sans prouver qu’elles ont effectué un versement donné. Les années et périmètres des producteurs sont propres à chaque source.</p>
+    {% for group in budgetEvidence %}
+        <details class="budget-explain">
+            <summary>{{ group.label }} · {{ group.count }} source(s)</summary>
+            <div class="budget-documents">
+                {% for source in group.items %}
+                    <article class="budget-document">
+                        <div>
+                            <h3>{{ source.title }}</h3>
+                            <p>{{ source.description }}</p>
+                            <p class="budget-muted">Périmètre source : {{ source.scope == 'FR' ? 'national ou transversal' : 'commune ' ~ source.scope }} · {{ source.level }} · {{ source.year }} · {{ source.kind }}</p>
+                            <p class="budget-muted"><strong>Limite documentaire :</strong> {{ source.limitations }}</p>
+                        </div>
+                        <div class="budget-document-actions">
+                            <a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">Consulter la source publique</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </details>
+    {% else %}
+        <p>Aucune source recensée pour cette sélection.</p>
+    {% endfor %}
+</section>
+
+<section class="panel budget-explorer" id="budget-parcours" aria-labelledby="budget-trace-title">
+    <div class="budget-heading">
+        <div>
+            <p class="budget-eyebrow">TRAÇABILITÉ PUBLIQUE</p>
+            <h2 id="budget-trace-title">Des ressources publiques à la dernière trace disponible</h2>
+            <p>Chaque étape indique ce qui est établi et ce qui manque. Une autorisation, une attribution, un paiement et une utilisation sont quatre faits différents. Un lien externe n’en établit pas automatiquement le contenu.</p>
+        </div>
+    </div>
+    <ol class="budget-trace-steps">
+        {% for step in trace.publicStages %}
+            <li class="budget-trace-step">
+                <h3>{{ step.title }}</h3>
+                {% if step.amountCents is not null %}
+                    <p class="budget-step-amount">{{ (step.amountCents / 100)|number_format(2, ',', ' ') }} €</p>
+                {% else %}
+                    <p class="budget-step-amount budget-step-unknown">Montant ou destinataire non isolé</p>
+                {% endif %}
+                <p>{{ step.detail }}</p>
+                <small>{{ step.status }}</small>
+            </li>
+        {% endfor %}
+    </ol>
+    <p class="budget-trace-warning"><strong>Attention :</strong> ce parcours présente des niveaux d’information, pas une suite de virements entre ces quatre montants. Les recettes sont mutualisées ; aucune preuve ne permet de suivre l’euro individuel d’un contribuable.</p>
+
+    <form method="get" action="{{ civic_path('section', {view: 'budget'}) }}#budget-documents" class="budget-trace-form">
+        <input type="hidden" name="scope" value="{{ explorerScope }}">
+        <input type="hidden" name="category" value="{{ explorer.category }}">
+        <input type="hidden" name="sort" value="{{ explorer.sort }}">
+        <label for="be-destination">Destination des flux explicitement documentés</label>
+        <select id="be-destination" name="destination">
+            <option value="all">Toutes les destinations</option>
+            {% for value, label in trace.destinations %}
+                <option value="{{ value }}" {% if trace.destination == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button class="button" type="submit">Filtrer les justificatifs</button>
+    </form>
+    <div id="budget-documents">
+        <h3>Pièces de financement référencées</h3>
+        {% if trace.records is empty %}
+            <div class="budget-gap">
+                <strong>Aucun lien financier individuel vérifié dans le registre local pour ce filtre.</strong>
+                <p>Les fichiers OFGL et DGFiP intégrés sont des agrégats et des balances, non une liste exhaustive de bénéficiaires ou de dépenses finales. Cette absence ne prouve pas qu’aucun versement n’a eu lieu.</p>
+            </div>
+        {% else %}
+            <p>{{ trace.records|length }} référence(s) de pièces datées saisies dans le registre. Leur contenu est à contrôler ; ne pas additionner des étapes successives du même financement.</p>
+            <div class="budget-documents">
+                {% for record in trace.records %}
+                    <article class="budget-document">
+                        <div>
+                            <h4>{{ record.from }} → {{ record.to }}</h4>
+                            <p>{{ record.purpose }}</p>
+                            <p class="budget-muted">{{ record.stageLabel }} · {{ record.destinationLabel }}{% if record.destinationPlace %} ({{ record.destinationPlace }}){% endif %} · {{ record.documentDate }}{% if record.beneficiaryIdentifier %} · Identifiant du bénéficiaire : {{ record.beneficiaryIdentifier }}{% endif %}</p>
+                        </div>
+                        <div class="budget-document-actions">
+                            <strong>{{ (record.amountCents / 100)|number_format(2, ',', ' ') }} €</strong>
+                            <a href="{{ record.sourceUrl }}" target="_blank" rel="noopener noreferrer">Lire la pièce source</a>
+                            <a href="{{ civic_path('section', {view: 'budget', scope: explorerScope, category: explorer.category, trace: record.id}) }}#budget-trail">Voir le parcours référencé</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    {% if trace.trail is not empty %}
+        <div class="budget-trail" id="budget-trail">
+            <h3>Parcours documentaire, sans compléter les maillons manquants</h3>
+            <ol>
+                {% for record in trace.trail %}
+                    <li>
+                        <strong>{{ record.from }} → {{ record.to }} : {{ (record.amountCents / 100)|number_format(2, ',', ' ') }} €</strong>
+                        <p>{{ record.stageLabel }} · {{ record.documentDate }} · {{ record.destinationLabel }}{% if record.destinationPlace %} ({{ record.destinationPlace }}){% endif %}</p>
+                        <a href="{{ record.sourceUrl }}" target="_blank" rel="noopener noreferrer">Pièce publique citée</a>
+                    </li>
+                {% endfor %}
+            </ol>
+            <p class="budget-muted">Fin de chaîne : aucune utilisation en aval n’est affirmée sans document public supplémentaire. Les maillons ne prouvent pas l'origine des fonds fiscalement individualisés.</p>
+        </div>
+    {% endif %}
+    <details class="budget-explain">
+        <summary>Comment compléter la trace d’une association ou d’un financement ?</summary>
+        <ol>
+            <li>Identifier le financeur, la collectivité, l’année et la décision d’attribution.</li>
+            <li>Retrouver l’organisme (SIREN, SIRET, RNA), la convention, le montant et l’objet de l’aide.</li>
+            <li>Distinguer « attribué » et « versé » : une décision ne démontre pas un paiement.</li>
+            <li>Contrôler le compte rendu financier de l’action et les dépenses effectivement justifiées.</li>
+            <li>Suivre chaque transfert suivant seulement si une nouvelle pièce établit le lien. Sinon, marquer « trace publique interrompue ».</li>
+        </ol>
+        <p><a href="https://www.service-public.gouv.fr/associations/vosdroits/F3180">Droits d’accès et obligations de transparence des subventions</a> · <a href="https://www.data.gouv.fr/pages/donnees_associations">Répertoires et comptes d’associations</a>.</p>
+        <p>Pour les données nominatives, respecter les obligations de publication et la protection des personnes ; aucun fichier bancaire privé ni identité de contribuable n’est nécessaire.</p>
+    </details>
+</section>

@@ -61,7 +61,7 @@
                 <input type="hidden" name="id" value="{{ selected }}" />
                 <input type="hidden" name="territory" value="{{ territory }}" />
                 <label for="indicator">
-                    Choisir une mesure commune aux trois villes
+                    Choisir une mesure disponible pour les villes pilotes
                 </label>
                 <select name="indicator" id="indicator">
                     {% for indicator in publicEvidence.indicators %}
@@ -143,6 +143,7 @@
                     </article>
                 {% endfor %}
             </div>
+            {% if publicEvidence.cities|length > 1 %}
             <h3>Les évolutions vont-elles dans le même sens ?</h3>
             <p>
                 Ce calcul compare uniquement le signe de l’écart 2024–2025. Il
@@ -158,6 +159,7 @@
                     </li>
                 {% endfor %}
             </ul>
+            {% endif %}
             <details>
                 <summary>
                     Source, dates, méthode et limites
@@ -245,22 +247,8 @@
                     </option>
                 {% endfor %}
             </select>
-            <label for="comparison-city">
-                Ville concernée par au moins un chemin
-            </label>
-            <select id="comparison-city" name="territory">
-                <option value="all">
-                    Toutes les villes
-                </option>
-                {% for city in state.territories %}
-                    <option
-                        value="{{ city.id }}"
-                        {{ territory == city.id ? 'selected' : '' }}
-                    >
-                        {{ city.name }}
-                    </option>
-                {% endfor %}
-            </select>
+            <input type="hidden" name="territory" value="{{ territory }}">
+            <p>Commune : {{ selectedCommune ? selectedCommune.name : 'France · simulations pilotes' }}. <a href="{{ civic_path('site_communes') }}">Changer de commune</a></p>
             <button type="submit" class="button">
                 Afficher les comparaisons
             </button>

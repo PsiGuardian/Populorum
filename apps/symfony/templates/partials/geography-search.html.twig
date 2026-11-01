@@ -1,0 +1,24 @@
+{# Unique component used in sidebar/header and commune directory. JS enhances, never required. #}
+{% set chooser = geoMode|default('directory') == 'choose' %}
+{% set searchId = geoSearchId|default('global') %}
+<form class="geo-chooser" role="search"
+      action="{{ chooser ? civic_path('territory_choose') : civic_path('site_communes') }}"
+      method="{{ chooser ? 'post' : 'get' }}"
+      data-geo-chooser data-suggestions="{{ civic_path('communes_suggestions') }}"
+      data-geo-mode="{{ chooser ? 'choose' : 'directory' }}">
+    {% if chooser %}
+        <input type="hidden" name="_token" value="{{ csrf_token('territory_choose') }}">
+        <input type="hidden" name="destination" value="{{ view|default('home') }}">
+        <input type="hidden" name="code_type" value="">
+    {% endif %}
+    <label for="geo-search-{{ searchId }}">{{ chooser ? 'Choisir une commune pour tout le site' : 'Rechercher une commune' }}</label>
+    <div class="geo-chooser-controls">
+        <input id="geo-search-{{ searchId }}" type="search" name="{{ chooser ? 'code' : 'q' }}"
+            placeholder="Nom, code postal ou code INSEE…" value="{{ geoQuery|default('') }}"
+            autocomplete="off" minlength="2" maxlength="70"
+            aria-autocomplete="list" aria-controls="geo-results-{{ searchId }}" aria-expanded="false">
+        <button class="button" type="submit">{{ chooser ? 'Choisir' : 'Chercher' }}</button>
+    </div>
+    <div class="geo-chooser-results" id="geo-results-{{ searchId }}" role="listbox" hidden></div>
+    <p class="geo-chooser-hint" data-geo-feedback aria-live="polite">{{ chooser ? 'Saisissez un nom ou un code postal puis choisissez une commune. Pour cibler un code INSEE sans suggestions, saisissez INSEE:76351.' : 'Une commune peut posséder plusieurs codes postaux.' }}</p>
+</form>

@@ -1,0 +1,25 @@
+{# OFGL/DECP comparison: coverage of two sources, NEVER subtraction or payment matching. #}
+<section class="panel budget-explorer" id="concordance-comptes-marches" aria-label="Concordance documentaire des budgets et marchés publics">
+  <div class="budget-heading"><div>
+    <p class="budget-eyebrow">CROISEMENT DOCUMENTAIRE · PÉRIMÈTRES DISTINCTS</p>
+    <h2>Comptes communaux et contrats publics : ce qui concorde</h2>
+    <p>Deux sources officielles consultables sur le même écran, mais deux mesures différentes : les comptes OFGL décrivent des dépenses annuelles ; les DECP décrivent des contrats notifiés.</p>
+  </div></div>
+  <div class="budget-kpis">
+    <article><small>Comptes communaux OFGL · {{ budgetCoverage.year }}</small>
+      <strong>{% if explorer.city is not null and explorer.city.totalCents is not null %}{{ (explorer.city.totalCents / 100)|number_format(2, ',', ' ') }} €{% else %}Non disponibles pour ce périmètre{% endif %}</strong>
+    </article>
+    <article><small>Contrats DECP notifiés en {{ decpConcordance.accountingYear }} · {{ explorerScope == 'FR' ? 'tous acheteurs publiés' : 'lieu d’exécution codé commune' }}</small>
+      <strong>{{ decpConcordance.contractsInYear is not null ? decpConcordance.contractsInYear|number_format(0, ',', ' ') : 'Index non installé' }}</strong>
+    </article>
+    <article><small>Contrats DECP toutes années importées · même périmètre</small>
+      <strong>{{ decpConcordance.contractsAllYears is not null ? decpConcordance.contractsAllYears|number_format(0, ',', ' ') : 'Non disponible' }}</strong>
+    </article>
+  </div>
+  <p class="budget-muted"><strong>Concordance méthodologique :</strong>
+    {% if explorerScope == 'FR' %}la sélection « France » dans DECP regroupe des acheteurs publics de catégories diverses ; elle ne correspond pas au total des seules communes comptabilisées par l’OFGL.
+    {% else %}le filtre DECP s'appuie sur un lieu d'exécution explicitement codé comme commune {{ explorerScope }} ; il ne représente ni tous les contrats de la mairie ni tous les paiements dans cette commune. Les contrats codés seulement par département ou code postal sont exclus.
+    {% endif %}
+    Un contrat pluriannuel, sa valeur initiale, ses modifications et la dépense de l'exercice {{ budgetCoverage.year }} ne sont pas des montants directement rapprochables. Aucune somme, soustraction ou économie n'est déduite de ce rapprochement.</p>
+  <a class="button" href="{{ civic_path('site_markets', explorerScope == 'FR' ? {year:decpConcordance.accountingYear} : {city:explorerScope, year:decpConcordance.accountingYear}) }}">Examiner les contrats correspondants</a>
+</section>

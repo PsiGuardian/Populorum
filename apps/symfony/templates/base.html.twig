@@ -7,7 +7,11 @@
         <meta name="description" content="Simulateur démocratique fictif : chemins libres, expériences et mémoire collective.">
         <link rel="icon" href="/favicon.svg">
         <link rel="stylesheet" href="/app.css">
+        {# POPULORUM-BUDGET-EXPLORER-V1 #}
+        <link rel="stylesheet" href="/budget-explorer.css">
         <script src="/interface.js" defer></script>
+        <script src="/geography-selector.js" defer></script>
+        {% if view == 'budget' %}<script src="/budget-tree.js" defer></script>{% endif %}
     </head>
     <body class="{{ (actor.preferences.largeText ?? false) ? 'large-text' : '' }}">
         <a class="skip" href="#main">Aller au contenu</a>
@@ -33,6 +37,8 @@
                     services: 'Services et missions',
                     procurement: 'Besoins et devis',
                     budget: 'Budget et priorités',
+                    markets: 'Marchés publics réels',
+                    communes: 'Annuaire des communes',
                     citizen: 'Mon laboratoire'
                 } %}
                 {% set secondaryNavigation = [
@@ -85,6 +91,36 @@
                     </a>
                 </div>
             </header>
+
+            <div class="geo-navigation" aria-label="Périmètre territorial commun à toutes les pages">
+                <div class="geo-current">
+                    <strong>Périmètre : {{ selectedCommune ? selectedCommune.name ~ ' (' ~ selectedCommune.code ~ ')' : 'France entière' }}</strong>
+                    <small>{{ selectedCommune ? (selectedPilotId ? 'Commune pilote · scénario pédagogique' : 'Commune réelle · simulation non disponible') : 'Annuaire national · simulations pilotes séparées' }}</small>
+                    <a href="{{ selectedCommune ? civic_path('site_commune', {code:selectedCommune.code}) : civic_path('site_communes') }}">{{ selectedCommune ? 'Fiche' : 'Annuaire' }}</a>
+                </div>
+                {% include 'partials/geography-search.html.twig' with {geoMode: 'choose', geoSearchId: 'sitewide', geoQuery: ''} %}
+                <div class="geo-fast" aria-label="Accès rapides aux communes">
+                    {% if selectedCommune is not null %}
+                        <form action="{{ civic_path('territory_choose') }}" method="post">
+                            <input type="hidden" name="_token" value="{{ csrf_token('territory_choose') }}">
+                            <input type="hidden" name="destination" value="{{ view }}">
+                            <input type="hidden" name="code" value="FR">
+                            <button class="button" type="submit">Revenir à la France</button>
+                        </form>
+                    {% endif %}
+                    {% for recent in geoRecent|default([]) %}
+                        {% if selectedCommune is null or recent.code != selectedCommune.code %}
+                        <form action="{{ civic_path('territory_choose') }}" method="post">
+                            <input type="hidden" name="_token" value="{{ csrf_token('territory_choose') }}">
+                            <input type="hidden" name="destination" value="{{ view }}">
+                            <input type="hidden" name="code" value="{{ recent.code }}">
+                            <input type="hidden" name="code_type" value="insee">
+                            <button class="button" type="submit">{{ recent.name }}</button>
+                        </form>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
 
             <div class="simulation-banner">
                 <span><i class="live-dot"></i> LABORATOIRE CITOYEN</span>

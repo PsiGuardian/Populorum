@@ -130,3 +130,29 @@ site_list_search_page:
         page: '[1-9][0-9]{0,4}'
         term: '.{1,640}'
     methods: [GET]
+
+# National INSEE geographical directory (one shared catalogue across all pages).
+site_communes:
+    path: /communes
+    controller: App\Controller\DemoController::page
+    defaults: { view: communes }
+    methods: [GET]
+site_commune:
+    path: /communes/{code}
+    controller: App\Controller\DemoController::page
+    defaults: { view: communes }
+    requirements: { code: '(?:[0-9]{5}|2[AB][0-9]{3})' }
+    methods: [GET]
+
+# Verified public procurement data (distinct from fictitious needs and tenders).
+site_markets:
+    path: /marches-publics
+    controller: App\Controller\DemoController::page
+    defaults: { view: markets }
+    methods: [GET]
+site_market_detail:
+    path: /marches-publics/{key}
+    controller: App\Controller\DemoController::page
+    defaults: { view: markets }
+    requirements: { key: '[a-f0-9]{40}' }
+    methods: [GET]

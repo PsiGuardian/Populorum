@@ -1,7 +1,8 @@
 {% extends 'base.html.twig' %}
 {% block content %}
+    {% if selectedPilotId is not null %}
     <section class="panel">
-        <h2>Devis et réalisations du laboratoire</h2>
+        <h2>Devis et réalisations du laboratoire (simulation pilote)</h2>
         <p>
             {{ procurementSummary.count }} dossier(s) avec paiement fictif après contrôle
             ; coût total déclaré : {{
@@ -29,6 +30,7 @@
         </a>
     </section>
 
+    {% endif %}
     <div class="page-title">
         <div>
             <div class="eyebrow">
@@ -42,14 +44,16 @@
             </p>
         </div>
     </div>
+    {# POPULORUM-BUDGET-EXPLORER-V3 #}
+    {% include 'partials/budget-explorer.html.twig' %}
     <section class="notice">
         <h2>Un plafond souhaité n’est pas une économie réalisée</h2>
         <p>
-            Les agrégats ci-dessous décrivent les comptes communaux consolidés
-            2025 publiés par l’OFGL à partir de la DGFiP. Paris comprend son
-            périmètre communal et départemental. Les périmètres des trois villes
-            diffèrent ; ces chiffres ne constituent pas un classement
-            d’efficacité.
+            Les agrégats de l’explorateur proviennent des comptes communaux
+            consolidés 2025 publiés par l’OFGL à partir de la DGFiP, pour les
+            communes effectivement importées. Paris comprend son périmètre
+            communal et départemental ; une différence de compétence ou de
+            périmètre interdit les classements d’efficacité simplistes.
         </p>
         <p>
             Les dépenses de l’État, de la sécurité sociale, des régions,
@@ -66,8 +70,9 @@
             revendiquée.
         </p>
     </section>
+    {% if selectedPilotId is not null %}
     <section class="panel">
-        <h2>Tester une hypothèse de réduction</h2>
+        <h2>Tester une hypothèse de réduction — simulation pilote</h2>
         <p>
             Le modèle protège les dépenses de personnel, intérêts financiers et
             remboursements d’emprunts recensés. Ce plancher de scénario ne
@@ -85,6 +90,7 @@
             )
             }}"
         >
+            <input type="hidden" name="scope" value="{{ explorerScope }}">
             <label for="saving">
                 Réduction hypothétique de l’enveloppe restante (%)
             </label><input
@@ -115,7 +121,9 @@
             validation de faisabilité.
         </p>
     </section>
+    <p class="budget-muted">Les économies simulées sont des hypothèses propres à la ville pilote sélectionnée, sans extrapolation aux autres communes.</p>
     {% for city in budgetCities %}
+      {% if explorerScope == 'FR' or city.city.code == explorerScope %}
         {% set scenario = budgetScenarios[city.city.id] %}
         <section class="panel section">
             <h2>{{ city.city.name }} · comptes consolidés 2025</h2>
@@ -283,12 +291,16 @@
                 </div>
             </details>
         </section>
+      {% endif %}
     {% endfor %}
+    {% endif %}
+    {% if selectedPilotId is not null %}
     <section class="panel section" id="ledger">
-        <h2>Les comptes détaillés publiés par la DGFiP</h2>
+        <h2>Balances détaillées DGFiP · commune pilote sélectionnée</h2>
         <p>
-            4 322 lignes archivées pour les trois collectivités. Ce sont des
-            comptes de balance, pas 4 322 dépenses individuelles. Les mouvements
+            Ces lignes d’archives concernent les villes du jeu pilote.
+            La consultation ci-dessous est limitée à la ville sélectionnée.
+            Ce sont des comptes de balance, pas des factures individuelles. Les mouvements
             budgétaires et non budgétaires, débits, crédits et soldes sont
             distincts. Il serait faux d’additionner toutes ces lignes comme des
             dépenses.
@@ -304,8 +316,9 @@
             )
             }}#ledger"
         >
+            <input type="hidden" name="scope" value="{{ explorerScope }}">
             <label for="ledger-city">Collectivité</label><select
-                name="city"
+                name="ledger_city"
                 id="ledger-city"
             >
                 {% for city in budgetCities %}
@@ -392,7 +405,8 @@
                         'section',
                         {
                             view: 'budget',
-                            city: ledgerCode,
+                            ledger_city: ledgerCode,
+                            scope: explorerScope,
                             account: ledgerPrefix,
                             page: ledger.page - 1
                         }
@@ -410,7 +424,8 @@
                         'section',
                         {
                             view: 'budget',
-                            city: ledgerCode,
+                            ledger_city: ledgerCode,
+                            scope: explorerScope,
                             account: ledgerPrefix,
                             page: ledger.page + 1
                         }
@@ -447,6 +462,7 @@
             </a>.
         </p>
     </section>
+    {% endif %}
     <section class="panel section">
         <h2>Sources et dépenses restant à documenter</h2>
         <p>
@@ -461,6 +477,7 @@
             }}.
         </p>
         <p>
+            {% if selectedPilotId is not null %}
             <a
                 href="https://www.paris.fr/pages/comptes-administratifs-de-la-ville-retrouvez-toutes-les-infos-27793"
             >
@@ -474,6 +491,9 @@
             >
                 Comptes et annexes du Havre
             </a>.
+            {% else %}
+            Les annexes des collectivités pilotes ne décrivent pas les dépenses de la commune choisie. Rechercher les publications officielles de cette commune dans les sources ouvertes.
+            {% endif %}
         </p>
         <p>
             La vue consolidée OFGL neutralise des flux entre budgets et peut
