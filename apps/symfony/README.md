@@ -39,6 +39,18 @@ Choisissez votre langue pour lire le guide d’installation et de mise à jour :
 | 🇬🇪 ქართული | [`ka_GE`](docs/translations/ka_GE/INSTALLATION.md) |
 | 🇲🇳 Монгол | [`mn_MN`](docs/translations/mn_MN/INSTALLATION.md) |
 
+## Installation Arch Linux automatisée (recommandée)
+
+```bash
+sudo pacman -Syu --needed php php-sqlite composer git python unzip
+# Activer les modules pdo_sqlite et sqlite3 dans /etc/php/php.ini si nécessaires.
+bash tools/install-arch.sh --check
+bash tools/install-arch.sh
+php -S 127.0.0.1:5412 -t public
+```
+
+Le script refuse les prérequis manquants, conserve les fichiers personnels existants et vérifie migrations, Twig et schéma Doctrine. Il ne télécharge pas les 1,9 Go de l'index national. Les instructions de distribution de la base et des fichiers JSON originaux sont dans [ARCHIVES_DECP.md](docs/ARCHIVES_DECP.md).
+
 ## Installation sur Arch Linux
 
 Les dépendances système proviennent de pacman :
