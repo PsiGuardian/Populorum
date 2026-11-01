@@ -266,7 +266,7 @@ final class PublicProcurementData
         $result['contractsAllYears'] = (int) $all->fetchColumn();
         $yearClause = 'notice_date>=? AND notice_date<?';
         $yearWhere = $where === '' ? ' WHERE ' . $yearClause : $where . ' AND ' . $yearClause;
-        $year = $db->prepare('SELECT COUNT(*) FROM contracts' . $yearWhere);
+        $year = $db->prepare('SELECT COUNT(*) FROM contracts ' . $yearWhere);
         $year->execute(array_merge($args, [$accountingYear . '-01-01', ((int) $accountingYear + 1) . '-01-01']));
         $result['contractsInYear'] = (int) $year->fetchColumn();
 
