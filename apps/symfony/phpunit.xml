@@ -12,6 +12,7 @@
             <file>tests/CityOperationsTest.php</file>
             <file>tests/PublicProcurementTest.php</file>
             <file>tests/SqlInputSecurityTest.php</file>
+            <file>tests/SqlWriteIsolationTest.php</file>
             <file>tests/PerformanceOptimizationsTest.php</file>
             <file>tests/ApplicationCompletionTest.php</file>
             <file>tests/ReplicaTransportTest.php</file>
