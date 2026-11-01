@@ -710,6 +710,55 @@ final class ApplicationCompletionTest extends TestCase
         self::assertStringContainsString('4 322 lignes', $budget);
     }
 
+    public function testRealCommuneWithoutFictionalScenarioKeepsBudgetAccessible(): void
+    {
+        // The national reference is committed in compressed form; use it without
+        // committing an uncompressed database or modifying the user's DECP index.
+        $index = dirname(__DIR__) . '/data/geography/communes-2026.sqlite';
+        $compressed = $index . '.gz';
+        $created = false;
+        if (!is_file($index)) {
+            self::assertFileExists($compressed);
+            $source = gzopen($compressed, 'rb');
+            self::assertNotFalse($source);
+            $target = fopen($index, 'x');
+            self::assertNotFalse($target);
+            try {
+                while (!gzeof($source)) {
+                    $chunk = gzread($source, 1024 * 1024);
+                    self::assertNotFalse($chunk);
+                    self::assertSame(strlen($chunk), fwrite($target, $chunk));
+                }
+            } finally {
+                fclose($target);
+                gzclose($source);
+            }
+            $created = true;
+        }
+
+        try {
+            $_SERVER['POPULORUM_SCENARIO'] = '';
+            $this->session->set('simulation_owner', 'nonpilot-budget-' . bin2hex(random_bytes(6)));
+            $page = $this->request('/budget-et-priorites?scope=66134');
+            self::assertSame('66134', $this->session->get(\App\Service\TerritorySelection::SESSION_KEY));
+            self::assertSame(200, $page->getStatusCode(), 'Passa must retain access to real public data without a pilot scenario.');
+            self::assertStringContainsString('L’arbre des dépenses publiques', $page->getContent());
+            self::assertStringContainsString('Passa', $page->getContent());
+            self::assertStringNotContainsString('Balances détaillées DGFiP · commune pilote sélectionnée', $page->getContent());
+            // The pilot is not invented on other simulation pages either.
+            $fiction = $this->request('/consultations');
+            self::assertSame(200, $fiction->getStatusCode());
+            self::assertStringContainsString('Pas de scénario local', $fiction->getContent());
+            // No re-use of an unrelated pilot's detailed ledger on an unknown budget.
+            self::assertSame(400, $this->request('/budget-et-priorites?account=6%20OR%201=1')->getStatusCode());
+        } finally {
+            $this->session->remove(\App\Service\TerritorySelection::SESSION_KEY);
+            if ($created) {
+                unlink($index);
+            }
+        }
+    }
+
     private function apiSession(): array
     {
         return json_decode(
