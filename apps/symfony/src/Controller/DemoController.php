@@ -539,14 +539,23 @@ final class DemoController extends AbstractController
                 'account',
                 '',
             );
-            try {
-                $context['ledger'] = $this->publicBudget->ledger(
-                    $context['ledgerCode'],
-                    $context['ledgerPrefix'],
-                    $request->query->getInt('page', 1),
-                );
-            } catch (\DomainException $exception) {
-                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException($exception->getMessage());
+            $ledgerPage = $request->query->getInt('page', 1);
+            if (!preg_match('/\A[0-9]{0,8}\z/D', $context['ledgerPrefix'])
+                || $ledgerPage < 1 || $ledgerPage > 10000) {
+                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException('Filtre de balance invalide.');
+            }
+            // The historical ledger belongs to the three fictional pilots only.
+            // A real commune with no simulation must never open Paris's ledger as a fallback.
+            if ($pilot !== null) {
+                try {
+                    $context['ledger'] = $this->publicBudget->ledger(
+                        $context['ledgerCode'],
+                        $context['ledgerPrefix'],
+                        $ledgerPage,
+                    );
+                } catch (\DomainException $exception) {
+                    throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException($exception->getMessage());
+                }
             }
             $context['budgetSource'] = $this->publicBudget->dataset();
             $context['savingsPercent'] = $request->query->getInt('saving', 0);
