@@ -4,6 +4,41 @@ Application native **PHP 8.4 / Symfony 8.1 / Doctrine / Twig / Symfony Form et V
 
 Le projet reste une simulation fictive. Les seules communes initiales sont **Paris (75056), Marseille (13055), Le Havre (76351)**. Leurs noms, rattachements et codes communaux viennent du COG INSEE 2026. Les 300 personnages (100 par ville), les 27 projets expérimentaux (neuf par ville), votes et résultats sont fictifs. Les projets s’appuient sur des sources publiques datées, distinctes des hypothèses et résultats inventés. Voir [recherche et fixtures](docs/MUNICIPAL_FIXTURES.md).
 
+## Traductions — 28 locales
+
+Retrouvez la charte fondatrice et le cadre du projet dans les 28 locales documentaires, comme dans le [README principal](../../README.md).
+
+| Langue | Locale |
+|---|---|
+| 🇫🇷 Français | [`fr_FR`](../../docs/translations/fr_FR/CHARTER.md) |
+| 🇬🇧 English (UK) | [`en_GB`](../../docs/translations/en_GB/CHARTER.md) |
+| 🇺🇸 English (US) | [`en_US`](../../docs/translations/en_US/CHARTER.md) |
+| 🇨🇦 English (Canada) | [`en_CA`](../../docs/translations/en_CA/CHARTER.md) |
+| 🇮🇪 English (Ireland) | [`en_IE`](../../docs/translations/en_IE/CHARTER.md) |
+| 🇪🇸 Español | [`es_ES`](../../docs/translations/es_ES/CHARTER.md) |
+| 🇩🇪 Deutsch | [`de_DE`](../../docs/translations/de_DE/CHARTER.md) |
+| 🇮🇹 Italiano | [`it_IT`](../../docs/translations/it_IT/CHARTER.md) |
+| 🇵🇹 Português | [`pt_PT`](../../docs/translations/pt_PT/CHARTER.md) |
+| 🇳🇱 Nederlands | [`nl_NL`](../../docs/translations/nl_NL/CHARTER.md) |
+| 🇵🇱 Polski | [`pl_PL`](../../docs/translations/pl_PL/CHARTER.md) |
+| 🇨🇿 Čeština | [`cs_CZ`](../../docs/translations/cs_CZ/CHARTER.md) |
+| 🇸🇰 Slovenčina | [`sk_SK`](../../docs/translations/sk_SK/CHARTER.md) |
+| 🇭🇺 Magyar | [`hu_HU`](../../docs/translations/hu_HU/CHARTER.md) |
+| 🇭🇷 Hrvatski | [`hr_HR`](../../docs/translations/hr_HR/CHARTER.md) |
+| 🇷🇴 Română | [`ro_RO`](../../docs/translations/ro_RO/CHARTER.md) |
+| 🇬🇷 Ελληνικά | [`el_GR`](../../docs/translations/el_GR/CHARTER.md) |
+| 🇷🇺 Русский | [`ru_RU`](../../docs/translations/ru_RU/CHARTER.md) |
+| 🇹🇷 Türkçe | [`tr_TR`](../../docs/translations/tr_TR/CHARTER.md) |
+| 🇸🇦 العربية | [`ar_SA`](../../docs/translations/ar_SA/CHARTER.md) |
+| 🇮🇳 हिन्दी | [`hi_IN`](../../docs/translations/hi_IN/CHARTER.md) |
+| 🇯🇵 日本語 | [`ja_JP`](../../docs/translations/ja_JP/CHARTER.md) |
+| 🇨🇳 简体中文 | [`zh_CN`](../../docs/translations/zh_CN/CHARTER.md) |
+| 🇮🇩 Bahasa Indonesia | [`id_ID`](../../docs/translations/id_ID/CHARTER.md) |
+| 🇲🇾 Bahasa Melayu | [`ms_MY`](../../docs/translations/ms_MY/CHARTER.md) |
+| 🇻🇳 Tiếng Việt | [`vi_VN`](../../docs/translations/vi_VN/CHARTER.md) |
+| 🇬🇪 ქართული | [`ka_GE`](../../docs/translations/ka_GE/CHARTER.md) |
+| 🇲🇳 Монгол | [`mn_MN`](../../docs/translations/mn_MN/CHARTER.md) |
+
 ## Installation sur Arch Linux
 
 Les dépendances système proviennent de pacman :
