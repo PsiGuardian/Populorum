@@ -14,8 +14,11 @@ final class PublicEvidence implements \Symfony\Contracts\Service\ResetInterface
         $this->dataset = null;
     }
 
-    public function __construct(private string $projectDir, private GeographyCatalog $geography)
+    private GeographyCatalog $geography;
+
+    public function __construct(private string $projectDir, ?GeographyCatalog $geography = null)
     {
+        $this->geography = $geography ?? new GeographyCatalog($projectDir);
     }
 
     public function compare(string $indicator = ''): array

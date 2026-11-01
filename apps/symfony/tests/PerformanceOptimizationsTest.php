@@ -370,6 +370,11 @@ final class PerformanceOptimizationsTest extends TestCase
             dirname(__DIR__) . '/data/research/municipal-balances-2025.json.gz',
             $path,
         );
+        // The indexed and JSON-backed readers use the same official municipality-to-SIREN mapping.
+        copy(
+            dirname(__DIR__) . '/data/research/municipal-finance-2025.json',
+            $directory . '/data/research/municipal-finance-2025.json',
+        );
         $original = new PublicBudget($directory);
         try {
             foreach (['75056', '13055', '76351'] as $code) {

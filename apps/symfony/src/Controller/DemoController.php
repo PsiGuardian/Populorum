@@ -554,6 +554,11 @@ final class DemoController extends AbstractController
                 'resources',
                 0,
             );
+            // Validate inputs independently of the three optional fictional pilots.
+            if ($context['savingsPercent'] < 0 || $context['savingsPercent'] > 100
+                || $context['otherResourcesCents'] < 0 || $context['otherResourcesCents'] > 10000000000000) {
+                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException('Hypothèses budgétaires invalides.');
+            }
             $context['budgetScenarios'] = [];
             try {
                 foreach ($context['budgetCities'] as $city) {
