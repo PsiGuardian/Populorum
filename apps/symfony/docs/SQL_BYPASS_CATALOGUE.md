@@ -56,3 +56,13 @@ Ne jamais exécuter de tests destructeurs sur une copie de la base nationale ni 
 - SqlWriteIsolationTest couvre les identifiants de compte, les identifiants de scénario et les contenus de propositions face aux charges adversariales.
 - Vérifie que deux scénarios préexistants demeurent distincts, qu'une révision obsolète est rejetée et qu'une proposition contenant des caractères SQL reste une donnée littérale.
 - Les tests opèrent uniquement sur une base SQLite en mémoire. Ils ne remplacent pas un audit des politiques de session, du CSRF ni des contrôles d'accès HTTP.
+
+## Importateurs DECP : tests adversariaux JSON
+
+- test_decp_sql_inputs.py prépare une base temporaire distincte de l'index national.
+- Teste les champs des marchés et concessions : identifiants, acheteurs, objets, montants, procédures, dates, localisations, titulaires, modifications et sous-traitants.
+- Les variations de chaînes SQL sont injectées comme **valeurs JSON** et non exécutées comme commandes SQL.
+- Après chaque import : structure SQLite inchangée, PRAGMA quick_check valide et contrat témoin intact.
+- Ces tests ne contrôlent pas les téléchargements externes ni toutes les protections d'entrée HTTP.
+
+    python3 tools/test_decp_sql_inputs.py
