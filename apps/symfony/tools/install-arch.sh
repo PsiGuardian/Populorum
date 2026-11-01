@@ -52,7 +52,16 @@ if [[ ! -f composer.lock ]]; then
     exit 1
 fi
 
-composer install --no-interaction --prefer-dist --no-progress
+if ! composer install --no-interaction --prefer-dist --no-progress; then
+    echo "ECHEC : Composer n'a pas installé les dépendances." >&2
+    echo "Consulter le message ci-dessus ; ne pas démarrer le serveur PHP." >&2
+    exit 1
+fi
+if [[ ! -f vendor/autoload.php ]]; then
+    echo "ECHEC : vendor/autoload.php absent malgré composer install." >&2
+    echo "Ne pas démarrer le serveur ; vérifier les messages de Composer." >&2
+    exit 1
+fi
 composer check-platform-reqs --no-dev
 php tools/init-demo.php
 APP_ENV=demo APP_DEBUG=0 php bin/console doctrine:migrations:migrate --no-interaction --env=demo
@@ -60,6 +69,7 @@ APP_ENV=demo APP_DEBUG=0 php bin/console app:demo:prepare --env=demo
 APP_ENV=demo APP_DEBUG=0 php bin/console cache:clear --env=demo --no-debug
 APP_ENV=demo APP_DEBUG=0 php bin/console lint:twig templates --env=demo
 APP_ENV=demo APP_DEBUG=0 php bin/console doctrine:schema:validate --env=demo
+python3 tools/smoke_http.py
 
 if [[ "${1:-}" == "--verify" ]]; then
     composer test

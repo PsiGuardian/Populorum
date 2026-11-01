@@ -1,4 +1,4 @@
-# Populorum v0.6.0 — installation Arch Linux
+# Populorum v0.6.1 — installation Arch Linux
 
 Archive du logiciel Symfony 8.1 / PHP >= 8.4 / SQLite, sans données personnelles, sans `vendor/`, sans clés locales.
 
@@ -7,10 +7,17 @@ Archive du logiciel Symfony 8.1 / PHP >= 8.4 / SQLite, sans données personnelle
 1. Sur Arch Linux : `sudo pacman -Syu --needed php php-sqlite composer git python unzip`.
 2. Activer `pdo_sqlite` et `sqlite3` dans `/etc/php/php.ini` si `php -m` ne les liste pas.
 3. Depuis le dossier extrait : `cd apps/symfony && bash tools/install-arch.sh --check && bash tools/install-arch.sh`.
-4. Démarrer : `php -S 127.0.0.1:5412 -t public`, puis ouvrir http://127.0.0.1:5412/.
+4. Vérifier : `test -f vendor/autoload.php` ; puis seulement démarrer : `php -S 127.0.0.1:5412 -t public` et ouvrir http://127.0.0.1:5412/.
 
 La release est créée automatiquement **uniquement après succès des validations Ubuntu et Arch Linux**. Elle contient le code et un fichier SHA256SUMS. Si le contrôle échoue, aucune release n'est créée.
 
 **Important :** l'index national `public-procurement.sqlite` (~1,9 Go) et les JSON DECP ne sont pas inclus. Ils peuvent être reconstruits avec `tools/decp_pipeline_v8.py` depuis les données publiques, ou distribués indépendamment dans une release de données après publication depuis le poste qui les détient. Voir `apps/symfony/docs/ARCHIVES_DECP.md`.
 
 Cette version demeure un démonstrateur fictif, et non une plateforme électorale ou d'achats publics réglementaire.
+
+## Correctif v0.6.1
+
+- Corrige la présentation d'une installation partielle : le serveur indique les dépendances absentes au lieu d'une erreur PHP non contrôlée.
+- L'installateur échoue explicitement si Composer n'a pas créé `vendor/autoload.php`.
+- L'installateur appelle un vrai test HTTP sur trois pages, avec une copie SQLite distincte ; aucun test ne modifie la base des utilisateurs.
+- La CI Arch Linux teste également une archive du code extraite, sans `vendor/`, puis l'installe avant le contrôle HTTP.

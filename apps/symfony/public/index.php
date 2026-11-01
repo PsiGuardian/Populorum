@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+$autoload = dirname(__DIR__) . '/vendor/autoload.php';
+if (!is_file($autoload)) {
+    http_response_code(503);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "Populorum : dependances Composer absentes.\n";
+    echo "Depuis apps/symfony : bash tools/install-arch.sh\n";
+    exit;
+}
 require dirname(__DIR__) . '/tools/bootstrap.php';
 $kernel = new App\Kernel(
     $_SERVER['APP_ENV'] ?? 'demo',

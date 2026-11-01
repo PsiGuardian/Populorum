@@ -9,6 +9,7 @@ from __future__ import annotations
 from contextlib import closing
 import http.cookiejar
 import os
+import sqlite3
 from pathlib import Path
 import socket
 import subprocess
@@ -32,13 +33,22 @@ def main() -> None:
     url = f"http://127.0.0.1:{port}"
     cookies = http.cookiejar.CookieJar()
     browser = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookies))
-    with tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as logs:
+    with tempfile.TemporaryDirectory(prefix="populorum-http-smoke-") as temp, \
+            tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as logs:
+        source_db = ROOT / "var" / "populorum.sqlite"
+        if not source_db.is_file():
+            raise RuntimeError("Base de démonstration absente : lancer l'installateur en premier")
+        temporary_db = Path(temp) / "http-smoke.sqlite"
+        # Backup API produces a consistent database. The live user DB is never modified.
+        with sqlite3.connect(source_db.as_uri() + "?mode=ro", uri=True) as source:
+            with sqlite3.connect(temporary_db) as destination:
+                source.backup(destination, pages=1000, sleep=0.05)
         environment = dict(os.environ)
-        environment.update(APP_ENV="demo", APP_DEBUG="0", POPULORUM_DEMO="1")
+        environment.update(APP_ENV="demo", APP_DEBUG="0", POPULORUM_DEMO="1", DATABASE_URL="sqlite:///" + str(temporary_db))
         # Do not set POPULORUM_SCENARIO=reference: test the actual install.
         environment.pop("POPULORUM_SCENARIO", None)
         server = subprocess.Popen(
-            [sys.executable.replace("python3", "php") if False else "php", "-S", f"127.0.0.1:{port}", "-t", "public"],
+            ["php", "-S", f"127.0.0.1:{port}", "-t", "public"],
             cwd=ROOT, env=environment, stdin=subprocess.DEVNULL, stdout=logs,
             stderr=subprocess.STDOUT,
         )
