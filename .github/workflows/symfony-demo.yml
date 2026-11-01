@@ -31,3 +31,5 @@ jobs:
       - run: php bin/console lint:yaml config --parse-tags
       - run: php bin/console doctrine:schema:validate --env=demo
       - run: composer test
+      - run: python3 tools/test_decp_pipeline_v8.py
+      - run: python3 tools/test_decp_history_v8_1.py

@@ -38,6 +38,18 @@ def main():
         first=data/'decp-2026-07.json';second=data/'decp-2026-08.json'
         save(first,[record('V8TEST-1')]);save(second,[record('V8TEST-1'),record('V8TEST-2')])
         public=home/'public.sqlite';stage=home/'staging.sqlite'
+        # An empty legacy index from an archive must never block a first V8 import.
+        empty_public=home/'empty-public.sqlite';empty_public.touch()
+        empty_stage=home/'empty-staging.sqlite'
+        p.import_all(data,empty_stage,empty_public)
+        assert p.db_info(empty_stage)['contracts']==2
+        assert empty_public.stat().st_size==0, 'Import altered an empty public index'
+        try:p.publish(empty_stage,empty_public,True)
+        except ValueError as ex:assert 'vide' in str(ex)
+        else:raise AssertionError('Publishing over an empty public index was accepted')
+        assert empty_public.stat().st_size==0
+        assert p.db_info(empty_stage)['contracts']==2
+        empty_stage.unlink()
         subprocess.run([sys.executable,str(home/'tools/import_decp.py'),str(first),'--db',str(public)],check=True,stdout=subprocess.DEVNULL)
         assert p.db_info(public)['contracts']==1
         p.import_all(data,stage,public)
@@ -92,6 +104,7 @@ def main():
             assert out.read_bytes()==payload and calls
         finally:p.request=original
         print('OK — téléchargement interrompu repris via HTTP Range, octets identiques')
+        print('OK — index public vide préservé, création du staging validée, publication refusée')
         print('OK — index V8 : 2 fichiers, déduplication, réimportation idempotente')
         print('OK — isolation de la base publique, publication explicite, sauvegarde restaurable')
         print('OK — un fichier tronqué annule son import sans altérer la base publique')

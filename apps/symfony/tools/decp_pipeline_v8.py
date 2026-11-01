@@ -180,6 +180,9 @@ def make_staging(staging:Path=STAGING, public:Path=PUBLIC):
     if not public.exists():
         print('Nouvelle base de travail (pas de base DECP publique existante).')
         return
+    if public.stat().st_size == 0:
+        print('Index public vide (0 octet) : ignoré pour le nouvel import V8, fichier conservé.')
+        return
     db_info(public)
     tmp=staging.with_name(staging.name+'.creating')
     tmp.unlink(missing_ok=True)
@@ -228,6 +231,8 @@ def publish(staging:Path=STAGING, public:Path=PUBLIC, stopped:bool=False):
     if not staging.exists():raise ValueError('Aucun index de travail. Importer les données en premier.')
     checkpoint_stage(staging)
     fresh=db_info(staging,deep=True)
+    if public.exists() and public.stat().st_size == 0:
+        raise ValueError('Index public vide (0 octet) : arrêter le site et déplacer manuellement ce fichier avant publication ; rien n’a été remplacé.')
     if public.exists():
         # Callers must stop the site first. Refuse if the public journal is still active.
         with closing(sqlite3.connect(public,timeout=10)) as db:
