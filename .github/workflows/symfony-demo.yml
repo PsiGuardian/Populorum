@@ -30,6 +30,8 @@ jobs:
       - run: php bin/console lint:twig templates --env=demo
       - run: php bin/console lint:yaml config --parse-tags
       - run: php bin/console doctrine:schema:validate --env=demo
+      - name: Real HTTP smoke after install
+        run: python3 tools/smoke_http.py
       - run: composer test
       - run: python3 tools/test_decp_pipeline_v8.py
       - run: python3 tools/test_decp_history_v8_1.py
@@ -61,6 +63,8 @@ jobs:
           php -m
       - name: Full install from composer.lock
         run: bash tools/install-arch.sh
+      - name: Real HTTP smoke on fresh Arch installation
+        run: python3 tools/smoke_http.py
       - name: Archive packaging and restore
         run: python3 tools/test_decp_archive.py
   release-installable:
