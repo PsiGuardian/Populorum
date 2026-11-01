@@ -34,3 +34,57 @@ jobs:
       - run: python3 tools/test_decp_pipeline_v8.py
       - run: python3 tools/test_decp_history_v8_1.py
       - run: python3 tools/test_decp_sql_inputs.py
+      - run: sudo apt-get update && sudo apt-get install -y zstd
+      - run: python3 tools/test_decp_archive.py
+  arch-install:
+    runs-on: ubuntu-latest
+    container: archlinux:base
+    defaults:
+      run:
+        working-directory: apps/symfony
+    steps:
+      - name: Install Arch Linux official packages
+        run: pacman -Syu --noconfirm --needed php php-sqlite composer git python unzip zstd ca-certificates
+        working-directory: /
+      - uses: actions/checkout@v4
+      - name: Enable packaged PHP extensions for CI
+        shell: bash
+        run: |
+          mkdir -p /etc/php/conf.d
+          for ext in pdo_sqlite sqlite3 iconv mbstring dom simplexml xml curl; do
+            if ! php -r 'exit(extension_loaded($argv[1]) ? 0 : 1);' "$ext"; then
+              if [[ -f "/usr/lib/php/modules/$ext.so" ]]; then
+                printf 'extension=%s\n' "$ext" >> /etc/php/conf.d/populorum-ci.ini
+              fi
+            fi
+          done
+          php -m
+      - name: Full install from composer.lock
+        run: bash tools/install-arch.sh
+      - name: Archive packaging and restore
+        run: python3 tools/test_decp_archive.py
+  release-installable:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [native-demo, arch-install]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish tested source release (without national DECP files)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="v0.6.0-arch"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; no overwrite."
+            exit 0
+          fi
+          mkdir -p release
+          git archive --format=tar --prefix="Populorum-v0.6.0-arch/" "$GITHUB_SHA" | gzip -9 > release/Populorum-v0.6.0-arch.tar.gz
+          (cd release && sha256sum Populorum-v0.6.0-arch.tar.gz > SHA256SUMS.txt)
+          gh release create "$TAG" release/Populorum-v0.6.0-arch.tar.gz release/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
+            --title "Populorum v0.6.0 — installation Arch Linux" \
+            --notes-file docs/RELEASE_NOTES_INSTALL.md

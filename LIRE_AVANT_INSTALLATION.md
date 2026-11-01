@@ -1,5 +1,24 @@
 # Populorum — installation et mise à jour
 
+## Installation express (Arch Linux)
+
+Téléchargez le [ZIP de la branche main](https://github.com/PsiGuardian/Populorum/archive/refs/heads/main.zip) ou une [release vérifiée](https://github.com/PsiGuardian/Populorum/releases). Les deux archives contiennent le **code et composer.lock**, sans `vendor/` ni index DECP national de 1,9 Go.
+
+```bash
+sudo pacman -Syu --needed php php-sqlite composer git python unzip
+# Dans /etc/php/php.ini, activer pdo_sqlite et sqlite3 si nécessaire.
+# Vérifier : php -m | grep -E 'pdo_sqlite|sqlite3'
+
+cd Populorum-main/apps/symfony
+bash tools/install-arch.sh --check
+bash tools/install-arch.sh
+php -S 127.0.0.1:5412 -t public
+```
+
+Ouvrir <http://127.0.0.1:5412/>. Si `--check` détecte des modules désactivés, suivre son diagnostic avant l'installation. Les archives de données publiques sont séparées : [voir leur installation et publication](apps/symfony/docs/ARCHIVES_DECP.md). Ne jamais écraser `var/populorum.sqlite`, `.env.local` ni les clés d'une installation existante.
+
+---
+
 ## Prérequis
 
 Il faut **PHP 8.4 ou supérieur**, **Composer** et les extensions indiquées dans [le guide Symfony](apps/symfony/README.md#installation-sur-arch-linux). Sur Arch Linux, les paquets système s’installent avec `sudo pacman -S --needed php php-sqlite composer` ; le guide précise les extensions à vérifier.
