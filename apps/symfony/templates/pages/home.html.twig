@@ -2,6 +2,17 @@
 {% import 'partials/macros.html.twig' as ui %}
 {% block content %}
     {% include 'partials/uncertainty.html.twig' %}
+    <section class="panel geo-home-quick">
+        <div class="eyebrow">FRANCE · COMMUNES OFFICIELLES</div>
+        <h2>Explorer une commune, sans perdre son chemin</h2>
+        <p>Le sélecteur en haut de page conserve la commune choisie à travers les rubriques. Le référentiel INSEE contient {{ geoCoverage.count|number_format(0, ',', ' ') }} communes {{ geoCoverage.available ? 'indexées' : 'pilotes en attente de l’import national' }}.</p>
+        <div class="geo-actions">
+            <a class="button primary" href="{{ civic_path('site_communes') }}">Parcourir l’annuaire national</a>
+            <a class="button" href="{{ civic_path('section', {view: 'budget'}) }}#explorateur">Comprendre les dépenses publiques</a>
+        </div>
+        <p class="small muted">Les propositions et consultations suivantes sont des démonstrations fictives de communes pilotes, non des résultats nationaux.</p>
+    </section>
+
     <section class="workbench-intro">
         <div class="eyebrow">
             COMPRENDRE AVANT DE DÉCIDER

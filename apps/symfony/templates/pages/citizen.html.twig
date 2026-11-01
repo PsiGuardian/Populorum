@@ -1,6 +1,14 @@
 {% extends 'base.html.twig' %}
 {% import 'partials/macros.html.twig' as ui %}
 {% block content %}
+    {% if selectedCommune is not null and (selectedPilotId is null or selectedPilotId != actor.territoryId) %}
+    <section class="notice">
+        <h2>Commune consultée et personnage fictif : deux notions différentes</h2>
+        <p>Vous consultez {{ selectedCommune.name }}. Le personnage de démonstration reste rattaché à {{ territoryMap[actor.territoryId].name }} ; la sélection géographique ne modifie ni son identité, ni sa famille, ni son droit à participer aux consultations fictives.</p>
+        <a class="button" href="{{ civic_path('site_commune', {code:selectedCommune.code}) }}">Fiche de la commune consultée</a>
+    </section>
+    {% endif %}
+
     {% if not app.user %}
         <form method="post" action="{{ civic_path('demo_new_workspace') }}">
             <input

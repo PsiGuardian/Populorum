@@ -24,48 +24,10 @@
         ouverture ; les secrets d’affaires réels ne doivent jamais être saisis
         ici.
     </p>
-    <nav class="action-row procurement-filters" aria-label="Dossiers par ville">
-        <a
-            class="button ghost"
-            href="{{
-            civic_path(
-                'section',
-                {
-                    view: 'procurement'
-                }
-            )
-            }}"
-        >
-            Toutes les villes
-        </a>
-        {% for city in state.territories %}
-            <a
-                class="button ghost"
-                href="{{
-                civic_path(
-                    'site_procurement_city',
-                    {
-                        territory: city.id
-                    }
-                )
-                }}"
-            >
-                {{ city.name }}
-            </a>
-        {% endfor %}
-        <a
-            class="button ghost"
-            href="{{
-            civic_path(
-                'section',
-                {
-                    view: 'budget'
-                }
-            )
-            }}"
-        >
-            Dépenses et budget
-        </a>
+    <nav class="action-row procurement-filters" aria-label="Périmètre des dossiers fictifs">
+        <span>Commune : {{ selectedCommune ? selectedCommune.name : 'France · pilotes fictifs' }}</span>
+        <a class="button ghost" href="{{ civic_path('site_communes') }}">Changer de commune</a>
+        <a class="button ghost" href="{{ civic_path('section', {view: 'budget'}) }}">Dépenses et budget</a>
     </nav>
     <ol class="procurement-stages" aria-label="Parcours de traitement">
         <li>Décrire le besoin</li>

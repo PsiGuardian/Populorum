@@ -26,6 +26,7 @@ final class DemoController extends AbstractController
     private const LABELS = [
         'home' => 'Vue d’ensemble',
         'territories' => 'Les territoires',
+        'communes' => 'Toutes les communes',
         'proposals' => 'Les chemins',
         'consultations' => 'Les consultations',
         'experiments' => 'Les expériences',
@@ -40,6 +41,7 @@ final class DemoController extends AbstractController
         'services' => 'Services et missions',
         'budget' => 'Budget et priorités',
         'procurement' => 'Besoins et devis',
+        'markets' => 'Marchés publics réels',
     ];
 
     public function __construct(
@@ -54,6 +56,11 @@ final class DemoController extends AbstractController
         private \App\Service\PublicEvidence $publicEvidence,
         private \App\Twig\CivicUrlExtension $urls,
         private \App\Service\PublicBudget $publicBudget,
+        private \App\Service\BudgetCatalog $budgetCatalog,
+        private \App\Service\GeographyCatalog $geography,
+        private \App\Service\TerritorySelection $territorySelection,
+        private \App\Service\BudgetEvidenceCatalog $budgetEvidence,
+        private \App\Service\PublicProcurementData $publicProcurement,
     ) {
     }
 
@@ -135,7 +142,17 @@ final class DemoController extends AbstractController
             }
         }
 
+        // A single session-backed geographical selector, independent from pilot fixtures.
+        $selectedCommune = $this->territorySelection->current($request, $view);
+        $selectedPilotId = \App\Service\TerritorySelection::pilotId(
+            $selectedCommune, $state['territories'],
+        );
+
         return [
+            'selectedCommune' => $selectedCommune,
+            'selectedPilotId' => $selectedPilotId,
+            'geoRecent' => $this->territorySelection->recent($request),
+            'geoCoverage' => $this->geography->coverage(),
             'state' => $state,
             'revision' => $workspace['revision'],
             'view' => $view,
@@ -163,6 +180,10 @@ final class DemoController extends AbstractController
     ): Response {
         $context = $this->context($request, 'citizen');
         $character = $context['citizenMap'][$id] ?? null;
+        if ($context['selectedCommune'] !== null && ($context['selectedPilotId'] === null
+            || ($character['territoryId'] ?? null) !== $context['selectedPilotId'])) {
+            throw $this->createNotFoundException('Personnage fictif extérieur au périmètre choisi.');
+        }
         if (!$character || !isset($character['mind'])) {
             throw $this->createNotFoundException('Profil fictif introuvable dans ce laboratoire.');
         }
@@ -304,10 +325,41 @@ final class DemoController extends AbstractController
             ),
             $context['state']['territories'],
         );
+        // Shared selection wins over historical t1/t2/t3 page filters.
+        if ($context['selectedCommune'] !== null) {
+            $context['territory'] = $context['selectedPilotId'] ?? '__no_pilot__';
+        }
+        // A real commune has a legitimate page even when no fictional scenario exists.
+        // Never substitute data from Paris/Marseille/Le Havre for it.
+        if ($context['selectedCommune'] !== null
+            && $context['selectedPilotId'] === null
+            && in_array($view, \App\Service\TerritorySelection::DEMO_VIEWS, true)
+        ) {
+            return $this->render('pages/no-local-simulation.html.twig', $context);
+        }
+        // Display-only projection; scenario state in the database remains untouched.
+        if ($context['selectedPilotId'] !== null
+            && in_array($view, \App\Service\TerritorySelection::DEMO_VIEWS, true)
+        ) {
+            $context['state'] = $this->territorySelection->filterDemo(
+                $context['state'], $context['selectedPilotId'],
+            );
+        }
         $context['selected'] = (string) $request->attributes->get(
             'id',
             $request->query->get('id', ''),
         );
+        if ($context['selectedPilotId'] !== null
+            && isset($context['proposalMap'][$context['selected']])
+            && $context['proposalMap'][$context['selected']]['territoryId'] !== $context['selectedPilotId']
+        ) {
+            // Do not show another city's detailed proposal under the chosen commune.
+            if ($view !== 'home') {
+                throw $this->createNotFoundException('Cette proposition ne concerne pas la commune sélectionnée.');
+            }
+            $context['selected'] = '';
+        }
+
         if (
             $request->query->has('q')
             && $routeTerm === null
@@ -380,7 +432,7 @@ final class DemoController extends AbstractController
                 'referenceCents' => 0,
             ];
             foreach ($context['state']['tenders'] ?? [] as $tender) {
-                if ($tender['status'] === 'paid') {
+                if ($tender['status'] === 'paid' && $tender['territoryId'] === $context['selectedPilotId']) {
                     ++$context['procurementSummary']['count'];
                     $context['procurementSummary']['actualCents'] +=
                         $tender['actualCents'];
@@ -437,14 +489,52 @@ final class DemoController extends AbstractController
                 );
             }
         }
+        if ($view === 'communes') {
+            $context['communesCoverage'] = $this->geography->coverage();
+            $context['communesDetail'] = null;
+            $code = strtoupper((string) $request->attributes->get('code', ''));
+            if ($code !== '') {
+                $context['communesDetail'] = $this->geography->find($code);
+                if ($context['communesDetail'] === null) {
+                    throw $this->createNotFoundException('Commune inconnue dans le référentiel géographique.');
+                }
+            }
+            $context['communesQuery'] = trim($request->query->getString('q', ''));
+            $context['communesRegion'] = $request->query->getString('region', '');
+            $context['communesDepartment'] = $request->query->getString('department', '');
+            $context['communesRegions'] = $this->geography->regions();
+            $context['communesDepartments'] = $context['communesRegion'] !== ''
+                ? $this->geography->departments($context['communesRegion']) : [];
+            $context['communesPage'] = max(1, min(2000, $request->query->getInt('page', 1)));
+            $offset = ($context['communesPage'] - 1) * 40;
+            if ($context['communesDetail'] !== null) {
+                $context['communesResults'] = [];
+                $context['communesTotal'] = 0;
+            } elseif ($context['communesQuery'] !== '') {
+                $context['communesResults'] = $this->geography->search($context['communesQuery'], 41, $offset);
+                $context['communesTotal'] = null;
+            } elseif ($context['communesDepartment'] !== '' && $context['communesRegion'] !== '') {
+                $page = $this->geography->cityPage($context['communesRegion'], $context['communesDepartment'], $offset, 40);
+                $context['communesResults'] = $page['rows'];
+                $context['communesTotal'] = $page['total'];
+            } else {
+                $context['communesResults'] = [];
+                $context['communesTotal'] = null;
+            }
+        }
         if ($view === 'budget') {
             $context['budgetCities'] = $this->publicBudget->cities(
                 $context['state'],
             );
-            $context['ledgerCode'] = $request->query->getString(
-                'city',
-                '75056',
-            );
+            // Legacy savings example is strictly a pilot scenario, never a national total.
+            $pilot = $context['selectedPilotId'];
+            $context['budgetCities'] = $pilot === null ? [] : array_values(array_filter(
+                $context['budgetCities'],
+                static fn (array $item): bool => $item['city']['id'] === $pilot,
+            ));
+            $selectedForLedger = $request->query->getString('scope', $request->query->getString('city', '75056'));
+            $context['ledgerCode'] = $request->query->getString('ledger_city',
+                in_array($selectedForLedger, ['75056', '13055', '76351'], true) ? $selectedForLedger : '75056');
             $context['ledgerPrefix'] = $request->query->getString(
                 'account',
                 '',
@@ -464,6 +554,11 @@ final class DemoController extends AbstractController
                 'resources',
                 0,
             );
+            // Validate inputs independently of the three optional fictional pilots.
+            if ($context['savingsPercent'] < 0 || $context['savingsPercent'] > 100
+                || $context['otherResourcesCents'] < 0 || $context['otherResourcesCents'] > 10000000000000) {
+                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException('Hypothèses budgétaires invalides.');
+            }
             $context['budgetScenarios'] = [];
             try {
                 foreach ($context['budgetCities'] as $city) {
@@ -478,6 +573,75 @@ final class DemoController extends AbstractController
             } catch (\DomainException $exception) {
                 throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException($exception->getMessage());
             }
+        }
+        // POPULORUM-BUDGET-EXPLORER-V3 : périmètre indépendant de la balance DGFiP.
+        if ($view === 'budget') {
+            $scope = $request->query->getString('scope', $request->query->getString('city', $context['selectedCommune']['code'] ?? 'FR'));
+            $enteredCode = trim($request->query->getString('code', ''));
+            if ($enteredCode !== '') {
+                $scope = strtoupper($enteredCode);
+            }
+            $context['explorerScope'] = $scope;
+            $context['budgetCoverage'] = $this->budgetCatalog->coverage();
+            $context['geoCoverage'] = $this->geography->coverage();
+            $context['nationalBudget'] = $this->budgetCatalog->national();
+            $selected = $scope === 'FR'
+                ? $context['nationalBudget']
+                : $this->budgetCatalog->city($scope);
+            // An unavailable national import must never masquerade as a three-city total.
+            if ($scope === 'FR' && !$context['nationalBudget']['available']) {
+                $selected = [
+                    'city' => ['code' => 'FR', 'name' => 'France : données nationales non importées'],
+                    'rows' => [], 'amounts' => [], 'population' => null, 'totalCents' => null,
+                ];
+            }
+            $budgetCategory = $request->query->getString('category', 'overview');
+            $context['budgetExplorer'] = (new \App\Service\BudgetExplorer())->build(
+                $selected === null ? [] : [$selected],
+                $scope,
+                $budgetCategory,
+                $request->query->getString('sort', 'amount_desc'),
+                $request->query->getString('term', ''),
+            );
+            $context['budgetEvidence'] = $this->budgetEvidence->grouped($scope);
+            $context['budgetEvidenceCount'] = array_sum(array_column($context['budgetEvidence'], 'count'));
+            $context['budgetTrace'] = (new \App\Service\BudgetTrace($this->projectDir))->build(
+                $selected === null ? [] : [$selected],
+                $scope,
+                $context['budgetExplorer']['category'],
+                $request->query->getString('destination', 'all'),
+                $request->query->getString('trace', ''),
+            );
+        }
+        if ($view === 'budget') {
+            $context['publicProcurementCoverage'] = $this->publicProcurement->coverage();
+            $context['decpConcordance'] = $this->publicProcurement->budgetConcordance($context['explorerScope'], '2025');
+        }
+        if ($view === 'markets') {
+            $scope = $request->query->getString('city', $context['selectedCommune']['code'] ?? '');
+            if ($scope === 'FR') {
+                $scope = '';
+            }
+            $filters = [
+                'kind' => $request->query->getString('kind', ''),
+                'year' => $request->query->getString('year', ''),
+                'buyer' => $request->query->getString('buyer', ''),
+                'supplier' => $request->query->getString('supplier', ''),
+                'department' => $request->query->getString('department', ''),
+                'city' => $scope,
+                'q' => $request->query->getString('q', ''),
+            ];
+            $context['marketFilters'] = $filters;
+            $context['publicProcurementCoverage'] = $this->publicProcurement->coverage();
+            $contractKey = (string) $request->attributes->get('key', '');
+            $context['marketDetails'] = $contractKey !== '' ? $this->publicProcurement->detail($contractKey) : null;
+            if ($contractKey !== '' && $context['marketDetails'] === null) {
+                throw $this->createNotFoundException('Contrat non retrouvé dans les sources importées.');
+            }
+            $context['marketList'] = $this->publicProcurement->search(
+                $filters,
+                max(0, $request->query->getInt('offset', 0)),
+            );
         }
         if ($view === 'accounts') {
             $indicators = $this->publicEvidence->compare()['indicators'];
@@ -513,6 +677,14 @@ final class DemoController extends AbstractController
             $context['publicEvidence'] = $this->publicEvidence->compare(
                 $request->query->getString('indicator'),
             );
+            if ($context['selectedPilotId'] !== null) {
+                $code = $context['selectedCommune']['code'];
+                $context['publicEvidence']['cities'] = array_values(array_filter(
+                    $context['publicEvidence']['cities'],
+                    static fn (array $city): bool => $city['code'] === $code,
+                ));
+                $context['publicEvidence']['comparisons'] = [];
+            }
             $comparison = PerformanceTrace::measure(
                 'convergence',
                 fn () => $this->engine->convergencePage(
@@ -585,6 +757,13 @@ final class DemoController extends AbstractController
             false,
             false,
         );
+        if ($context['selectedCommune'] !== null && $context['selectedPilotId'] === null) {
+            if ($request->isMethod('POST')) {
+                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException('Aucune action de simulation n’est ouverte pour la commune sélectionnée.');
+            }
+
+            return $this->render('pages/no-local-simulation.html.twig', $context);
+        }
         $initialData = $this->initialActionData($request, $type, $context);
         $proposal =
             $context['proposalMap'][$initialData['proposalId'] ?? ''] ?? null;

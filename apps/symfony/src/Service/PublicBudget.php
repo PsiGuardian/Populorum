@@ -42,11 +42,14 @@ final class PublicBudget implements \Symfony\Contracts\Service\ResetInterface
 
     public function ledger(string $code, string $prefix, int $page): array
     {
-        $sirens = [
-            '75056' => '217500016',
-            '13055' => '211300553',
-            '76351' => '217603513',
-        ];
+        $sirens = [];
+        foreach ($this->dataset()['rows'] ?? [] as $entry) {
+            $codeFromSource = (string) ($entry['com_code'] ?? '');
+            $siren = (string) ($entry['siren'] ?? '');
+            if (GeographyCatalog::validCode($codeFromSource) && preg_match('/^\d{9}$/D', $siren)) {
+                $sirens[$codeFromSource] = $siren;
+            }
+        }
         if (
             !isset($sirens[$code])
             || !preg_match('/^\d{0,8}$/D', $prefix)

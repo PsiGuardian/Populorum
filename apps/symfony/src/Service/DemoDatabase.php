@@ -30,26 +30,23 @@ final class DemoDatabase
             512,
             JSON_THROW_ON_ERROR,
         );
-        $municipalities = $this->connection->fetchAllAssociative(
-            <<<'SQL'
-            SELECT *
-            FROM municipalities
-            ORDER BY CASE code
-                WHEN '75056' THEN 1
-                WHEN '13055' THEN 2
-                ELSE 3
-            END
-            SQL,
+        $pilots = json_decode(
+            (string) file_get_contents($this->projectDir . '/data/cities.json'),
+            true, 512, JSON_THROW_ON_ERROR,
         );
-
-        if (count($municipalities) !== 3) {
-            throw new \RuntimeException('Exécutez la préparation de la base de démonstration.');
+        $municipalities = $this->connection->fetchAllAssociative('SELECT * FROM municipalities');
+        $byCode = array_column($municipalities, null, 'code');
+        $ordered = [];
+        foreach ($pilots as $pilot) {
+            if (!isset($byCode[$pilot['code']])) {
+                throw new \RuntimeException('Préparez les communes du scénario pédagogique.');
+            }
+            $ordered[] = $byCode[$pilot['code']];
         }
-
-        // L’ordre fixe conserve les identifiants t1/t2/t3 utilisés par le scénario pédagogique.
+        // The sample's t1/t2/t3 identifiers are stable in data/cities.json, not a national catalog.
         $state['territories'] = array_map(
-            fn (array $municipality, int $index): array => [
-                'id' => 't' . ($index + 1),
+            static fn (array $pilot, array $municipality): array => [
+                'id' => $pilot['id'],
                 'name' => $municipality['name'],
                 'code' => $municipality['code'],
                 'region' => $municipality['region'],
@@ -58,9 +55,7 @@ final class DemoDatabase
                 'sourceUrl' => $municipality['source_url'],
                 'fictional' => false,
                 'history' => [],
-            ],
-            $municipalities,
-            array_keys($municipalities),
+            ], $pilots, $ordered,
         );
         $statistics = json_decode(
             file_get_contents(

@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+{% block title %}Marchés publics réels · Démos Kratos{% endblock %}
+{% block content %}
+<div class="page-title"><div>
+    <p class="eyebrow">DONNÉES OFFICIELLES · COMMANDE PUBLIQUE</p>
+    <h1>Observatoire des marchés publics</h1>
+    <p>Découvrez les contrats notifiés, les entreprises titulaires, les modifications et les sous-traitants publiés. Les montants affichés sont contractuels : ils ne prouvent jamais qu'une somme a été payée.</p>
+</div></div>
+
+<section class="panel budget-explorer" aria-label="Couverture de l'index national des contrats">
+  {% if publicProcurementCoverage.available %}
+    <div class="budget-heading"><div>
+        <h2>{{ publicProcurementCoverage.contracts|number_format(0, ',', ' ') }} contrats distincts indexés</h2>
+        <p>{{ publicProcurementCoverage.markets|number_format(0, ',', ' ') }} marchés publics · {{ publicProcurementCoverage.concessions|number_format(0, ',', ' ') }} concessions · {{ publicProcurementCoverage.events|number_format(0, ',', ' ') }} événements de modification ou de sous-traitance.</p>
+        <p class="budget-muted">{{ publicProcurementCoverage.files }} fichier(s) consolidé(s) importé(s) · dernière importation {{ publicProcurementCoverage.lastImport|default('inconnue') }}. L'absence d'une publication ne prouve pas qu'aucun contrat n'existe.</p>
+    </div><a href="{{ civic_path('section', {view:'budget'}) }}#arbre-budget" class="button">Voir l'arbre des dépenses</a></div>
+  {% else %}
+    <h2>Index national non installé</h2>
+    <p>L'outil est prêt, mais aucun fichier DECP n'a encore été importé dans <code>data/research/public-procurement.sqlite</code>. L'installation se fait avec <code>python3 tools/import_decp.py /chemin/decp-2026-08.json</code>.</p>
+  {% endif %}
+</section>
+
+{% if marketDetails is not null %}
+<section class="panel budget-explorer" id="contrat-detail" aria-label="Fiche d'un contrat officiel">
+    <p class="budget-eyebrow">FICHE DOCUMENTAIRE · {{ marketDetails.kind == 'market' ? 'MARCHÉ' : 'CONCESSION' }}</p>
+    <h2>{{ marketDetails.object }}</h2>
+    <p><strong>Référence :</strong> {{ marketDetails.original_id }} · <strong>Acheteur :</strong> {{ marketDetails.buyer_id }} · <strong>Notification / signature :</strong> {{ marketDetails.notice_date|default('non renseignée') }}</p>
+    <p><strong>Valeur contractuelle conservée dans l’index :</strong>
+        {% if marketDetails.amount_initial_cents is not null %}{{ (marketDetails.amount_initial_cents / 100)|number_format(2, ',', ' ') }} €{% else %}Non communiqué{% endif %}
+        {% if marketDetails.amount_amended_cents is not null %} · <strong>Montant renseigné dans une modification (non additionnable) :</strong> {{ (marketDetails.amount_amended_cents / 100)|number_format(2, ',', ' ') }} €{% endif %}
+    </p>
+    <p><strong>Lieu d'exécution :</strong> {{ marketDetails.location_type|default('non renseigné') }} : {{ marketDetails.location_code|default('non renseigné') }} · <strong>CPV :</strong> {{ marketDetails.cpv|default('non renseigné') }} · <strong>Procédure :</strong> {{ marketDetails.procedure|default('non renseignée') }}</p>
+    {% if marketDetails.concession_finance is defined and marketDetails.concession_finance %}
+        <h3>Informations de concession</h3>
+        <p>Subvention publique déclarée : {% if marketDetails.concession_finance.subsidy_cents is not null %}{{ (marketDetails.concession_finance.subsidy_cents / 100)|number_format(2, ',', ' ') }} €{% else %}non disponible{% endif %}.
+            Investissements d'exécution déclarés : {% if marketDetails.concession_finance.investment_cents is not null %}{{ (marketDetails.concession_finance.investment_cents / 100)|number_format(2, ',', ' ') }} €{% else %}non disponibles{% endif %}.</p>
+        <p class="budget-muted">Les données annuelles et les modifications peuvent se chevaucher ; ne pas additionner à la valeur globale du contrat.</p>
+    {% endif %}
+    <section class="budget-explain" aria-label="Évolution des valeurs déclarées dans les fichiers DECP">
+      <h3>Historique des publications consolidées</h3>
+      <p><strong>{{ marketDetails.history.references }} fichier(s) contenant ce contrat</strong> ·
+         {{ marketDetails.history.observed }} historique(s) de montant reconstitué(s).
+         Les fichiers peuvent reprendre la même déclaration ; leur nombre n'est pas le nombre de nouveaux marchés.</p>
+      {% if not marketDetails.history.complete %}
+        <p class="budget-gap"><strong>Reconstitution incomplète.</strong> Relancez l'outil de rattrapage sur les fichiers JSON déjà importés. Aucune variation n'est calculée tant que les observations ne sont pas complètes.</p>
+      {% endif %}
+      {% if marketDetails.history.first is not null %}
+        <div class="budget-kpis">
+          <article><small>Première valeur publiée dans les fichiers indexés</small><strong>{{ (marketDetails.history.first / 100)|number_format(2, ',', ' ') }} €</strong></article>
+          <article><small>Dernière valeur publiée dans les fichiers indexés</small><strong>{{ (marketDetails.history.last / 100)|number_format(2, ',', ' ') }} €</strong></article>
+          <article><small>Écart entre les deux déclarations</small><strong>{% if marketDetails.history.delta is not null %}{{ (marketDetails.history.delta / 100)|number_format(2, ',', ' ') }} €{% else %}Non calculable{% endif %}</strong></article>
+        </div>
+      {% endif %}
+      {% if marketDetails.history.items is not empty %}
+      <div style="overflow-x:auto"><table><thead><tr><th>Fichier de consolidation</th><th>Date publiée dans l'enregistrement</th><th>Montant du contrat déclaré</th><th>Montant dans une modification</th></tr></thead><tbody>
+      {% for observation in marketDetails.history.items %}
+        <tr><td><a href="{{ observation.source_url }}" rel="noopener noreferrer" target="_blank">{{ observation.filename }}</a>{% if observation.occurrences > 1 %}<small> · {{ observation.occurrences }} enregistrements</small>{% endif %}</td>
+          <td>{{ observation.declared_publication_date|default('Non communiquée', true) }}</td>
+          <td>{% if observation.base_amount_cents is not null %}{{ (observation.base_amount_cents / 100)|number_format(2, ',', ' ') }} €{% else %}Non communiqué{% endif %}</td>
+          <td>{% if observation.modification_amount_cents is not null %}{{ (observation.modification_amount_cents / 100)|number_format(2, ',', ' ') }} €{% else %}—{% endif %}</td></tr>
+      {% endfor %}
+      </tbody></table></div>
+      {% else %}<p>Observations non encore disponibles pour ce contrat.</p>{% endif %}
+      <p class="budget-muted"><strong>Lecture :</strong> ordre chronologique des fichiers consolidés, et non des dates internes parfois antérieures. L'écart représente seulement une différence entre les montants déclarés dans deux versions, pas une hausse prouvée du coût ni un paiement. Les montants des avenants sont affichés séparément : ils peuvent désigner un montant total ou une variation selon la source.</p>
+    </section>
+    <h3>Titulaires et participants publiés</h3>
+    {% if marketDetails.participants is not empty %}
+        <ul>{% for p in marketDetails.participants %}<li>{{ p.role }} — {{ p.identifier_type }} {{ p.identifier }}</li>{% endfor %}</ul>
+    {% else %}<p>Pas de titulaire identifié dans les publications importées.</p>{% endif %}
+    <h3>Modifications et sous-traitance</h3>
+    {% if marketDetails.events is not empty %}
+        <div style="max-height:22rem;overflow:auto"><table><thead><tr><th>Événement</th><th>Date</th><th>Identifiant</th><th>Montant publié</th></tr></thead><tbody>
+        {% for event in marketDetails.events %}<tr>
+            <td>{{ event.event_type == 'amendment' ? 'Modification' : 'Sous-traitance' }}</td>
+            <td>{{ event.event_date|default('—') }}</td><td>{{ event.identifier|default(event.event_id) }}</td>
+            <td>{% if event.amount_cents is not null %}{{ (event.amount_cents / 100)|number_format(2, ',', ' ') }} €{% else %}Non communiqué{% endif %}</td>
+        </tr>{% endfor %}</tbody></table></div>
+    {% else %}<p>Aucun événement documenté dans les fichiers importés.</p>{% endif %}
+    <h3>Traçabilité des publications</h3>
+    {% for src in marketDetails.sources %}
+        <p><a href="{{ src.source_url }}" rel="noopener noreferrer" target="_blank">{{ src.filename }}</a> · SHA-256 : <code>{{ src.sha256 }}</code> · importé le {{ src.imported_at }}</p>
+    {% else %}<p>Référence de source absente.</p>{% endfor %}
+    <p class="budget-muted"><strong>Limite :</strong> une attribution, une modification de contrat et un paiement sont des événements distincts. Les données DECP ne suffisent pas à suivre les virements jusqu'à leur utilisation finale.</p>
+    <a class="button" href="{{ civic_path('site_markets') }}">Retour à la recherche</a>
+</section>
+{% endif %}
+
+<section class="panel budget-explorer" id="recherche-marches">
+    <h2>Rechercher dans les contrats</h2>
+    <p class="budget-muted">Le périmètre communal est strict : uniquement les contrats dont le lieu est codé « Code commune ». Les marchés géolocalisés par département ou code postal ne sont pas attribués arbitrairement à une ville. Pour tous les contrats, videz le filtre commune.</p>
+    <form action="{{ civic_path('site_markets') }}#resultats-marches" method="get" class="budget-trace-form">
+        <label>Objet ou référence <input type="search" name="q" maxlength="120" value="{{ marketFilters.q }}" placeholder="Ex. école, sécurité, déchets…"></label>
+        <label>Nature <select name="kind"><option value="">Marchés et concessions</option><option value="market" {{ marketFilters.kind == 'market' ? 'selected' : '' }}>Marchés</option><option value="concession" {{ marketFilters.kind == 'concession' ? 'selected' : '' }}>Concessions</option></select></label>
+        <label>Année de notification <input type="text" name="year" pattern="[0-9]{4}" maxlength="4" value="{{ marketFilters.year }}" placeholder="2024"></label>
+        <label>Acheteur SIREN/SIRET <input type="text" name="buyer" maxlength="14" value="{{ marketFilters.buyer }}" placeholder="9 ou 14 chiffres"></label>
+        <label>Titulaire SIREN/SIRET <input type="text" name="supplier" maxlength="14" value="{{ marketFilters.supplier }}" placeholder="9 ou 14 chiffres"></label>
+        <label>Commune d'exécution (INSEE) <input type="text" name="city" maxlength="5" value="{{ marketFilters.city }}" placeholder="Ex. 75056"></label>
+        <label>Département d'exécution <input type="text" name="department" maxlength="3" value="{{ marketFilters.department }}" placeholder="Ex. 35"></label>
+        <button type="submit" class="button">Rechercher</button>
+    </form>
+    <p><a href="{{ civic_path('site_markets') }}#recherche-marches">Effacer les filtres · France entière</a></p>
+</section>
+
+<section class="panel budget-explorer" id="resultats-marches">
+    <h2>{{ marketList.total|number_format(0, ',', ' ') }} résultat(s)</h2>
+    {% if marketList.items is not empty %}
+      <div class="budget-documents">
+        {% for contract in marketList.items %}
+          <article style="border-bottom:1px solid #8885;padding:.85rem 0">
+            <p class="budget-eyebrow">{{ contract.kind == 'market' ? 'MARCHÉ PUBLIC' : 'CONCESSION' }} · {{ contract.notice_date|default('date inconnue') }} · {{ contract.nature }}</p>
+            <h3><a href="{{ civic_path('site_market_detail', {key:contract.contract_key}) }}#contrat-detail">{{ contract.object }}</a></h3>
+            <p><strong>{% if contract.amount_initial_cents is not null %}{{ (contract.amount_initial_cents / 100)|number_format(2, ',', ' ') }} € (valeur contractuelle déclarée){% else %}Montant non communiqué{% endif %}</strong>
+              · <strong>{{ contract.source_count }} fichier(s) indexé(s)</strong> · Acheteur {{ contract.buyer_id }} · Lieu : {{ contract.location_type }} {{ contract.location_code }} · CPV {{ contract.cpv }}.</p>
+            <a href="{{ civic_path('site_market_detail', {key:contract.contract_key}) }}#contrat-detail">Voir l’historique, les titulaires et les sources</a>
+          </article>
+        {% endfor %}
+      </div>
+      <nav style="display:flex;gap:1rem;margin-top:1rem;flex-wrap:wrap" aria-label="Pagination des marchés">
+        {% if marketList.offset > 0 %}<a class="button" href="{{ civic_path('site_markets', marketFilters|merge({offset: max(0, marketList.offset - 30)})) }}#resultats-marches">Précédents</a>{% endif %}
+        {% if marketList.nextOffset is not null %}<a class="button" href="{{ civic_path('site_markets', marketFilters|merge({offset: marketList.nextOffset})) }}#resultats-marches">Suivants</a>{% endif %}
+      </nav>
+    {% else %}
+        <p>Aucun contrat dans les publications importées avec ces critères. Cela ne signifie pas qu'aucun marché n'existe.</p>
+    {% endif %}
+    <p class="budget-muted">Source : <a href="https://www.data.gouv.fr/datasets/donnees-essentielles-de-la-commande-publique-fichiers-consolides">Ministères économiques et financiers — DECP consolidées</a>. Couverture variable selon les acheteurs et les publications. Montants contractuels non additionnables directement entre versions.</p>
+</section>
+{% endblock %}

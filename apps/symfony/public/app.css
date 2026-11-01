@@ -2948,3 +2948,25 @@ form ul {
 @media (max-width: 520px) { .procurement-causal { grid-template-columns: 1fr; } .procurement-stages { display: block; } .procurement-stages li { margin-bottom: .5rem; } }
 .procurement-filters { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: .5rem; margin: 1rem 0; padding: 0; }
 .procurement-filters .button { flex: 0 1 auto; width: auto; font-size: .8rem; }
+
+/* POPULORUM V5 — ONE GEOGRAPHICAL SCOPE ON EVERY PAGE */
+.geo-navigation {padding: 1rem 1.25rem; border-bottom: 1px solid var(--border, #c9c0a8); background: color-mix(in srgb, var(--surface, #faf8f2) 88%, transparent);}
+.geo-current {display:flex; gap:.75rem; align-items:center; flex-wrap:wrap; margin:0 0 .75rem;}
+.geo-current strong {font-weight:750;}
+.geo-current small {opacity:.85;}
+.geo-chooser {max-width: 780px; position:relative;}
+.geo-chooser label {display:block; font-weight:650; margin-bottom:.35rem;}
+.geo-chooser-controls {display:flex; gap:.5rem; flex-wrap:wrap;}
+.geo-chooser-controls input {flex:1; min-width:180px; width:auto;}
+.geo-chooser-hint {margin:.35rem 0 0; font-size:.82rem; opacity:.8;}
+.geo-chooser-results {position:relative; max-height:340px; overflow-y:auto; z-index:20; border:1px solid #9c916f; border-radius:10px; background:var(--surface, #fff); box-shadow:0 8px 24px #0002;}
+.geo-chooser-results[hidden] {display:none;}
+.geo-chooser-option {display:flex; flex-direction:column; gap:.15rem; padding:.6rem .85rem; border:0; text-decoration:none; color:inherit; background:transparent; width:100%; text-align:left; cursor:pointer;}
+.geo-chooser-option + .geo-chooser-option {border-top:1px solid #ccc6;}
+.geo-chooser-option:hover, .geo-chooser-option:focus, .geo-chooser-option[aria-selected="true"] {background: #b28b3f21; outline-offset:-2px;}
+.geo-chooser-option small {opacity:.76;}
+.geo-fast {display:flex; flex-wrap:wrap; gap:.4rem; align-items:center; margin-top:.6rem;}
+.geo-fast form {margin:0;}
+.geo-fast .button {font-size:.8rem; padding:.3rem .55rem;}
+.geo-empty {max-width:860px;}
+@media (max-width:650px) {.geo-navigation {padding:.75rem;} .geo-chooser-controls button {width:100%;}}

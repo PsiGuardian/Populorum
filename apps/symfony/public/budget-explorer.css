@@ -1,0 +1,107 @@
+/* Populorum - fiscal evidence explorer. No JS or external assets. */
+.budget-explorer{scroll-margin-top:1rem}
+.budget-explorer *, .budget-explorer *::before,.budget-explorer *::after{box-sizing:border-box}
+.budget-explorer h2,.budget-explorer h3,.budget-explorer h4{margin-top:0}
+.budget-explorer h2{font-size:clamp(1.35rem,2.4vw,1.95rem);line-height:1.2}
+.budget-explorer h4{font-size:1rem;margin-bottom:.3rem}
+.budget-explorer p{line-height:1.6}
+.budget-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:1.25rem;flex-wrap:wrap}
+.budget-heading > div{flex:1 1 30rem}
+.budget-eyebrow{font-size:.73rem;letter-spacing:.1em;font-weight:800;text-transform:uppercase;opacity:.72;margin:0 0 .65rem}
+.budget-legend{display:flex;flex-wrap:wrap;gap:.55rem 1.2rem;font-size:.83rem;margin:1rem 0 1.5rem}
+.budget-legend>span{display:inline-flex;align-items:center;gap:.4rem}
+.budget-dot{display:inline-block;width:.67rem;height:.67rem;border-radius:50%;border:1px solid currentColor}
+.budget-dot--known{background:#168570}
+.budget-dot--document{background:#547ed3}
+.budget-dot--missing{background:#d5ad57}
+.budget-filter-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin:0 0 1.5rem;padding:1.2rem;border:1px solid #9fa5a747;border-radius:14px;background:rgba(125,125,125,.045)}
+.budget-filter-form>div:not(.budget-filter-actions){min-width:0;display:flex;flex-direction:column;gap:.32rem}
+.budget-filter-form label,.budget-trace-form label{font-size:.87rem;font-weight:650}
+.budget-filter-form select,.budget-filter-form input,.budget-trace-form select{width:100%;max-width:100%;padding:.65rem .8rem;border-radius:8px;font:inherit}
+.budget-filter-actions{display:flex;grid-column:1/-1;gap:.6rem;flex-wrap:wrap}
+.budget-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:1rem 0 1.5rem}
+.budget-kpis article{padding:1rem;border:1px solid #9fa5a75c;border-radius:11px;min-width:0}
+.budget-kpis small{display:block;opacity:.8;line-height:1.4;margin-bottom:.6rem}
+.budget-kpis strong{display:block;overflow-wrap:anywhere;font-size:clamp(.95rem,1.6vw,1.3rem);font-variant-numeric:tabular-nums}
+.budget-results-heading{margin:1.5rem 0 1rem}.budget-results-heading p{margin:.4rem 0}
+.budget-row-list{display:grid;gap:.7rem}
+.budget-row{border:1px solid #9fa5a755;border-radius:11px;padding:1rem}
+.budget-row-top{display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:1rem}
+.budget-row-top>div:first-child{flex:1 1 12rem}
+.budget-row-figure{display:flex;align-items:flex-end;flex-direction:column;text-align:right;gap:.3rem;font-variant-numeric:tabular-nums}
+.budget-row-figure strong{font-size:1.13rem}
+.budget-row-figure small{opacity:.75}
+.budget-row p{margin:.2rem 0 .7rem}
+.budget-bar{height:.7rem;background:rgba(128,128,128,.2);border-radius:10rem;overflow:hidden;margin-top:.5rem}
+.budget-bar span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#246f93,#2ca88d)}
+.budget-muted{font-size:.83rem;opacity:.8}
+.budget-row details{margin-top:.7rem}.budget-row details summary{cursor:pointer;font-size:.9rem}
+.budget-gap{border-left:4px solid #d6a14e;padding:.8rem 1rem;margin:1rem 0;background:rgba(204,150,60,.085);border-radius:0 8px 8px 0}
+.budget-gap p{margin-bottom:.1rem}
+.budget-trace-steps{list-style:none;margin:1.5rem 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem;counter-reset:step}
+.budget-trace-step{position:relative;border:1px solid #9fa5a760;border-radius:12px;padding:1.15rem;min-width:0}
+.budget-trace-step h3{font-size:1rem;line-height:1.3}
+.budget-trace-step p{font-size:.9rem}
+.budget-trace-step small{opacity:.75;line-height:1.5}
+.budget-step-amount{font-variant-numeric:tabular-nums;font-size:1.12rem!important;font-weight:750;overflow-wrap:anywhere}
+.budget-step-unknown{font-size:.9rem!important}
+.budget-trace-warning{padding:.8rem 1rem;border:1px solid #9fa5a760;border-radius:8px}
+.budget-trace-form{display:flex;gap:.7rem;align-items:end;flex-wrap:wrap;margin:1rem 0 1.5rem}
+.budget-trace-form select{width:auto;max-width:100%;min-width:13rem}
+.budget-documents{display:grid;gap:.7rem}
+.budget-document{padding:.95rem;border:1px solid #9fa5a766;border-radius:10px;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.budget-document>div:first-child{flex:1 1 16rem}
+.budget-document h4{margin:0 0 .45rem}
+.budget-document-actions{display:flex;flex-direction:column;align-items:flex-start;gap:.45rem}
+.budget-document-actions strong{font-variant-numeric:tabular-nums}
+.budget-trail{border-top:1px solid #9fa5a760;margin-top:1rem;padding-top:1rem}
+.budget-trail li{padding:.4rem 0}
+.budget-explain{border-top:1px solid #9fa5a760;margin-top:1.6rem;padding-top:1rem}
+.budget-explain summary{cursor:pointer;font-weight:700}
+.budget-explain li{margin-bottom:.5rem}
+@media(max-width:1000px){.budget-trace-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.budget-filter-form,.budget-kpis,.budget-trace-steps{grid-template-columns:1fr}.budget-heading .button{width:100%;text-align:center}.budget-filter-actions .button{flex:1 1 10rem}.budget-trace-form{align-items:stretch;flex-direction:column}.budget-trace-form select{width:100%}.budget-row-figure{align-items:flex-start;text-align:left}}
+@media(prefers-reduced-motion:reduce){.budget-explorer *{scroll-behavior:auto!important}}
+/* Arbre financier : indentation par filiation, accessible sans bibliothèque externe. */
+.budget-coverage{border:1px solid #9ca4ad66;border-radius:10px;padding:.8rem 1rem;font-size:.93rem}
+.budget-city-search{position:relative}
+.budget-city-search small{line-height:1.45;opacity:.78}
+.budget-city-results{position:absolute;top:100%;left:0;right:0;z-index:10;border:1px solid #888;background:#fafaf8;color:#1e2425;border-radius:8px;max-height:19rem;overflow-y:auto;box-shadow:0 10px 22px #0002}
+.budget-city-choice{display:block;border:0;border-bottom:1px solid #ddd;width:100%;text-align:left;padding:.75rem;background:transparent;color:inherit;cursor:pointer;font:inherit}
+.budget-city-choice:hover,.budget-city-choice:focus-visible{background:#e2ebea}
+.budget-tree-panel{scroll-margin-top:1rem}
+.budget-tree-tools{display:flex;flex-wrap:wrap;gap:.6rem;margin:.8rem 0}
+.budget-tree-viewport{max-height:70vh;min-height:12rem;overflow:auto;border:1px solid #9ca4ad66;background:rgba(120,130,140,.04);border-radius:12px;padding:1rem .8rem}
+.budget-tree-list,.budget-tree-children{list-style:none;margin:0;padding:0}
+.budget-tree-children{padding-left:clamp(.9rem,2vw,1.8rem);margin-left:.45rem;border-left:2px solid #8996a44a}
+.budget-tree-item{position:relative;padding:.4rem 0 .45rem .35rem;min-width:max-content;max-width:100%}
+.budget-tree-node{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;max-width:100%;font-size:.93rem}
+.budget-tree-symbol{display:inline-flex;align-items:center;justify-content:center;min-width:1.5rem;height:1.5rem;border-radius:5px;background:rgba(90,138,148,.16);font-weight:750}
+.budget-tree-toggle{font:inherit;font-weight:700;text-align:left;color:inherit;border:0;background:none;cursor:pointer;padding:.3rem .2rem;max-width:52rem;white-space:normal;overflow-wrap:anywhere}
+.budget-tree-toggle:hover{text-decoration:underline}
+.budget-tree-label{font-weight:600;max-width:52rem;white-space:normal;overflow-wrap:anywhere}
+.budget-tree-money{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:.87rem;border:1px solid #85989a61;border-radius:50px;padding:.18rem .55rem}
+.budget-tree-description{font-size:.78rem;line-height:1.5;max-width:56rem;white-space:normal;opacity:.78;margin:.18rem 0 .28rem 2rem}
+.budget-tree-unknown{opacity:.7}
+.budget-tree-source{font-size:.78rem}
+.budget-tree-item--unknown{border-left:2px dashed #d4a153;margin:.2rem 0}
+.budget-tree-item--document>.budget-tree-node>.budget-tree-symbol{background:#547ed344}
+.budget-tree-more{margin:.5rem}
+#budget-tree-status{font-size:.83rem;margin:.55rem 0 .85rem;opacity:.8}
+@media(max-width:680px){.budget-tree-viewport{padding:.5rem;max-height:65vh}.budget-tree-node{gap:.3rem}.budget-tree-money{font-size:.8rem}}
+/* Shared INSEE commune directory; no duplicated search widget across pages. */
+.geo-navigation { display:flex;flex-wrap:wrap;align-items:center;gap:1.1rem;padding:.8rem 1.25rem;border-bottom:1px solid var(--line, #d5dedc); }
+.geo-navigation .geo-search {flex:1 1 270px;max-width:580px;}
+.geo-navigation p {margin:0;font-size:.84rem;}
+.geo-search label {display:block;font-size:.85rem;font-weight:650;margin-bottom:.35rem;}
+.geo-search-controls {display:flex;gap:.5rem;flex-wrap:wrap;}
+.geo-search-controls input {min-width:180px;flex:1 1 200px;padding:.6rem;border:1px solid #9daea9;border-radius:8px;}
+.geo-search-controls button {white-space:nowrap;}
+.geo-link-grid,.geo-result-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:.65rem;margin:1rem 0;}
+.geo-link {display:flex;flex-direction:column;gap:.2rem;border:1px solid #c8d4cf;border-radius:10px;padding:.8rem;text-decoration:none;overflow-wrap:anywhere;}
+.geo-link:hover,.geo-link:focus-visible {border-color:#1b6750;background:rgba(44,118,89,.07);}
+.geo-link small {opacity:.75;}
+.geo-actions {display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin:1.2rem 0;}
+.geo-details dl {display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem;}
+.geo-details dt {font-size:.85rem;opacity:.7;}.geo-details dd {margin:.3rem 0;font-weight:650;}
+.geo-directory h3 {margin-top:1.5rem;}

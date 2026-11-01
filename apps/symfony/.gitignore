@@ -8,3 +8,12 @@
 
 # Vue JSON développée reproductible ; la fixture compacte sans perte est versionnée.
 /data/scenario.json
+
+# National source files are downloadable and must not bloat Git history.
+/data/research/decp-sources/
+/data/research/decp-backups/
+/data/research/public-procurement*.sqlite*
+/data/geography/*.sqlite
+/data/geography/*.sqlite-wal
+/data/geography/*.sqlite-shm
+/config/services.yaml.bak
