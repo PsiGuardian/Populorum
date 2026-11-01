@@ -58,6 +58,35 @@ def main():
         assert empty_public.stat().st_size==0
         assert p.db_info(empty_stage)['contracts']==2
         empty_stage.unlink()
+        # A nonzero SQLite database with no user tables is another common archive placeholder.
+        shell_public=home/'shell-public.sqlite'
+        with sqlite3.connect(shell_public) as db:
+            db.execute('PRAGMA user_version=1')
+        assert shell_public.stat().st_size>0
+        assert p.is_empty_public_placeholder(shell_public)
+        shell_stage=home/'shell-staging.sqlite'
+        p.import_all(data,shell_stage,shell_public)
+        assert p.db_info(shell_stage)['contracts']==2
+        assert shell_public.stat().st_size>0
+        for command in ('status','verify'):
+            checked=subprocess.run(
+                [sys.executable,str(HERE/'decp_pipeline_v8.py'),command,
+                 '--staging',str(shell_stage),'--public',str(shell_public),
+                 '--download-dir',str(data)],
+                check=True,capture_output=True,text=True)
+            assert 'sans tables DECP' in checked.stdout
+        try:p.publish(shell_stage,shell_public,True)
+        except ValueError as ex:assert 'sans tables DECP' in str(ex)
+        else:raise AssertionError('Publishing over shell SQLite was accepted')
+        shell_stage.unlink()
+        # A non-DECP database containing user tables must block importing from it.
+        foreign=home/'foreign.sqlite'
+        with sqlite3.connect(foreign) as db:
+            db.execute('CREATE TABLE other_data(id INTEGER)')
+        assert not p.is_empty_public_placeholder(foreign)
+        try:p.import_all(data,home/'foreign-staging.sqlite',foreign)
+        except ValueError as ex:assert 'Schéma DECP invalide' in str(ex)
+        else:raise AssertionError('Foreign DB was silently ignored')
         subprocess.run([sys.executable,str(home/'tools/import_decp.py'),str(first),'--db',str(public)],check=True,stdout=subprocess.DEVNULL)
         assert p.db_info(public)['contracts']==1
         p.import_all(data,stage,public)
@@ -112,7 +141,8 @@ def main():
             assert out.read_bytes()==payload and calls
         finally:p.request=original
         print('OK — téléchargement interrompu repris via HTTP Range, octets identiques')
-        print('OK — index public vide préservé, création du staging validée, publication refusée')
+        print('OK — public vide ou coquille SQLite préservés, staging valide, publication refusée')
+        print('OK — base étrangère non-DECP jamais ignorée silencieusement')
         print('OK — index V8 : 2 fichiers, déduplication, réimportation idempotente')
         print('OK — isolation de la base publique, publication explicite, sauvegarde restaurable')
         print('OK — un fichier tronqué annule son import sans altérer la base publique')
