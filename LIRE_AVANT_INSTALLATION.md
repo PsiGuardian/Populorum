@@ -10,9 +10,20 @@ sudo pacman -Syu --needed php php-sqlite composer git python unzip
 # Vérifier : php -m | grep -E 'pdo_sqlite|sqlite3'
 
 cd Populorum-main/apps/symfony
-bash tools/install-arch.sh --check
-bash tools/install-arch.sh
+bash tools/install-arch.sh --check &&
+bash tools/install-arch.sh &&
+test -f vendor/autoload.php &&
 php -S 127.0.0.1:5412 -t public
+```
+
+Ne démarrer PHP **que si Composer et l'installateur réussissent** : `--check` contrôle seulement les prérequis et ne télécharge pas `vendor/`. La commande sans `--check` installe les dépendances, puis lance un contrôle HTTP réel sur une copie temporaire de SQLite.
+
+En cas de HTTP 500, depuis `apps/symfony` :
+
+```bash
+test -f vendor/autoload.php || echo 'Dépendances absentes : relancer composer install'
+python3 tools/smoke_http.py
+tail -n 80 var/log/demo.log
 ```
 
 Ouvrir <http://127.0.0.1:5412/>. Si `--check` détecte des modules désactivés, suivre son diagnostic avant l'installation. Les archives de données publiques sont séparées : [voir leur installation et publication](apps/symfony/docs/ARCHIVES_DECP.md). Ne jamais écraser `var/populorum.sqlite`, `.env.local` ni les clés d'une installation existante.

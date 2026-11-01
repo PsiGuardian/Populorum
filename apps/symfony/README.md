@@ -44,12 +44,13 @@ Choisissez votre langue pour lire le guide d’installation et de mise à jour :
 ```bash
 sudo pacman -Syu --needed php php-sqlite composer git python unzip
 # Activer les modules pdo_sqlite et sqlite3 dans /etc/php/php.ini si nécessaires.
-bash tools/install-arch.sh --check
-bash tools/install-arch.sh
+bash tools/install-arch.sh --check &&
+bash tools/install-arch.sh &&
+test -f vendor/autoload.php &&
 php -S 127.0.0.1:5412 -t public
 ```
 
-Le script refuse les prérequis manquants, conserve les fichiers personnels existants et vérifie migrations, Twig et schéma Doctrine. Il ne télécharge pas les 1,9 Go de l'index national. Les instructions de distribution de la base et des fichiers JSON originaux sont dans [ARCHIVES_DECP.md](docs/ARCHIVES_DECP.md).
+Le script refuse les prérequis manquants, vérifie la présence de vendor/autoload.php, conserve les fichiers personnels existants et vérifie migrations, Twig, schéma Doctrine et réponses HTTP réelles sur une copie temporaire de SQLite. Il ne télécharge pas les 1,9 Go de l'index national. Les instructions de distribution de la base et des fichiers JSON originaux sont dans [ARCHIVES_DECP.md](docs/ARCHIVES_DECP.md).
 
 ## Installation sur Arch Linux
 

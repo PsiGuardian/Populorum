@@ -65,6 +65,18 @@ jobs:
         run: bash tools/install-arch.sh
       - name: Real HTTP smoke on fresh Arch installation
         run: python3 tools/smoke_http.py
+      - name: Install from extracted GitHub-style source archive and test HTTP
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$(mktemp -d /tmp/populorum-release-install-XXXXXX)"
+          trap 'rm -rf "$root"' EXIT
+          git -C "$GITHUB_WORKSPACE" -c safe.directory="$GITHUB_WORKSPACE" archive --format=tar --prefix=Populorum-release/ "$GITHUB_SHA" | tar -xf - -C "$root"
+          cd "$root/Populorum-release/apps/symfony"
+          test ! -e vendor/autoload.php
+          bash tools/install-arch.sh
+          test -f vendor/autoload.php
+          python3 tools/smoke_http.py
       - name: Archive packaging and restore
         run: python3 tools/test_decp_archive.py
   release-installable:
@@ -80,15 +92,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="v0.6.0-arch"
+          TAG="v0.6.1-arch"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release $TAG already exists; no overwrite."
             exit 0
           fi
           mkdir -p release
-          git archive --format=tar --prefix="Populorum-v0.6.0-arch/" "$GITHUB_SHA" | gzip -9 > release/Populorum-v0.6.0-arch.tar.gz
-          (cd release && sha256sum Populorum-v0.6.0-arch.tar.gz > SHA256SUMS.txt)
-          gh release create "$TAG" release/Populorum-v0.6.0-arch.tar.gz release/SHA256SUMS.txt \
+          git archive --format=tar --prefix="Populorum-v0.6.1-arch/" "$GITHUB_SHA" | gzip -9 > release/Populorum-v0.6.1-arch.tar.gz
+          (cd release && sha256sum Populorum-v0.6.1-arch.tar.gz > SHA256SUMS.txt)
+          gh release create "$TAG" release/Populorum-v0.6.1-arch.tar.gz release/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
-            --title "Populorum v0.6.0 — installation Arch Linux" \
+            --title "Populorum v0.6.1 — installation HTTP vérifiée sur Arch Linux" \
             --notes-file docs/RELEASE_NOTES_INSTALL.md
