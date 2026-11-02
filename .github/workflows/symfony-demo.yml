@@ -48,7 +48,6 @@ jobs:
       - run: python3 tests/decp_sql_inputs_test.py
       - run: sudo apt-get update && sudo apt-get install -y zstd
       - run: python3 tests/decp_archive_test.py
-      - run: python3 tests/decp_release_parts_test.py
       - run: python3 -m py_compile tools/import_ssmsi_national.py
   arch-install:
     runs-on: ubuntu-latest
@@ -119,7 +118,7 @@ jobs:
           allowed = {'.gitignore','bootstrap.php','decp_archive.py','decp_index_health.py','decp_pipeline.py',
             'verify_decp_history.py','backfill_decp_history.py','import_decp.py','import_budget_national.py',
             'import_codes_postaux.py','import_communes_insee.py',
-            'recount.php','verify-export.php','decp_release_parts.py','import_ssmsi_national.py'}
+            'recount.php','verify-export.php','import_ssmsi_national.py'}
           present = {p.name for p in Path('tools').iterdir() if p.is_file()}
           assert present == allowed, f'Unexpected/absent tooling: extra={sorted(present-allowed)} missing={sorted(allowed-present)}'
           print('OK — clean tools inventory:', len(allowed) - 1)
@@ -127,7 +126,6 @@ jobs:
       - name: Data archive regression
         run: |
           python3 tests/decp_archive_test.py
-          python3 tests/decp_release_parts_test.py
   release-installable:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [native-demo, arch-install]
@@ -141,7 +139,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="v0.9.1-clean"
+          TAG="v0.9.2-clean"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release exists, nothing replaced."
             exit 0
@@ -156,5 +154,5 @@ jobs:
           [[ "$FIRST_ENTRY" == "$PREFIX"* ]] || { echo "Incorrect archive directory: $FIRST_ENTRY" >&2; exit 1; }
           gh release create "$TAG" "release/$ARCHIVE" release/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
-            --title "Populorum v0.9.1 — atlas national et documentation intégrée" \
+            --title "Populorum v0.9.2 — distribution propre sans script temporaire" \
             --notes-file docs/RELEASE_NOTES_INSTALL.md
