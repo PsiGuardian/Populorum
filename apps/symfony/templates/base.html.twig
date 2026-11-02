@@ -85,6 +85,7 @@
                     <strong>{{ labels[view] }}</strong>
                 </div>
                 <div class="top-tools">
+                    <a class="plain small" href="{{ civic_path('beta_profile') }}">Créer un compte de test</a>
                     <a class="plain small" href="{{ guardianPath }}">Profiler démo ↗</a>
                     <a class="profile-chip" href="{{ civic_path('section', {view: 'citizen'}) }}">
                         <span class="avatar">{{ actor.name|first }}</span>
@@ -141,6 +142,7 @@
                 <span>DÉMOS KRATOS / POPULORUM</span>
                 <p>Une mémoire pour demain. Des chemins libres aujourd’hui.</p>
                 <a class="footer-link" href="{{ civic_path('section', {view: 'charter'}) }}">Charte et principes ↗</a>
+                <a class="footer-link" href="{{ civic_path('site_privacy') }}">Confidentialité</a>
             </footer>
         </div>
     </body>

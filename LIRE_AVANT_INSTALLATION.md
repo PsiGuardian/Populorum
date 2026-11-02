@@ -1,57 +1,58 @@
-# Populorum — installation propre, sans installateur spécifique à une distribution
+# Populorum — installation complète (v0.10.0-clean)
 
-**Sources officielles :** [Releases](https://github.com/PsiGuardian/Populorum/releases) | [application Symfony](apps/symfony/README.md) | [installation des données nationales](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md).
+**Ce guide est autonome :** téléchargement de l'application, installation Symfony, téléchargement facultatif des bases nationales, contrôles et démarrage. Les commandes se lancent directement dans le terminal ; aucun installateur de distribution ni script ponctuel n'est nécessaire.
 
-Populorum est un simulateur fictif (PHP 8.4+, Symfony 8.1, SQLite). Il se télécharge sans dépendances PHP, sans clés privées et sans index DECP national de ~1,7 Go. Les dépendances sont définies dans `apps/symfony/composer.lock`.
+**Populorum est une simulation fictive.** Les référentiels nationaux servent à présenter des informations publiques sourcées, jamais à inventer des habitants, des votes ou des dépenses.
 
-## 1. Paquets système
+## Quelles données sont installées ?
+
+| Composant | Statut | Sans ce composant |
+| --- | --- | --- |
+| Application Symfony et SQLite de simulation | **Obligatoire** | Le site ne démarre pas |
+| INSEE 2026 / La Poste : 34 875 communes, 35 313 correspondances postales | **Inclus dans les sources** ; téléchargement indépendant facultatif | Sans le référentiel installé, impossible de sélectionner correctement une commune ; l'installation normale le restaure automatiquement |
+| Marchés publics nationaux (DECP) | **Facultatif**, téléchargement séparé | Le site fonctionne, mais `/marches-publics` et les rapprochements DECP restent sans données nationales |
+| Statistiques SSMSI 2024–2025 | **Facultatif**, téléchargement séparé | L'atlas `/convergence` montre les communes, mais pas les observations nationales correspondantes |
+| Budgets communaux OFGL | **Jeu distinct**, non livré avec les données DECP | Les sections budgétaires dépendant de cet import n'affichent pas de comptes réels |
+
+L'installation de l'application reste possible sans télécharger la volumineuse archive DECP. Les pages de données réelles non alimentées ne doivent **jamais** afficher des résultats inventés.
+
+## 1. Prérequis
 
 Sur **Arch Linux** :
 
 ```bash
-sudo pacman -Syu --needed php php-sqlite composer git python curl tar
-```
-
-Sur d'autres distributions, adapter uniquement l'installation des paquets : PHP CLI ≥ 8.4, Composer 2, Python 3, SQLite via PDO, OpenSSL, XML, mbstring, curl et zlib. Les commandes Composer/Symfony ci-dessous sont identiques.
-
-```bash
+sudo pacman -Syu --needed php php-sqlite composer git python curl tar sqlite coreutils
 php -v
-php -m
+php -r '$r=["openssl","pdo","pdo_sqlite","sqlite3","tokenizer","mbstring","iconv","dom","simplexml","curl","zlib"];foreach($r as $x){if(!extension_loaded($x)){fwrite(STDERR,"Extension PHP manquante : $x\n");exit(1);}}'
 ```
 
-Si `pdo_sqlite` ou `sqlite3` n'apparaissent pas, vérifier les modules disponibles puis les activer une seule fois dans `/etc/php/php.ini` ou `/etc/php/conf.d/` selon la distribution. **Ne pas ajouter une extension déjà chargée**.
+Sur une autre distribution, installer les équivalents : **PHP 8.4+**, Composer 2, PDO SQLite, SQLite CLI, OpenSSL, mbstring, XML, cURL, zlib, Python 3 et tar. Les commandes suivantes sont identiques. Ne pas activer deux fois une extension PHP déjà chargée.
 
-## 2. Télécharger une version stable
-
-Exemple avec la version propre (voir la page Releases pour le dernier tag disponible) :
+## 2. Télécharger l'application et vérifier l'archive
 
 ```bash
 mkdir -p "$HOME/Téléchargements/populorum-clean"
 cd "$HOME/Téléchargements/populorum-clean"
 
-curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.9.4-clean/Populorum-v0.9.4-clean.tar.gz
-curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.9.4-clean/SHA256SUMS.txt
+VERSION="v0.10.0-clean"
+SOURCE="https://github.com/PsiGuardian/Populorum/releases/download/$VERSION"
+curl -fL --retry 3 -O "$SOURCE/Populorum-$VERSION.tar.gz"
+curl -fL --retry 3 -O "$SOURCE/SHA256SUMS.txt"
 sha256sum -c SHA256SUMS.txt
-tar -xzf Populorum-v0.9.4-clean.tar.gz
-cd Populorum-v0.9.4-clean/apps/symfony
+tar -xzf "Populorum-$VERSION.tar.gz"
+cd "Populorum-$VERSION/apps/symfony"
 ```
 
-Le tag de cette section doit être vérifié sur la page [Releases](https://github.com/PsiGuardian/Populorum/releases) avant toute installation. Pour une archive de branche `main`, extraire son ZIP et se placer simplement dans `Populorum-main/apps/symfony`.
+L'archive ne contient ni `vendor/`, ni bases privées, ni clés de production. En cas d'échec du SHA-256, ne pas installer. Cette version devient téléchargeable après publication réussie de la release `v0.10.0-clean`.
 
-## 3. Installer directement dans le terminal
+## 3. Installer Symfony (données de démonstration incluses)
 
-Contrôler les extensions :
-
-```bash
-php -r '$r=["openssl","pdo","pdo_sqlite","sqlite3","tokenizer","mbstring","iconv","dom","simplexml","curl","zlib"];foreach($r as $x){if(!extension_loaded($x)){fwrite(STDERR,"Extension PHP absente : $x\n");exit(1);}}'
-```
-
-Installer Composer, générer **une seule fois** les clés locales, appliquer les migrations, restaurer l'index INSEE avec Symfony, préparer la démonstration et effectuer des vérifications HTTP :
+Depuis **`apps/symfony`** :
 
 ```bash
 composer install --no-interaction --prefer-dist --no-progress &&
 test -f vendor/autoload.php &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
+php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Impossible de créer .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
 php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
 php bin/console app:geography:install --env=demo &&
 php bin/console app:geography:install --check --env=demo &&
@@ -61,55 +62,106 @@ php bin/console doctrine:schema:validate --env=demo &&
 python3 tests/http_smoke.py
 ```
 
-Les opérateurs `&&` arrêtent la chaîne au premier échec. `tests/http_smoke.py` nécessite Python 3 uniquement pour les tests de non-régression ; l'installation des données INSEE n'en dépend pas. La ligne PHP crée `.env.local` avec des permissions 0600 sans écraser des clés déjà existantes. **Ne jamais exécuter `composer update` pour installer une release** : `composer install` utilise le fichier de verrouillage versionné.
+Ces commandes ne remplacent pas `.env.local` existant. **Utiliser `composer install`, pas `composer update`.** Le référentiel INSEE est automatiquement restauré à partir de `data/geography/communes-2026.sqlite.gz`, inclus dans la distribution : son téléchargement sur Internet n'est pas nécessaire pour obtenir les communes.
 
-Seulement si toutes les étapes sont validées :
+Les deux sections suivantes sont **facultatives** : elles enrichissent les pages publiques sans modifier les scénarios ou les comptes de démonstration.
 
-```bash
-APP_ENV=demo APP_DEBUG=0 php -S 127.0.0.1:5412 -t public
-```
+## 4. Facultatif — télécharger la base INSEE 2026 directement
 
-Ouvrir **http://127.0.0.1:5412/**. Arrêter avec Ctrl+C. Le serveur intégré PHP convient aux tests locaux, pas à un service public.
-
-## 4. Référentiel national et espaces communaux
-
-L’installation synchronise désormais les **34 875 communes officielles INSEE 2026** dans Doctrine. Choisir une commune par nom ou code postal ouvre un espace de simulation **indépendant et vide** (pas de population, de vote ou de budget fictif attribué automatiquement). Les codes à 2–4 chiffres recherchent exclusivement des préfixes postaux ; 5 chiffres désignent un code postal exact. Pour un code administratif : `INSEE:76600`.
-
-## 5. Installer les référentiels nationaux INSEE et DECP
-
-L'archive `data/geography/communes-2026.sqlite.gz` est incluse dans les sources. **`app:demo:prepare` restaure automatiquement le référentiel manquant** avant de synchroniser les communes dans Doctrine. Pour installer ou vérifier explicitement avec PHP, hors réseau :
+À utiliser si vous souhaitez récupérer explicitement la base publiée sur GitHub au lieu de la copie compressée déjà fournie. Depuis `apps/symfony` :
 
 ```bash
-php bin/console app:geography:install --env=demo
+DATA_URL="https://github.com/PsiGuardian/Populorum/releases/download/data-national-2026"
+INSEE="data/geography/communes-2026.sqlite"
+TEMP="data/geography/communes-2026.sqlite.download"
+mkdir -p data/geography
+
+if test -e "$INSEE"; then
+  echo "INSEE déjà installé : base existante conservée."
+else
+  curl -fL --retry 3 -C - -o "$TEMP" "$DATA_URL/communes-2026.sqlite" &&
+  printf '%s  %s\n' '40449a3c1bd346d83f4330b1a6dc6486ecdd6942ff34a01e19c38ce12d247b82' "$TEMP" | sha256sum -c - &&
+  ln "$TEMP" "$INSEE" && rm "$TEMP"
+fi
 php bin/console app:geography:install --check --env=demo
 ```
 
-Pour installer le référentiel depuis GitHub Releases et, après sa mise en ligne, la base nationale DECP **en trois parties vérifiées**, suivre le [guide détaillé des données nationales](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md). Cette opération est indépendante de `var/populorum.sqlite` et ne doit pas écraser les données existantes.
+**Important :** si vous avez déjà exécuté l'étape 3, la base INSEE existe normalement et sera conservée. La commande ne l'écrase jamais. La base officielle est aussi téléchargeable individuellement à cette adresse : [communes-2026.sqlite](https://github.com/PsiGuardian/Populorum/releases/download/data-national-2026/communes-2026.sqlite).
 
-## 6. Mettre à jour sans perdre les données
+## 5. Facultatif — télécharger la base nationale des marchés publics
 
-Avant toute mise à jour, arrêter PHP et sauvegarder **`.env.local`, `var/`, `.guardian-shield/`**, ainsi que les bases nationales séparées. Ne jamais les écraser par les fixtures de la release. Après extraction des nouveaux fichiers sources, depuis `apps/symfony`, relancer les mêmes étapes de la section 3. La génération de clés est idempotente : elle conserve l'existant.
+Il s'agit de l'archive **unique** [public-procurement.sqlite.tar.gz](https://github.com/PsiGuardian/Populorum/releases/download/data-national-2026/public-procurement.sqlite.tar.gz) (486 882 207 octets, environ 464 Mio compressés). **Prévoir plusieurs gigaoctets libres** pour la décompression. Aucune division en plusieurs fragments, aucun installateur externe.
 
-## 7. Diagnostic et limites
+Toujours depuis **`apps/symfony`**, de préférence serveur arrêté :
 
-- `vendor/autoload.php` absent : exécuter `composer install` depuis `apps/symfony` et vérifier sa réussite ; le serveur ne peut pas fonctionner sans les dépendances.
-- HTTP 500 : conserver l'erreur exacte de PHP, consulter `var/log/demo.log` si présent, puis `python3 tests/http_smoke.py` pour reproduire.
-- Extensions absentes : installer/activer les extensions **pour le PHP CLI** utilisé par Composer, sans `--ignore-platform-reqs`.
-- HTTPS et PHP-FPM : pour un déploiement réel, faire pointer DocumentRoot vers `apps/symfony/public/` et protéger les clés privées.
-- Référentiel INSEE + index DECP : voir [INSTALLATION_DONNEES_NATIONALES.md](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md).
+```bash
+DATA_URL="https://github.com/PsiGuardian/Populorum/releases/download/data-national-2026"
+ARCHIVE="var/reference-downloads/public-procurement.sqlite.tar.gz"
+DECP="data/research/public-procurement.sqlite"
+TEMP="data/research/public-procurement.sqlite.restoring"
+mkdir -p var/reference-downloads data/research
 
-Les outils de construction et correctifs historiques ont été supprimés de la distribution. Seuls les outils opérationnels pérennes et les tests isolés sont conservés.
+if test -e "$DECP"; then
+  echo "DECP déjà installée : base existante conservée."
+elif test -e "$TEMP"; then
+  echo "Restauration interrompue détectée : examiner $TEMP avant de recommencer."
+else
+  curl -fL --retry 3 -C - -o "$ARCHIVE" "$DATA_URL/public-procurement.sqlite.tar.gz" &&
+  printf '%s  %s\n' '37d8fd44cbd607d8459ec8f5f6e5a97250c576cca0727fd525106f9e87932f41' "$ARCHIVE" | sha256sum -c - &&
+  MEMBER="$(tar -tzf "$ARCHIVE" | grep -E '(^|/)public-procurement\.sqlite$')" &&
+  test "$(printf '%s\n' "$MEMBER" | grep -c .)" -eq 1 &&
+  tar -xOzf "$ARCHIVE" "$MEMBER" > "$TEMP" &&
+  test "$(sqlite3 -readonly "$TEMP" 'PRAGMA quick_check;')" = "ok" &&
+  test "$(sqlite3 -readonly "$TEMP" "SELECT value FROM metadata WHERE key='schema';")" = "populorum-decp-1" &&
+  ln "$TEMP" "$DECP" && rm "$TEMP"
+fi
 
-## 8. Atlas national des communes et convergence
+python3 tools/decp_pipeline.py status
+php bin/console cache:clear --env=demo --no-debug
+```
 
-La page `/convergence` explore les 34 875 communes grâce à des filtres région/département et des pages de 36 fiches. Les valeurs statistiques réelles 2024–2025 sont consultées exclusivement lorsque l’index officiel SSMSI est installé. Le mode d'import, ainsi que la reconstruction de DECP depuis trois fragments GitHub, vérifiés par empreintes SHA-256 et commandes standard du terminal, sont décrits dans le [guide des données nationales](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md). Une valeur non diffusée reste inconnue, et ne devient jamais zéro.
+Si une vérification échoue, **ne pas utiliser le fichier `.restoring`** ni remplacer une base déjà existante. L'archive DECP appartient à une [release de données distincte](https://github.com/PsiGuardian/Populorum/releases/tag/data-national-2026) pour ne pas alourdir l'archive du code. Les montants affichés sont des **montants contractuels déclarés**, pas des paiements réalisés ; les dates suspectes restent visibles et signalées.
 
-## 9. URL de recherche et données DECP
+## 6. Facultatif — statistiques communales SSMSI pour la convergence
 
-Les filtres publics des marchés, des communes, de la convergence et du budget sont représentés par des segments de chemin. Exemple : `/marches-publics/q/web/kind/market/year/2025/sort/amount_desc`. Les anciennes URL contenant `?q=...` sont redirigées vers un chemin canonique ; les critères vides sont ignorés. Les formulaires sans JavaScript restent opérationnels.
+Si vous souhaitez également renseigner les indicateurs officiels 2024–2025 sur `/convergence`, l'index publié est directement disponible, sans reconstruire le CSV :
 
-Les marchés sont triables par montant contractuel ou date déclarée, croissants ou décroissants. Les dates aberrantes restent visibles et consultables avec leur valeur source ; un motif de contrôle automatique est affiché, sans présenter cette classification comme une justification donnée par l'acheteur.
+```bash
+DATA_URL="https://github.com/PsiGuardian/Populorum/releases/download/data-national-2026"
+SSMSI="data/research/ssmsi-national-2025.sqlite"
+TEMP="data/research/ssmsi-national-2025.sqlite.download"
+mkdir -p data/research
 
-## Mesurer les performances des pages
+if test -e "$SSMSI"; then
+  echo "SSMSI déjà installée : conservation de la base."
+else
+  curl -fL --retry 3 -C - -o "$TEMP" "$DATA_URL/ssmsi-national-2025.sqlite" &&
+  printf '%s  %s\n' 'ada72643ad0f54c718ee6a825ae587bf2ba1723c8370ae5665529f8211d52a6c' "$TEMP" | sha256sum -c - &&
+  test "$(sqlite3 -readonly "$TEMP" 'PRAGMA quick_check;')" = "ok" &&
+  test "$(sqlite3 -readonly "$TEMP" "SELECT value FROM metadata WHERE key='schema';")" = "populorum-ssmsi-national-1" &&
+  ln "$TEMP" "$SSMSI" && rm "$TEMP"
+fi
+php bin/console cache:clear --env=demo --no-debug
+```
 
-La suite HTTP permanente effectue un relevé de 21 parcours dans GitHub Actions avec une requête de chauffe et deux requêtes chronométrées par route. Les temps réseau/HTTP et les temps serveur sont relevés séparément ; les résultats de CI ne sont pas ceux du serveur local. La [méthode de profilage](docs/PERFORMANCE.md) fournit les commandes `curl` pour reproduire les mesures, notamment avec la base DECP nationale installée. Aucun outil de benchmarking temporaire n'est ajouté au dossier `tools/`.
+L'absence de statistique publiée n'est **jamais** transformée en valeur zéro.
+
+## 7. Démarrer et vérifier le site
+
+```bash
+php bin/console doctrine:schema:validate --env=demo
+php bin/console debug:router --env=demo
+APP_ENV=demo APP_DEBUG=0 php -S 127.0.0.1:5412 -t public
+```
+
+Ouvrir dans le navigateur : **http://127.0.0.1:5412/**, puis `/communes`, `/convergence`, `/marches-publics` et `/compte-test`. Le serveur PHP intégré sert uniquement aux essais locaux. Sur un hébergement public, exposer uniquement `apps/symfony/public/`, utiliser HTTPS, un proxy configuré et des permissions privées.
+
+Le **compte de test facultatif** propose nom, prénom, âge et commune ; noms fictifs autorisés. Il est sans privilège, reconnu par une empreinte HMAC de l'IP (sans cookie propre au compte) et ne garantit pas une identité. Un même réseau public peut partager le profil. Les informations de confidentialité figurent sur `/confidentialite`.
+
+## 8. Mettre à jour sans perte de données
+
+Avant une mise à jour, arrêter le serveur et sauvegarder `.env.local`, `var/`, `.guardian-shield/` et les répertoires de bases `data/geography/` et `data/research/`. Après extraction d'une nouvelle archive, rétablir ces données privées puis relancer **Composer, les migrations et les contrôles** de la section 3. Ne jamais écraser la base de simulation ni les référentiels avec des fichiers de démonstration.
+
+Pour un HTTP 500, consulter les erreurs serveur et `var/log/demo.log` ; pour une extension manquante, vérifier `php -m`. Si un index DECP ou SSMSI est absent, la section concernée n'aura pas le contenu national correspondant, mais le reste du simulateur doit rester disponible.
+
+**Documentation de performance :** [mesure des temps de réponse](https://github.com/PsiGuardian/Populorum/blob/main/docs/PERFORMANCE.md). Pour toute installation, les commandes nécessaires figurent déjà sur **cette page**.

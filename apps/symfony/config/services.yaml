@@ -4,6 +4,7 @@ services:
         autoconfigure: true
         bind:
             $projectDir: '%kernel.project_dir%'
+            $appSecret: '%env(APP_SECRET)%'
     App\:
         resource: '../src/'
         exclude: ['../src/Kernel.php','../src/Entity/','../src/DependencyInjection/','../src/DataCollector/']
@@ -16,3 +17,6 @@ services:
             $civicWritesLimiter: '@limiter.civic_writes'
             $searchReadsLimiter: '@limiter.search_reads'
 
+    App\Controller\BetaVisitorController:
+        arguments:
+            $betaProfilesLimiter: '@limiter.beta_profiles'
