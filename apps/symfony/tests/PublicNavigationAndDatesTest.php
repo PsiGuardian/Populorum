@@ -37,7 +37,7 @@ final class PublicNavigationAndDatesTest extends TestCase
             try {
                 PublicFilterPath::decode('marches-publics', $slug);
                 self::fail('Invalid route accepted: ' . $slug);
-            } catch (\InvalidArgumentException) {
+            } catch (InvalidArgumentException) {
                 self::assertTrue(true);
             }
         }
