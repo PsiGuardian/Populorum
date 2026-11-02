@@ -120,6 +120,22 @@ def main() -> None:
                     assert all(code.strip().startswith(prefix) for code in row['postalCodes'].split(',')), (prefix, row)
                 print('PASS postal prefix ' + prefix + ': only matching postal codes', flush=True)
 
+
+            # The national convergence atlas must show all municipalities without rendering them all.
+            atlas_cases = (
+                ('/convergence', ('34 875', 'Communes INSEE', 'Page suivante')),
+                ('/convergence?communes_q=66300', ('Passa', 'Thuir', '18')),
+                ('/convergence?communes_q=76600', ('Le Havre', 'CP 76600')),
+                ('/convergence?commune=66134', ('Passa', 'FICHE COMMUNALE')),
+            )
+            for path, labels in atlas_cases:
+                with closing(browser.open(url + path, timeout=28)) as result:
+                    assert result.status == 200, (path, result.status)
+                    html = result.read(5_000_000).decode('utf-8', 'replace')
+                for label in labels:
+                    assert label in html, (path, 'missing', label)
+                assert html.count('class="atlas-city"') <= 36, (path, 'unbounded atlas render')
+                print('PASS national convergence atlas ' + path, flush=True)
             # A municipality outside the old pilot fixtures must have an isolated local workspace.
             import re
             from urllib.parse import urlencode

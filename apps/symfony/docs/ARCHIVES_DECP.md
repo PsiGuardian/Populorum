@@ -1,12 +1,12 @@
 # Archives nationales DECP — installer, vérifier et publier
 
-Cette fonctionnalité est **facultative** : Populorum démarre avec les trois communes fictives, sans les ~1,7 Go de l'index national. Aucune base réelle n'est téléchargée pendant l'installation de Symfony.
+Cette fonctionnalité est **facultative** : Populorum fonctionne avec les 34 875 communes INSEE, sans les ~1,7 Go de l'index DECP national. Aucune base réelle n'est téléchargée pendant l'installation de Symfony.
 
 L'index DECP est une **base séparée** de `var/populorum.sqlite` (simulations). Il est consulté en lecture seule. Les montants des contrats ne prouvent pas des paiements effectifs. Les sources mensuelles JSON originales sont utiles pour les réimportations et les preuves documentaires ; SQLite n'en conserve pas les champs complets.
 
 ## Distribution actuelle recommandée
 
-L'index public national sera distribué comme **un fichier unique** `public-procurement.sqlite` (environ 1,7 Go) avec son `public-procurement.sqlite.sha256`, sans fragmentation. Consultez [l'installation des données nationales](INSTALLATION_DONNEES_NATIONALES.md) pour les commandes de téléchargement, les contrôles et le chemin exact. Les anciennes archives découpées sont réservées aux sauvegardes historiques compatibles, pas à la distribution recommandée.
+Après échec de l'envoi navigateur de l'asset de ~1,7 Go, l'index national est distribué en **trois parties exactes** (`public-procurement.sqlite.part-00`, `-01`, `-02`) accompagnées de `public-procurement.parts.json` et `SHA256SUMS-DECP.txt`. L'outil permanent `tools/decp_release_parts.py` réalise un découpage sans altération et une restauration avec vérifications SHA-256 par partie et globale. Voir [l'installation des données nationales](INSTALLATION_DONNEES_NATIONALES.md), sections 3 et 3 bis. Les archives `.zst.part-0000` restent disponibles pour les anciens formats de sauvegarde avec sources.
 
 ## Depuis une archive publique GitHub Releases (ancien format optionnel)
 

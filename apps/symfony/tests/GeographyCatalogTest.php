@@ -75,6 +75,54 @@ final class GeographyCatalogTest extends TestCase
         }
     }
 
+    public function testNationalConvergenceAtlasIsBoundedAndPostalExact(): void
+    {
+        $root = sys_get_temp_dir() . '/populorum-atlas-' . bin2hex(random_bytes(8));
+        mkdir($root . '/data/geography', 0700, true);
+        $database = $root . '/data/geography/communes-2026.sqlite';
+        try {
+            $packed = file_get_contents(dirname(__DIR__) . '/data/geography/communes-2026.sqlite.gz');
+            self::assertNotFalse($packed);
+            $contents = gzdecode($packed);
+            self::assertNotFalse($contents);
+            self::assertNotFalse(file_put_contents($database, $contents));
+            $catalog = new GeographyCatalog($root);
+            $all = $catalog->convergenceDirectory();
+            self::assertSame(34875, $all['total']);
+            self::assertCount(36, $all['rows']);
+            self::assertSame(969, $all['pages']);
+            self::assertSame(36, $all['last']);
+            self::assertSame(969, $catalog->convergenceDirectory('', '', '', 100000)['page']);
+            $exact = $catalog->convergenceDirectory('66300');
+            self::assertSame(18, $exact['total']);
+            foreach ($exact['rows'] as $city) {
+                self::assertSame('66300', $city['postalCodes']);
+            }
+            $havre = $catalog->convergenceDirectory('76600');
+            self::assertSame(1, $havre['total']);
+            self::assertSame('Le Havre', $havre['rows'][0]['name']);
+            self::assertSame('76600', $havre['rows'][0]['postalCodes']);
+            self::assertSame('Saint-Léonard', $catalog->convergenceDirectory('INSEE:76600')['rows'][0]['name']);
+            foreach (['66', '663'] as $prefix) {
+                $page = $catalog->convergenceDirectory($prefix);
+                self::assertGreaterThan(0, $page['total']);
+                self::assertLessThanOrEqual(36, count($page['rows']));
+                foreach ($page['rows'] as $row) {
+                    foreach (explode(', ', $row['postalCodes']) as $postal) {
+                        self::assertStringStartsWith($prefix, $postal);
+                    }
+                }
+            }
+            self::assertSame(0, $catalog->convergenceDirectory('66300', '75')['total']);
+            self::assertSame(0, $catalog->convergenceDirectory('66%', '')['total']);
+        } finally {
+            @unlink($database);
+            @rmdir($root . '/data/geography');
+            @rmdir($root . '/data');
+            @rmdir($root);
+        }
+    }
+
     public function testGeographicCodes(): void
     {
         self::assertTrue(GeographyCatalog::validCode('75056'));
