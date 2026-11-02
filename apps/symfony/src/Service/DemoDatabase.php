@@ -31,11 +31,15 @@ final class DemoDatabase
             512,
             JSON_THROW_ON_ERROR,
         );
-        $pilots = json_decode(
-            (string) file_get_contents($this->projectDir . '/data/cities.json'),
-            true, 512, JSON_THROW_ON_ERROR,
+        // Historical signed example: retain only its own municipality references.
+        // Never load the entire national table to initialize a legacy workspace.
+        $pilots = $state['territories'];
+        $codes = array_column($pilots, 'code');
+        $municipalities = $this->connection->fetchAllAssociative(
+            'SELECT * FROM municipalities WHERE code IN (' .
+                implode(', ', array_fill(0, count($codes), '?')) . ')',
+            $codes,
         );
-        $municipalities = $this->connection->fetchAllAssociative('SELECT * FROM municipalities');
         $byCode = array_column($municipalities, null, 'code');
         $ordered = [];
         foreach ($pilots as $pilot) {

@@ -1,8 +1,10 @@
-# Populorum v0.7.1 — édition propre
+# Populorum v0.8.0 — édition propre
 
 Distribution Symfony 8.1 / PHP ≥ 8.4, nettoyée des scripts de construction, de migration historique et des benchmarks. `tools/` ne contient plus que des fonctions d'exploitation durables ; tests isolés sous `tests/`.
 
-La version 0.7.1 étend la sélection géographique : codes postaux en priorité, suggestions multi-communes non tronquées, accès à l'annuaire complet et vérifications HTTP. La base INSEE/La Poste est installée automatiquement avant la validation de l'application. `76600` indique Le Havre et `INSEE:76600` Saint-Léonard ; `66300` affiche ses 18 communes.
+La version 0.8.0 introduit la synchronisation de 34 875 communes INSEE 2026 dans Doctrine et un espace de simulation isolé, initialement vide, pour chaque commune sélectionnée. L'ancien jeu de trois exemples est conservé uniquement pour les états historiques non sélectionnés, sans se substituer aux autres communes.
+
+La sélection géographique : codes postaux en priorité, suggestions multi-communes non tronquées, accès à l'annuaire complet et vérifications HTTP. La base INSEE/La Poste est installée automatiquement avant la validation de l'application. `76600` indique Le Havre et `INSEE:76600` Saint-Léonard ; `66300` affiche ses 18 communes.
 
 ## Installer sur Arch Linux
 

@@ -129,7 +129,7 @@ def main() -> None:
                 local_html = response.read(5_000_000).decode('utf-8', 'replace')
             assert 'Passa' in local_html, 'INSEE municipality not selected'
             assert 'Pas de scénario local' not in local_html, 'Legacy three-city gate still active'
-            for path in ('/consultations', '/experiments', '/services', '/budget'):
+            for path in ('/consultations', '/experiments', '/services', '/budget', '/action/proposal.create'):
                 with closing(browser.open(url + path, timeout=28)) as response:
                     assert response.status == 200, (path, response.status)
                     local_html = response.read(5_000_000).decode('utf-8', 'replace')

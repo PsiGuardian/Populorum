@@ -137,15 +137,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="v0.7.1-clean"
+          TAG="v0.8.0-clean"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release exists, nothing replaced."
             exit 0
           fi
           mkdir -p release
-          git archive --format=tar --prefix="Populorum-v0.7.1-clean/" "$GITHUB_SHA" | gzip -9 > release/Populorum-v0.7.1-clean.tar.gz
-          (cd release && sha256sum Populorum-v0.7.1-clean.tar.gz > SHA256SUMS.txt)
-          gh release create "$TAG" release/Populorum-v0.7.1-clean.tar.gz release/SHA256SUMS.txt \
+          git archive --format=tar --prefix="Populorum-v0.8.0-clean/" "$GITHUB_SHA" | gzip -9 > release/Populorum-v0.8.0-clean.tar.gz
+          (cd release && sha256sum Populorum-v0.8.0-clean.tar.gz > SHA256SUMS.txt)
+          gh release create "$TAG" release/Populorum-v0.8.0-clean.tar.gz release/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
-            --title "Populorum v0.7.1 — recherche postale complète" \
+            --title "Populorum v0.8.0 — communes nationales INSEE" \
             --notes-file docs/RELEASE_NOTES_INSTALL.md
