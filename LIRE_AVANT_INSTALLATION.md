@@ -1,4 +1,4 @@
-# Populorum — installation complète (v0.10.0-clean)
+# Populorum — installation complète (v0.10.1-clean)
 
 **Ce guide est autonome :** téléchargement de l'application, installation Symfony, téléchargement facultatif des bases nationales, contrôles et démarrage. Les commandes se lancent directement dans le terminal ; aucun installateur de distribution ni script ponctuel n'est nécessaire.
 
@@ -34,7 +34,7 @@ Sur une autre distribution, installer les équivalents : **PHP 8.4+**, Composer 
 mkdir -p "$HOME/Téléchargements/populorum-clean"
 cd "$HOME/Téléchargements/populorum-clean"
 
-VERSION="v0.10.0-clean"
+VERSION="v0.10.1-clean"
 SOURCE="https://github.com/PsiGuardian/Populorum/releases/download/$VERSION"
 curl -fL --retry 3 -O "$SOURCE/Populorum-$VERSION.tar.gz"
 curl -fL --retry 3 -O "$SOURCE/SHA256SUMS.txt"
@@ -43,7 +43,7 @@ tar -xzf "Populorum-$VERSION.tar.gz"
 cd "Populorum-$VERSION/apps/symfony"
 ```
 
-L'archive ne contient ni `vendor/`, ni bases privées, ni clés de production. En cas d'échec du SHA-256, ne pas installer. Cette version devient téléchargeable après publication réussie de la release `v0.10.0-clean`.
+L'archive ne contient ni `vendor/`, ni bases privées, ni clés de production. En cas d'échec du SHA-256, ne pas installer. Cette version devient téléchargeable après publication réussie de la release `v0.10.1-clean`.
 
 ## 3. Installer Symfony (données de démonstration incluses)
 
@@ -88,39 +88,110 @@ php bin/console app:geography:install --check --env=demo
 
 **Important :** si vous avez déjà exécuté l'étape 3, la base INSEE existe normalement et sera conservée. La commande ne l'écrase jamais. La base officielle est aussi téléchargeable individuellement à cette adresse : [communes-2026.sqlite](https://github.com/PsiGuardian/Populorum/releases/download/data-national-2026/communes-2026.sqlite).
 
-## 5. Facultatif — télécharger la base nationale des marchés publics
+## 5. Facultatif — installer rapidement la base des marchés publics DECP
 
-Il s'agit de l'archive **unique** [public-procurement.sqlite.tar.gz](https://github.com/PsiGuardian/Populorum/releases/download/data-national-2026/public-procurement.sqlite.tar.gz) (486 882 207 octets, environ 464 Mio compressés). **Prévoir plusieurs gigaoctets libres** pour la décompression. Aucune division en plusieurs fragments, aucun installateur externe.
+La base nationale est publiée en une archive unique : [public-procurement.sqlite.tar.gz](https://github.com/PsiGuardian/Populorum/releases/download/data-national-2026/public-procurement.sqlite.tar.gz) (486 882 207 octets, environ 464 Mio). Prévoir plusieurs gigaoctets pour la décompression.
 
-Toujours depuis **`apps/symfony`**, de préférence serveur arrêté :
+**Nouveau mode rapide :** le SHA-256 vérifie que les octets de l'archive correspondent à la distribution officielle ; le décompresseur vérifie le flux gzip ; ensuite SQLite ne lit que le schéma et les premières lignes des tables indispensables. La vérification exhaustive PRAGMA quick_check, susceptible de durer plusieurs dizaines de minutes sur une base de 1,84 Go, est désormais **facultative et distincte de l'installation**. Le système ne modifie pas les données fournies.
 
-```bash
+Depuis apps/symfony, serveur arrêté, coller directement dans le terminal (aucun script à créer) :
+
+~~~bash
 DATA_URL="https://github.com/PsiGuardian/Populorum/releases/download/data-national-2026"
 ARCHIVE="var/reference-downloads/public-procurement.sqlite.tar.gz"
 DECP="data/research/public-procurement.sqlite"
 TEMP="data/research/public-procurement.sqlite.restoring"
 mkdir -p var/reference-downloads data/research
 
-if test -e "$DECP"; then
-  echo "DECP déjà installée : base existante conservée."
-elif test -e "$TEMP"; then
-  echo "Restauration interrompue détectée : examiner $TEMP avant de recommencer."
-else
-  curl -fL --retry 3 -C - -o "$ARCHIVE" "$DATA_URL/public-procurement.sqlite.tar.gz" &&
-  printf '%s  %s\n' '37d8fd44cbd607d8459ec8f5f6e5a97250c576cca0727fd525106f9e87932f41' "$ARCHIVE" | sha256sum -c - &&
-  MEMBER="$(tar -tzf "$ARCHIVE" | grep -E '(^|/)public-procurement\.sqlite$')" &&
-  test "$(printf '%s\n' "$MEMBER" | grep -c .)" -eq 1 &&
-  tar -xOzf "$ARCHIVE" "$MEMBER" > "$TEMP" &&
-  test "$(sqlite3 -readonly "$TEMP" 'PRAGMA quick_check;')" = "ok" &&
-  test "$(sqlite3 -readonly "$TEMP" "SELECT value FROM metadata WHERE key='schema';")" = "populorum-decp-1" &&
-  ln "$TEMP" "$DECP" && rm "$TEMP"
+(
+  set -euo pipefail
+  if test -e "$DECP"; then
+    echo "DECP déjà installée : aucun écrasement."
+  elif test -e "$TEMP"; then
+    echo "Fichier .restoring présent : aucune modification."
+    echo "Suivre les commandes de reprise indiquées ci-dessous."
+  else
+    echo "[1/5] Téléchargement (reprenable)..."
+    curl -fL --retry 3 -C - -o "$ARCHIVE" \
+      "$DATA_URL/public-procurement.sqlite.tar.gz"
+    echo "[2/5] Vérification SHA-256 du fichier officiel..."
+    printf '%s  %s\n' \
+      '37d8fd44cbd607d8459ec8f5f6e5a97250c576cca0727fd525106f9e87932f41' \
+      "$ARCHIVE" | sha256sum -c -
+
+    echo "[3/5] Identification du fichier SQLite..."
+    MEMBER="$(tar -tzf "$ARCHIVE" | grep -E '(^|/)public-procurement\.sqlite$')"
+    test "$(printf '%s\n' "$MEMBER" | grep -c .)" -eq 1
+
+    echo "[4/5] Décompression de la base (peut durer quelques minutes)..."
+    tar -xOzf "$ARCHIVE" "$MEMBER" > "$TEMP"
+
+    echo "[5/5] Vérification légère du schéma et d'un contrat..."
+    CHECK="$(sqlite3 -readonly "$TEMP" "
+      SELECT (SELECT value FROM metadata WHERE key='schema') || '|' ||
+        (SELECT COUNT(*) FROM sqlite_master
+         WHERE type IN ('table','view')
+           AND name IN ('metadata','imports','contracts','participants',
+                        'changes','contract_sources','concession_finance','contract_fts')) || '|' ||
+        (SELECT EXISTS(SELECT 1 FROM imports LIMIT 1)) || '|' ||
+        (SELECT EXISTS(SELECT 1 FROM contracts LIMIT 1));
+    ")"
+    test "$CHECK" = "populorum-decp-1|8|1|1"
+
+    # Lien atomique : échoue si la base publique existe déjà.
+    ln "$TEMP" "$DECP"
+    rm "$TEMP"
+    echo "DECP installée sans contrôle intégral bloquant."
+  fi
+)
+if test -f "$DECP"; then
+  python3 tools/decp_pipeline.py status
+  php bin/console cache:clear --env=demo --no-debug
 fi
+~~~
 
+La commande status est également optimisée : **elle n'exécute plus de PRAGMA quick_check ni de comptage complet**. Elle vérifie simplement la présence des tables, la version du schéma et quelques lignes. Elle ne remplace pas une vérification d'intégrité exhaustive.
+
+### Reprendre un téléchargement déjà extrait
+
+Si le fichier public-procurement.sqlite.restoring existe parce que la commande précédente est restée longtemps dans quick_check, ne supprimez pas le fichier et ne retéléchargez pas les 464 Mio. Attendre que l'ancien processus sqlite3 ou tar ait complètement quitté. Ne jamais publier pendant qu'une extraction est encore active.
+
+Après avoir confirmé que l'extraction précédente a réussi (et non été interrompue), vérifier le SHA-256 du fichier source et comparer la taille réelle du SQLite avec la taille déclarée dans l'archive :
+
+~~~bash
+ARCHIVE="var/reference-downloads/public-procurement.sqlite.tar.gz"
+TEMP="data/research/public-procurement.sqlite.restoring"
+DECP="data/research/public-procurement.sqlite"
+
+printf '%s  %s\n' \
+  '37d8fd44cbd607d8459ec8f5f6e5a97250c576cca0727fd525106f9e87932f41' \
+  "$ARCHIVE" | sha256sum -c -
+
+MEMBER="$(tar -tzf "$ARCHIVE" | grep -E '(^|/)public-procurement\.sqlite$')"
+test "$(printf '%s\n' "$MEMBER" | grep -c .)" -eq 1
+EXPECTED_SIZE="$(tar -tvzf "$ARCHIVE" "$MEMBER" | awk 'NR==1 {print $3}')"
+ACTUAL_SIZE="$(stat -c '%s' "$TEMP")"
+printf 'Archive : %s octets ; extraction : %s octets\n' "$EXPECTED_SIZE" "$ACTUAL_SIZE"
+test "$EXPECTED_SIZE" = "$ACTUAL_SIZE"
+
+sqlite3 -readonly "$TEMP" "SELECT value FROM metadata WHERE key='schema';"
+sqlite3 -readonly "$TEMP" "SELECT 1 FROM contracts LIMIT 1;"
+
+# Uniquement si les contrôles réussissent et l'ancien sqlite3 est terminé :
+test ! -e "$DECP" && ln "$TEMP" "$DECP" && rm "$TEMP"
 python3 tools/decp_pipeline.py status
-php bin/console cache:clear --env=demo --no-debug
-```
+~~~
 
-Si une vérification échoue, **ne pas utiliser le fichier `.restoring`** ni remplacer une base déjà existante. L'archive DECP appartient à une [release de données distincte](https://github.com/PsiGuardian/Populorum/releases/tag/data-national-2026) pour ne pas alourdir l'archive du code. Les montants affichés sont des **montants contractuels déclarés**, pas des paiements réalisés ; les dates suspectes restent visibles et signalées.
+Une taille correcte et un schéma lisible ne prouvent pas que toutes les pages SQLite sont saines. Si la décompression elle-même a été interrompue, **ne pas utiliser cette reprise** : conserver l'archive officielle et refaire une extraction complète vers un nouveau fichier provisoire.
+
+### Vérification approfondie, uniquement sur demande
+
+~~~bash
+# Facultatif : contrôle intégral qui peut durer très longtemps.
+sqlite3 -readonly data/research/public-procurement.sqlite 'PRAGMA quick_check;'
+~~~
+
+Le contrôle SHA-256 protège le téléchargement contre une modification ou corruption de l'archive, tandis que le contrôle intégral détecte certains défauts internes de la base. Il n'est pas nécessaire de réexécuter systématiquement ce dernier sur l'ordinateur de chaque visiteur.
 
 ## 6. Facultatif — statistiques communales SSMSI pour la convergence
 
@@ -137,14 +208,14 @@ if test -e "$SSMSI"; then
 else
   curl -fL --retry 3 -C - -o "$TEMP" "$DATA_URL/ssmsi-national-2025.sqlite" &&
   printf '%s  %s\n' 'ada72643ad0f54c718ee6a825ae587bf2ba1723c8370ae5665529f8211d52a6c' "$TEMP" | sha256sum -c - &&
-  test "$(sqlite3 -readonly "$TEMP" 'PRAGMA quick_check;')" = "ok" &&
   test "$(sqlite3 -readonly "$TEMP" "SELECT value FROM metadata WHERE key='schema';")" = "populorum-ssmsi-national-1" &&
+  test "$(sqlite3 -readonly "$TEMP" "SELECT 1 FROM facts LIMIT 1;")" = "1" &&
   ln "$TEMP" "$SSMSI" && rm "$TEMP"
 fi
 php bin/console cache:clear --env=demo --no-debug
 ```
 
-L'absence de statistique publiée n'est **jamais** transformée en valeur zéro.
+Le téléchargement SSMSI suit lui aussi le mode rapide (SHA-256 et contrôle de quelques lignes), sans relire tout le fichier. L'absence de statistique publiée n'est **jamais** transformée en valeur zéro.
 
 ## 7. Démarrer et vérifier le site
 
