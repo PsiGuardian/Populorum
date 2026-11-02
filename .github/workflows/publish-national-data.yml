@@ -1,0 +1,80 @@
+name: Publish official INSEE reference SQLite
+on:
+  pull_request:
+    paths:
+      - .github/workflows/publish-national-data.yml
+      - apps/symfony/data/geography/communes-2026.sqlite.gz
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/publish-national-data.yml
+      - apps/symfony/data/geography/communes-2026.sqlite.gz
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-insee-asset:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild exact uploaded reference from the committed gzip
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          gzip -dc apps/symfony/data/geography/communes-2026.sqlite.gz > release-assets/communes-2026.sqlite
+          cd release-assets
+          echo '40449a3c1bd346d83f4330b1a6dc6486ecdd6942ff34a01e19c38ce12d247b82  communes-2026.sqlite' > communes-2026.sqlite.sha256
+          sha256sum -c communes-2026.sqlite.sha256
+          python3 - <<'PY'
+          import sqlite3
+          db = sqlite3.connect("file:communes-2026.sqlite?mode=ro", uri=True)
+          assert db.execute("PRAGMA quick_check").fetchone()[0] == "ok"
+          assert {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")} >= {"metadata","communes","postal_codes"}
+          assert db.execute("SELECT COUNT(*) FROM communes").fetchone()[0] == 34875
+          assert db.execute("SELECT COUNT(*) FROM postal_codes").fetchone()[0] == 35313
+          assert db.execute("SELECT value FROM metadata WHERE key='vintage'").fetchone()[0] == "2026"
+          print("VALIDATED: official INSEE 2026 + La Poste crosswalk")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-national-insee
+          path: release-assets/
+          retention-days: 7
+  publish:
+    if: github.event_name != 'pull_request'
+    needs: verify-insee-asset
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: verified-national-insee
+          path: release-assets
+      - name: Publish independent national data release, without committing SQLite
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG=data-national-2026
+          cd release-assets
+          sha256sum -c communes-2026.sqlite.sha256
+          if ! gh release view "$TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
+            gh release create "$TAG" communes-2026.sqlite communes-2026.sqlite.sha256 \
+              --repo "$GH_REPO" --target "$GITHUB_SHA" --latest=false \
+              --title "Populorum — référentiels nationaux 2026" \
+              --notes "INSEE COG 2026 et La Poste : index SQLite public vérifié. Index DECP national à ajouter manuellement comme asset public-procurement.sqlite avec public-procurement.sqlite.sha256. Ces données sont distinctes des simulations fictives."
+          else
+            DIGEST="$(gh api "repos/$GH_REPO/releases/tags/$TAG" --jq '.assets[] | select(.name=="communes-2026.sqlite") | .digest' | head -n 1)"
+            if [[ "$DIGEST" == "sha256:40449a3c1bd346d83f4330b1a6dc6486ecdd6942ff34a01e19c38ce12d247b82" ]]; then
+              echo "Verified INSEE asset already uploaded; not replacing."
+            elif [[ -n "$DIGEST" ]]; then
+              echo "Existing release asset has unexpected digest; refusing to overwrite." >&2
+              exit 1
+            else
+              gh release upload "$TAG" communes-2026.sqlite communes-2026.sqlite.sha256 --repo "$GH_REPO"
+            fi
+          fi

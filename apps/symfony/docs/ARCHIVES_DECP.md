@@ -1,10 +1,14 @@
 # Archives nationales DECP — installer, vérifier et publier
 
-Cette fonctionnalité est **facultative** : Populorum démarre avec les trois communes fictives, sans les 1,9 Go de l'index national. Aucune base réelle n'est téléchargée pendant l'installation de Symfony.
+Cette fonctionnalité est **facultative** : Populorum démarre avec les trois communes fictives, sans les ~1,7 Go de l'index national. Aucune base réelle n'est téléchargée pendant l'installation de Symfony.
 
 L'index DECP est une **base séparée** de `var/populorum.sqlite` (simulations). Il est consulté en lecture seule. Les montants des contrats ne prouvent pas des paiements effectifs. Les sources mensuelles JSON originales sont utiles pour les réimportations et les preuves documentaires ; SQLite n'en conserve pas les champs complets.
 
-## Depuis une archive publique GitHub Releases
+## Distribution actuelle recommandée
+
+L'index public national sera distribué comme **un fichier unique** `public-procurement.sqlite` (environ 1,7 Go) avec son `public-procurement.sqlite.sha256`, sans fragmentation. Consultez [l'installation des données nationales](INSTALLATION_DONNEES_NATIONALES.md) pour les commandes de téléchargement, les contrôles et le chemin exact. Les anciennes archives découpées sont réservées aux sauvegardes historiques compatibles, pas à la distribution recommandée.
+
+## Depuis une archive publique GitHub Releases (ancien format optionnel)
 
 Installer `zstd` avec pacman. Depuis `apps/symfony`, une fois la release de données effectivement publiée :
 

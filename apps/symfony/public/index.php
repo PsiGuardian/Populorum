@@ -6,7 +6,7 @@ if (!is_file($autoload)) {
     http_response_code(503);
     header('Content-Type: text/plain; charset=utf-8');
     echo "Populorum : dependances Composer absentes.\n";
-    echo "Depuis apps/symfony : bash tools/install-arch.sh\n";
+    echo "Depuis apps/symfony : composer install --no-interaction --prefer-dist --no-progress\n";
     exit;
 }
 require dirname(__DIR__) . '/tools/bootstrap.php';
