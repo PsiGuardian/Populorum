@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/tools/bootstrap.php';
 
 use App\Service\CharterRepository;
+use App\Service\CharterRenderer;
 use PHPUnit\Framework\TestCase;
 
 final class CharterRepositoryTest extends TestCase
@@ -53,6 +54,11 @@ final class CharterRepositoryTest extends TestCase
                 $repository->markdown('fr_FR'),
                 $repository->markdown('unknown'),
             );
+            // Rendering is deterministic and does not depend on visitor identity.
+            $renderer = new CharterRenderer();
+            $html = $renderer->render($repository->markdown('fr_FR'));
+            self::assertSame($html, $repository->renderedHtml('fr_FR', $renderer));
+            self::assertSame($html, $repository->renderedHtml('unknown', $renderer));
         } finally {
             unlink($archive);
             rmdir($directory . '/data');

@@ -808,8 +808,9 @@ final class DemoController extends AbstractController
             $context += [
                 'locale' => $locale,
                 'locales' => $this->charters->locales(),
-                'charterHtml' => $this->charterRenderer->render(
-                    $this->charters->markdown($locale),
+                'charterHtml' => $this->charters->renderedHtml(
+                    $locale,
+                    $this->charterRenderer,
                 ),
             ];
         }

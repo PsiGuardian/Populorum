@@ -1,6 +1,7 @@
 # v0.9.4 — Optimisation du traitement et relevé des temps de réponse
 
 - Les recherches postales strictes 66, 663, 66300 exploitent un parcours de l'index `postal_search` par intervalle de codes, au lieu de vérifier chaque commune via `EXISTS` ; le comptage et les pages de l'atlas national utilisent la même optimisation.
+- La conversion Markdown→HTML des 28 chartes est mémorisée dans le cache public de Symfony, avec invalidation liée à la version de l'archive et à la langue, sans toucher aux contenus individuels.
 - La liste des régions utilise une agrégation plus économique et le cache public de Symfony ; les totaux DECP et la liste des indicateurs SSMSI sont mémorisés temporairement, avec invalidation liée aux métadonnées des bases SQLite.
 - Le test HTTP existant chronomètre et affiche les temps de traitement de 21 chemins (médianes HTTP et PHP). Aucun script de migration ou de correction ponctuel ajouté.
 - Aucune altération des valeurs INSEE, DECP, SSMSI, des scénarios ou des comptes. La base DECP nationale n'est pas incluse dans la CI, donc ses temps réels restent à profiler sur l'installation disposant de ce fichier.

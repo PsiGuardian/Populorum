@@ -28,6 +28,7 @@ Effectuer plusieurs passages après la mise en route. Sur la machine locale, dé
 
 - Les recherches des codes postaux utilisent l'index SQLite `postal_search` par plage bornée, plutôt que parcourir toutes les communes avec `LIKE` et une sous-requête corrélée. Une saisie de cinq chiffres conserve une recherche **exacte** ; une saisie de deux à quatre chiffres conserve le **préfixe strict**.
 - Les listes de régions et l'inventaire des totaux DECP et des indicateurs SSMSI peuvent utiliser le cache public Symfony `cache.app`, avec une clé dérivée des métadonnées du fichier SQLite. Aucun profil, vote, identifiant de compte ou autre état de visiteur n'est mis en cache.
+- Les 28 chartes publiques sont mises en cache en HTML après le premier rendu Markdown. La clé dépend du fichier de l'archive et du code langue ; une modification de l'archive invalide les entrées. La charte n'utilise pas de cache partagé avec des contenus de visiteurs.
 - Les pages nationales restent paginées côté SQLite ; les résultats complets des communes et des marchés ne sont pas chargés en mémoire PHP.
 
 ## Objectifs et contrôles
