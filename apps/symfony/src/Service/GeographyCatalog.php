@@ -154,7 +154,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
                 $q = $db->prepare('SELECT communes.code, communes.name, communes.department_name AS department,'
                     . ' communes.region_name AS region,'
                     . ' GROUP_CONCAT(DISTINCT p.postal_code) AS postalCodes'
-                    . ' FROM postal_codes p INDEXED BY postal_search JOIN communes ON communes.code=p.code'
+                    . ' FROM postal_codes p JOIN communes ON communes.code=p.code'
                     . ($exactPostal ? ' WHERE p.postal_code = ?' : ' WHERE p.postal_code >= ? AND p.postal_code < ?')
                     . ' GROUP BY communes.code ORDER BY communes.name, communes.code LIMIT ? OFFSET ?');
                 $q->bindValue(1, $term);
