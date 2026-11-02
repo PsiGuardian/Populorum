@@ -12,6 +12,7 @@ import os
 import sqlite3
 from pathlib import Path
 import socket
+import statistics
 import subprocess
 import sys
 import tempfile
@@ -44,7 +45,7 @@ def main() -> None:
             with sqlite3.connect(temporary_db) as destination:
                 source.backup(destination, pages=1000, sleep=0.05)
         environment = dict(os.environ)
-        environment.update(APP_ENV="demo", APP_DEBUG="0", POPULORUM_DEMO="1", DATABASE_URL="sqlite:///" + str(temporary_db))
+        environment.update(APP_ENV="demo", APP_DEBUG="0", POPULORUM_DEMO="1", POPULORUM_TIMING="1", DATABASE_URL="sqlite:///" + str(temporary_db))
         # Do not set POPULORUM_SCENARIO=reference: test the actual install.
         environment.pop("POPULORUM_SCENARIO", None)
         server = subprocess.Popen(
@@ -160,6 +161,40 @@ def main() -> None:
                     assert label in html, (path, 'missing', label)
                 assert html.count('class="atlas-city"') <= 36, (path, 'unbounded atlas render')
                 print('PASS national convergence atlas ' + path, flush=True)
+            # Permanent CI page timing inventory; no temporary benchmarking script.
+            # Warm one request, then measure HTTP and server request time separately.
+            timing_routes = (
+                '/', '/territoires', '/chemins', '/consultations', '/experiences',
+                '/convergence', '/convergence/communes_q/66300',
+                '/memoire', '/transparence', '/infrastructure', '/gouvernance',
+                '/participer', '/charte', '/recits', '/services-et-missions',
+                '/budget-et-priorites', '/besoins-et-devis', '/communes',
+                '/communes/q/66300', '/marches-publics', '/marches-publics/q/web',
+            )
+            timings = []
+            import re
+            for path in timing_routes:
+                http_ms = []
+                php_ms = []
+                for i in range(3):  # initial warm-up plus two measured requests
+                    started = time.perf_counter()
+                    with closing(browser.open(url + path, timeout=28)) as response:
+                        assert response.status == 200, (path, response.status)
+                        response.read()
+                        timing = response.headers.get('Server-Timing', '')
+                    elapsed = (time.perf_counter() - started) * 1000
+                    if i:
+                        http_ms.append(elapsed)
+                        match = re.search(r'(?:^|,\s*)request;dur=([0-9.]+)', timing)
+                        if match:
+                            php_ms.append(float(match.group(1)))
+                timings.append((path, statistics.median(http_ms),
+                                statistics.median(php_ms) if php_ms else None))
+            print('===== WARM HTTP PAGE TIMINGS / fresh CI SQLite fixture (ms) =====', flush=True)
+            for path, http_ms_median, php_ms_median in sorted(timings, key=lambda x: x[1], reverse=True):
+                print(f'PAGE {path:38} HTTP={http_ms_median:8.2f}  PHP={php_ms_median if php_ms_median is not None else "n/a"}', flush=True)
+            print('NOTE: CI fixture timings are not timings of the optional 1.7GB DECP production DB.', flush=True)
+
             # A municipality outside the old pilot fixtures must have an isolated local workspace.
             import re
             from urllib.parse import urlencode

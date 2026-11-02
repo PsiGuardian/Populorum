@@ -13,7 +13,7 @@ final class PerformanceTrace
 
     public static function begin(): void
     {
-        self::$enabled = ($_SERVER['POPULORUM_TIMING'] ?? '') === '1';
+        self::$enabled = ($_SERVER['POPULORUM_TIMING'] ?? getenv('POPULORUM_TIMING')) === '1';
         self::$durations = [];
         self::$start = hrtime(true);
     }

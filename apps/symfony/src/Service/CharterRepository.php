@@ -10,8 +10,18 @@ final class CharterRepository
     /** @var array<string, string> */
     private ?array $documents = null;
 
-    public function __construct(private string $projectDir)
+    public function __construct(
+        private string $projectDir,
+        #[\Symfony\Component\DependencyInjection\Attribute\Autowire(service: 'cache.app')]
+        private readonly ?\Symfony\Contracts\Cache\CacheInterface $publicCache = null,
+    ) {
+    }
+
+    private function archiveKey(): string
     {
+        $path = $this->projectDir . '/data/charters.json.gz';
+
+        return hash('sha256', $path . ':' . filemtime($path) . ':' . filesize($path));
     }
 
     private function documents(): array
@@ -46,12 +56,38 @@ final class CharterRepository
     /** @return list<string> */
     public function locales(): array
     {
-        return array_keys($this->documents());
+        if ($this->publicCache === null) {
+            return array_keys($this->documents());
+        }
+
+        return $this->publicCache->get('charter_locales_' . $this->archiveKey(), function ($item): array {
+            $item->expiresAfter(3600);
+
+            return array_keys($this->documents());
+        });
     }
 
     public function resolveLocale(string $locale): string
     {
-        return isset($this->documents()[$locale]) ? $locale : 'fr_FR';
+        return in_array($locale, $this->locales(), true) ? $locale : 'fr_FR';
+    }
+
+    /**
+     * Public, versioned Markdown HTML is safe to reuse across visitors.
+     * No user-generated text or private data enters this cache.
+     */
+    public function renderedHtml(string $locale, CharterRenderer $renderer): string
+    {
+        $locale = $this->resolveLocale($locale);
+        if ($this->publicCache === null) {
+            return $renderer->render($this->markdown($locale));
+        }
+
+        return $this->publicCache->get('charter_html_' . $this->archiveKey() . '_' . $locale, function ($item) use ($locale, $renderer): string {
+            $item->expiresAfter(3600);
+
+            return $renderer->render($this->markdown($locale));
+        });
     }
 
     public function markdown(string $locale): string
