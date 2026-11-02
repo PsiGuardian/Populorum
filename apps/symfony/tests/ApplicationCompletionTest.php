@@ -748,7 +748,8 @@ final class ApplicationCompletionTest extends TestCase
             // The pilot is not invented on other simulation pages either.
             $fiction = $this->request('/consultations');
             self::assertSame(200, $fiction->getStatusCode());
-            self::assertStringContainsString('Pas de scénario local', $fiction->getContent());
+            self::assertStringNotContainsString('Pas de scénario local', $fiction->getContent());
+            self::assertStringContainsString('0–0 sur 0 résultat', $fiction->getContent());
             // No re-use of an unrelated pilot's detailed ledger on an unknown budget.
             self::assertSame(400, $this->request('/budget-et-priorites?account=6%20OR%201=1')->getStatusCode());
         } finally {

@@ -6,7 +6,7 @@ namespace App\Service;
 
 use Symfony\Component\HttpFoundation\Request;
 
-/** One geographical selection across the UI; the three fictive pilots remain a separate dataset. */
+/** One official INSEE geographical selection across every section of the application. */
 final class TerritorySelection
 {
     public const SESSION_KEY = 'populorum_commune_code';
