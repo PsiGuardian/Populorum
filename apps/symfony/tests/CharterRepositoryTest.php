@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/tools/bootstrap.php';
 
-use App\Service\CharterRepository;
 use App\Service\CharterRenderer;
+use App\Service\CharterRepository;
 use PHPUnit\Framework\TestCase;
 
 final class CharterRepositoryTest extends TestCase
