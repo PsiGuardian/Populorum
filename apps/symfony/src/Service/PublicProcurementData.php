@@ -10,8 +10,11 @@ final class PublicProcurementData
     private ?\PDO $db = null;
     private bool $attempted = false;
 
-    public function __construct(private readonly string $projectDir)
-    {
+    public function __construct(
+        private readonly string $projectDir,
+        #[\Symfony\Component\DependencyInjection\Attribute\Autowire(service: 'cache.app')]
+        private readonly ?\Symfony\Contracts\Cache\CacheInterface $publicCache = null,
+    ) {
     }
 
     private function connection(): ?\PDO
@@ -48,16 +51,31 @@ final class PublicProcurementData
             return ['available' => false, 'contracts' => 0, 'markets' => 0, 'concessions' => 0,
                 'events' => 0, 'files' => 0, 'lastImport' => null];
         }
-        $kinds = $db->query('SELECT kind, COUNT(*) AS n FROM contracts GROUP BY kind')->fetchAll();
-        $counts = array_column($kinds, 'n', 'kind');
+        $load = static function () use ($db): array {
+            $kinds = $db->query('SELECT kind, COUNT(*) AS n FROM contracts GROUP BY kind')->fetchAll();
+            $counts = array_column($kinds, 'n', 'kind');
 
-        return [
-            'available' => true, 'contracts' => (int) array_sum($counts),
-            'markets' => (int) ($counts['market'] ?? 0), 'concessions' => (int) ($counts['concession'] ?? 0),
-            'events' => (int) $db->query('SELECT COUNT(*) FROM changes')->fetchColumn(),
-            'files' => (int) $db->query('SELECT COUNT(*) FROM imports')->fetchColumn(),
-            'lastImport' => $db->query('SELECT MAX(imported_at) FROM imports')->fetchColumn() ?: null,
-        ];
+            return [
+                'available' => true, 'contracts' => (int) array_sum($counts),
+                'markets' => (int) ($counts['market'] ?? 0), 'concessions' => (int) ($counts['concession'] ?? 0),
+                'events' => (int) $db->query('SELECT COUNT(*) FROM changes')->fetchColumn(),
+                'files' => (int) $db->query('SELECT COUNT(*) FROM imports')->fetchColumn(),
+                'lastImport' => $db->query('SELECT MAX(imported_at) FROM imports')->fetchColumn() ?: null,
+            ];
+        };
+        if ($this->publicCache === null) {
+            return $load();
+        }
+        // Cache only aggregate public reference data, never contracts, identities or sessions.
+        // File metadata changes when a new national dataset replaces the old one.
+        $file = $this->projectDir . '/data/research/public-procurement.sqlite';
+        $key = 'decp_coverage_' . hash('sha256', $file . ':' . filemtime($file) . ':' . filesize($file));
+
+        return $this->publicCache->get($key, static function ($item) use ($load): array {
+            $item->expiresAfter(300);
+
+            return $load();
+        });
     }
 
     public function years(string $kind): array

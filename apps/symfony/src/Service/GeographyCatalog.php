@@ -13,8 +13,11 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
     private bool $attempted = false;
     private ?bool $hasPostals = null;
 
-    public function __construct(private readonly string $projectDir)
-    {
+    public function __construct(
+        private readonly string $projectDir,
+        #[\Symfony\Component\DependencyInjection\Attribute\Autowire(service: 'cache.app')]
+        private readonly ?\Symfony\Contracts\Cache\CacheInterface $publicCache = null,
+    ) {
     }
 
     public function reset(): void
@@ -146,16 +149,20 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
                 if (!$hasPostals) {
                     return []; // Never mislabel an INSEE code as a postal result.
                 }
+                // Range scans exploit postal_search; SQLite's default LIKE can scan all codes.
+                $exactPostal = strlen($term) === 5;
                 $q = $db->prepare('SELECT communes.code, communes.name, communes.department_name AS department,'
                     . ' communes.region_name AS region,'
-                    // Only matching postal codes are returned to the UI; never mix other postcodes.
                     . ' GROUP_CONCAT(DISTINCT p.postal_code) AS postalCodes'
-                    . ' FROM postal_codes p JOIN communes ON communes.code=p.code'
-                    . (strlen($term) === 5 ? ' WHERE p.postal_code = ?' : ' WHERE p.postal_code LIKE ?')
+                    . ' FROM postal_codes p INDEXED BY postal_search JOIN communes ON communes.code=p.code'
+                    . ($exactPostal ? ' WHERE p.postal_code = ?' : ' WHERE p.postal_code >= ? AND p.postal_code < ?')
                     . ' GROUP BY communes.code ORDER BY communes.name, communes.code LIMIT ? OFFSET ?');
-                $q->bindValue(1, strlen($term) === 5 ? $term : $term . '%');
-                $q->bindValue(2, $limit, \PDO::PARAM_INT);
-                $q->bindValue(3, $offset, \PDO::PARAM_INT);
+                $q->bindValue(1, $term);
+                if (!$exactPostal) {
+                    $q->bindValue(2, $term . ':');
+                }
+                $q->bindValue($exactPostal ? 2 : 3, $limit, \PDO::PARAM_INT);
+                $q->bindValue($exactPostal ? 3 : 4, $offset, \PDO::PARAM_INT);
                 $q->execute();
 
                 return $q->fetchAll(\PDO::FETCH_ASSOC);
@@ -227,15 +234,18 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
             $bind[':department'] = $department;
         }
         $postal = preg_match('/\A[0-9]{2,5}\z/D', $term) === 1;
-        $postalComparison = strlen($term) === 5 ? '=' : 'LIKE';
-        $postalValue = strlen($term) === 5 ? $term : $term . '%';
+        $postalExact = strlen($term) === 5;
+        $postalCondition = $postalExact ? 'p.postal_code = :postal' : 'p.postal_code >= :postal AND p.postal_code < :postalUpper';
         if ($postal) {
             if (!$this->hasPostals($db)) {
                 return $empty;
             }
-            $where[] = 'EXISTS (SELECT 1 FROM postal_codes p WHERE p.code = communes.code AND p.postal_code '
-                . $postalComparison . ' :postal)';
-            $bind[':postal'] = $postalValue;
+            // The primary index is postal_search(postal_code), not commune→postal lookup.
+            $where[] = 'communes.code IN (SELECT p.code FROM postal_codes p WHERE ' . $postalCondition . ')';
+            $bind[':postal'] = $term;
+            if (!$postalExact) {
+                $bind[':postalUpper'] = $term . ':';
+            }
         } elseif (preg_match('/\A(?:INSEE|COG)\s*:\s*((?:[0-9]{5}|2[AB][0-9]{3}))\z/iD', $term, $match) === 1) {
             $where[] = 'communes.code = :insee';
             $bind[':insee'] = strtoupper($match[1]);
@@ -258,7 +268,9 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
         $offset = ($page - 1) * $size;
         $postalCodes = $this->hasPostals($db)
             ? " (SELECT GROUP_CONCAT(postal_code, ', ') FROM postal_codes p WHERE p.code = communes.code"
-                . ($postal ? ' AND p.postal_code ' . $postalComparison . ' :shownPostal' : '')
+                . ($postal ? ($postalExact
+                    ? ' AND p.postal_code = :shownPostal'
+                    : ' AND p.postal_code >= :shownPostal AND p.postal_code < :shownPostalUpper') : '')
                 . ') AS postalCodes'
             : " '' AS postalCodes";
         $sql = 'SELECT communes.code, communes.name, communes.region_name AS region,'
@@ -270,7 +282,10 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
             $query->bindValue($key, $value);
         }
         if ($postal) {
-            $query->bindValue(':shownPostal', $postalValue);
+            $query->bindValue(':shownPostal', $term);
+            if (!$postalExact) {
+                $query->bindValue(':shownPostalUpper', $term . ':');
+            }
         }
         $query->bindValue(':limit', $size, \PDO::PARAM_INT);
         $query->bindValue(':offset', $offset, \PDO::PARAM_INT);
@@ -286,11 +301,25 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
 
     public function regions(): array
     {
-        if (($db = $this->connection()) !== null) {
-            return $db->query('SELECT region_code AS code, region_name AS name, COUNT(*) AS count FROM communes GROUP BY region_code,region_name ORDER BY name')->fetchAll(\PDO::FETCH_ASSOC);
+        if (($db = $this->connection()) === null) {
+            return [];
         }
+        // National data is immutable between imports. Reuse aggregated regions across requests.
+        $load = static fn (): array => $db->query(
+            'SELECT region_code AS code, MIN(region_name) AS name, COUNT(*) AS count'
+            . ' FROM communes GROUP BY region_code ORDER BY name',
+        )->fetchAll(\PDO::FETCH_ASSOC);
+        if ($this->publicCache === null) {
+            return $load();
+        }
+        $path = $this->projectDir . '/data/geography/communes-2026.sqlite';
+        $key = 'geo_regions_' . hash('sha256', $path . ':' . filemtime($path) . ':' . filesize($path));
 
-        return [];
+        return $this->publicCache->get($key, static function ($item) use ($load): array {
+            $item->expiresAfter(3600);
+
+            return $load();
+        });
     }
 
     public function departments(string $region): array

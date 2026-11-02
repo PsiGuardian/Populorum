@@ -29,11 +29,11 @@ Exemple avec la version propre (voir la page Releases pour le dernier tag dispon
 mkdir -p "$HOME/Téléchargements/populorum-clean"
 cd "$HOME/Téléchargements/populorum-clean"
 
-curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.9.3-clean/Populorum-v0.9.3-clean.tar.gz
-curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.9.3-clean/SHA256SUMS.txt
+curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.9.4-clean/Populorum-v0.9.4-clean.tar.gz
+curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.9.4-clean/SHA256SUMS.txt
 sha256sum -c SHA256SUMS.txt
-tar -xzf Populorum-v0.9.3-clean.tar.gz
-cd Populorum-v0.9.3-clean/apps/symfony
+tar -xzf Populorum-v0.9.4-clean.tar.gz
+cd Populorum-v0.9.4-clean/apps/symfony
 ```
 
 Le tag de cette section doit être vérifié sur la page [Releases](https://github.com/PsiGuardian/Populorum/releases) avant toute installation. Pour une archive de branche `main`, extraire son ZIP et se placer simplement dans `Populorum-main/apps/symfony`.
@@ -109,3 +109,7 @@ La page `/convergence` explore les 34 875 communes grâce à des filtres région
 Les filtres publics des marchés, des communes, de la convergence et du budget sont représentés par des segments de chemin. Exemple : `/marches-publics/q/web/kind/market/year/2025/sort/amount_desc`. Les anciennes URL contenant `?q=...` sont redirigées vers un chemin canonique ; les critères vides sont ignorés. Les formulaires sans JavaScript restent opérationnels.
 
 Les marchés sont triables par montant contractuel ou date déclarée, croissants ou décroissants. Les dates aberrantes restent visibles et consultables avec leur valeur source ; un motif de contrôle automatique est affiché, sans présenter cette classification comme une justification donnée par l'acheteur.
+
+## Mesurer les performances des pages
+
+La suite HTTP permanente effectue un relevé de 21 parcours dans GitHub Actions avec une requête de chauffe et deux requêtes chronométrées par route. Les temps réseau/HTTP et les temps serveur sont relevés séparément ; les résultats de CI ne sont pas ceux du serveur local. La [méthode de profilage](docs/PERFORMANCE.md) fournit les commandes `curl` pour reproduire les mesures, notamment avec la base DECP nationale installée. Aucun outil de benchmarking temporaire n'est ajouté au dossier `tools/`.

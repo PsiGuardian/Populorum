@@ -1,3 +1,10 @@
+# v0.9.4 — Optimisation du traitement et relevé des temps de réponse
+
+- Les recherches postales strictes 66, 663, 66300 exploitent un parcours de l'index `postal_search` par intervalle de codes, au lieu de vérifier chaque commune via `EXISTS` ; le comptage et les pages de l'atlas national utilisent la même optimisation.
+- La liste des régions utilise une agrégation plus économique et le cache public de Symfony ; les totaux DECP et la liste des indicateurs SSMSI sont mémorisés temporairement, avec invalidation liée aux métadonnées des bases SQLite.
+- Le test HTTP existant chronomètre et affiche les temps de traitement de 21 chemins (médianes HTTP et PHP). Aucun script de migration ou de correction ponctuel ajouté.
+- Aucune altération des valeurs INSEE, DECP, SSMSI, des scénarios ou des comptes. La base DECP nationale n'est pas incluse dans la CI, donc ses temps réels restent à profiler sur l'installation disposant de ce fichier.
+
 ## v0.9.3 — Navigation lisible et audit des dates DECP
 
 Les recherches de marchés, communes, convergence et budget utilisent désormais des segments de chemin sans paramètres GET visibles. Les URL anciennes sont redirigées et les critères vides sont exclus. Les marchés publics disposent de tris par date, par montant contractuel, ainsi que d'une vue priorisant les dates suspectes. Les dates sources sont conservées, avec motifs de signalement calculés séparément. La documentation DECP référence l'archive unique déjà publiée.

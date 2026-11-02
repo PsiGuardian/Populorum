@@ -10,8 +10,11 @@ final class NationalConvergenceEvidence implements \Symfony\Contracts\Service\Re
     private ?\PDO $db = null;
     private bool $attempted = false;
 
-    public function __construct(private readonly string $projectDir)
-    {
+    public function __construct(
+        private readonly string $projectDir,
+        #[\Symfony\Component\DependencyInjection\Attribute\Autowire(service: 'cache.app')]
+        private readonly ?\Symfony\Contracts\Cache\CacheInterface $publicCache = null,
+    ) {
     }
 
     public function reset(): void
@@ -71,7 +74,18 @@ final class NationalConvergenceEvidence implements \Symfony\Contracts\Service\Re
             return [];
         }
 
-        return $db->query('SELECT DISTINCT indicator FROM facts ORDER BY indicator')->fetchAll(\PDO::FETCH_COLUMN);
+        $load = static fn (): array => $db->query('SELECT DISTINCT indicator FROM facts ORDER BY indicator')->fetchAll(\PDO::FETCH_COLUMN);
+        if ($this->publicCache === null) {
+            return $load();
+        }
+        $file = $this->projectDir . '/data/research/ssmsi-national-2025.sqlite';
+        $key = 'ssmsi_indicators_' . hash('sha256', $file . ':' . filemtime($file) . ':' . filesize($file));
+
+        return $this->publicCache->get($key, static function ($item) use ($load): array {
+            $item->expiresAfter(1800);
+
+            return $load();
+        });
     }
 
     /** @return array<string, array{status: string, rate: ?float, count: ?int}> */
