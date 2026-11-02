@@ -40,7 +40,6 @@ Le tag de cette section est exploitable **après publication de la release**. Po
 
 ## 3. Installer directement dans le terminal
 
-Chaque commande est visible et modifiable. Il n'existe **aucun** `arch_install.sh`, `install-arch.sh` ou programme d'installation caché.
 
 Contrôler les extensions :
 
