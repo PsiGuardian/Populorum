@@ -34,176 +34,139 @@
             3. Observations de la simulation
         </a>
     </nav>
-    <section class="panel section" id="public-context">
-        <div class="eyebrow">
-            CONTEXTE RÉEL · EXTRAIT DATÉ · AUCUN LIEN CAUSAL DÉMONTRÉ
+    <section class="panel section atlas" id="public-context">
+        <div class="eyebrow">ATLAS COMMUNAL · SOURCES OFFICIELLES · GÉOGRAPHIE INSEE 2026</div>
+        <h2>La France, commune par commune</h2>
+        <p>Explorer toutes les communes sans les confondre avec les données observées. Une valeur non diffusée par le SSMSI n'est ni un zéro, ni une absence d'infraction.</p>
+        <div class="atlas-kpis" aria-label="Couverture nationale">
+            <div><strong>{{ geoCoverage.count|number_format(0, ',', ' ') }}</strong><span>Communes INSEE</span></div>
+            <div><strong>{{ convergenceRegions|length }}</strong><span>Régions</span></div>
+            <div><strong>{{ nationalEvidenceCoverage.available ? nationalEvidenceCoverage.publishedCommunes|number_format(0, ',', ' ') : '—' }}</strong><span>Communes avec au moins une mesure SSMSI diffusée en 2025</span></div>
+            <div><strong>{{ convergenceAtlas.total|number_format(0, ',', ' ') }}</strong><span>Communes dans le filtre</span></div>
         </div>
-        <h2>Que mesurent les sources publiques ?</h2>
-        <p>
-            Les statistiques enregistrées décrivent un contexte communal. Elles
-            ne mesurent ni toute la délinquance réelle, ni l’effet des
-            propositions de ce laboratoire. Elles couvrent ici la sécurité ;
-            aucun chiffre n’est extrapolé aux autres sujets.
-        </p>
-        {% if publicEvidence.available %}
-            <form
-                method="get"
-                action="{{
-                civic_path(
-                    'section',
-                    {
-                        view: 'convergence'
-                    }
-                )
-                }}"
-                class="tree-picker"
-            >
-                <input type="hidden" name="id" value="{{ selected }}" />
-                <input type="hidden" name="territory" value="{{ territory }}" />
-                <label for="indicator">
-                    Choisir une mesure disponible pour les villes pilotes
-                </label>
-                <select name="indicator" id="indicator">
-                    {% for indicator in publicEvidence.indicators %}
-                        <option
-                            {{
-                            indicator == publicEvidence.indicator
-                                ? 'selected'
-                                : ''
-                            }}
-                        >
-                            {{ indicator }}
-                        </option>
+        <div class="atlas-sources">
+            <strong>Couverture distincte :</strong>
+            {% if nationalEvidenceCoverage.available %}
+                index SSMSI national importé, années 2024 et 2025. Les taux ne sont comparables qu'à indicateur et dénominateur identiques.
+            {% else %}
+                référentiel géographique national présent ; l'index statistique national SSMSI n'est pas encore installé. L'extrait historique limité à {{ convergenceEvidenceCoverage }} communes reste consultable sans extrapolation.
+            {% endif %}
+            <a href="https://www.data.gouv.fr/datasets/bases-statistiques-communale-departementale-et-regionale-de-la-delinquance-enregistree-par-la-police-et-la-gendarmerie-nationales" rel="noopener noreferrer" target="_blank">Source officielle SSMSI</a>
+        </div>
+        <form class="atlas-filters" method="get" action="{{ civic_path('section', {view: 'convergence'}) }}#public-context" role="search">
+            <input type="hidden" name="id" value="{{ selected }}">
+            <label for="atlas-q">Commune ou code postal
+                <input id="atlas-q" name="communes_q" value="{{ convergenceQuery }}" placeholder="Nom, 66300, 66 ou INSEE:66134" maxlength="100">
+            </label>
+            <label for="atlas-region">Région
+                <select id="atlas-region" name="region">
+                    <option value="">Toutes les régions</option>
+                    {% for region in convergenceRegions %}
+                        <option value="{{ region.code }}" {{ region.code == convergenceRegion ? 'selected' : '' }}>{{ region.name }} ({{ region.count }})</option>
                     {% endfor %}
                 </select>
-                <button class="button" type="submit">
-                    Comparer cette mesure
-                </button>
-            </form>
-            <h3>{{ publicEvidence.indicator }}</h3>
-            <p>
-                Taux pour 1 000 {{ publicEvidence.denominator }} · évolution 2024
-                → 2025. L’écart est exprimé en points de taux, pas en pourcentage.
-            </p>
-            <div class="evidence-cities">
-                {% for city in publicEvidence.cities %}
-                    <article class="evidence-city">
-                        <h3>{{ city.name }}</h3>
-                        {% for year in [2024, 2025] %}
-                            <p>
-                                <strong>{{ year }}</strong> :{% if
-                                    city.years[year] is defined %}
-                                    {{
-                                        city.years[year].rate|number_format(
-                                            2,
-                                            ',',
-                                            ' '
-                                        )
-                                    }} ‰ <small>
-                                        ({{ city.years[year].count
-                                            ?? 'effectif indisponible' }} · {{
-                                            city.years[year].countUnit
-                                        }})
-                                    </small>
-                                {% else %}
-                                    Non publié ou indisponible
-                                {% endif %}
-                            </p>
-                        {% endfor %}
-                        <p>
-                            <strong>
-                                {% if city.change is not null %}
-                                    {{ city.change > 0 ? '+' : '' }}{{
-                                        city.change|number_format(2, ',', ' ')
-                                    }} point(s)
-                                {% else %}
-                                    Évolution non calculable
-                                {% endif %}
-                            </strong>
-                        </p>
-                        <a
-                            class="plain"
-                            href="{{
-                            civic_path(
-                                'section',
-                                {
-                                    view: 'proposals',
-                                    territory: state.territories
-                                        |filter(
-                                            territory => territory.code
-                                                == city.code
-                                        )
-                                        |first.id
-                                }
-                            )
-                            }}"
-                        >
-                            Explorer les chemins de cette ville →
-                        </a>
-                    </article>
-                {% endfor %}
-            </div>
-            {% if publicEvidence.cities|length > 1 %}
-            <h3>Les évolutions vont-elles dans le même sens ?</h3>
-            <p>
-                Ce calcul compare uniquement le signe de l’écart 2024–2025. Il
-                ne mesure ni une significativité statistique, ni la proximité
-                des niveaux, ni l’efficacité d’une politique.
-            </p>
-            <ul>
-                {% for comparison in publicEvidence.comparisons %}
-                    <li>
-                        <strong>
-                            {{ comparison.first }} / {{ comparison.second }}
-                        </strong> : {{ comparison.status }}.
-                    </li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-            <details>
-                <summary>
-                    Source, dates, méthode et limites
-                </summary>
-                <p>
-                    {{ publicEvidence.publisher }} · publication {{
-                        publicEvidence.publishedAt
-                    }} · extrait consulté le {{ publicEvidence.accessedAt }}. Ce
-                    fichier n’est pas actualisé en direct.
-                </p>
-                <p>
-                    <a
-                        href="{{ publicEvidence.source }}"
-                        rel="noopener noreferrer"
-                    >
-                        Télécharger la source publique citée ↗
-                    </a>
-                </p>
-                <p>
-                    Les cambriolages sont rapportés aux logements ; les autres
-                    taux aux habitants. Ne pas additionner les indicateurs ni
-                    déduire un classement global des villes. Les écarts de
-                    déclaration et de pratiques d’enregistrement limitent les
-                    comparaisons.
-                </p>
-                {% for city in publicEvidence.cities %}
-                    {% for year, reading in city.years %}
-                        <p>
-                            {{ city.name }} · {{ year }} : population de référence
-                            {{ reading.populationVintage }}, logements de
-                            référence {{ reading.housingVintage }}.
-                        </p>
+            </label>
+            <label for="atlas-department">Département
+                <select id="atlas-department" name="department">
+                    <option value="">Tous les départements</option>
+                    {% for department in convergenceDepartments %}
+                        <option value="{{ department.code }}" {{ department.code == convergenceDepartment ? 'selected' : '' }}>{{ department.name }}</option>
                     {% endfor %}
-                {% endfor %}
-                <p class="hash">
-                    Empreinte archivée du fichier source : {{ publicEvidence.sourceSha256 }}
-                </p>
-            </details>
-        {% else %}
-            <p role="status">
-                L’extrait public est indisponible. Aucun chiffre de remplacement
-                n’est inventé.
-            </p>
+                </select>
+            </label>
+            {% if nationalEvidenceCoverage.available %}
+                <label for="atlas-indicator">Indicateur officiel
+                    <select id="atlas-indicator" name="indicator">
+                        {% for indicator in nationalIndicators %}
+                            <option value="{{ indicator }}" {{ indicator == nationalSelectedIndicator ? 'selected' : '' }}>{{ indicator }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            {% endif %}
+            <button class="button primary" type="submit">Explorer ce périmètre</button>
+            <a class="button" href="{{ civic_path('section', {view: 'convergence'}) }}#public-context">Réinitialiser</a>
+        </form>
+        <div class="atlas-head">
+            <div><h3>Communes</h3><p>Affichage {{ convergenceAtlas.first }}–{{ convergenceAtlas.last }} sur {{ convergenceAtlas.total|number_format(0, ',', ' ') }} · page {{ convergenceAtlas.page }}/{{ convergenceAtlas.pages }}</p></div>
+            <p>36 fiches par page, sans chargement massif</p>
+        </div>
+        <div class="atlas-grid">
+            {% for city in convergenceAtlas.rows %}
+                {% set reading = nationalPageEvidence[city.code] ?? null %}
+                <a class="atlas-city" href="{{ civic_path('section', {view: 'convergence', commune: city.code, communes_q: convergenceQuery, region: convergenceRegion, department: convergenceDepartment, indicator: nationalSelectedIndicator, atlas_page: convergenceAtlas.page}) }}#atlas-detail">
+                    <span class="atlas-city-name">{{ city.name }}</span>
+                    <span class="atlas-city-location">{{ city.department }} · {{ city.region }}</span>
+                    <span class="atlas-city-codes">{% if city.postalCodes %}CP {{ city.postalCodes }} · {% endif %}INSEE {{ city.code }}</span>
+                    {% if nationalEvidenceCoverage.available %}
+                        <span class="atlas-availability">{{ reading is null ? 'Donnée absente' : (reading.rate is not null ? (reading.rate|number_format(2, ',', ' ') ~ ' ‰ · SSMSI 2025') : 'Non diffusé') }}</span>
+                    {% else %}
+                        <span class="atlas-availability">Mesure nationale à importer</span>
+                    {% endif %}
+                </a>
+            {% else %}
+                <p class="empty">Aucune commune correspondant aux filtres. Vérifiez le code postal exact ou les rattachements administratifs.</p>
+            {% endfor %}
+        </div>
+        <nav class="atlas-pagination" aria-label="Pages du répertoire national">
+            {% if convergenceAtlas.page > 1 %}
+                <a class="button" href="{{ civic_path('section', {view: 'convergence', communes_q: convergenceQuery, region: convergenceRegion, department: convergenceDepartment, indicator: nationalSelectedIndicator, atlas_page: convergenceAtlas.page - 1}) }}#public-context">Page précédente</a>
+            {% endif %}
+            <span>{{ convergenceAtlas.page }} / {{ convergenceAtlas.pages }}</span>
+            {% if convergenceAtlas.page < convergenceAtlas.pages %}
+                <a class="button" href="{{ civic_path('section', {view: 'convergence', communes_q: convergenceQuery, region: convergenceRegion, department: convergenceDepartment, indicator: nationalSelectedIndicator, atlas_page: convergenceAtlas.page + 1}) }}#public-context">Page suivante</a>
+            {% endif %}
+        </nav>
+        {% if convergenceCommune %}
+            <article id="atlas-detail" class="atlas-detail" aria-label="Détail de la commune">
+                <div><span class="eyebrow">FICHE COMMUNALE · {{ convergenceCommune.code }}</span>
+                    <h3>{{ convergenceCommune.name }}</h3>
+                    <p>{{ convergenceCommune.department }} · {{ convergenceCommune.region }}</p>
+                </div>
+                {% if nationalEvidenceCoverage.available %}
+                    <h4>{{ nationalSelectedIndicator }}</h4>
+                    <div class="atlas-year-grid">
+                        {% for year in [2024, 2025] %}
+                            {% set measure = nationalCommuneEvidence[year] ?? null %}
+                            <div><strong>{{ year }}</strong>
+                                {% if measure is not null and measure.rate is not null %}
+                                    <span>{{ measure.rate|number_format(2, ',', ' ') }} ‰</span>
+                                    <small>{{ measure.count is not null ? measure.count : 'Effectif indisponible' }} · {{ measure.countUnit }}</small>
+                                {% else %}
+                                    <span>Non diffusé ou indisponible</span>
+                                    <small>Secret statistique, absence de publication ou indicateur non applicable : ne pas interpréter comme zéro.</small>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% elseif publicEvidence.cities|length > 0 %}
+                    <p>Extrait historique SSMSI disponible pour cette commune :</p>
+                    {% for sample in publicEvidence.cities %}
+                        <h4>{{ publicEvidence.indicator }}</h4>
+                        <div class="atlas-year-grid">
+                            {% for year in [2024, 2025] %}
+                                <div><strong>{{ year }}</strong>
+                                    <span>{{ sample.years[year] is defined ? (sample.years[year].rate|number_format(2, ',', ' ') ~ ' ‰') : 'Non publié' }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>Cette commune est référencée par l’INSEE. Aucune mesure SSMSI vérifiée n'est actuellement chargée pour elle. Aucun taux ne sera inventé.</p>
+                {% endif %}
+                <a class="button" href="{{ civic_path('site_commune', {code: convergenceCommune.code}) }}">Consulter la fiche INSEE</a>
+            </article>
         {% endif %}
+        <details class="atlas-method">
+            <summary>Sources, intégrité et limites des comparaisons</summary>
+            <p>Le référentiel géographique est INSEE 2026. La source statistique nationale est le SSMSI (police et gendarmerie), millésimes 2024–2025. Les indicateurs portent sur les faits enregistrés, pas sur tous les faits commis ; le secret statistique interdit de diffuser certaines valeurs.</p>
+            {% if nationalEvidenceCoverage.available %}
+                <p>Empreinte SHA-256 du CSV officiel importé : <code>{{ nationalEvidenceCoverage.sha256 }}</code>.</p>
+                <p>Indicateurs et années importés : 2024–2025. Source : <a href="{{ nationalEvidenceCoverage.source }}" rel="noopener noreferrer">SSMSI/data.gouv.fr</a>.</p>
+            {% elseif publicEvidence.available %}
+                <p>Extrait historique : {{ publicEvidence.publisher }} · publication {{ publicEvidence.publishedAt }} · empreinte <code>{{ publicEvidence.sourceSha256 }}</code>. Cet extrait de {{ convergenceEvidenceCoverage }} communes ne constitue pas une couverture nationale.</p>
+            {% endif %}
+            <p>La convergence des propositions fictives ci-dessous ne prouve aucune causalité avec les statistiques publiques.</p>
+        </details>
     </section>
     <section id="proposal-comparisons" class="section">
         <h2>Quels chemins se rapprochent ?</h2>

@@ -1,0 +1,33 @@
+/* Populorum's national atlas: server-paginated, progressive and accessible without JS. */
+.atlas { --atlas-ink: #2c3e46; --atlas-accent: #926c28; }
+.atlas-kpis { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .85rem; margin: 1.4rem 0; }
+.atlas-kpis>div { border: 1px solid #e1ded5; border-radius: .65rem; background: #faf9f5; padding: 1rem; min-width: 0; }
+.atlas-kpis strong { display: block; font-size: clamp(1.25rem,2.1vw,2rem); line-height: 1.35; color: var(--atlas-ink); font-variant-numeric: tabular-nums; }
+.atlas-kpis span { display: block; font-size: .83rem; line-height: 1.55; opacity: .82; }
+.atlas-sources { padding: .9rem 1rem; border-left: 3px solid var(--atlas-accent); background: #f8f6f0; margin-bottom: 1.2rem; }
+.atlas-sources a { display: inline-block; margin-left: .6rem; }
+.atlas-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .75rem; border: 1px solid #e1ded5; padding: 1rem; border-radius: .6rem; }
+.atlas-filters label { display: flex; flex-direction: column; gap: .35rem; flex: 1 1 11rem; min-width: 0; font-size: .83rem; font-weight: 650; }
+.atlas-filters label:first-child { flex: 2 1 15rem; }
+.atlas-filters input,.atlas-filters select { width: 100%; min-width: 0; border: 1px solid #c9c8c0; border-radius: .3rem; background: white; padding: .58rem .65rem; font: inherit; font-weight: 400; }
+.atlas-head { display: flex; justify-content: space-between; align-items: end; gap: 1rem; margin: 1.2rem 0 .5rem; }
+.atlas-head h3,.atlas-head p { margin: .2rem 0; }
+.atlas-head p { font-size: .83rem; }
+.atlas-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .7rem; }
+.atlas-city { display: flex; flex-direction: column; gap: .37rem; border: 1px solid #dedbd3; border-radius: .55rem; padding: .9rem; color: var(--atlas-ink); background: white; text-decoration: none; min-width: 0; }
+.atlas-city:hover,.atlas-city:focus-visible { border-color: var(--atlas-accent); background: #fcfaf4; outline-offset: 2px; }
+.atlas-city-name { font-weight: 700; line-height: 1.35; }
+.atlas-city-location { color: #686d70; font-size: .84rem; line-height: 1.45; }
+.atlas-city-codes { color: #75591f; font-size: .81rem; overflow-wrap: anywhere; }
+.atlas-availability { border-top: 1px solid #eeebe4; padding-top: .45rem; font-size: .78rem; color: #59676a; }
+.atlas-pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; padding: 1.2rem 0; font-variant-numeric: tabular-nums; }
+.atlas-detail { margin: 1.3rem 0; padding: 1.3rem; border: 1px solid #bfae85; border-radius: .65rem; background: #faf8f2; scroll-margin-top: 2rem; }
+.atlas-detail h3 { font-size: 1.45rem; margin: .35rem 0; }
+.atlas-year-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .9rem; margin: .9rem 0; }
+.atlas-year-grid>div { background: white; border-radius: .4rem; padding: .8rem; border: 1px solid #e7e4d9; }
+.atlas-year-grid strong,.atlas-year-grid span,.atlas-year-grid small { display: block; }
+.atlas-year-grid span { margin: .35rem 0; font-size: 1.1rem; font-weight: 650; }
+.atlas-year-grid small { line-height: 1.6; }
+.atlas-method { margin-top: .8rem; }
+@media(max-width: 1100px) { .atlas-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); } .atlas-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width: 620px) { .atlas-grid,.atlas-kpis,.atlas-year-grid { grid-template-columns: 1fr; } .atlas-head { display: block; } .atlas-pagination { justify-content: space-between; } }

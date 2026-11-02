@@ -1,0 +1,70 @@
+name: Official SSMSI national index — publish verified data
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/symfony/tools/import_ssmsi_national.py'
+      - '.github/workflows/publish-ssmsi-national.yml'
+permissions:
+  contents: read
+
+jobs:
+  import-national:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore official INSEE 2026 reference (no application dependencies)
+        working-directory: apps/symfony
+        run: |
+          python3 - <<'PY'
+          import gzip, shutil
+          from pathlib import Path
+          source = Path('data/geography/communes-2026.sqlite.gz')
+          destination = source.with_suffix('')
+          with gzip.open(source, 'rb') as reader, destination.open('xb') as writer:
+              shutil.copyfileobj(reader, writer)
+          assert destination.stat().st_size == 6840320
+          PY
+      - name: Download the immutable July 2026 official SSMSI communal source
+        working-directory: apps/symfony
+        run: |
+          set -euo pipefail
+          mkdir -p data/research release-data
+          curl -fL --retry 5 --retry-delay 5 --connect-timeout 30 \
+            -o data/research/ssmsi-communes-2026.csv.gz \
+            "https://static.data.gouv.fr/resources/bases-statistiques-communale-departementale-et-regionale-de-la-delinquance-enregistree-par-la-police-et-la-gendarmerie-nationales/20260709-115942/donnee-data.gouv-2025-geographie2026-produit-le2026-06-25.csv.gz"
+          test -s data/research/ssmsi-communes-2026.csv.gz
+          sha256sum data/research/ssmsi-communes-2026.csv.gz | tee release-data/SSMSI_SOURCE_SHA256.txt
+      - name: Build the national read-only SQLite index and validate it
+        working-directory: apps/symfony
+        run: |
+          set -euo pipefail
+          python3 tools/import_ssmsi_national.py --source data/research/ssmsi-communes-2026.csv.gz
+          python3 - <<'PY'
+          import sqlite3
+          from pathlib import Path
+          path = Path('data/research/ssmsi-national-2025.sqlite')
+          with sqlite3.connect(path) as db:
+              assert db.execute("PRAGMA quick_check").fetchone()[0] == 'ok'
+              assert db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()[0] == 'populorum-ssmsi-national-1'
+              assert int(db.execute("SELECT value FROM metadata WHERE key='indexed_rows'").fetchone()[0]) >= 300000
+              assert int(db.execute("SELECT value FROM metadata WHERE key='communes_with_published_2025'").fetchone()[0]) > 1000
+          PY
+          cp data/research/ssmsi-national-2025.sqlite release-data/
+          (cd release-data && sha256sum ssmsi-national-2025.sqlite > ssmsi-national-2025.sqlite.sha256)
+      - name: Attach real municipal data to the existing national data release
+        working-directory: apps/symfony
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=data-national-2026
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null
+          gh release upload "$TAG" \
+            release-data/ssmsi-national-2025.sqlite \
+            release-data/ssmsi-national-2025.sqlite.sha256 \
+            release-data/SSMSI_SOURCE_SHA256.txt \
+            --repo "$GITHUB_REPOSITORY"

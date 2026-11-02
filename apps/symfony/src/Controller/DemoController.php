@@ -54,6 +54,7 @@ final class DemoController extends AbstractController
         private \Symfony\Contracts\Translation\TranslatorInterface $translator,
         private \App\Service\TerritorialReport $territorialReport,
         private \App\Service\PublicEvidence $publicEvidence,
+        private \App\Service\NationalConvergenceEvidence $nationalConvergenceEvidence,
         private \App\Twig\CivicUrlExtension $urls,
         private \App\Service\PublicBudget $publicBudget,
         private \App\Service\BudgetCatalog $budgetCatalog,
@@ -686,17 +687,49 @@ final class DemoController extends AbstractController
             );
         }
         if ($view === 'convergence') {
+            // National coverage is geographical; statistical coverage is tracked separately.
+            $context['convergenceQuery'] = trim($request->query->getString('communes_q', ''));
+            $context['convergenceRegion'] = $request->query->getString('region', '');
+            $context['convergenceDepartment'] = $request->query->getString('department', '');
+            $context['convergenceAtlas'] = $this->geography->convergenceDirectory(
+                $context['convergenceQuery'],
+                $context['convergenceRegion'],
+                $context['convergenceDepartment'],
+                $request->query->getInt('atlas_page', 1),
+            );
+            $context['convergenceRegions'] = $this->geography->regions();
+            $context['convergenceDepartments'] = $context['convergenceRegion'] !== ''
+                ? $this->geography->departments($context['convergenceRegion']) : [];
+            $requestedCode = strtoupper(trim($request->query->getString('commune', '')));
+            $context['convergenceCommune'] = \App\Service\GeographyCatalog::validCode($requestedCode)
+                ? $this->geography->find($requestedCode) : $context['selectedCommune'];
             $context['publicEvidence'] = $this->publicEvidence->compare(
                 $request->query->getString('indicator'),
             );
-            if ($context['selectedPilotId'] !== null) {
-                $code = $context['selectedCommune']['code'];
-                $context['publicEvidence']['cities'] = array_values(array_filter(
+            $context['convergenceEvidenceCoverage'] = count($context['publicEvidence']['cities']);
+            // The historical SSMSI excerpt contains three municipalities, not national statistics.
+            // Never silently claim that absence of data means zero recorded incidents.
+            $selectedCode = $context['convergenceCommune']['code'] ?? '';
+            $context['publicEvidence']['cities'] = $selectedCode !== ''
+                ? array_values(array_filter(
                     $context['publicEvidence']['cities'],
-                    static fn (array $city): bool => $city['code'] === $code,
-                ));
-                $context['publicEvidence']['comparisons'] = [];
-            }
+                    static fn (array $city): bool => $city['code'] === $selectedCode,
+                )) : [];
+            $context['publicEvidence']['comparisons'] = [];
+            $context['nationalEvidenceCoverage'] = $this->nationalConvergenceEvidence->coverage();
+            $context['nationalIndicators'] = $this->nationalConvergenceEvidence->indicators();
+            $chosenIndicator = $request->query->getString('indicator', '');
+            $context['nationalSelectedIndicator'] = in_array($chosenIndicator, $context['nationalIndicators'], true)
+                ? $chosenIndicator
+                : ($context['nationalIndicators'][0] ?? '');
+            $codes = array_column($context['convergenceAtlas']['rows'], 'code');
+            $context['nationalPageEvidence'] = $this->nationalConvergenceEvidence->publishedForPage(
+                $codes,
+                $context['nationalSelectedIndicator'],
+            );
+            $context['nationalCommuneEvidence'] = $selectedCode !== ''
+                ? $this->nationalConvergenceEvidence->city($selectedCode, $context['nationalSelectedIndicator'])
+                : [];
             $comparison = PerformanceTrace::measure(
                 'convergence',
                 fn () => $this->engine->convergencePage(

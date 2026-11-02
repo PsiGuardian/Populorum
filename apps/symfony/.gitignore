@@ -17,3 +17,7 @@
 /data/geography/*.sqlite-wal
 /data/geography/*.sqlite-shm
 /config/services.yaml.bak
+
+# Complete SSMSI national archives and derived statistics remain local.
+/data/research/ssmsi-communes-*.csv.gz
+/data/research/ssmsi-national-*.sqlite*

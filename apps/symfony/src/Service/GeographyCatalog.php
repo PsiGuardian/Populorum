@@ -193,6 +193,98 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
         return [];
     }
 
+
+    /**
+     * National paginated atlas: the database filters before returning any rows.
+     * No aggregation or pairwise comparison of all 34,875 municipalities in PHP.
+     *
+     * @return array{rows: array, total: int, page: int, pages: int, first: int, last: int}
+     */
+    public function convergenceDirectory(
+        string $term = '',
+        string $region = '',
+        string $department = '',
+        int $page = 1,
+    ): array {
+        $empty = ['rows' => [], 'total' => 0, 'page' => 1, 'pages' => 1, 'first' => 0, 'last' => 0];
+        $db = $this->connection();
+        if ($db === null) {
+            return $empty;
+        }
+        $term = trim($term);
+        if (strlen($term) > 100
+            || ($region !== '' && preg_match('/\A[0-9A-Z]{1,3}\z/D', $region) !== 1)
+            || ($department !== '' && preg_match('/\A[0-9A-Z]{1,3}\z/D', $department) !== 1)) {
+            return $empty;
+        }
+        $where = [];
+        $bind = [];
+        if ($region !== '') {
+            $where[] = 'communes.region_code = :region';
+            $bind[':region'] = $region;
+        }
+        if ($department !== '') {
+            $where[] = 'communes.department_code = :department';
+            $bind[':department'] = $department;
+        }
+        $postal = preg_match('/\A[0-9]{2,5}\z/D', $term) === 1;
+        $postalComparison = strlen($term) === 5 ? '=' : 'LIKE';
+        $postalValue = strlen($term) === 5 ? $term : $term . '%';
+        if ($postal) {
+            if (!$this->hasPostals($db)) {
+                return $empty;
+            }
+            $where[] = 'EXISTS (SELECT 1 FROM postal_codes p WHERE p.code = communes.code AND p.postal_code '
+                . $postalComparison . ' :postal)';
+            $bind[':postal'] = $postalValue;
+        } elseif (preg_match('/\A(?:INSEE|COG)\s*:\s*((?:[0-9]{5}|2[AB][0-9]{3}))\z/iD', $term, $match) === 1) {
+            $where[] = 'communes.code = :insee';
+            $bind[':insee'] = strtoupper($match[1]);
+        } elseif ($term !== '') {
+            $folded = strtolower(function_exists('iconv')
+                ? (iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $term) ?: $term) : $term);
+            $where[] = "communes.search_name LIKE :name ESCAPE '!'";
+            $bind[':name'] = '%' . str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $folded) . '%';
+        }
+        $condition = $where ? ' WHERE ' . implode(' AND ', $where) : '';
+        $totalQuery = $db->prepare('SELECT COUNT(*) FROM communes' . $condition);
+        foreach ($bind as $key => $value) {
+            $totalQuery->bindValue($key, $value);
+        }
+        $totalQuery->execute();
+        $total = (int) $totalQuery->fetchColumn();
+        $size = 36;
+        $pages = max(1, (int) ceil($total / $size));
+        $page = max(1, min($pages, $page));
+        $offset = ($page - 1) * $size;
+        $postalCodes = $this->hasPostals($db)
+            ? " (SELECT GROUP_CONCAT(postal_code, ', ') FROM postal_codes p WHERE p.code = communes.code"
+                . ($postal ? ' AND p.postal_code ' . $postalComparison . ' :shownPostal' : '')
+                . ') AS postalCodes'
+            : " '' AS postalCodes";
+        $sql = 'SELECT communes.code, communes.name, communes.region_name AS region,'
+            . ' communes.department_name AS department, communes.department_code AS departmentCode,'
+            . $postalCodes . ' FROM communes' . $condition
+            . ' ORDER BY communes.name, communes.code LIMIT :limit OFFSET :offset';
+        $query = $db->prepare($sql);
+        foreach ($bind as $key => $value) {
+            $query->bindValue($key, $value);
+        }
+        if ($postal) {
+            $query->bindValue(':shownPostal', $postalValue);
+        }
+        $query->bindValue(':limit', $size, \PDO::PARAM_INT);
+        $query->bindValue(':offset', $offset, \PDO::PARAM_INT);
+        $query->execute();
+
+        return [
+            'rows' => $query->fetchAll(\PDO::FETCH_ASSOC),
+            'total' => $total, 'page' => $page, 'pages' => $pages,
+            'first' => $total ? $offset + 1 : 0,
+            'last' => min($offset + $size, $total),
+        ];
+    }
+
     public function regions(): array
     {
         if (($db = $this->connection()) !== null) {

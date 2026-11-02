@@ -84,7 +84,7 @@ php bin/console app:geography:install --env=demo
 php bin/console app:geography:install --check --env=demo
 ```
 
-Pour installer le référentiel depuis GitHub Releases et, après sa mise en ligne, la base nationale DECP **en un seul fichier de 1,7 Go**, suivre le [guide détaillé des données nationales](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md). Cette opération est indépendante de `var/populorum.sqlite` et ne doit pas écraser les données existantes.
+Pour installer le référentiel depuis GitHub Releases et, après sa mise en ligne, la base nationale DECP **en trois parties vérifiées**, suivre le [guide détaillé des données nationales](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md). Cette opération est indépendante de `var/populorum.sqlite` et ne doit pas écraser les données existantes.
 
 ## 6. Mettre à jour sans perdre les données
 
@@ -99,3 +99,7 @@ Avant toute mise à jour, arrêter PHP et sauvegarder **`.env.local`, `var/`, `.
 - Référentiel INSEE + index DECP : voir [INSTALLATION_DONNEES_NATIONALES.md](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md).
 
 Les outils de construction et correctifs historiques ont été supprimés de la distribution. Seuls les outils opérationnels pérennes et les tests isolés sont conservés.
+
+## 8. Atlas national des communes et convergence
+
+La page `/convergence` explore les 34 875 communes grâce à des filtres région/département et des pages de 36 fiches. Les valeurs statistiques réelles 2024–2025 sont consultées exclusivement lorsque l’index officiel SSMSI est installé. Le mode d'import, ainsi que la reconstruction de DECP depuis trois assets GitHub, sont décrits dans le [guide des données nationales](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md). Une valeur non diffusée reste inconnue, et ne devient jamais zéro.
