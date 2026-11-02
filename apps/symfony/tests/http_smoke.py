@@ -112,6 +112,29 @@ def main() -> None:
                 for row in data['communes']:
                     assert any(code.strip().startswith(prefix) for code in row['postalCodes'].split(',')), (prefix, row)
                 print('PASS postal prefix ' + prefix + ': only matching postal codes', flush=True)
+
+            # A municipality outside the old pilot fixtures must have an isolated local workspace.
+            import re
+            from urllib.parse import urlencode
+            with closing(browser.open(url + '/', timeout=28)) as response:
+                initial_html = response.read(5_000_000).decode('utf-8', 'replace')
+            selector = re.search(r'<form[^>]*action="/territoire/choisir"[^>]*>.*?</form>', initial_html, re.S)
+            assert selector, 'Shared territory selector missing'
+            token = re.search(r'name="_token" value="([^"]+)"', selector.group(0))
+            assert token, 'Territory CSRF token missing'
+            posted = urlencode({'_token': token.group(1), 'code': '66134',
+                                'code_type': 'insee', 'destination': 'proposals'}).encode()
+            with closing(browser.open(urllib.request.Request(url + '/territoire/choisir', data=posted, method='POST'), timeout=28)) as response:
+                assert response.status == 200
+                local_html = response.read(5_000_000).decode('utf-8', 'replace')
+            assert 'Passa' in local_html, 'INSEE municipality not selected'
+            assert 'Pas de scénario local' not in local_html, 'Legacy three-city gate still active'
+            for path in ('/consultations', '/experiments', '/services', '/budget'):
+                with closing(browser.open(url + path, timeout=28)) as response:
+                    assert response.status == 200, (path, response.status)
+                    local_html = response.read(5_000_000).decode('utf-8', 'replace')
+                assert 'Pas de scénario local' not in local_html, path
+                print('PASS selected INSEE 66134 ' + path, flush=True)
             print("PASS: real fresh-install HTTP smoke", flush=True)
         except BaseException:
             logs.flush()

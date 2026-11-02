@@ -13,6 +13,7 @@ final class DemoDatabase
         private Connection $connection,
         private string $projectDir,
         private RelationalProjection $projection,
+        private ?GeographyCatalog $geography = null,
     ) {
     }
 
@@ -83,6 +84,39 @@ final class DemoDatabase
         return $state;
     }
 
+    /** Espace fictif vide, isolé pour chaque commune INSEE 2026. */
+    private function seedForCommune(string $code): array
+    {
+        $commune = $this->geography?->find($code);
+        if ($commune === null) {
+            throw new \DomainException('Commune INSEE indisponible : installez le référentiel géographique.', 404);
+        }
+        $state = json_decode((string) file_get_contents($this->projectDir . '/data/reference-scenario.json'), true, 512, JSON_THROW_ON_ERROR);
+        foreach (['citizens', 'proposals', 'consultations', 'votes', 'experiments', 'adaptations',
+            'finance', 'governance', 'cases', 'appeals', 'alerts', 'resources', 'nodes',
+            'events', 'operations'] as $collection) {
+            $state[$collection] = [];
+        }
+        $territoryId = 'c' . $code;
+        $state['territories'] = [[
+            'id' => $territoryId, 'name' => $commune['name'], 'code' => $code,
+            'region' => $commune['region'], 'department' => $commune['department'],
+            'vintage' => 2026, 'sourceUrl' => $commune['source'],
+            'fictional' => false, 'history' => [],
+        ]];
+        // Participant logiciel de démonstration ; pas un habitant réel de la commune.
+        $state['citizens'] = [[
+            'id' => 'u1', 'name' => 'Participant fictif', 'territoryId' => $territoryId,
+            'familyId' => 'family-demo-' . $code, 'role' => 'citizen',
+            'consent' => true, 'suspended' => false, 'fictional' => true, 'history' => [],
+        ]];
+        $state['preferences']['dataset'] = 'national-communes-2026-v1';
+        $state['preferences']['votingUnit'] = 'family';
+        $state['preferences']['notice'] = 'Commune réelle INSEE ; simulation fictive vide. Aucun habitant, vote, budget ou résultat réel inventé.';
+        $state['keyPair'] = null;
+        return $state;
+    }
+
     /** @return array{revision: int, state: array} */
     public function workspace(string $owner): array
     {
@@ -93,7 +127,8 @@ final class DemoDatabase
         );
 
         if (!$row) {
-            $state = $this->seed();
+            $local = preg_match('/:commune:((?:[0-9]{5}|2[AB][0-9]{3}))\\z/D', $owner, $match) === 1;
+            $state = $local ? $this->seedForCommune($match[1]) : $this->seed();
             if (
                 str_starts_with(
                     $state['preferences']['dataset'] ?? '',
