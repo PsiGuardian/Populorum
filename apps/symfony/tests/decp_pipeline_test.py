@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests V8, offline and isolated. Never writes project databases."""
+"""Offline tests, offline and isolated. Never writes project databases."""
 from __future__ import annotations
 import importlib.util
 import json
@@ -10,8 +10,8 @@ import subprocess
 import sys
 import tempfile
 
-HERE=Path(__file__).resolve().parent
-spec=importlib.util.spec_from_file_location('pipeline',HERE/'decp_pipeline_v8.py')
+HERE=Path(__file__).resolve().parents[1] / 'tools'
+spec=importlib.util.spec_from_file_location('pipeline',HERE/'decp_pipeline.py')
 p=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(p)
 
@@ -28,8 +28,8 @@ def record(identifier:str):
 def main():
     original_importer=HERE/'import_decp.py'
     if not original_importer.exists():
-        # Test bundle can run in V7 project, where importer is already installed.
-        raise AssertionError('import_decp.py V7 absent du dossier tools')
+        # Test bundle can run in project, where importer is already installed.
+        raise AssertionError('import_decp.py absent du dossier tools')
     with tempfile.TemporaryDirectory(prefix='populorum-v8-test-') as td:
         home=Path(td)
         (home/'tools').mkdir();shutil.copyfile(original_importer,home/'tools/import_decp.py')
@@ -47,7 +47,7 @@ def main():
         # CLI verification/status must not reject a valid staging due to an old zero-byte public file.
         for command in ('status','verify'):
             checked=subprocess.run(
-                [sys.executable,str(HERE/'decp_pipeline_v8.py'),command,
+                [sys.executable,str(HERE/'decp_pipeline.py'),command,
                  '--staging',str(empty_stage),'--public',str(empty_public),
                  '--download-dir',str(data)],
                 check=True,capture_output=True,text=True)
@@ -70,7 +70,7 @@ def main():
         assert shell_public.stat().st_size>0
         for command in ('status','verify'):
             checked=subprocess.run(
-                [sys.executable,str(HERE/'decp_pipeline_v8.py'),command,
+                [sys.executable,str(HERE/'decp_pipeline.py'),command,
                  '--staging',str(shell_stage),'--public',str(shell_public),
                  '--download-dir',str(data)],
                 check=True,capture_output=True,text=True)

@@ -2,6 +2,9 @@
 """Offline history regression tests; uses a disposable SQLite index only."""
 from __future__ import annotations
 from pathlib import Path
+# Tests are separated from operational tools; import only the supported data tooling.
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 import copy
 import json
 import sqlite3

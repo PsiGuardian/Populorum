@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""DECP V8 orchestrator: resumable downloads, isolated SQLite import, explicit publication.
+"""DECP orchestrator: resumable downloads, isolated SQLite import, explicit publication.
 
-This script REUSES the V7 tools/import_decp.py data parser. It does not migrate Doctrine.
-Run from apps/symfony: python3 tools/decp_pipeline_v8.py all
+This script uses the reusable tools/import_decp.py data parser. It does not migrate Doctrine.
+Run from apps/symfony: python3 tools/decp_pipeline.py all
 Then stop the Symfony server, and explicitly publish with: ... publish --site-stopped
 """
 from __future__ import annotations
