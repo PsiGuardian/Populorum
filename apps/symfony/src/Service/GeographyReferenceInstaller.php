@@ -33,10 +33,7 @@ final class GeographyReferenceInstaller
 
         $archive = $target . '.gz';
         if (!is_file($archive)) {
-            throw new \RuntimeException(
-                'Archive INSEE manquante : data/geography/communes-2026.sqlite.gz. '
-                . 'Réinstallez les sources de Populorum ou récupérez la base SQLite sur GitHub Releases.',
-            );
+            throw new \RuntimeException('Archive INSEE manquante : data/geography/communes-2026.sqlite.gz. Réinstallez les sources de Populorum ou récupérez la base SQLite sur GitHub Releases.');
         }
 
         $temporary = tempnam(dirname($target), '.communes-2026-');

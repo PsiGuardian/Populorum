@@ -20,7 +20,7 @@ final class GeographyReferenceInstallerTest extends TestCase
             try {
                 $installer->install(true);
                 self::fail('The missing index should fail a check-only request.');
-            } catch (\RuntimeException $error) {
+            } catch (RuntimeException $error) {
                 self::assertStringContainsString('app:geography:install', $error->getMessage());
             }
             self::assertSame(['communes' => 34875, 'postals' => 35313, 'installed' => true], $installer->install());
@@ -47,7 +47,7 @@ final class GeographyReferenceInstallerTest extends TestCase
         $database = $directory . '/communes-2026.sqlite';
         try {
             self::assertNotFalse(file_put_contents($archive, gzencode('incorrect sqlite data')));
-            $this->expectException(\RuntimeException::class);
+            $this->expectException(RuntimeException::class);
             $this->expectExceptionMessage('SHA-256');
             try {
                 (new GeographyReferenceInstaller($root))->install();
