@@ -284,7 +284,7 @@ final class DemoDatabase
     {
         $file = $this->projectDir . '/data/geography/communes-2026.sqlite';
         if (!is_file($file)) {
-            throw new \RuntimeException('Référentiel INSEE absent : exécutez python3 tools/install_reference_indexes.py avant app:demo:prepare.');
+            throw new \RuntimeException('Référentiel INSEE absent : exécutez php bin/console app:geography:install --env=demo ou réinstallez l’archive nationale.');
         }
         $source = new \PDO('sqlite:file:' . $file . '?mode=ro', null, null, [
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,

@@ -16,41 +16,40 @@ Ne **pas** ajouter de seconde liste de communes dans `DemoController`, les fixtu
 
 Source : INSEE, *Code officiel géographique au 1er janvier 2026*, [documentation officielle](https://www.insee.fr/fr/information/8740222) (licence ouverte de la donnée publique). Le constructeur retient `TYPECOM=COM`, afin de ne pas compter les arrondissements municipaux ou communes déléguées comme des communes distinctes. La couverture correspond aux communes du COG France métropolitaine et départements/régions d'outre-mer ; les collectivités ultramarines organisées différemment ne sont pas assimilées à des communes françaises.
 
-Le fichier SQLite dérivé `data/geography/communes-2026.sqlite` est un index géographique **distinct** de la base métier Doctrine et de l'index financier OFGL. Il est construit localement et peut être régénéré par le même script, avec contrôle minimal du nombre de communes et remplacement atomique :
+Le référentiel COG 2026 et les correspondances postales La Poste sont fournis dans
+`data/geography/communes-2026.sqlite.gz`. L'application restaure le fichier SQLite
+`data/geography/communes-2026.sqlite` hors réseau, sans écraser une base existante :
 
 ```bash
 cd apps/symfony
-python3 tools/import_communes_insee.py --download
+php bin/console app:geography:install --env=demo
+php bin/console app:geography:install --check --env=demo
+php bin/console app:demo:prepare --env=demo
 ```
 
-En cas d'échec réseau, télécharger l'archive `cog_ensemble_2026_csv.zip` sur la page de l'INSEE, puis :
+La préparation de la démo déclenche également l'installation si l'index est absent.
+L'installateur PHP vérifie l'empreinte SHA-256, l'intégrité SQLite, le millésime et
+les tables `communes` / `postal_codes`. Les données géographiques restent en
+dehors de Git et du dossier `public/`.
 
-```bash
-python3 tools/import_communes_insee.py --zip ~/Téléchargements/cog_ensemble_2026_csv.zip
-```
+Une copie SQLite indépendante est disponible sur
+[GitHub Releases — data-national-2026](https://github.com/PsiGuardian/Populorum/releases/tag/data-national-2026).
 
-Ou fournir les 3 CSV extraits par `--communes`, `--departements` et `--regions` (voir `--help`). Vérifier :
-
-```bash
-python3 tools/verify_geography.py
-php bin/console debug:router site_communes
-php bin/console debug:router budget_city_search
-```
-
-Ne pas ajouter le fichier SQLite produit par l'import dans Git sans décision explicite sur les données dérivées. L'index ne contient pas de données nominatives.
+La table Doctrine `municipalities` est synchronisée à partir du même référentiel
+sans créer d'habitants, de votes ou de financements fictifs.
 
 ## Séparation des périmètres
 
 - **COG 2026** : noms des communes, départements, régions, code INSEE. L'existence d'une commune ne présume pas de ses chiffres financiers.
 - **OFGL 2025** : montants comptables consolidés des communes effectivement importées dans `BudgetCatalog`. L'index national financier est construit séparément avec `tools/import_budget_national.py` ; il n'est pas généré à partir du COG.
-- **DGFiP** : balances détaillées actuellement archivées pour les trois pilotes uniquement.
-- **Simulateur** : trois villes pilotes avec citoyens et votes fictifs. Les autres fiches géographiques sont en lecture seule, sans population, consultation, scrutin ou coût fictif généré automatiquement.
+- **DGFiP** : balances détaillées limitées aux communes et aux millésimes réellement importés ; aucune substitution géographique.
+- **Simulateur** : espace fictif indépendant et initialement vide pour chaque commune sélectionnée, sans habitant, vote ni coût inventé.
 
 Dans l'arbre financier, une commune dépourvue de comptes importés affiche explicitement **données financières non chargées** : `null` n'est jamais transformé en zéro. Une chaîne de paiements n'est tracée que lorsqu'il existe un justificatif correspondant.
 
 ## Performance et sécurité
 
-Requêtes SQL paramétrées, validation stricte du code INSEE, index SQLite en lecture seule (`query_only=ON`), filtres et pagination sur 40 communes, absence de chargement de ~35 000 résultats dans le HTML initial. Les tables géographiques ne sont pas créées dans Doctrine ; il n'y a aucune migration de la base des simulations. Les erreurs de téléchargement ne remplacent pas la base géographique précédente.
+Requêtes SQL paramétrées, validation stricte du code INSEE, index SQLite en lecture seule (`query_only=ON`), filtres et pagination sur 40 communes, absence de chargement de ~35 000 résultats dans le HTML initial. Les tables détaillées de géographie restent séparées de Doctrine ; seule la table applicative `municipalities` est synchronisée par la commande de préparation. Les erreurs de téléchargement ne remplacent pas la base géographique précédente.
 
 ## Évolution ultérieure
 

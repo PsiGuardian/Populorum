@@ -29,17 +29,16 @@ Exemple avec la version propre (voir la page Releases pour le dernier tag dispon
 mkdir -p "$HOME/Téléchargements/populorum-clean"
 cd "$HOME/Téléchargements/populorum-clean"
 
-curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.8.0-clean/Populorum-v0.8.0-clean.tar.gz
-curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.8.0-clean/SHA256SUMS.txt
+curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.8.1-clean/Populorum-v0.8.1-clean.tar.gz
+curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.8.1-clean/SHA256SUMS.txt
 sha256sum -c SHA256SUMS.txt
-tar -xzf Populorum-v0.8.0-clean.tar.gz
-cd Populorum-v0.8.0-clean/apps/symfony
+tar -xzf Populorum-v0.8.1-clean.tar.gz
+cd Populorum-v0.8.1-clean/apps/symfony
 ```
 
 Le tag de cette section est exploitable **après publication de la release**. Pour une archive de branche `main`, extraire son ZIP et se placer simplement dans `Populorum-main/apps/symfony`.
 
 ## 3. Installer directement dans le terminal
-
 
 Contrôler les extensions :
 
@@ -47,22 +46,22 @@ Contrôler les extensions :
 php -r '$r=["openssl","pdo","pdo_sqlite","sqlite3","tokenizer","mbstring","iconv","dom","simplexml","curl","zlib"];foreach($r as $x){if(!extension_loaded($x)){fwrite(STDERR,"Extension PHP absente : $x\n");exit(1);}}'
 ```
 
-Installer Composer, générer **une seule fois** les clés locales, appliquer les migrations, préparer les fixtures, vider le cache puis charger les pages HTTP sur une copie SQLite temporaire :
+Installer Composer, générer **une seule fois** les clés locales, appliquer les migrations, restaurer l'index INSEE avec Symfony, préparer la démonstration et effectuer des vérifications HTTP :
 
 ```bash
 composer install --no-interaction --prefer-dist --no-progress &&
 test -f vendor/autoload.php &&
 php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
 php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-python3 tools/install_reference_indexes.py &&
-python3 tools/verify_geography.py &&
+php bin/console app:geography:install --env=demo &&
+php bin/console app:geography:install --check --env=demo &&
 php bin/console app:demo:prepare --env=demo &&
 php bin/console cache:clear --env=demo --no-debug &&
 php bin/console doctrine:schema:validate --env=demo &&
 python3 tests/http_smoke.py
 ```
 
-Les opérateurs `&&` arrêtent la chaîne au premier échec. La ligne PHP crée `.env.local` avec des permissions 0600 sans écraser des clés déjà existantes. **Ne jamais exécuter `composer update` pour installer une release** : `composer install` utilise le fichier de verrouillage versionné.
+Les opérateurs `&&` arrêtent la chaîne au premier échec. `tests/http_smoke.py` nécessite Python 3 uniquement pour les tests de non-régression ; l'installation des données INSEE n'en dépend pas. La ligne PHP crée `.env.local` avec des permissions 0600 sans écraser des clés déjà existantes. **Ne jamais exécuter `composer update` pour installer une release** : `composer install` utilise le fichier de verrouillage versionné.
 
 Seulement si toutes les étapes sont validées :
 
@@ -78,12 +77,11 @@ L’installation synchronise désormais les **34 875 communes officielles INSEE 
 
 ## 5. Installer les référentiels nationaux INSEE et DECP
 
-La base géographique INSEE est fournie en archive compressée avec les sources et est **installée puis synchronisée dans Doctrine dans la section 3**, avant la création des scénarios. Pour revérifier sans réseau :
+L'archive `data/geography/communes-2026.sqlite.gz` est incluse dans les sources. **`app:demo:prepare` restaure automatiquement le référentiel manquant** avant de synchroniser les communes dans Doctrine. Pour installer ou vérifier explicitement avec PHP, hors réseau :
 
 ```bash
-python3 tools/install_reference_indexes.py
-python3 tools/install_reference_indexes.py --check
-python3 tools/verify_geography.py
+php bin/console app:geography:install --env=demo
+php bin/console app:geography:install --check --env=demo
 ```
 
 Pour installer le référentiel depuis GitHub Releases et, après sa mise en ligne, la base nationale DECP **en un seul fichier de 1,7 Go**, suivre le [guide détaillé des données nationales](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md). Cette opération est indépendante de `var/populorum.sqlite` et ne doit pas écraser les données existantes.

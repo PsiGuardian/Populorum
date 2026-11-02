@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Service\DemoDatabase;
+use App\Service\GeographyReferenceInstaller;
 use OmegaGuardian\ProfilerShield\Security\Accounts;
 use OmegaGuardian\ProfilerShield\Security\Settings;
 use OmegaGuardian\ProfilerShield\Storage\FileStore;
@@ -24,6 +25,7 @@ final class DemoSetupCommand extends Command
 
     public function __construct(
         private DemoDatabase $database,
+        private GeographyReferenceInstaller $geographyInstaller,
         private FileStore $store,
         private Accounts $accounts,
         private Settings $settings,
@@ -41,6 +43,8 @@ final class DemoSetupCommand extends Command
         ) {
             throw new \RuntimeException('Préparation réservée à une instance de démonstration.');
         }
+        // Idempotent: restore and verify the bundled national index before Doctrine synchronisation.
+        $this->geographyInstaller->install();
         $communeCount = $this->database->importCities();
         $this->store->initialize();
         if (!$this->accounts->find(self::PUBLIC_USERNAME)) {
