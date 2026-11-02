@@ -85,7 +85,7 @@ final class BetaVisitorController extends AbstractController
         $origin = $request->headers->get('Origin');
         $referer = $request->headers->get('Referer');
         $source = $origin ?: $referer;
-        if ($source === null || !is_string($source)
+        if ($source === null
             || parse_url($source, PHP_URL_HOST) !== $request->getHost()
             || (int) (parse_url($source, PHP_URL_PORT) ?: ($request->isSecure() ? 443 : 80)) !== $request->getPort()
             || parse_url($source, PHP_URL_SCHEME) !== $request->getScheme()) {
