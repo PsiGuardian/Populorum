@@ -43,6 +43,10 @@ def main():
         empty_stage=home/'empty-staging.sqlite'
         p.import_all(data,empty_stage,empty_public)
         assert p.db_info(empty_stage)['contracts']==2
+        quick = p.fast_status(empty_stage)
+        assert quick['contracts_present'] and quick['imports_present']
+        assert quick['schema'] == 'populorum-decp-1'
+        assert quick['integrity_scan'].startswith('not_run')
         assert empty_public.stat().st_size==0, 'Import altered an empty public index'
         # CLI verification/status must not reject a valid staging due to an old zero-byte public file.
         for command in ('status','verify'):
@@ -52,6 +56,8 @@ def main():
                  '--download-dir',str(data)],
                 check=True,capture_output=True,text=True)
             assert 'sans tables DECP' in checked.stdout and 'travail' in checked.stdout.lower()
+            if command == 'status':
+                assert 'not_run' in checked.stdout, 'Status unexpectedly ran a full integrity check'
         try:p.publish(empty_stage,empty_public,True)
         except ValueError as ex:assert 'sans tables DECP' in str(ex)
         else:raise AssertionError('Publishing over an empty public index was accepted')

@@ -139,7 +139,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="v0.10.0-clean"
+          TAG="v0.10.1-clean"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release exists, nothing replaced."
             exit 0
@@ -154,5 +154,5 @@ jobs:
           [[ "$FIRST_ENTRY" == "$PREFIX"* ]] || { echo "Incorrect archive directory: $FIRST_ENTRY" >&2; exit 1; }
           gh release create "$TAG" "release/$ARCHIVE" release/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
-            --title "Populorum v0.10.0 — profils de test et installation complète des référentiels" \
+            --title "Populorum v0.10.1 — installation DECP rapide sans scan intégral obligatoire" \
             --notes-file LIRE_AVANT_INSTALLATION.md

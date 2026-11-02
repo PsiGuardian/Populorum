@@ -172,6 +172,35 @@ def db_info(path:Path, deep:bool=False) -> dict:
     return result
 
 
+
+def fast_status(path:Path) -> dict:
+    """Cheap metadata/readability check for a trusted, already imported index.
+
+    This is NOT a full SQLite integrity check. Use 'verify' for in-depth checks.
+    Avoid scanning every page of a multi-GB database for the routine status command.
+    """
+    if not path.is_file():
+        raise ValueError('Base absente : '+str(path))
+    if path.stat().st_size < 4096:
+        raise ValueError('Index vide ou incomplet : '+str(path))
+    with closing(sqlite3.connect(f'file:{path.resolve()}?mode=ro',uri=True,timeout=30)) as db:
+        tables={row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        missing=set(REQUIRED)-tables
+        if missing:
+            raise ValueError('Schéma DECP incomplet : '+','.join(sorted(missing)))
+        version=db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()
+        if version is None or version[0]!='populorum-decp-1':
+            raise ValueError('Version du schéma DECP incompatible')
+        # EXISTS/LIMIT 1 reads at most the first matching leaf of each table.
+        has_imports=db.execute('SELECT EXISTS(SELECT 1 FROM imports LIMIT 1)').fetchone()[0]
+        has_contracts=db.execute('SELECT EXISTS(SELECT 1 FROM contracts LIMIT 1)').fetchone()[0]
+        if not has_imports or not has_contracts:
+            raise ValueError('Aucun import ou contrat dans la base nationale')
+    return {'bytes':path.stat().st_size, 'schema':'populorum-decp-1',
+            'imports_present':bool(has_imports), 'contracts_present':bool(has_contracts),
+            'integrity_scan':'not_run (optional: verify)'}
+
+
 def is_empty_public_placeholder(path:Path) -> bool:
     """Only an empty SQLite shell may be ignored during V8 staging bootstrap.
 
@@ -301,7 +330,7 @@ def main():
                 print(name,p,'coquille SQLite sans tables DECP, index non publié')
             else:
                 try:
-                    print(name,p,db_info(p))
+                    print(name,p,fast_status(p))
                 except (ValueError,sqlite3.DatabaseError) as exc:
                     print(name,p,'INDEX INVALIDE :',exc)
         files=list(opts.download_dir.glob('decp-????-??.json')) if opts.download_dir.exists() else []

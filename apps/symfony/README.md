@@ -1,4 +1,4 @@
-> **Installation complète en un seul endroit :** [LIRE_AVANT_INSTALLATION.md](https://github.com/PsiGuardian/Populorum/blob/main/LIRE_AVANT_INSTALLATION.md). Cette page inclut les commandes facultatives pour télécharger les bases INSEE, DECP (marchés publics) et SSMSI depuis GitHub Releases. La release v0.10.0-clean reprend la même notice directement dans sa description.
+> **Installation rapide des bases nationales (sans analyse SQLite intégrale obligatoire) :** [LIRE_AVANT_INSTALLATION.md](https://github.com/PsiGuardian/Populorum/blob/main/LIRE_AVANT_INSTALLATION.md). Cette page inclut les commandes facultatives pour télécharger les bases INSEE, DECP (marchés publics) et SSMSI depuis GitHub Releases. La release v0.10.1-clean reprend la même notice directement dans sa description.
 
 # Démos Kratos — Symfony 8.1 et SQLite
 
