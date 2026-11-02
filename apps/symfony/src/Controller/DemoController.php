@@ -101,6 +101,7 @@ final class DemoController extends AbstractController
             $owner = $session->get('simulation_owner');
         }
         $selected = $this->territorySelection->current($request, 'home');
+
         return $owner . ($selected !== null ? ':commune:' . $selected['code'] : '');
     }
 

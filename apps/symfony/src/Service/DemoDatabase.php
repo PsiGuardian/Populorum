@@ -114,6 +114,7 @@ final class DemoDatabase
         $state['preferences']['votingUnit'] = 'family';
         $state['preferences']['notice'] = 'Commune réelle INSEE ; simulation fictive vide. Aucun habitant, vote, budget ou résultat réel inventé.';
         $state['keyPair'] = null;
+
         return $state;
     }
 
@@ -305,13 +306,15 @@ final class DemoDatabase
                     source_url = excluded.source_url
                 SQL);
             while (($city = $select->fetch(\PDO::FETCH_ASSOC)) !== false) {
-                $insert->executeStatement([
-                    $city['code'], $city['name'], $city['region_name'],
-                    $city['department_name'],
-                    'https://www.insee.fr/fr/information/8740222',
-                ]);
+                $insert->bindValue(1, $city['code']);
+                $insert->bindValue(2, $city['name']);
+                $insert->bindValue(3, $city['region_name']);
+                $insert->bindValue(4, $city['department_name']);
+                $insert->bindValue(5, 'https://www.insee.fr/fr/information/8740222');
+                $insert->executeStatement();
             }
         });
+
         return $count;
     }
 }
