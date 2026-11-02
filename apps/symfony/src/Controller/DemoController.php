@@ -309,6 +309,50 @@ final class DemoController extends AbstractController
     )]
     public function page(Request $request, string $view = 'home'): Response
     {
+        $publicBases = [
+            'marches-publics' => ['view' => 'markets', 'route' => 'site_markets'],
+            'communes' => ['view' => 'communes', 'route' => 'site_communes'],
+            'convergence' => ['view' => 'convergence', 'route' => 'site_convergence'],
+            'budget-et-priorites' => ['view' => 'budget', 'route' => 'site_budget'],
+        ];
+        if ($request->attributes->get('_route') === 'site_public_filters') {
+            $base = (string) $request->attributes->get('base', '');
+            if (!isset($publicBases[$base])) {
+                throw $this->createNotFoundException('Page filtrée inconnue.');
+            }
+            $view = $publicBases[$base]['view'];
+            try {
+                $request->query->replace(\App\Service\PublicFilterPath::decode(
+                    $base, (string) $request->attributes->get('filters', ''),
+                ));
+            } catch (\InvalidArgumentException) {
+                throw $this->createNotFoundException('Chemin de recherche invalide.');
+            }
+        } elseif ($request->query->count() > 0
+            && !$request->attributes->has('key')
+            && !$request->attributes->has('code')
+        ) {
+            // Legacy ?q=... links remain usable but are redirected to a clean address.
+            foreach ($publicBases as $base => $info) {
+                if ($view !== $info['view']) {
+                    continue;
+                }
+                $params = array_intersect_key(
+                    $request->query->all(),
+                    array_flip(\App\Service\PublicFilterPath::keys($base)),
+                );
+                if ($params !== []) {
+                    try {
+                        $target = $this->urls->path($info['route'], $params);
+                    } catch (\InvalidArgumentException) {
+                        throw $this->createNotFoundException('Paramètre de recherche invalide.');
+                    }
+
+                    return $this->redirect($target, 301);
+                }
+            }
+        }
+
         $context = $this->context(
             $request,
             $view,
@@ -637,6 +681,7 @@ final class DemoController extends AbstractController
             }
             $filters = [
                 'kind' => $request->query->getString('kind', ''),
+                'sort' => $request->query->getString('sort', 'date_desc'),
                 'year' => $request->query->getString('year', ''),
                 'buyer' => $request->query->getString('buyer', ''),
                 'supplier' => $request->query->getString('supplier', ''),
@@ -935,6 +980,36 @@ final class DemoController extends AbstractController
             ],
             new Response(status: $status),
         );
+    }
+
+    #[Route(
+        '/filtres/{base}',
+        name: 'site_public_filters_submit',
+        requirements: ['base' => 'marches-publics|communes|convergence|budget-et-priorites'],
+        methods: ['POST'],
+    )]
+    public function publicFiltersSubmit(Request $request, string $base): Response
+    {
+        $paths = [
+            'marches-publics' => ['route' => 'site_markets', 'anchor' => '#resultats-marches'],
+            'communes' => ['route' => 'site_communes', 'anchor' => ''],
+            'convergence' => ['route' => 'site_convergence', 'anchor' => '#public-context'],
+            'budget-et-priorites' => ['route' => 'site_budget', 'anchor' => '#explorateur'],
+        ];
+        if (!isset($paths[$base])) {
+            throw $this->createNotFoundException('Recherche inconnue.');
+        }
+        $values = array_intersect_key(
+            $request->request->all(),
+            array_flip(\App\Service\PublicFilterPath::keys($base)),
+        );
+        try {
+            $target = $this->urls->path($paths[$base]['route'], $values);
+        } catch (\InvalidArgumentException) {
+            throw $this->createNotFoundException('Paramètre de recherche invalide.');
+        }
+
+        return $this->redirect($target . $paths[$base]['anchor'], 303);
     }
 
     #[Route('/recherche', name: 'site_search_submit', methods: ['POST'])]

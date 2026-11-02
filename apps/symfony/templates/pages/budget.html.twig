@@ -80,15 +80,8 @@
             vitaux. Les autres réductions restent des hypothèses non validées.
         </p>
         <form
-            method="get"
-            action="{{
-            civic_path(
-                'section',
-                {
-                    view: 'budget'
-                }
-            )
-            }}"
+            method="post"
+            action="{{ civic_path('site_public_filters_submit', {base: 'budget-et-priorites'}) }}"
         >
             <input type="hidden" name="scope" value="{{ explorerScope }}">
             <label for="saving">
@@ -306,15 +299,8 @@
             dépenses.
         </p>
         <form
-            method="get"
-            action="{{
-            civic_path(
-                'section',
-                {
-                    view: 'budget'
-                }
-            )
-            }}#ledger"
+            method="post"
+            action="{{ civic_path('site_public_filters_submit', {base: 'budget-et-priorites'}) }}"
         >
             <input type="hidden" name="scope" value="{{ explorerScope }}">
             <label for="ledger-city">Collectivité</label><select

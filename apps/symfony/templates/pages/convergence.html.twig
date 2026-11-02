@@ -53,7 +53,7 @@
             {% endif %}
             <a href="https://www.data.gouv.fr/datasets/bases-statistiques-communale-departementale-et-regionale-de-la-delinquance-enregistree-par-la-police-et-la-gendarmerie-nationales" rel="noopener noreferrer" target="_blank">Source officielle SSMSI</a>
         </div>
-        <form class="atlas-filters" method="get" action="{{ civic_path('section', {view: 'convergence'}) }}#public-context" role="search">
+        <form class="atlas-filters" method="post" action="{{ civic_path('site_public_filters_submit', {base: 'convergence'}) }}" role="search">
             <input type="hidden" name="id" value="{{ selected }}">
             <label for="atlas-q">Commune ou code postal
                 <input id="atlas-q" name="communes_q" value="{{ convergenceQuery }}" placeholder="Nom, 66300, 66 ou INSEE:66134" maxlength="100">
@@ -176,15 +176,8 @@
             indépendamment des statistiques publiques ci-dessus.
         </p>
         <form
-            method="get"
-            action="{{
-            civic_path(
-                'section',
-                {
-                    view: 'convergence'
-                }
-            )
-            }}"
+            method="post"
+            action="{{ civic_path('site_public_filters_submit', {base: 'convergence'}) }}"
             class="tree-picker panel"
         >
             <input

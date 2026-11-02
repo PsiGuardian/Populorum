@@ -22,6 +22,26 @@ final class CivicUrlExtension extends AbstractExtension
 
     public function path(string $name, array $parameters = []): string
     {
+        // Public filters are path segments, not query strings.
+        $publicBase = match (true) {
+            $name === 'site_markets' => 'marches-publics',
+            $name === 'site_communes' => 'communes',
+            $name === 'site_convergence' || ($name === 'section' && ($parameters['view'] ?? '') === 'convergence') => 'convergence',
+            $name === 'site_budget' || ($name === 'section' && ($parameters['view'] ?? '') === 'budget') => 'budget-et-priorites',
+            default => null,
+        };
+        if ($publicBase !== null) {
+            unset($parameters['view']);
+            $route = match ($publicBase) {
+                'marches-publics' => 'site_markets',
+                'communes' => 'site_communes',
+                'convergence' => 'site_convergence',
+                default => 'site_budget',
+            };
+
+            return $this->router->generate($route)
+                . \App\Service\PublicFilterPath::encode($publicBase, $parameters);
+        }
         if ($name === 'simulation_action') {
             foreach (
                 [

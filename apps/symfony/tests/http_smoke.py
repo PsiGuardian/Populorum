@@ -80,6 +80,30 @@ def main() -> None:
                 if response != 200:
                     raise AssertionError(f"{path}: PHP did not return HTTP 200 in time")
 
+            # Canonical public filters use path segments, never query strings.
+            from urllib.parse import urlencode
+            for old, canonical in (
+                ('/marches-publics?q=web&kind=&year=&buyer=&supplier=&city=&department=',
+                 '/marches-publics/q/web'),
+                ('/communes?q=66300', '/communes/q/66300'),
+                ('/convergence?communes_q=66300', '/convergence/communes_q/66300'),
+                ('/budget-et-priorites?scope=FR', '/budget-et-priorites/scope/FR'),
+            ):
+                with closing(browser.open(url + old, timeout=28)) as result:
+                    assert result.status == 200, (old, result.status)
+                    assert result.geturl().split('#', 1)[0] == url + canonical, result.geturl()
+                with closing(browser.open(url + canonical, timeout=28)) as result:
+                    assert result.status == 200
+                    assert '?' not in result.geturl(), result.geturl()
+                print('PASS canonical path ' + canonical, flush=True)
+            payload = urlencode({'q': 'web', 'kind': 'market', 'year': '2025', 'buyer': ''}).encode()
+            with closing(browser.open(urllib.request.Request(
+                url + '/filtres/marches-publics', data=payload, method='POST'
+            ), timeout=28)) as result:
+                assert result.status == 200
+                assert result.geturl().split('#', 1)[0] == url + '/marches-publics/q/web/kind/market/year/2025', result.geturl()
+            print('PASS public market search POST-to-canonical-GET', flush=True)
+
             # Verify actual HTTP search and suggestion results against the installed INSEE index.
             postal_cases = (
                 ('/communes?q=76600', ('Le Havre',), ('Saint-Léonard',)),

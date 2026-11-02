@@ -1,12 +1,12 @@
 # Archives nationales DECP — installer, vérifier et publier
 
-Cette fonctionnalité est **facultative** : Populorum fonctionne avec les 34 875 communes INSEE, sans les ~1,7 Go de l'index DECP national. Aucune base réelle n'est téléchargée pendant l'installation de Symfony.
+Cette fonctionnalité est **facultative** : Populorum fonctionne avec les 34 875 communes INSEE, sans l'index DECP national (archive compressée d'environ 464 Mio). Aucune base réelle n'est téléchargée pendant l'installation de Symfony.
 
 L'index DECP est une **base séparée** de `var/populorum.sqlite` (simulations). Il est consulté en lecture seule. Les montants des contrats ne prouvent pas des paiements effectifs. Les sources mensuelles JSON originales sont utiles pour les réimportations et les preuves documentaires ; SQLite n'en conserve pas les champs complets.
 
 ## Distribution actuelle recommandée
 
-Pour contourner les interruptions d'envoi navigateur, la base DECP est distribuée en **trois parties** (`public-procurement.sqlite.part-00`, `-01`, `-02`) accompagnées de `SHA256SUMS-DECP.txt` et `public-procurement.sqlite.sha256`. Les commandes standard du terminal `sqlite3`, `split`, `cat` et `sha256sum` assurent un snapshot cohérent, la fragmentation et la reconstitution vérifiée. **Aucun script de découpage temporaire n'est versionné.** Voir [l'installation des données nationales](INSTALLATION_DONNEES_NATIONALES.md), section 3. Les anciennes archives `.zst.part-0000` restent compatibles avec les sauvegardes historiques contenant les sources JSON.
+La base DECP a été publiée sous un seul asset `public-procurement.sqlite.tar.gz` (486 882 207 octets) dans la [release nationale](https://github.com/PsiGuardian/Populorum/releases/tag/data-national-2026). Aucun fragment n'est nécessaire. Voir [les commandes d'installation et de vérification SHA-256](INSTALLATION_DONNEES_NATIONALES.md), section 3. La base SQLite originale n'est pas modifiée.
 
 ## Depuis une archive publique GitHub Releases (ancien format optionnel)
 

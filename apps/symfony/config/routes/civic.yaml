@@ -156,3 +156,12 @@ site_market_detail:
     defaults: { view: markets }
     requirements: { key: '[a-f0-9]{40}' }
     methods: [GET]
+
+# Canonical human-readable path filters for public, navigable pages.
+site_public_filters:
+    path: /{base}/{filters}
+    controller: App\Controller\DemoController::page
+    requirements:
+        base: 'marches-publics|communes|convergence|budget-et-priorites'
+        filters: '(?:q|kind|year|buyer|supplier|city|department|offset|region|page|communes_q|indicator|commune|atlas_page|id|territory|scope|code|saving|resources|ledger_city|account|ledger_prefix|category|sort|term|destination|trace)/.+'
+    methods: [GET]

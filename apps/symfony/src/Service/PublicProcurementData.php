@@ -87,6 +87,38 @@ final class PublicProcurementData
         return (int) $q->fetchColumn();
     }
 
+    /**
+     * Classify a source-declared notification date without rewriting it.
+     * The reason is a diagnostic inferred by Populorum, not a justification from the buyer.
+     *
+     * @return array{valid: bool, raw: string, reason: string}
+     */
+    public static function dateQuality(string $value): array
+    {
+        $raw = trim($value);
+        if ($raw === '') {
+            return ['valid' => false, 'raw' => $raw, 'reason' => 'Date non renseignée'];
+        }
+        if (preg_match('/\A[0-9]{4}-[0-9]{2}-[0-9]{2}\z/D', $raw) !== 1) {
+            return ['valid' => false, 'raw' => $raw, 'reason' => 'Format de date non reconnu'];
+        }
+        [$year, $month, $day] = array_map('intval', explode('-', $raw));
+        if (!checkdate($month, $day, $year)) {
+            return ['valid' => false, 'raw' => $raw, 'reason' => 'Date calendaire impossible'];
+        }
+        if ($year >= 2100) {
+            return ['valid' => false, 'raw' => $raw, 'reason' => 'Année manifestement incohérente'];
+        }
+        if ($year < 1900) {
+            return ['valid' => false, 'raw' => $raw, 'reason' => 'Année très ancienne pour une notification'];
+        }
+        if ($raw > gmdate('Y-m-d')) {
+            return ['valid' => false, 'raw' => $raw, 'reason' => 'Date de notification future, à vérifier'];
+        }
+
+        return ['valid' => true, 'raw' => $raw, 'reason' => ''];
+    }
+
     /** Server-side pagination; query fields are never interpolated into SQL. */
     public function search(array $filters, int $offset = 0, int $limit = 30): array
     {
@@ -104,7 +136,7 @@ final class PublicProcurementData
             $args[] = $kind;
         }
         $year = (string) ($filters['year'] ?? '');
-        if (preg_match('/\A(?:19|20)[0-9]{2}\z/', $year)) {
+        if (preg_match('/\A[0-9]{4}\z/D', $year)) {
             $where[] = 'c.notice_date>=? AND c.notice_date<?';
             $args[] = $year . '-01-01';
             $args[] = ((int) $year + 1) . '-01-01';
@@ -149,10 +181,21 @@ final class PublicProcurementData
         $count = $db->prepare('SELECT COUNT(*) FROM contracts c' . $condition);
         $count->execute($args);
         $total = (int) $count->fetchColumn();
+        // Only known SQL fragments are allowed; dates and amounts remain unaltered.
+        $sort = (string) ($filters['sort'] ?? 'date_desc');
+        $orderBy = match ($sort) {
+            'date_asc' => 'c.notice_date ASC,c.contract_key ASC',
+            'amount_desc' => 'CASE WHEN c.amount_initial_cents IS NULL THEN 1 ELSE 0 END ASC,c.amount_initial_cents DESC,c.contract_key',
+            'amount_asc' => 'CASE WHEN c.amount_initial_cents IS NULL THEN 1 ELSE 0 END ASC,c.amount_initial_cents ASC,c.contract_key',
+            'date_anomalies' => "CASE WHEN c.notice_date < '1900-01-01' OR c.notice_date > DATE('now')
+                OR c.notice_date NOT GLOB '[0-9][0-9][0-9][0-9]-[01][0-9]-[0-3][0-9]'
+                THEN 0 ELSE 1 END ASC,c.notice_date DESC,c.contract_key",
+            default => 'c.notice_date DESC,c.contract_key',
+        };
         $sql = 'SELECT c.contract_key,c.kind,c.buyer_id,c.original_id,c.object,c.cpv,c.nature,c.notice_date,
             c.amount_initial_cents,c.amount_amended_cents,c.location_type,c.location_code,c.source_name,
             (SELECT COUNT(*) FROM contract_sources cs WHERE cs.contract_key=c.contract_key) AS source_count
-            FROM contracts c' . $condition . ' ORDER BY c.notice_date DESC,c.contract_key LIMIT ? OFFSET ?';
+            FROM contracts c' . $condition . ' ORDER BY ' . $orderBy . ' LIMIT ? OFFSET ?';
         $stmt = $db->prepare($sql);
         foreach ($args as $i => $v) {
             $stmt->bindValue($i + 1, $v, \PDO::PARAM_STR);
@@ -161,6 +204,10 @@ final class PublicProcurementData
         $stmt->bindValue(count($args) + 2, $offset, \PDO::PARAM_INT);
         $stmt->execute();
         $rows = $stmt->fetchAll();
+        foreach ($rows as &$row) {
+            $row['date_quality'] = self::dateQuality((string) $row['notice_date']);
+        }
+        unset($row);
 
         return ['items' => $rows, 'total' => $total, 'offset' => $offset,
             'nextOffset' => $offset + count($rows) < $total ? $offset + count($rows) : null];
@@ -180,6 +227,7 @@ final class PublicProcurementData
         $stmt = $db->prepare('SELECT role,identifier_type,identifier FROM participants WHERE contract_key=? ORDER BY role,identifier LIMIT 200');
         $stmt->execute([$key]);
         $row['participants'] = $stmt->fetchAll();
+        $row['date_quality'] = self::dateQuality((string) $row['notice_date']);
         $stmt = $db->prepare('SELECT event_type,event_id,event_date,published_date,amount_cents,identifier,extra FROM changes WHERE contract_key=? ORDER BY event_date,event_id LIMIT 300');
         $stmt->execute([$key]);
         $row['events'] = $stmt->fetchAll();
