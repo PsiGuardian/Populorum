@@ -1,6 +1,8 @@
-# Populorum v0.7.0 — édition propre
+# Populorum v0.7.1 — édition propre
 
 Distribution Symfony 8.1 / PHP ≥ 8.4, nettoyée des scripts de construction, de migration historique et des benchmarks. `tools/` ne contient plus que des fonctions d'exploitation durables ; tests isolés sous `tests/`.
+
+La version 0.7.1 étend la sélection géographique : codes postaux en priorité, suggestions multi-communes non tronquées, accès à l'annuaire complet et vérifications HTTP. La base INSEE/La Poste est installée automatiquement avant la validation de l'application. `76600` indique Le Havre et `INSEE:76600` Saint-Léonard ; `66300` affiche ses 18 communes.
 
 ## Installer sur Arch Linux
 
@@ -12,6 +14,8 @@ test -f vendor/autoload.php &&
 php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
 php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
 php bin/console app:demo:prepare --env=demo &&
+python3 tools/install_reference_indexes.py &&
+python3 tools/verify_geography.py &&
 php bin/console cache:clear --env=demo --no-debug &&
 php bin/console doctrine:schema:validate --env=demo &&
 python3 tests/http_smoke.py

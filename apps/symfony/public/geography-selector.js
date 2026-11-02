@@ -8,6 +8,7 @@
     if (!input || !list) return;
     const chooser = form.dataset.geoMode === 'choose';
     const endpoint = form.dataset.suggestions;
+    const directory = form.dataset.directory;
     let timer, controller, active = -1;
     const close = () => { list.replaceChildren(); list.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; };
     const items = () => Array.from(list.querySelectorAll('[role="option"]'));
@@ -60,10 +61,24 @@
             }
             list.appendChild(option);
           }
+          if ((result.communes || []).length && directory) {
+            const all = document.createElement('a');
+            all.className = 'geo-chooser-option';
+            all.id = input.id + '-all-results';
+            all.setAttribute('role', 'option');
+            all.setAttribute('aria-selected', 'false');
+            const allUrl = new URL(directory, location.origin);
+            allUrl.searchParams.set('q', term);
+            all.href = allUrl.pathname + allUrl.search;
+            all.textContent = result.postalQuery
+              ? 'Voir toutes les communes du code postal ' + term
+              : 'Voir tous les résultats dans l’annuaire';
+            list.appendChild(all);
+          }
           list.hidden = list.childElementCount === 0;
           input.setAttribute('aria-expanded', String(!list.hidden));
-          feedback.textContent = list.childElementCount
-            ? list.childElementCount + ' commune(s) proposée(s) — flèches haut/bas pour naviguer, Entrée pour choisir.'
+          feedback.textContent = (result.communes || []).length
+            ? (result.communes || []).length + ' commune(s) proposée(s) — choisissez une commune ou ouvrez la liste complète.'
             : (/^\d{5}$/.test(term) && !result.postalAvailable
               ? 'Index postal absent : exécutez l’import La Poste. Aucun code INSEE ne sera substitué.'
               : 'Aucune commune trouvée. Vérifiez le référentiel et le code saisi.');

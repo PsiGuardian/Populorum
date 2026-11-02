@@ -58,10 +58,12 @@ final class TerritorySelectionController extends AbstractController
     public function suggestions(Request $request): JsonResponse
     {
         $query = $request->query->getString('q', '');
-        $results = $this->geography->search($query, 12);
+        // A postal code can identify more than twelve municipalities.
+        $postal = preg_match('/\\A[0-9]{5}\\z/D', trim($query)) === 1;
+        $results = $this->geography->search($query, $postal ? 50 : 12);
         $coverage = $this->geography->coverage();
         $response = new JsonResponse([
-            'communes' => $results, 'count' => count($results),
+            'communes' => $results, 'count' => count($results), 'postalQuery' => $postal,
             'postalAvailable' => $coverage['postals'],
         ]);
         $response->headers->set('Cache-Control', 'private, max-age=60');
