@@ -14,5 +14,4 @@
 !import_communes_insee.py
 !recount.php
 !verify-export.php
-!decp_release_parts.py
 !import_ssmsi_national.py

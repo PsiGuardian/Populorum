@@ -53,45 +53,115 @@ php bin/console app:geography:install --check --env=demo
 
 Si une base géographique est déjà installée, ne pas la remplacer sans sauvegarde et décision explicite.
 
-## 3 — Base DECP nationale en trois parties (envoi fiable)
+## 3 — Publier DECP en trois parties, sans script temporaire
 
-Le navigateur peut interrompre l'envoi d'un gros fichier, même lorsque sa taille est inférieure au plafond des assets GitHub. Le format actuel est **trois parties binaires d'environ un tiers chacune**, sans compression destructrice : aucune donnée ne change.
+L'envoi navigateur de la base de ~1,7 Go s'interrompt. Le transfert s'effectue en trois fragments binaires créés par les commandes natives sqlite3, split et sha256sum. **Aucun script de découpage n'est inclus dans le dépôt.**
 
-Sur la machine Arch Linux qui possède déjà `public-procurement.sqlite` :
+### A. Préparer les cinq fichiers sur Arch Linux
 
-```bash
-cd apps/symfony
-mkdir -p "$HOME/Archives/Populorum"
-python3 tools/decp_release_parts.py split \
-  --db data/research/public-procurement.sqlite \
-  --output "$HOME/Archives/Populorum/decp-2026-parts"
-```
+Arrêter le serveur PHP et les autres processus qui écrivent dans la base. Depuis apps/symfony :
 
-Le programme vérifie l'intégrité SQLite et crée **cinq assets** :
-`public-procurement.sqlite.part-00`, `public-procurement.sqlite.part-01`,
-`public-procurement.sqlite.part-02`, `public-procurement.parts.json`, `SHA256SUMS-DECP.txt`.
+~~~bash
+sudo pacman -S --needed sqlite coreutils github-cli
 
-Sur GitHub, ouvrir [la release de données](https://github.com/PsiGuardian/Populorum/releases/tag/data-national-2026), choisir **Edit**, déposer les cinq fichiers dans *Attach binaries*, puis enregistrer. Si l'interface web échoue encore, utiliser l'outil officiel GitHub CLI depuis Arch Linux :
+SOURCE="data/research/public-procurement.sqlite"
+WORK="$HOME/Archives/Populorum/decp-snapshot"
+OUT="$HOME/Archives/Populorum/decp-2026-parts"
 
-```bash
-sudo pacman -S --needed github-cli
+test -f "$SOURCE" || { echo "Base DECP introuvable"; exit 1; }
+mkdir -p "$WORK" "$OUT"
+test ! -e "$WORK/public-procurement.sqlite" || {
+  echo "Snapshot déjà existant ; ne pas écraser"
+  exit 1
+}
+test -z "$(find "$OUT" -mindepth 1 -maxdepth 1 -print -quit)" || {
+  echo "Dossier de fragments non vide ; ne pas mélanger les versions"
+  exit 1
+}
+
+# Snapshot transactionnellement cohérent, notamment en présence d'un journal WAL.
+sqlite3 "$SOURCE" ".backup '$WORK/public-procurement.sqlite'"
+test "$(sqlite3 -readonly "$WORK/public-procurement.sqlite" 'PRAGMA quick_check;')" = "ok" || exit 1
+test "$(sqlite3 -readonly "$WORK/public-procurement.sqlite" \
+  "SELECT value FROM metadata WHERE key='schema';")" = "populorum-decp-1" || exit 1
+
+split -n 3 -d -a 2 "$WORK/public-procurement.sqlite" \
+  "$OUT/public-procurement.sqlite.part-"
+
+(
+  cd "$OUT" || exit 1
+  sha256sum public-procurement.sqlite.part-?? > SHA256SUMS-DECP.txt
+  sha256sum -c SHA256SUMS-DECP.txt
+)
+(cd "$WORK" && sha256sum public-procurement.sqlite) > "$OUT/public-procurement.sqlite.sha256"
+
+EXPECTED="$(cut -d ' ' -f1 "$OUT/public-procurement.sqlite.sha256")"
+ACTUAL="$(cat "$OUT"/public-procurement.sqlite.part-{00,01,02} | sha256sum | cut -d ' ' -f1)"
+test "$EXPECTED" = "$ACTUAL" || { echo "Fragments non conformes au snapshot"; exit 1; }
+ls -lh "$OUT"
+~~~
+
+**Cinq assets à publier** : public-procurement.sqlite.part-00, public-procurement.sqlite.part-01, public-procurement.sqlite.part-02, SHA256SUMS-DECP.txt et public-procurement.sqlite.sha256.
+
+Le snapshot reste **exclusivement sur le PC**, dans le dossier decp-snapshot, et n'est pas téléversé.
+
+### B. Envoi sur la release GitHub
+
+Ouvrir [Modifier la release nationale](https://github.com/PsiGuardian/Populorum/releases/edit/data-national-2026). Déposer uniquement les cinq fichiers du dossier decp-2026-parts. Si le navigateur échoue, utiliser GitHub CLI :
+
+~~~bash
 gh auth login
 gh release upload data-national-2026 \
   "$HOME/Archives/Populorum/decp-2026-parts/"* \
   --repo PsiGuardian/Populorum
-```
+~~~
 
-`gh release upload` **n'écrase pas** les assets existants par défaut. Ne jamais ajouter ces fichiers à Git, ni utiliser `--clobber` sans inspection préalable. En cas d'envoi interrompu, ne renvoyer que les assets absents sur la release.
+Ne pas utiliser --clobber. Lors d'une interruption, envoyer uniquement les assets manquants, sans écraser ceux déjà vérifiés.
 
-Une fois les cinq assets effectivement disponibles, n'importe quel utilisateur peut restaurer la base dans `apps/symfony` :
+### C. Restauration sur une autre installation
 
-```bash
-python3 tools/decp_release_parts.py restore --tag data-national-2026
+Après la publication effective des cinq assets, depuis apps/symfony :
+
+~~~bash
+sudo pacman -S --needed sqlite coreutils curl
+
+DATA_URL="https://github.com/PsiGuardian/Populorum/releases/download/data-national-2026"
+CACHE="var/decp-release-cache/data-national-2026"
+DB="data/research/public-procurement.sqlite"
+TEMP="$DB.restoring"
+mkdir -p "$CACHE" data/research
+
+test ! -e "$DB" && test ! -e "$TEMP" || {
+  echo "Base ou restauration déjà présente ; aucun écrasement"
+  exit 1
+}
+
+for asset in \
+  public-procurement.sqlite.part-00 \
+  public-procurement.sqlite.part-01 \
+  public-procurement.sqlite.part-02 \
+  SHA256SUMS-DECP.txt \
+  public-procurement.sqlite.sha256
+do
+  curl -fL --retry 3 -C - -o "$CACHE/$asset" "$DATA_URL/$asset" || exit 1
+done
+
+(cd "$CACHE" && sha256sum -c SHA256SUMS-DECP.txt) || exit 1
+cat "$CACHE"/public-procurement.sqlite.part-{00,01,02} > "$TEMP"
+
+EXPECTED="$(cut -d ' ' -f1 "$CACHE/public-procurement.sqlite.sha256")"
+printf '%s  %s\n' "$EXPECTED" "$TEMP" | sha256sum -c - || exit 1
+test "$(sqlite3 -readonly "$TEMP" 'PRAGMA quick_check;')" = "ok" || exit 1
+test "$(sqlite3 -readonly "$TEMP" \
+  "SELECT value FROM metadata WHERE key='schema';")" = "populorum-decp-1" || exit 1
+
+# Publication atomique sans écrasement, sur le même système de fichiers.
+ln "$TEMP" "$DB" && rm "$TEMP"
 python3 tools/decp_pipeline.py status
-python3 tools/verify_decp_history.py --db data/research/public-procurement.sqlite
-```
+python3 tools/verify_decp_history.py --db "$DB"
+~~~
 
-Les trois parties sont téléchargées, mises en cache dans `var/decp-release-cache`, vérifiées individuellement et assemblées dans un fichier temporaire. Avant mise en service, le programme contrôle **la taille finale, le SHA-256 global et le schéma SQLite**. Une base locale existante n'est jamais écrasée. La release de données n'est pas nécessaire au fonctionnement des autres modules.
+Les contrôles individuels et global des empreintes SHA-256 précèdent la mise en service. La base SQLite initiale n'est pas modifiée, et une installation déjà présente n'est jamais remplacée.
 
 ## 3 bis — Importer les données communales officielles SSMSI pour /convergence
 

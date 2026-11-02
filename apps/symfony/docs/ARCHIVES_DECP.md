@@ -6,7 +6,7 @@ L'index DECP est une **base séparée** de `var/populorum.sqlite` (simulations).
 
 ## Distribution actuelle recommandée
 
-Après échec de l'envoi navigateur de l'asset de ~1,7 Go, l'index national est distribué en **trois parties exactes** (`public-procurement.sqlite.part-00`, `-01`, `-02`) accompagnées de `public-procurement.parts.json` et `SHA256SUMS-DECP.txt`. L'outil permanent `tools/decp_release_parts.py` réalise un découpage sans altération et une restauration avec vérifications SHA-256 par partie et globale. Voir [l'installation des données nationales](INSTALLATION_DONNEES_NATIONALES.md), sections 3 et 3 bis. Les archives `.zst.part-0000` restent disponibles pour les anciens formats de sauvegarde avec sources.
+Pour contourner les interruptions d'envoi navigateur, la base DECP est distribuée en **trois parties** (`public-procurement.sqlite.part-00`, `-01`, `-02`) accompagnées de `SHA256SUMS-DECP.txt` et `public-procurement.sqlite.sha256`. Les commandes standard du terminal `sqlite3`, `split`, `cat` et `sha256sum` assurent un snapshot cohérent, la fragmentation et la reconstitution vérifiée. **Aucun script de découpage temporaire n'est versionné.** Voir [l'installation des données nationales](INSTALLATION_DONNEES_NATIONALES.md), section 3. Les anciennes archives `.zst.part-0000` restent compatibles avec les sauvegardes historiques contenant les sources JSON.
 
 ## Depuis une archive publique GitHub Releases (ancien format optionnel)
 
