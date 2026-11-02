@@ -309,7 +309,7 @@ final class ApplicationCompletionTest extends TestCase
 
     public function testFivefoldListsPreserveNavigationFiltersAndExactVisibleTallies(): void
     {
-        require_once dirname(__DIR__) . '/tools/scale-fixture.php';
+        require_once __DIR__ . '/fixtures/scale-fixture.php';
         $_SERVER['POPULORUM_SCENARIO'] = '';
         $owner = 'scale-http-' . bin2hex(random_bytes(8));
         $this->session->set('simulation_owner', $owner);
