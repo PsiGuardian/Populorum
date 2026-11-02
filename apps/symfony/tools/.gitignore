@@ -1,0 +1,18 @@
+# Only maintained, operational commands belong in tools/.
+# Never commit one-off migrations, fixes, version-specific updaters or benchmarks.
+*
+!.gitignore
+!bootstrap.php
+!decp_archive.py
+!decp_index_health.py
+!decp_pipeline.py
+!verify_decp_history.py
+!backfill_decp_history.py
+!import_decp.py
+!import_budget_national.py
+!import_codes_postaux.py
+!import_communes_insee.py
+!install_reference_indexes.py
+!verify_geography.py
+!recount.php
+!verify-export.php

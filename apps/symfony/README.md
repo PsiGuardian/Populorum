@@ -39,48 +39,30 @@ Choisissez votre langue pour lire le guide d’installation et de mise à jour :
 | 🇬🇪 ქართული | [`ka_GE`](docs/translations/ka_GE/INSTALLATION.md) |
 | 🇲🇳 Монгол | [`mn_MN`](docs/translations/mn_MN/INSTALLATION.md) |
 
-## Installation Arch Linux automatisée (recommandée)
+## Installation et démarrage — commandes explicites
+
+Suivre le **[guide complet de la racine du dépôt](../../LIRE_AVANT_INSTALLATION.md)** : installation des paquets (pacman sur Arch, gestionnaire équivalent sur les autres systèmes), activation des extensions PHP, `composer install`, génération locale des clés, migrations et validation HTTP.
+
+Depuis `apps/symfony`, avec PHP CLI ≥ 8.4 et les extensions chargées :
 
 ```bash
-sudo pacman -Syu --needed php php-sqlite composer git python unzip
-# Activer les modules pdo_sqlite et sqlite3 dans /etc/php/php.ini si nécessaires.
-bash tools/install-arch.sh --check &&
-bash tools/install-arch.sh &&
+composer install --no-interaction --prefer-dist --no-progress &&
 test -f vendor/autoload.php &&
-php -S 127.0.0.1:5412 -t public
+php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
+php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
+php bin/console app:demo:prepare --env=demo &&
+php bin/console cache:clear --env=demo --no-debug &&
+php bin/console doctrine:schema:validate --env=demo &&
+python3 tests/http_smoke.py
 ```
 
-Le script refuse les prérequis manquants, vérifie la présence de vendor/autoload.php, conserve les fichiers personnels existants et vérifie migrations, Twig, schéma Doctrine et réponses HTTP réelles sur une copie temporaire de SQLite. Il ne télécharge pas les 1,9 Go de l'index national. Les instructions de distribution de la base et des fichiers JSON originaux sont dans [ARCHIVES_DECP.md](docs/ARCHIVES_DECP.md).
-
-## Installation sur Arch Linux
-
-Les dépendances système proviennent de pacman :
+Ces commandes sont directement modifiables dans le terminal. Aucun script de version antérieure ou installateur Arch n'est nécessaire. Le contrôle `tests/http_smoke.py` lance un vrai serveur avec **une copie temporaire de la base**.
 
 ```bash
-sudo pacman -S --needed php php-sqlite composer
+APP_ENV=demo APP_DEBUG=0 php -S 127.0.0.1:5412 -t public
 ```
 
-Dans `/etc/php/php.ini`, activer `pdo_sqlite` et `sqlite3`, ainsi que `openssl`, `tokenizer`, `mbstring`, `ctype`, `iconv`, `dom`, `xml`, `xmlwriter`, `xmlreader`, `simplexml` et `curl` si ces extensions sont distribuées sous forme de modules sur votre installation. Ne pas ajouter une directive `extension=` pour une extension déjà compilée dans PHP. Vérifier :
-
-```bash
-php -v
-php -m
-```
-
-Il faut PHP 8.4 minimum. Depuis la racine du dépôt :
-
-```bash
-cd apps/symfony
-composer install --no-interaction --prefer-dist
-php tools/init-demo.php
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo
-php bin/console app:demo:prepare --env=demo
-php bin/console cache:clear --env=demo
-```
-
-`composer.lock` fige les versions testées. Le bundle est réellement installé depuis la branche **dev-1.0.1** du dépôt demandé, à la révision `3595f1e483e4ea1ee2dcbd6ddbabe7e2976e1783`. La révision est figée par composer.lock ; la contrainte Composer correspondante est `dev-dev-1.0.1` : le premier `dev-` appartient à la notation Composer et le second au nom réel de la branche.
-
-Le script `tools/init-demo.php` génère des clés privées propres à l’instance dans `.env.local`. Le compte public de démo et son chemin sont documentés dans [profiler-shield.md](../../profiler-shield.md). Le compte `operator` généré localement ne peut pas se connecter par HTTP à cette démo publique. La maintenance s’effectue en CLI.
+La base nationale de marchés DECP est distincte et optionnelle : [archives DECP](docs/ARCHIVES_DECP.md).
 
 ## Le fichier SQLite demandé
 

@@ -54,9 +54,9 @@
 
 ---
 
-## Installer le logiciel
+## Installer le logiciel (version propre)
 
-- **[Installation depuis GitHub sur Arch Linux](LIRE_AVANT_INSTALLATION.md#installation-express-arch-linux)** — prérequis, script contrôlé et serveur de démonstration.
+- **[Installation en commandes terminal (Arch Linux et autres distributions)](LIRE_AVANT_INSTALLATION.md#installation-express-arch-linux)** — prérequis, script contrôlé et serveur de démonstration.
 - **[Releases du logiciel et des données](https://github.com/PsiGuardian/Populorum/releases)** — vérifier que les assets de données DECP sont réellement publiés.
 - **[Archive DECP de 1,9 Go, sources originales et contrôle SHA-256](apps/symfony/docs/ARCHIVES_DECP.md)** — fichiers volontairement exclus du dépôt Git.
 

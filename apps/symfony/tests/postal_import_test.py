@@ -6,7 +6,7 @@ from pathlib import Path
 import sqlite3
 import tempfile
 
-HERE=Path(__file__).resolve().parent
+HERE=Path(__file__).resolve().parents[1] / 'tools'
 spec=importlib.util.spec_from_file_location('postal_importer', HERE/'import_codes_postaux.py')
 mod=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)

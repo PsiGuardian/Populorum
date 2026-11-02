@@ -23,16 +23,16 @@ Télécharger les fichiers officiels (plusieurs Go ; prévoir espace disque et b
 
 ```bash
 cd apps/symfony
-python3 tools/decp_pipeline_v8.py download
-python3 tools/decp_pipeline_v8.py import
-python3 tools/decp_pipeline_v8.py verify
+python3 tools/decp_pipeline.py download
+python3 tools/decp_pipeline.py import
+python3 tools/decp_pipeline.py verify
 ```
 
 **Avant publication**, stopper le serveur PHP ou PHP-FPM qui lit l'index. Puis, avec une sauvegarde indépendante :
 
 ```bash
-python3 tools/decp_pipeline_v8.py publish --site-stopped
-python3 tools/verify_decp_history_v8_1.py --db data/research/public-procurement.sqlite
+python3 tools/decp_pipeline.py publish --site-stopped
+python3 tools/verify_decp_history.py --db data/research/public-procurement.sqlite
 ```
 
 Si ce dernier contrôle est partiel, reconstituer l'historique sur une **copie de travail**, avec `tools/backfill_decp_history.py`, puis contrôler et publier cette copie. Ne pas modifier une base en cours de service. En présence d'un index existant, `publish` conserve une sauvegarde avant remplacement.
@@ -44,7 +44,7 @@ Sur la machine qui détient la base de 1,9 Go et les fichiers `decp-sources/` :
 ```bash
 sudo pacman -S --needed python zstd github-cli
 cd apps/symfony
-python3 tools/verify_decp_history_v8_1.py --db data/research/public-procurement.sqlite
+python3 tools/verify_decp_history.py --db data/research/public-procurement.sqlite
 python3 tools/decp_archive.py package \
   --output "$HOME/Archives/Populorum/data-decp-AAAA-MM-JJ"
 ```

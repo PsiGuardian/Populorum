@@ -1,11 +1,12 @@
-name: Symfony SQLite demo
+name: Symfony SQLite — clean release
 on:
   push:
-    paths: ['apps/symfony/**', '.github/workflows/symfony-demo.yml', 'CHARTER.md', 'docs/translations/**']
+    paths: ['apps/symfony/**', '.github/workflows/symfony-demo.yml', 'LIRE_AVANT_INSTALLATION.md', 'README.md', 'docs/**', 'CHARTER.md']
   pull_request:
-    paths: ['apps/symfony/**', '.github/workflows/symfony-demo.yml', 'CHARTER.md', 'docs/translations/**']
+    paths: ['apps/symfony/**', '.github/workflows/symfony-demo.yml', 'LIRE_AVANT_INSTALLATION.md', 'README.md', 'docs/**', 'CHARTER.md']
 permissions:
   contents: read
+
 jobs:
   native-demo:
     runs-on: ubuntu-latest
@@ -17,27 +18,32 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: pdo_sqlite, sqlite3, openssl, tokenizer, mbstring, ctype, iconv, dom, xml, xmlwriter, simplexml, curl
+          extensions: pdo_sqlite,sqlite3,openssl,tokenizer,mbstring,ctype,iconv,dom,xml,xmlwriter,simplexml,curl
           tools: composer:v2
           coverage: none
-      - run: composer install --no-interaction --prefer-dist
       - run: composer validate --strict
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: test -f vendor/autoload.php
       - run: composer style:check
       - run: composer analyse
-      - run: php tools/init-demo.php
+      - name: Create local secrets exclusively with PHP CLI (no installer)
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}'
       - run: php bin/console doctrine:migrations:migrate --no-interaction --env=demo
       - run: php bin/console app:demo:prepare --env=demo
+      - run: php bin/console cache:clear --env=demo --no-debug
       - run: php bin/console lint:twig templates --env=demo
       - run: php bin/console lint:yaml config --parse-tags
       - run: php bin/console doctrine:schema:validate --env=demo
-      - name: Real HTTP smoke after install
-        run: python3 tools/smoke_http.py
+      - run: python3 tests/http_smoke.py
       - run: composer test
-      - run: python3 tools/test_decp_pipeline_v8.py
-      - run: python3 tools/test_decp_history_v8_1.py
-      - run: python3 tools/test_decp_sql_inputs.py
+      - run: python3 tests/decp_pipeline_test.py
+      - run: python3 tests/decp_history_test.py
+      - run: python3 tests/decp_sql_inputs_test.py
       - run: sudo apt-get update && sudo apt-get install -y zstd
-      - run: python3 tools/test_decp_archive.py
+      - run: python3 tests/decp_archive_test.py
   arch-install:
     runs-on: ubuntu-latest
     container: archlinux:base
@@ -45,40 +51,67 @@ jobs:
       run:
         working-directory: apps/symfony
     steps:
-      - name: Install Arch Linux official packages
-        run: pacman -Syu --noconfirm --needed php php-sqlite composer git python unzip zstd ca-certificates
+      - name: Official Arch Linux packages
         working-directory: /
+        run: pacman -Syu --noconfirm --needed php php-sqlite composer git python unzip zstd ca-certificates
       - uses: actions/checkout@v4
-      - name: Enable packaged PHP extensions for CI
+      - name: Enable modules supplied by Arch packages when necessary
         shell: bash
         run: |
           mkdir -p /etc/php/conf.d
           for ext in pdo_sqlite sqlite3 iconv mbstring dom simplexml xml curl; do
-            if ! php -r 'exit(extension_loaded($argv[1]) ? 0 : 1);' "$ext"; then
-              if [[ -f "/usr/lib/php/modules/$ext.so" ]]; then
-                printf 'extension=%s\n' "$ext" >> /etc/php/conf.d/populorum-ci.ini
-              fi
+            if ! php -r 'exit(extension_loaded($argv[1]) ? 0 : 1);' "$ext" && [[ -f "/usr/lib/php/modules/$ext.so" ]]; then
+              printf 'extension=%s\n' "$ext" >> /etc/php/conf.d/populorum-ci.ini
             fi
           done
-          php -m
-      - name: Full install from composer.lock
-        run: bash tools/install-arch.sh
-      - name: Real HTTP smoke on fresh Arch installation
-        run: python3 tools/smoke_http.py
-      - name: Install from extracted GitHub-style source archive and test HTTP
+      - name: Install directly in terminal (no shell installer)
         shell: bash
         run: |
           set -euo pipefail
-          root="$(mktemp -d /tmp/populorum-release-install-XXXXXX)"
-          trap 'rm -rf "$root"' EXIT
-          git -C "$GITHUB_WORKSPACE" -c safe.directory="$GITHUB_WORKSPACE" archive --format=tar --prefix=Populorum-release/ "$GITHUB_SHA" | tar -xf - -C "$root"
-          cd "$root/Populorum-release/apps/symfony"
-          test ! -e vendor/autoload.php
-          bash tools/install-arch.sh
+          php -r '$r=["openssl","pdo","pdo_sqlite","sqlite3","tokenizer","mbstring","iconv","dom","simplexml","curl","zlib"];foreach($r as $x){if(!extension_loaded($x)){fwrite(STDERR,"Extension PHP absente : $x\n");exit(1);}}'
+          composer install --no-interaction --prefer-dist --no-progress
           test -f vendor/autoload.php
-          python3 tools/smoke_http.py
-      - name: Archive packaging and restore
-        run: python3 tools/test_decp_archive.py
+          php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}'
+          php bin/console doctrine:migrations:migrate --no-interaction --env=demo
+          php bin/console app:demo:prepare --env=demo
+          php bin/console cache:clear --env=demo --no-debug
+          php bin/console doctrine:schema:validate --env=demo
+          python3 tests/http_smoke.py
+      - name: Install from freshly extracted clean repository archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          temp="$(mktemp -d /tmp/populorum-clean-XXXXXX)"
+          trap 'rm -rf "$temp"' EXIT
+          git -C "$GITHUB_WORKSPACE" -c safe.directory="$GITHUB_WORKSPACE" archive --format=tar --prefix=Populorum-clean/ "$GITHUB_SHA" | tar -xf - -C "$temp"
+          cd "$temp/Populorum-clean/apps/symfony"
+          test ! -e vendor/autoload.php
+          test ! -e .env.local
+          test ! -e tools/install-arch.sh
+          test ! -e tools/init-demo.php
+          composer install --no-interaction --prefer-dist --no-progress
+          test -f vendor/autoload.php
+          php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}'
+          php bin/console doctrine:migrations:migrate --no-interaction --env=demo
+          php bin/console app:demo:prepare --env=demo
+          php bin/console cache:clear --env=demo --no-debug
+          php bin/console doctrine:schema:validate --env=demo
+          python3 tests/http_smoke.py
+      - name: Verify only maintained operational files are included in tools
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          allowed = {'.gitignore','bootstrap.php','decp_archive.py','decp_index_health.py','decp_pipeline.py',
+            'verify_decp_history.py','backfill_decp_history.py','import_decp.py','import_budget_national.py',
+            'import_codes_postaux.py','import_communes_insee.py','install_reference_indexes.py',
+            'verify_geography.py','recount.php','verify-export.php'}
+          present = {p.name for p in Path('tools').iterdir() if p.is_file()}
+          assert present == allowed, f'Unexpected/absent tooling: extra={sorted(present-allowed)} missing={sorted(allowed-present)}'
+          print('OK — clean tools inventory:', len(allowed) - 1)
+          PY
+      - name: Data archive regression
+        run: python3 tests/decp_archive_test.py
   release-installable:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [native-demo, arch-install]
@@ -87,20 +120,20 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Publish tested source release (without national DECP files)
+      - name: Publish tested clean sources (no historical tools, no private databases)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="v0.6.1-arch"
+          TAG="v0.7.0-clean"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "Release $TAG already exists; no overwrite."
+            echo "Release exists, nothing replaced."
             exit 0
           fi
           mkdir -p release
-          git archive --format=tar --prefix="Populorum-v0.6.1-arch/" "$GITHUB_SHA" | gzip -9 > release/Populorum-v0.6.1-arch.tar.gz
-          (cd release && sha256sum Populorum-v0.6.1-arch.tar.gz > SHA256SUMS.txt)
-          gh release create "$TAG" release/Populorum-v0.6.1-arch.tar.gz release/SHA256SUMS.txt \
+          git archive --format=tar --prefix="Populorum-v0.7.0-clean/" "$GITHUB_SHA" | gzip -9 > release/Populorum-v0.7.0-clean.tar.gz
+          (cd release && sha256sum Populorum-v0.7.0-clean.tar.gz > SHA256SUMS.txt)
+          gh release create "$TAG" release/Populorum-v0.7.0-clean.tar.gz release/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
-            --title "Populorum v0.6.1 — installation HTTP vérifiée sur Arch Linux" \
+            --title "Populorum v0.7.0 — distribution propre" \
             --notes-file docs/RELEASE_NOTES_INSTALL.md

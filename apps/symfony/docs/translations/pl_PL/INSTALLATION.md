@@ -25,7 +25,7 @@ Rozpakuj archiwum i otwórz terminal w katalogu głównym repozytorium. Jeśli j
 ```bash
 cd apps/symfony
 composer install --no-interaction --prefer-dist &&
-php tools/init-demo.php &&
+php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
 php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
 php bin/console app:demo:prepare --env=demo &&
 php bin/console cache:clear --env=demo &&
@@ -40,7 +40,7 @@ Zatrzymaj serwer i wykonaj kopię bazy, plików oraz kluczy przed zastąpieniem 
 
 ```bash
 composer install --no-interaction --prefer-dist &&
-php tools/init-demo.php &&
+php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
 php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
 php bin/console app:demo:prepare --env=demo &&
 php bin/console cache:clear --env=demo

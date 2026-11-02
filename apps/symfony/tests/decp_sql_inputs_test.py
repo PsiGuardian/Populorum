@@ -7,6 +7,9 @@ import copy
 import io
 import json
 from pathlib import Path
+# Tests are separated from operational tools; import only the supported data tooling.
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 import sqlite3
 import tempfile
 

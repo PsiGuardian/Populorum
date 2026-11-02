@@ -1,23 +1,25 @@
-# Populorum v0.6.1 — installation Arch Linux
+# Populorum v0.7.0 — édition propre
 
-Archive du logiciel Symfony 8.1 / PHP >= 8.4 / SQLite, sans données personnelles, sans `vendor/`, sans clés locales.
+Distribution Symfony 8.1 / PHP ≥ 8.4, nettoyée des scripts de construction, de migration historique et des benchmarks. `tools/` ne contient plus que des fonctions d'exploitation durables ; tests isolés sous `tests/`.
 
-## Installation (archive GitHub)
+## Installer sur Arch Linux
 
-1. Sur Arch Linux : `sudo pacman -Syu --needed php php-sqlite composer git python unzip`.
-2. Activer `pdo_sqlite` et `sqlite3` dans `/etc/php/php.ini` si `php -m` ne les liste pas.
-3. Depuis le dossier extrait : `cd apps/symfony && bash tools/install-arch.sh --check && bash tools/install-arch.sh`.
-4. Vérifier : `test -f vendor/autoload.php` ; puis seulement démarrer : `php -S 127.0.0.1:5412 -t public` et ouvrir http://127.0.0.1:5412/.
+```bash
+sudo pacman -Syu --needed php php-sqlite composer git python curl tar
+cd apps/symfony
+composer install --no-interaction --prefer-dist --no-progress &&
+test -f vendor/autoload.php &&
+php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
+php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
+php bin/console app:demo:prepare --env=demo &&
+php bin/console cache:clear --env=demo --no-debug &&
+php bin/console doctrine:schema:validate --env=demo &&
+python3 tests/http_smoke.py
+APP_ENV=demo APP_DEBUG=0 php -S 127.0.0.1:5412 -t public
+```
 
-La release est créée automatiquement **uniquement après succès des validations Ubuntu et Arch Linux**. Elle contient le code et un fichier SHA256SUMS. Si le contrôle échoue, aucune release n'est créée.
+**Consulter le guide détaillé** `LIRE_AVANT_INSTALLATION.md` pour l'extraction du tarball, le contrôle SHA256, les extensions, l'arrêt au premier échec, les variantes de distribution et la sauvegarde des données existantes.
 
-**Important :** l'index national `public-procurement.sqlite` (~1,9 Go) et les JSON DECP ne sont pas inclus. Ils peuvent être reconstruits avec `tools/decp_pipeline_v8.py` depuis les données publiques, ou distribués indépendamment dans une release de données après publication depuis le poste qui les détient. Voir `apps/symfony/docs/ARCHIVES_DECP.md`.
+CI : installation à partir d'une archive propre, sans `vendor/` ni `.env.local`, puis requêtes HTTP réelles sous Arch Linux et Ubuntu. L'index DECP national reste optionnel et n'est pas inclus dans la release.
 
-Cette version demeure un démonstrateur fictif, et non une plateforme électorale ou d'achats publics réglementaire.
-
-## Correctif v0.6.1
-
-- Corrige la présentation d'une installation partielle : le serveur indique les dépendances absentes au lieu d'une erreur PHP non contrôlée.
-- L'installateur échoue explicitement si Composer n'a pas créé `vendor/autoload.php`.
-- L'installateur appelle un vrai test HTTP sur trois pages, avec une copie SQLite distincte ; aucun test ne modifie la base des utilisateurs.
-- La CI Arch Linux teste également une archive du code extraite, sans `vendor/`, puis l'installe avant le contrôle HTTP.
+Les anciens commits GitHub conservent leur historique ; les fichiers supprimés ne figurent plus dans le contenu de cette release propre.

@@ -1,130 +1,86 @@
-# Populorum — installation et mise à jour
+# Populorum — installation propre, sans installateur spécifique à une distribution
 
-## Installation express (Arch Linux)
+**Sources officielles :** [Releases](https://github.com/PsiGuardian/Populorum/releases) | [application Symfony](apps/symfony/README.md) | [données nationales optionnelles](apps/symfony/docs/ARCHIVES_DECP.md).
 
-Téléchargez le [ZIP de la branche main](https://github.com/PsiGuardian/Populorum/archive/refs/heads/main.zip) ou une [release vérifiée](https://github.com/PsiGuardian/Populorum/releases). Les deux archives contiennent le **code et composer.lock**, sans `vendor/` ni index DECP national de 1,9 Go.
+Populorum est un simulateur fictif (PHP 8.4+, Symfony 8.1, SQLite). Il se télécharge sans dépendances PHP, sans clés privées et sans index DECP de 1,9 Go. Les dépendances sont définies dans `apps/symfony/composer.lock`.
+
+## 1. Paquets système
+
+Sur **Arch Linux** :
 
 ```bash
-sudo pacman -Syu --needed php php-sqlite composer git python unzip
-# Dans /etc/php/php.ini, activer pdo_sqlite et sqlite3 si nécessaire.
-# Vérifier : php -m | grep -E 'pdo_sqlite|sqlite3'
+sudo pacman -Syu --needed php php-sqlite composer git python curl tar
+```
 
-cd Populorum-main/apps/symfony
-bash tools/install-arch.sh --check &&
-bash tools/install-arch.sh &&
+Sur d'autres distributions, adapter uniquement l'installation des paquets : PHP CLI ≥ 8.4, Composer 2, Python 3, SQLite via PDO, OpenSSL, XML, mbstring, curl et zlib. Les commandes Composer/Symfony ci-dessous sont identiques.
+
+```bash
+php -v
+php -m
+```
+
+Si `pdo_sqlite` ou `sqlite3` n'apparaissent pas, vérifier les modules disponibles puis les activer une seule fois dans `/etc/php/php.ini` ou `/etc/php/conf.d/` selon la distribution. **Ne pas ajouter une extension déjà chargée**.
+
+## 2. Télécharger une version stable
+
+Exemple avec la version propre (voir la page Releases pour le dernier tag disponible) :
+
+```bash
+mkdir -p "$HOME/Téléchargements/populorum-clean"
+cd "$HOME/Téléchargements/populorum-clean"
+
+curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.7.0-clean/Populorum-v0.7.0-clean.tar.gz
+curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.7.0-clean/SHA256SUMS.txt
+sha256sum -c SHA256SUMS.txt
+tar -xzf Populorum-v0.7.0-clean.tar.gz
+cd Populorum-v0.7.0-clean/apps/symfony
+```
+
+Le tag de cette section est exploitable **après publication de la release**. Pour une archive de branche `main`, extraire son ZIP et se placer simplement dans `Populorum-main/apps/symfony`.
+
+## 3. Installer directement dans le terminal
+
+Chaque commande est visible et modifiable. Il n'existe **aucun** `arch_install.sh`, `install-arch.sh` ou programme d'installation caché.
+
+Contrôler les extensions :
+
+```bash
+php -r '$r=["openssl","pdo","pdo_sqlite","sqlite3","tokenizer","mbstring","iconv","dom","simplexml","curl","zlib"];foreach($r as $x){if(!extension_loaded($x)){fwrite(STDERR,"Extension PHP absente : $x\n");exit(1);}}'
+```
+
+Installer Composer, générer **une seule fois** les clés locales, appliquer les migrations, préparer les fixtures, vider le cache puis charger les pages HTTP sur une copie SQLite temporaire :
+
+```bash
+composer install --no-interaction --prefer-dist --no-progress &&
 test -f vendor/autoload.php &&
-php -S 127.0.0.1:5412 -t public
-```
-
-Ne démarrer PHP **que si Composer et l'installateur réussissent** : `--check` contrôle seulement les prérequis et ne télécharge pas `vendor/`. La commande sans `--check` installe les dépendances, puis lance un contrôle HTTP réel sur une copie temporaire de SQLite.
-
-En cas de HTTP 500, depuis `apps/symfony` :
-
-```bash
-test -f vendor/autoload.php || echo 'Dépendances absentes : relancer composer install'
-python3 tools/smoke_http.py
-tail -n 80 var/log/demo.log
-```
-
-Ouvrir <http://127.0.0.1:5412/>. Si `--check` détecte des modules désactivés, suivre son diagnostic avant l'installation. Les archives de données publiques sont séparées : [voir leur installation et publication](apps/symfony/docs/ARCHIVES_DECP.md). Ne jamais écraser `var/populorum.sqlite`, `.env.local` ni les clés d'une installation existante.
-
----
-
-## Prérequis
-
-Il faut **PHP 8.4 ou supérieur**, **Composer** et les extensions indiquées dans [le guide Symfony](apps/symfony/README.md#installation-sur-arch-linux). Sur Arch Linux, les paquets système s’installent avec `sudo pacman -S --needed php php-sqlite composer` ; le guide précise les extensions à vérifier.
-
-L’archive téléchargée depuis GitHub contient les sources et `composer.lock`, mais **ne contient pas le dossier `vendor/`**. Il faut installer les dépendances avec Composer avant toute commande `php bin/console`. `composer install` utilise les versions figées dans `composer.lock` ; ne pas le remplacer par `composer update` pour une installation normale.
-
-## Démarrer une installation neuve
-
-Extraire l’archive, ouvrir un terminal à la racine du dossier extrait (`Populorum-main` pour l’archive de la branche `main`), puis exécuter :
-
-```bash
-cd apps/symfony
-composer install --no-interaction --prefer-dist &&
-php tools/init-demo.php &&
+php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
 php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
 php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo &&
-php -S 127.0.0.1:5412 -t public
+php bin/console cache:clear --env=demo --no-debug &&
+php bin/console doctrine:schema:validate --env=demo &&
+python3 tests/http_smoke.py
 ```
 
-Si le terminal est déjà dans `apps/symfony`, commencer directement par `composer install`. Les `&&` arrêtent la séquence dès qu’une étape échoue. Corriger l’erreur affichée avant de continuer ; ne pas démarrer le serveur si l’installation ou la préparation a échoué.
+Les opérateurs `&&` arrêtent la chaîne au premier échec. La ligne PHP crée `.env.local` avec des permissions 0600 sans écraser des clés déjà existantes. **Ne jamais exécuter `composer update` pour installer une release** : `composer install` utilise le fichier de verrouillage versionné.
 
-Ouvrir [http://127.0.0.1:5412/](http://127.0.0.1:5412/). Le serveur garde le terminal occupé ; **Ctrl+C** l’arrête. Ce serveur PHP sert aux essais locaux. Pour une mise en ligne, suivre [le guide Symfony](apps/symfony/README.md#mise-en-ligne-de-linstance-de-démo).
-
-`tools/init-demo.php` génère les clés locales dans `.env.local` seulement si ce fichier n’existe pas. Les clés privées, sessions, bases de visiteurs, caches et journaux d’exécution sont exclus du dépôt. `data/populorum-demo.sqlite` est une base initiale de référence ; la base active `var/populorum.sqlite` est créée localement.
-
-Pour le profiler, les cookies sécurisés requièrent HTTPS, y compris lors d’un essai manuel local : consulter [le guide Symfony](apps/symfony/README.md) et [profiler-shield.md](profiler-shield.md).
-
-### Si `vendor/autoload.php` est introuvable
-
-Les dépendances n’ont pas été installées, ou leur installation n’a pas abouti. Arrêter le serveur avec **Ctrl+C**, exécuter `composer install --no-interaction --prefer-dist` depuis `apps/symfony`, puis reprendre la préparation après sa réussite. Si Composer signale une version de PHP ou une extension manquante, corriger ce prérequis ; ne pas contourner le contrôle avec `--ignore-platform-reqs`.
-
-## Mettre à jour une installation existante
-
-Arrêter le serveur local avec **Ctrl+C**, puis sauvegarder les fichiers, la base active et les clés. Mettre à jour les sources en conservant ses propres `.env.local`, `.guardian-shield/` et `var/`. Ne jamais remplacer une base active par la base de démonstration fournie dans `data/`.
-
-Depuis `apps/symfony`, installer les dépendances correspondant au nouveau fichier de verrouillage, appliquer les migrations, préparer les données puis vider le cache :
+Seulement si toutes les étapes sont validées :
 
 ```bash
-composer install --no-interaction --prefer-dist &&
-php tools/init-demo.php &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
+APP_ENV=demo APP_DEBUG=0 php -S 127.0.0.1:5412 -t public
 ```
 
-Le script d’initialisation conserve un `.env.local` existant. Après réussite de toutes les étapes, relancer le serveur local :
+Ouvrir **http://127.0.0.1:5412/**. Arrêter avec Ctrl+C. Le serveur intégré PHP convient aux tests locaux, pas à un service public.
 
-```bash
-php -S 127.0.0.1:5412 -t public
-```
+## 4. Mettre à jour sans perdre les données
 
-## Ce qui change
+Avant toute mise à jour, arrêter PHP et sauvegarder **`.env.local`, `var/`, `.guardian-shield/`**, ainsi que les bases nationales séparées. Ne jamais les écraser par les fixtures de la release. Après extraction des nouveaux fichiers sources, depuis `apps/symfony`, relancer les mêmes étapes de la section 3. La génération de clés est idempotente : elle conserve l'existant.
 
-- Arbre de cause à effet ouvert et central, avec lecture textuelle accessible.
-- Navigation par actions, formulaires regroupés et comparaisons paginées.
-- Données publiques SSMSI 2024–2025 distinctes des expériences fictives ; quinze indicateurs sélectionnables et comparaison de leurs évolutions.
-- Mention explicite d’un projet complémentaire à un système d’État déjà existant.
+## 5. Diagnostic et limites
 
-Lire `apps/symfony/docs/INTERFACE_REVIEW.md` pour les décisions, les risques, les limites et les vérifications. Toutes les données publiques sont datées ; aucune actualisation automatique ni efficacité réelle des propositions n’est revendiquée.
+- `vendor/autoload.php` absent : exécuter `composer install` depuis `apps/symfony` et vérifier sa réussite ; le serveur ne peut pas fonctionner sans les dépendances.
+- HTTP 500 : conserver l'erreur exacte de PHP, consulter `var/log/demo.log` si présent, puis `python3 tests/http_smoke.py` pour reproduire.
+- Extensions absentes : installer/activer les extensions **pour le PHP CLI** utilisé par Composer, sans `--ignore-platform-reqs`.
+- HTTPS et PHP-FPM : pour un déploiement réel, faire pointer DocumentRoot vers `apps/symfony/public/` et protéger les clés privées.
+- Index national DECP : installation **indépendante et optionnelle**, voir [ARCHIVES_DECP.md](apps/symfony/docs/ARCHIVES_DECP.md).
 
-## Recherche et récits progressifs — nouveau lot
-
-Le projet propose les routes personnalisées, la validation de recherche, les récits fictifs avec ajouts successifs et incertitudes, les catégories statistiques détaillées et les noms fictifs des 300 personnages/familles. Lire `apps/symfony/docs/SEARCH_AND_CAUSAL_ACCOUNTS.md` pour le fonctionnement, les garanties vérifiées et les limites juridiques.
-
-Après mise à jour, vider le cache Symfony. Pour voir les nouvelles fixtures sans écraser les anciennes : **Participer → Ouvrir un nouveau laboratoire**.
-
-## Services, compétences, missions et budget public
-
-Les nouvelles entrées sont **Services et missions** et **Budget et priorités**. Ouvrir un nouveau laboratoire depuis **Participer** charge les 300 profils professionnels fictifs. Le budget public 2025 est disponible indépendamment des anciennes simulations.
-
-Le module coordonne des propositions volontaires dans la fiction ; il ne dépêche aucun intervenant réel. Les données OFGL/DGFiP sont réelles, datées et distinctes des coûts fictifs de mission. La cible de 1 €/habitant/an est un objectif de scénario, non un résultat fiscal atteint. Voir `apps/symfony/docs/CITY_SERVICES_AND_BUDGET.md` pour les périmètres, sources, calculs et limites.
-
-## Lot « Besoins et devis »
-
-La nouvelle entrée **Besoins et devis** (`/besoins-et-devis`) permet de publier un besoin fictif, déposer des offres chiffrées jusqu’à l’ouverture après échéance, poser des questions communes, examiner les offres en tiers indépendant, motiver un choix, suivre les avenants, déclarer le résultat, le contrôler et enregistrer un paiement fictif. Une alternative habitante volontaire peut être préparée pour des tâches simples à faible risque, avec coût complet et solution de repli.
-
-Lire `apps/symfony/docs/PUBLIC_PROCUREMENT.md` pour les formats, droits du scénario, calculs et limites. Ce module ne constitue pas une plateforme réglementaire de commande publique ; toutes ses entreprises et pièces sont fictives. Les anciennes données restent compatibles : la collection de dossiers est créée lors de la première action. Ne pas remplacer votre base ou vos clés par celles d’un autre laboratoire.
-
-## Lot « Performances » — migration nécessaire
-
-Le rapport complet est dans `apps/symfony/docs/PERFORMANCE_REPORT.md`, avec un tableau HTML filtrable, un CSV des traitements par page et les JSON de mesure. La nouvelle interface remplace le flux continu des consultations par des requêtes courtes, allège les listes et les lectures courantes, conserve les historiques et les contrôles complets.
-
-**Sur une installation existante, conserver `var/`, `.env.local` et toutes les clés, puis exécuter depuis `apps/symfony` :**
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-La migration additive `Version20261030150000` ajoute la vue légère de lecture et son invalidation ; elle ne remplace ni les snapshots, ni les votes. Les laboratoires existants reconstruisent leur vue au premier accès. Le rapport explique le protocole, ses limites et les commandes de reproduction. Aucun réglage système ou contrôle de sécurité n’a été désactivé pour obtenir ces gains.
-
-## Lot « Montée en charge ×5 » — migration nécessaire
-
-Lire `apps/symfony/docs/PERFORMANCE_SCALE_REPORT.md` et son tableau HTML/CSV : essais à 1 500 citoyens fictifs, 135 consultations et 13 500 positions, puis cinq laboratoires indépendants. Les listes sont paginées, les décomptes sont limités aux consultations visibles et la navigation dispose d’une vue sans bulletins inutilisés. Les écritures relationnelles deviennent incrémentales ; la preuve et les historiques restent complets.
-
-La migration additive `Version20261030180000` ajoute `overview_state` et son invalidation. **Conserver votre base et vos clés**, exécuter les migrations puis vider le cache avec les commandes du lot précédent. Les exports, vérifications et mutations complètes conservent un coût lié à la taille du snapshot ; le rapport ne promet ni attente imperceptible ni capacité de production multiutilisateur déjà validée.
+Les outils de construction et correctifs historiques ont été supprimés de la distribution. Seuls les outils opérationnels pérennes et les tests isolés sont conservés.
