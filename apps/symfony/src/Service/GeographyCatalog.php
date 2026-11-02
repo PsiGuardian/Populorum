@@ -187,6 +187,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
 
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         }
+
         // Sans index officiel, aucun code postal ou INSEE ne doit être inventé.
         return [];
     }
@@ -196,6 +197,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
         if (($db = $this->connection()) !== null) {
             return $db->query('SELECT region_code AS code, region_name AS name, COUNT(*) AS count FROM communes GROUP BY region_code,region_name ORDER BY name')->fetchAll(\PDO::FETCH_ASSOC);
         }
+
         return [];
     }
 
@@ -210,6 +212,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
 
             return $q->fetchAll(\PDO::FETCH_ASSOC);
         }
+
         return [];
     }
 
@@ -232,6 +235,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
 
             return ['rows' => $q->fetchAll(\PDO::FETCH_ASSOC), 'total' => (int) $count->fetchColumn()];
         }
+
         return ['rows' => [], 'total' => 0];
     }
 }
