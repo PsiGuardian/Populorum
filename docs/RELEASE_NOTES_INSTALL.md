@@ -1,6 +1,8 @@
-# Populorum v0.8.3 — édition propre
+# Populorum v0.9.0 — édition propre
 
 Distribution Symfony 8.1 / PHP ≥ 8.4, nettoyée des scripts de construction, de migration historique et des benchmarks. `tools/` ne contient plus que des fonctions d'exploitation durables ; tests isolés sous `tests/`.
+
+La version 0.9.0 ajoute un atlas national de 34 875 communes sur `/convergence` : filtres région, département et codes postaux, pagination de 36 communes et index officiel SSMSI 2024–2025 facultatif avec respect du secret statistique. L’archive DECP nationale peut maintenant être publiée en trois fragments vérifiés avec un manifeste cryptographique.
 
 La version 0.8.0 introduit la synchronisation de 34 875 communes INSEE 2026 dans Doctrine et un espace de simulation isolé, initialement vide, pour chaque commune sélectionnée. L'ancien jeu de trois exemples est conservé uniquement pour les états historiques non sélectionnés, sans se substituer aux autres communes.
 

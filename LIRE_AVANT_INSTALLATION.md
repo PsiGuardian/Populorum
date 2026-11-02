@@ -29,14 +29,14 @@ Exemple avec la version propre (voir la page Releases pour le dernier tag dispon
 mkdir -p "$HOME/Téléchargements/populorum-clean"
 cd "$HOME/Téléchargements/populorum-clean"
 
-curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.8.3-clean/Populorum-v0.8.3-clean.tar.gz
-curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.8.3-clean/SHA256SUMS.txt
+curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.9.0-clean/Populorum-v0.9.0-clean.tar.gz
+curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.9.0-clean/SHA256SUMS.txt
 sha256sum -c SHA256SUMS.txt
-tar -xzf Populorum-v0.8.3-clean.tar.gz
-cd Populorum-v0.8.3-clean/apps/symfony
+tar -xzf Populorum-v0.9.0-clean.tar.gz
+cd Populorum-v0.9.0-clean/apps/symfony
 ```
 
-Le tag de cette section est exploitable **après publication de la release**. Pour une archive de branche `main`, extraire son ZIP et se placer simplement dans `Populorum-main/apps/symfony`.
+Le tag de cette section doit être vérifié sur la page [Releases](https://github.com/PsiGuardian/Populorum/releases) avant toute installation. Pour une archive de branche `main`, extraire son ZIP et se placer simplement dans `Populorum-main/apps/symfony`.
 
 ## 3. Installer directement dans le terminal
 
@@ -102,4 +102,4 @@ Les outils de construction et correctifs historiques ont été supprimés de la 
 
 ## 8. Atlas national des communes et convergence
 
-La page `/convergence` explore les 34 875 communes grâce à des filtres région/département et des pages de 36 fiches. Les valeurs statistiques réelles 2024–2025 sont consultées exclusivement lorsque l’index officiel SSMSI est installé. Le mode d'import, ainsi que la reconstruction de DECP depuis trois assets GitHub, sont décrits dans le [guide des données nationales](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md). Une valeur non diffusée reste inconnue, et ne devient jamais zéro.
+La page `/convergence` explore les 34 875 communes grâce à des filtres région/département et des pages de 36 fiches. Les valeurs statistiques réelles 2024–2025 sont consultées exclusivement lorsque l’index officiel SSMSI est installé. Le mode d'import, ainsi que la reconstruction de DECP depuis trois fragments GitHub, accompagnés d'un manifeste et d'empreintes SHA-256, sont décrits dans le [guide des données nationales](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md). Une valeur non diffusée reste inconnue, et ne devient jamais zéro.
