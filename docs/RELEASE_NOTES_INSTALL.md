@@ -1,3 +1,7 @@
+# Profils de test et téléchargement des bases nationales
+
+Le guide principal donne les commandes de téléchargement INSEE et DECP, avec SHA-256 et vérification SQLite. Le compte facultatif accepte nom, prénom, âge et commune INSEE, y compris des noms fictifs. Il ne constitue pas une authentification, n'ajoute aucun cookie propre au profil et conserve uniquement une empreinte HMAC de l'adresse IP pendant 30 jours. Les profils sont dépourvus de privilèges et une notice de confidentialité est accessible. Aucun script ponctuel ajouté.
+
 ## v0.9.3 — Navigation lisible et audit des dates DECP
 
 Les recherches de marchés, communes, convergence et budget utilisent désormais des segments de chemin sans paramètres GET visibles. Les URL anciennes sont redirigées et les critères vides sont exclus. Les marchés publics disposent de tris par date, par montant contractuel, ainsi que d'une vue priorisant les dates suspectes. Les dates sources sont conservées, avec motifs de signalement calculés séparément. La documentation DECP référence l'archive unique déjà publiée.

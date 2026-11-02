@@ -160,3 +160,7 @@ Voir [le modèle narratif, les archives et les tests](docs/FICTIONAL_MINDS.md). 
 Chaque personnage conserve son opinion et ses douze réponses. Pour l’adoption, chaque famille fictive déclarée compte au maximum une voix, quelle que soit sa taille. Le résultat familial et les opinions individuelles sont affichés séparément. Majorité des POUR/CONTRE au sein de la famille ; égalité ou seules abstentions = abstention familiale ; quorum calculé sur les familles. Rattachements et règle sont figés à l’ouverture. Voir [la règle, ses exemples et ses tests](docs/FAMILY_SUFFRAGE.md).
 
 La charte 1.1 et ses 28 versions documentaires portent l’amendement. Les anciennes consultations gardent leurs règles ; ouvrir un nouveau laboratoire pour tester le nouveau millésime.
+
+### Comptes de test facultatifs
+
+La page `/compte-test` propose prénom, nom, âge et commune INSEE. Les noms fictifs sont admis. Le profil de démonstration est non privilégié et ne sert pas à authentifier les utilisateurs. Il n'utilise pas de cookie propre au profil : l'adresse IP de la requête est convertie en empreinte HMAC avec APP_SECRET pour retrouver une fiche pendant 30 jours. Des visiteurs partageant une IP peuvent retrouver la même fiche. La notice `/confidentialite` décrit le traitement et ses limites ; aucune donnée sensible ne doit y être renseignée.

@@ -8,7 +8,7 @@ Ce guide complète [LIRE_AVANT_INSTALLATION.md](../../../LIRE_AVANT_INSTALLATION
 | --- | --- | --- |
 | Simulations fictives | `var/populorum.sqlite` | Migrations Symfony, indépendante |
 | INSEE COG 2026 + codes postaux La Poste | `data/geography/communes-2026.sqlite` | Inclus en `.gz` dans le code ; fichier SQLite proposé sur la release nationale |
-| DECP national, contrats publics | `data/research/public-procurement.sqlite` | Trois parties indépendantes, réunies et validées après téléchargement |
+| DECP national, contrats publics | `data/research/public-procurement.sqlite` | Archive unique compressée, avec vérification SHA-256 et contrôle SQLite |
 | SSMSI national, délinquance communale | `data/research/ssmsi-national-2025.sqlite` | Import facultatif de la source officielle 2026, années 2024–2025 | 
 | Budgets communaux OFGL | `data/research/municipal-national-2025.sqlite` | Import distinct ; non fourni dans la release DECP |
 

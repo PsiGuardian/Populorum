@@ -145,6 +145,17 @@ def main() -> None:
                 print('PASS postal prefix ' + prefix + ': only matching postal codes', flush=True)
 
 
+            # Optional beta profile is independent of Symfony authenticated accounts.
+            for endpoint, expected in (
+                ('/compte-test', 'Créer un compte de test'),
+                ('/confidentialite', 'empreinte'),
+            ):
+                with closing(browser.open(url + endpoint, timeout=28)) as response:
+                    assert response.status == 200
+                    html = response.read().decode('utf-8')
+                    assert expected in html, endpoint
+                print('PASS beta profile informational page ' + endpoint, flush=True)
+
             # The national convergence atlas must show all municipalities without rendering them all.
             atlas_cases = (
                 ('/convergence', ('34 875', 'Communes INSEE', 'Page suivante')),
