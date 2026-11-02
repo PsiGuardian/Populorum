@@ -29,11 +29,11 @@ Exemple avec la version propre (voir la page Releases pour le dernier tag dispon
 mkdir -p "$HOME/Téléchargements/populorum-clean"
 cd "$HOME/Téléchargements/populorum-clean"
 
-curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.9.0-clean/Populorum-v0.9.0-clean.tar.gz
-curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.9.0-clean/SHA256SUMS.txt
+curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.9.1-clean/Populorum-v0.9.1-clean.tar.gz
+curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.9.1-clean/SHA256SUMS.txt
 sha256sum -c SHA256SUMS.txt
-tar -xzf Populorum-v0.9.0-clean.tar.gz
-cd Populorum-v0.9.0-clean/apps/symfony
+tar -xzf Populorum-v0.9.1-clean.tar.gz
+cd Populorum-v0.9.1-clean/apps/symfony
 ```
 
 Le tag de cette section doit être vérifié sur la page [Releases](https://github.com/PsiGuardian/Populorum/releases) avant toute installation. Pour une archive de branche `main`, extraire son ZIP et se placer simplement dans `Populorum-main/apps/symfony`.
