@@ -37,6 +37,8 @@ jobs:
       - run: php bin/console lint:twig templates --env=demo
       - run: php bin/console lint:yaml config --parse-tags
       - run: php bin/console doctrine:schema:validate --env=demo
+      - run: python3 tools/install_reference_indexes.py
+      - run: python3 tools/verify_geography.py
       - run: python3 tests/http_smoke.py
       - run: composer test
       - run: python3 tests/decp_pipeline_test.py
@@ -76,6 +78,8 @@ jobs:
           php bin/console app:demo:prepare --env=demo
           php bin/console cache:clear --env=demo --no-debug
           php bin/console doctrine:schema:validate --env=demo
+          python3 tools/install_reference_indexes.py
+          python3 tools/verify_geography.py
           python3 tests/http_smoke.py
       - name: Install from freshly extracted clean repository archive
         shell: bash
@@ -96,6 +100,8 @@ jobs:
           php bin/console app:demo:prepare --env=demo
           php bin/console cache:clear --env=demo --no-debug
           php bin/console doctrine:schema:validate --env=demo
+          python3 tools/install_reference_indexes.py
+          python3 tools/verify_geography.py
           python3 tests/http_smoke.py
       - name: Verify only maintained operational files are included in tools
         shell: bash
@@ -125,15 +131,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="v0.7.0-clean"
+          TAG="v0.7.1-clean"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release exists, nothing replaced."
             exit 0
           fi
           mkdir -p release
-          git archive --format=tar --prefix="Populorum-v0.7.0-clean/" "$GITHUB_SHA" | gzip -9 > release/Populorum-v0.7.0-clean.tar.gz
-          (cd release && sha256sum Populorum-v0.7.0-clean.tar.gz > SHA256SUMS.txt)
-          gh release create "$TAG" release/Populorum-v0.7.0-clean.tar.gz release/SHA256SUMS.txt \
+          git archive --format=tar --prefix="Populorum-v0.7.1-clean/" "$GITHUB_SHA" | gzip -9 > release/Populorum-v0.7.1-clean.tar.gz
+          (cd release && sha256sum Populorum-v0.7.1-clean.tar.gz > SHA256SUMS.txt)
+          gh release create "$TAG" release/Populorum-v0.7.1-clean.tar.gz release/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
-            --title "Populorum v0.7.0 — distribution propre" \
+            --title "Populorum v0.7.1 — recherche postale complète" \
             --notes-file docs/RELEASE_NOTES_INSTALL.md

@@ -79,6 +79,30 @@ def main() -> None:
                         time.sleep(0.3)
                 if response != 200:
                     raise AssertionError(f"{path}: PHP did not return HTTP 200 in time")
+
+            # Verify actual HTTP search and suggestion results against the installed INSEE index.
+            postal_cases = (
+                ('/communes?q=76600', ('Le Havre',), ('Saint-Léonard',)),
+                ('/communes?q=66300', ('Passa', 'Thuir', 'Trouillas'), ()),
+                ('/communes?q=INSEE%3A76600', ('Saint-Léonard',), ()),
+            )
+            for path, required, excluded in postal_cases:
+                with closing(browser.open(url + path, timeout=28)) as result:
+                    assert result.status == 200, (path, result.status)
+                    html = result.read(5_000_000).decode('utf-8', 'replace')
+                for expected in required:
+                    assert expected in html, (path, 'missing', expected)
+                for unexpected in excluded:
+                    assert unexpected not in html, (path, 'unexpected', unexpected)
+                print(f'PASS {path}: HTTP 200, correct postal/INSEE mapping', flush=True)
+            with closing(browser.open(url + '/communes/suggestions?q=66300', timeout=28)) as result:
+                assert result.status == 200
+                import json
+                data = json.load(result)
+            assert data['postalQuery'] is True
+            assert len(data['communes']) == 18, len(data['communes'])
+            assert len({city['code'] for city in data['communes']}) == 18
+            print('PASS /communes/suggestions?q=66300: all 18 municipalities', flush=True)
             print("PASS: real fresh-install HTTP smoke", flush=True)
         except BaseException:
             logs.flush()

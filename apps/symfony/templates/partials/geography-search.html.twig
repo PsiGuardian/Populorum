@@ -5,6 +5,7 @@
       action="{{ chooser ? civic_path('territory_choose') : civic_path('site_communes') }}"
       method="{{ chooser ? 'post' : 'get' }}"
       data-geo-chooser data-suggestions="{{ civic_path('communes_suggestions') }}"
+      data-directory="{{ civic_path('site_communes') }}"
       data-geo-mode="{{ chooser ? 'choose' : 'directory' }}">
     {% if chooser %}
         <input type="hidden" name="_token" value="{{ csrf_token('territory_choose') }}">
