@@ -1,4 +1,4 @@
-# Populorum v0.8.2 — édition propre
+# Populorum v0.8.3 — édition propre
 
 Distribution Symfony 8.1 / PHP ≥ 8.4, nettoyée des scripts de construction, de migration historique et des benchmarks. `tools/` ne contient plus que des fonctions d'exploitation durables ; tests isolés sous `tests/`.
 

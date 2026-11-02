@@ -137,15 +137,20 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="v0.8.2-clean"
+          TAG="v0.8.3-clean"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release exists, nothing replaced."
             exit 0
           fi
           mkdir -p release
-          git archive --format=tar --prefix="Populorum-v0.8.1-clean/" "$GITHUB_SHA" | gzip -9 > release/Populorum-v0.8.1-clean.tar.gz
-          (cd release && sha256sum Populorum-v0.8.1-clean.tar.gz > SHA256SUMS.txt)
-          gh release create "$TAG" release/Populorum-v0.8.1-clean.tar.gz release/SHA256SUMS.txt \
+          ARCHIVE="Populorum-${TAG}.tar.gz"
+          PREFIX="Populorum-${TAG}/"
+          git archive --format=tar --prefix="$PREFIX" "$GITHUB_SHA" | gzip -9 > "release/$ARCHIVE"
+          test -s "release/$ARCHIVE"
+          (cd release && sha256sum "$ARCHIVE" > SHA256SUMS.txt && sha256sum -c SHA256SUMS.txt)
+          FIRST_ENTRY="$(tar -tzf "release/$ARCHIVE" | sed -n '1p')"
+          [[ "$FIRST_ENTRY" == "$PREFIX"* ]] || { echo "Incorrect archive directory: $FIRST_ENTRY" >&2; exit 1; }
+          gh release create "$TAG" "release/$ARCHIVE" release/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
-            --title "Populorum v0.8.2 — recherche postale stricte" \
+            --title "Populorum v0.8.3 — recherche postale exacte" \
             --notes-file docs/RELEASE_NOTES_INSTALL.md
