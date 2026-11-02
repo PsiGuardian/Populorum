@@ -107,11 +107,15 @@ final class ApplicationCompletionTest extends TestCase
         );
         self::assertSame(200, $convergence->getStatusCode());
         self::assertStringContainsString(
-            'Taux pour 1 000 logements',
+            'Communes INSEE',
             $convergence->getContent(),
         );
         self::assertStringContainsString(
-            'Évolutions de',
+            '34 875',
+            $convergence->getContent(),
+        );
+        self::assertStringContainsString(
+            'statistique',
             $convergence->getContent(),
         );
         self::assertStringContainsString(
