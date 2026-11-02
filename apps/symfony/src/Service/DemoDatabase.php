@@ -239,33 +239,44 @@ final class DemoDatabase
         });
     }
 
+    /** Synchronise le référentiel national COG 2026 dans Doctrine, sans créer de citoyens ni votes. */
     public function importCities(): int
     {
-        $cities = json_decode(
-            file_get_contents($this->projectDir . '/data/cities.json'),
-            true,
-            512,
-            JSON_THROW_ON_ERROR,
-        );
-        $insertedCities = 0;
-
-        foreach ($cities as $city) {
-            $insertedCities += $this->connection->executeStatement(
-                <<<'SQL'
-                INSERT OR IGNORE INTO municipalities (code, name, region, department, vintage, source_url)
-                VALUES (?, ?, ?, ?, ?, ?)
-                SQL,
-                [
-                    $city['code'],
-                    $city['name'],
-                    $city['region'],
-                    $city['department'],
-                    $city['vintage'],
-                    $city['sourceUrl'],
-                ],
-            );
+        $file = $this->projectDir . '/data/geography/communes-2026.sqlite';
+        if (!is_file($file)) {
+            throw new \RuntimeException('Référentiel INSEE absent : exécutez python3 tools/install_reference_indexes.py avant app:demo:prepare.');
+        }
+        $source = new \PDO('sqlite:file:' . $file . '?mode=ro', null, null, [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+        ]);
+        $source->exec('PRAGMA query_only=ON');
+        $year = $source->query("SELECT value FROM metadata WHERE key='vintage'")->fetchColumn();
+        if ($year !== '2026') {
+            throw new \RuntimeException('Référentiel INSEE incompatible : millésime 2026 exigé.');
+        }
+        $count = (int) $source->query('SELECT COUNT(*) FROM communes')->fetchColumn();
+        if ($count < 30000) {
+            throw new \RuntimeException('Référentiel INSEE incomplet.');
         }
 
-        return $insertedCities;
+        $select = $source->query('SELECT code, name, region_name, department_name FROM communes ORDER BY code');
+        $this->connection->transactional(function () use ($select): void {
+            $insert = $this->connection->prepare(<<<'SQL'
+                INSERT INTO municipalities (code, name, region, department, vintage, source_url)
+                VALUES (?, ?, ?, ?, 2026, ?)
+                ON CONFLICT(code) DO UPDATE SET
+                    name = excluded.name, region = excluded.region,
+                    department = excluded.department, vintage = excluded.vintage,
+                    source_url = excluded.source_url
+                SQL);
+            while (($city = $select->fetch(\PDO::FETCH_ASSOC)) !== false) {
+                $insert->executeStatement([
+                    $city['code'], $city['name'], $city['region_name'],
+                    $city['department_name'],
+                    'https://www.insee.fr/fr/information/8740222',
+                ]);
+            }
+        });
+        return $count;
     }
 }

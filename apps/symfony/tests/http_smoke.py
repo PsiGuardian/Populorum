@@ -103,6 +103,15 @@ def main() -> None:
             assert len(data['communes']) == 18, len(data['communes'])
             assert len({city['code'] for city in data['communes']}) == 18
             print('PASS /communes/suggestions?q=66300: all 18 municipalities', flush=True)
+            for prefix in ('66', '663'):
+                with closing(browser.open(url + '/communes/suggestions?q=' + prefix, timeout=28)) as result:
+                    assert result.status == 200
+                    data = json.load(result)
+                assert data['postalQuery'] is True
+                assert data['communes']
+                for row in data['communes']:
+                    assert any(code.strip().startswith(prefix) for code in row['postalCodes'].split(',')), (prefix, row)
+                print('PASS postal prefix ' + prefix + ': only matching postal codes', flush=True)
             print("PASS: real fresh-install HTTP smoke", flush=True)
         except BaseException:
             logs.flush()

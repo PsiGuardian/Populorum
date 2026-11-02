@@ -174,7 +174,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
 
                 return $q->fetchAll(\PDO::FETCH_ASSOC);
             }
-            if (preg_match('/\A[0-9]{5}\z/D', $term)) {
+            if (preg_match('/\A[0-9]{2,5}\z/D', $term)) {
                 if (!$hasPostals) {
                     return []; // Never mislabel an INSEE code as a postal result.
                 }
@@ -182,8 +182,9 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
                     . ' communes.region_name AS region,'
                     . " (SELECT GROUP_CONCAT(postal_code, ', ') FROM postal_codes p2 WHERE p2.code=communes.code) AS postalCodes"
                     . ' FROM postal_codes p JOIN communes ON communes.code=p.code'
-                    . ' WHERE p.postal_code=? ORDER BY communes.name, communes.code LIMIT ? OFFSET ?');
-                $q->bindValue(1, $term);
+                    . (strlen($term) === 5 ? ' WHERE p.postal_code = ?' : ' WHERE p.postal_code LIKE ?')
+                    . ' GROUP BY communes.code ORDER BY communes.name, communes.code LIMIT ? OFFSET ?');
+                $q->bindValue(1, strlen($term) === 5 ? $term : $term . '%');
                 $q->bindValue(2, $limit, \PDO::PARAM_INT);
                 $q->bindValue(3, $offset, \PDO::PARAM_INT);
                 $q->execute();
@@ -218,7 +219,7 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
 
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         }
-        if (preg_match('/\A[0-9]{5}\z/D', $term)) {
+        if (preg_match('/\A[0-9]{2,5}\z/D', $term)) {
             return []; // Postal search is unavailable without the official crosswalk.
         }
         if (preg_match('/\A(?:INSEE|COG)\s*:\s*((?:[0-9]{5}|2[AB][0-9]{3}))\z/iD', $term, $match)) {

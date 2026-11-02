@@ -55,9 +55,9 @@ composer install --no-interaction --prefer-dist --no-progress &&
 test -f vendor/autoload.php &&
 php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
 php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
 python3 tools/install_reference_indexes.py &&
 python3 tools/verify_geography.py &&
+php bin/console app:demo:prepare --env=demo &&
 php bin/console cache:clear --env=demo --no-debug &&
 php bin/console doctrine:schema:validate --env=demo &&
 python3 tests/http_smoke.py
@@ -75,7 +75,7 @@ Ouvrir **http://127.0.0.1:5412/**. Arrêter avec Ctrl+C. Le serveur intégré PH
 
 ## 4. Installer les référentiels nationaux INSEE et DECP
 
-La base géographique INSEE est fournie en archive compressée avec les sources et est **installée et testée dans la section 3**. Pour revérifier sans réseau :
+La base géographique INSEE est fournie en archive compressée avec les sources et est **installée puis synchronisée dans Doctrine dans la section 3**, avant la création des scénarios. Pour revérifier sans réseau :
 
 ```bash
 python3 tools/install_reference_indexes.py

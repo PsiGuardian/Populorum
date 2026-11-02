@@ -49,6 +49,14 @@ final class GeographyCatalogTest extends TestCase
             self::assertSame(['76351'], array_column($catalog->search('76600', 50), 'code'));
             self::assertSame('Le Havre', $catalog->search('76610', 50)[0]['name']);
             self::assertSame(['76600'], array_column($catalog->search('INSEE:76600'), 'code'));
+            foreach (['66', '663'] as $prefix) {
+                $candidates = $catalog->search($prefix, 50);
+                self::assertNotEmpty($candidates);
+                foreach ($candidates as $candidate) {
+                    $codes = explode(', ', $candidate['postalCodes']);
+                    self::assertNotEmpty(array_filter($codes, static fn (string $code): bool => str_starts_with($code, $prefix)), $candidate['name']);
+                }
+            }
             $results = $catalog->search('66300', 50);
             self::assertCount(18, $results);
             self::assertContains('Passa', array_column($results, 'name'));

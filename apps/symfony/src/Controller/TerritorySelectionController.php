@@ -59,7 +59,7 @@ final class TerritorySelectionController extends AbstractController
     {
         $query = $request->query->getString('q', '');
         // A postal code can identify more than twelve municipalities.
-        $postal = preg_match('/\\A[0-9]{5}\\z/D', trim($query)) === 1;
+        $postal = preg_match('/\\A[0-9]{2,5}\\z/D', trim($query)) === 1;
         $results = $this->geography->search($query, $postal ? 50 : 12);
         $coverage = $this->geography->coverage();
         $response = new JsonResponse([
