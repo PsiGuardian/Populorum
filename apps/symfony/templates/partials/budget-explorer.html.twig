@@ -16,7 +16,7 @@
         <span><span class="budget-dot budget-dot--missing" aria-hidden="true"></span> Information à documenter</span>
     </div>
 
-    <form method="get" action="{{ civic_path('section', {view: 'budget'}) }}#explorateur" class="budget-filter-form" aria-label="Filtrer les comptes publics">
+    <form method="post" action="{{ civic_path('site_public_filters_submit', {base: 'budget-et-priorites'}) }}" class="budget-filter-form" aria-label="Filtrer les comptes publics">
         <input type="hidden" name="scope" value="{{ explorerScope }}">
         <div class="budget-scope-info">
             <strong>{{ explorerScope == 'FR' ? 'France · comptes communaux couverts' : (explorer.city ? explorer.city.city.name : 'Commune sans comptes disponibles') }}</strong>
@@ -224,7 +224,7 @@
     </ol>
     <p class="budget-trace-warning"><strong>Attention :</strong> ce parcours présente des niveaux d’information, pas une suite de virements entre ces quatre montants. Les recettes sont mutualisées ; aucune preuve ne permet de suivre l’euro individuel d’un contribuable.</p>
 
-    <form method="get" action="{{ civic_path('section', {view: 'budget'}) }}#budget-documents" class="budget-trace-form">
+    <form method="post" action="{{ civic_path('site_public_filters_submit', {base: 'budget-et-priorites'}) }}" class="budget-trace-form">
         <input type="hidden" name="scope" value="{{ explorerScope }}">
         <input type="hidden" name="category" value="{{ explorer.category }}">
         <input type="hidden" name="sort" value="{{ explorer.sort }}">

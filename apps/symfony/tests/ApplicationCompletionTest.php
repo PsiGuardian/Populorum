@@ -103,7 +103,7 @@ final class ApplicationCompletionTest extends TestCase
             $home,
         );
         $convergence = $this->request(
-            '/convergence?id=p1&indicator=Cambriolages%20de%20logement',
+            '/convergence/id/p1/indicator/Cambriolages%20de%20logement',
         );
         self::assertSame(200, $convergence->getStatusCode());
         self::assertStringContainsString(
@@ -687,12 +687,12 @@ final class ApplicationCompletionTest extends TestCase
         );
         self::assertSame(
             400,
-            $this->request('/budget-et-priorites?saving=101')->getStatusCode(),
+            $this->request('/budget-et-priorites/saving/101')->getStatusCode(),
         );
         self::assertSame(
             400,
             $this->request(
-                '/budget-et-priorites?account=6%20OR%201=1',
+                '/budget-et-priorites/account/6%20OR%201%3D1',
             )->getStatusCode(),
         );
         self::assertSame(
@@ -708,7 +708,7 @@ final class ApplicationCompletionTest extends TestCase
             )->getStatusCode(),
         );
         $budget = $this->request(
-            '/budget-et-priorites?scope=75056&saving=100',
+            '/budget-et-priorites/scope/75056/saving/100',
         )->getContent();
         self::assertStringContainsString('Cible de 1 € non atteinte', $budget);
         self::assertStringContainsString('4 322 lignes', $budget);
@@ -743,7 +743,7 @@ final class ApplicationCompletionTest extends TestCase
         try {
             $_SERVER['POPULORUM_SCENARIO'] = '';
             $this->session->set('simulation_owner', 'nonpilot-budget-' . bin2hex(random_bytes(6)));
-            $page = $this->request('/budget-et-priorites?scope=66134');
+            $page = $this->request('/budget-et-priorites/scope/66134');
             self::assertSame('66134', $this->session->get(App\Service\TerritorySelection::SESSION_KEY));
             self::assertSame(200, $page->getStatusCode(), 'Passa must retain access to real public data without a pilot scenario.');
             self::assertStringContainsString('L’arbre des dépenses publiques', $page->getContent());
@@ -755,7 +755,7 @@ final class ApplicationCompletionTest extends TestCase
             self::assertStringNotContainsString('Pas de scénario local', $fiction->getContent());
             self::assertStringContainsString('0–0 sur 0 résultat', $fiction->getContent());
             // No re-use of an unrelated pilot's detailed ledger on an unknown budget.
-            self::assertSame(400, $this->request('/budget-et-priorites?account=6%20OR%201=1')->getStatusCode());
+            self::assertSame(400, $this->request('/budget-et-priorites/account/6%20OR%201%3D1')->getStatusCode());
         } finally {
             $this->session->remove(App\Service\TerritorySelection::SESSION_KEY);
             if ($created) {

@@ -82,8 +82,7 @@
             all.setAttribute('role', 'option');
             all.setAttribute('aria-selected', 'false');
             const allUrl = new URL(directory, location.origin);
-            allUrl.searchParams.set('q', term);
-            all.href = allUrl.pathname + allUrl.search;
+            all.href = allUrl.pathname.replace(/\/$/, '') + '/q/' + encodeURIComponent(term);
             all.textContent = result.postalQuery
               ? (term.length === 5
                 ? 'Voir toutes les communes du code postal ' + term

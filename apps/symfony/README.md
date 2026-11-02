@@ -63,7 +63,7 @@ Les commandes s'exécutent depuis `apps/symfony`. Le référentiel national est 
 APP_ENV=demo APP_DEBUG=0 php -S 127.0.0.1:5412 -t public
 ```
 
-**Bases nationales :** installer et vérifier INSEE/La Poste via `php bin/console app:geography:install --env=demo` et `php bin/console app:geography:install --check --env=demo` (la préparation de la démo effectue aussi la restauration automatique), puis suivre [installation des données nationales](docs/INSTALLATION_DONNEES_NATIONALES.md) pour la base DECP indépendante d'environ 1,7 Go (trois parties validées, publiées séparément des sources). La base nationale de marchés est distincte de `var/populorum.sqlite`.
+**Bases nationales :** installer et vérifier INSEE/La Poste via `php bin/console app:geography:install --env=demo` et `php bin/console app:geography:install --check --env=demo` (la préparation de la démo effectue aussi la restauration automatique), puis suivre [installation des données nationales](docs/INSTALLATION_DONNEES_NATIONALES.md) pour la base DECP indépendante (archive unique compressée d'environ 464 Mio, vérifiée par SHA-256). La base nationale de marchés est distincte de `var/populorum.sqlite`.
 
 ## Le fichier SQLite demandé
 

@@ -1,4 +1,8 @@
-# Populorum v0.9.2 — édition propre
+## v0.9.3 — Navigation lisible et audit des dates DECP
+
+Les recherches de marchés, communes, convergence et budget utilisent désormais des segments de chemin sans paramètres GET visibles. Les URL anciennes sont redirigées et les critères vides sont exclus. Les marchés publics disposent de tris par date, par montant contractuel, ainsi que d'une vue priorisant les dates suspectes. Les dates sources sont conservées, avec motifs de signalement calculés séparément. La documentation DECP référence l'archive unique déjà publiée.
+
+# Populorum v0.9.3 — édition propre
 
 Distribution Symfony 8.1 / PHP ≥ 8.4, nettoyée des scripts de construction, de migration historique et des benchmarks. `tools/` ne contient plus que des fonctions d'exploitation durables ; tests isolés sous `tests/`.
 

@@ -2,8 +2,8 @@
 {% set chooser = geoMode|default('directory') == 'choose' %}
 {% set searchId = geoSearchId|default('global') %}
 <form class="geo-chooser" role="search"
-      action="{{ chooser ? civic_path('territory_choose') : civic_path('site_communes') }}"
-      method="{{ chooser ? 'post' : 'get' }}"
+      action="{{ chooser ? civic_path('territory_choose') : civic_path('site_public_filters_submit', {base: 'communes'}) }}"
+      method="post"
       data-geo-chooser data-suggestions="{{ civic_path('communes_suggestions') }}"
       data-directory="{{ civic_path('site_communes') }}"
       data-geo-mode="{{ chooser ? 'choose' : 'directory' }}">

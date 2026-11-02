@@ -24,7 +24,7 @@
 <section class="panel budget-explorer" id="contrat-detail" aria-label="Fiche d'un contrat officiel">
     <p class="budget-eyebrow">FICHE DOCUMENTAIRE · {{ marketDetails.kind == 'market' ? 'MARCHÉ' : 'CONCESSION' }}</p>
     <h2>{{ marketDetails.object }}</h2>
-    <p><strong>Référence :</strong> {{ marketDetails.original_id }} · <strong>Acheteur :</strong> {{ marketDetails.buyer_id }} · <strong>Notification / signature :</strong> {{ marketDetails.notice_date|default('non renseignée') }}</p>
+    <p><strong>Référence :</strong> {{ marketDetails.original_id }} · <strong>Acheteur :</strong> {{ marketDetails.buyer_id }} · <strong>Notification / signature :</strong> {% if marketDetails.date_quality.valid %}{{ marketDetails.notice_date }}{% else %}<code>{{ marketDetails.notice_date|default('date absente') }}</code> · <strong>À vérifier : {{ marketDetails.date_quality.reason }}</strong>. Motif détecté automatiquement par Populorum ; aucune justification de l'acheteur n'est identifiable dans les champs de date indexés.{% endif %}</p>
     <p><strong>Valeur contractuelle conservée dans l’index :</strong>
         {% if marketDetails.amount_initial_cents is not null %}{{ (marketDetails.amount_initial_cents / 100)|number_format(2, ',', ' ') }} €{% else %}Non communiqué{% endif %}
         {% if marketDetails.amount_amended_cents is not null %} · <strong>Montant renseigné dans une modification (non additionnable) :</strong> {{ (marketDetails.amount_amended_cents / 100)|number_format(2, ',', ' ') }} €{% endif %}
@@ -87,10 +87,20 @@
 
 <section class="panel budget-explorer" id="recherche-marches">
     <h2>Rechercher dans les contrats</h2>
+    <p class="budget-muted">Toutes les dates déclarées restent consultables et triables, y compris les années incohérentes. Le tri chronologique utilise les valeurs de la source, même lorsqu’elles sont manifestement suspectes. Le mode « Dates à contrôler » remonte les anomalies détectables dans l’index. Les montants sont contractuels, pas des dépenses effectivement payées.</p>
     <p class="budget-muted">Le périmètre communal est strict : uniquement les contrats dont le lieu est codé « Code commune ». Les marchés géolocalisés par département ou code postal ne sont pas attribués arbitrairement à une ville. Pour tous les contrats, videz le filtre commune.</p>
-    <form action="{{ civic_path('site_markets') }}#resultats-marches" method="get" class="budget-trace-form">
+    <form action="{{ civic_path('site_public_filters_submit', {base: 'marches-publics'}) }}" method="post" class="budget-trace-form">
         <label>Objet ou référence <input type="search" name="q" maxlength="120" value="{{ marketFilters.q }}" placeholder="Ex. école, sécurité, déchets…"></label>
         <label>Nature <select name="kind"><option value="">Marchés et concessions</option><option value="market" {{ marketFilters.kind == 'market' ? 'selected' : '' }}>Marchés</option><option value="concession" {{ marketFilters.kind == 'concession' ? 'selected' : '' }}>Concessions</option></select></label>
+        <label>Trier les résultats
+            <select name="sort">
+                <option value="date_desc" {{ marketFilters.sort == 'date_desc' ? 'selected' : '' }}>Date décroissante (valeur déclarée)</option>
+                <option value="date_asc" {{ marketFilters.sort == 'date_asc' ? 'selected' : '' }}>Date croissante (valeur déclarée)</option>
+                <option value="amount_desc" {{ marketFilters.sort == 'amount_desc' ? 'selected' : '' }}>Montant contractuel décroissant</option>
+                <option value="amount_asc" {{ marketFilters.sort == 'amount_asc' ? 'selected' : '' }}>Montant contractuel croissant</option>
+                <option value="date_anomalies" {{ marketFilters.sort == 'date_anomalies' ? 'selected' : '' }}>Dates à contrôler en priorité</option>
+            </select>
+        </label>
         <label>Année de notification <input type="text" name="year" pattern="[0-9]{4}" maxlength="4" value="{{ marketFilters.year }}" placeholder="2024"></label>
         <label>Acheteur SIREN/SIRET <input type="text" name="buyer" maxlength="14" value="{{ marketFilters.buyer }}" placeholder="9 ou 14 chiffres"></label>
         <label>Titulaire SIREN/SIRET <input type="text" name="supplier" maxlength="14" value="{{ marketFilters.supplier }}" placeholder="9 ou 14 chiffres"></label>
@@ -107,7 +117,7 @@
       <div class="budget-documents">
         {% for contract in marketList.items %}
           <article style="border-bottom:1px solid #8885;padding:.85rem 0">
-            <p class="budget-eyebrow">{{ contract.kind == 'market' ? 'MARCHÉ PUBLIC' : 'CONCESSION' }} · {{ contract.notice_date|default('date inconnue') }} · {{ contract.nature }}</p>
+            <p class="budget-eyebrow">{{ contract.kind == 'market' ? 'MARCHÉ PUBLIC' : 'CONCESSION' }} · {% if contract.date_quality.valid %}{{ contract.notice_date }}{% else %}<span title="Signalement automatique — {{ contract.date_quality.reason }}">{{ contract.date_quality.raw|default('Date non renseignée') }} · À vérifier : {{ contract.date_quality.reason }}</span>{% endif %} · {{ contract.nature }}</p>
             <h3><a href="{{ civic_path('site_market_detail', {key:contract.contract_key}) }}#contrat-detail">{{ contract.object }}</a></h3>
             <p><strong>{% if contract.amount_initial_cents is not null %}{{ (contract.amount_initial_cents / 100)|number_format(2, ',', ' ') }} € (valeur contractuelle déclarée){% else %}Montant non communiqué{% endif %}</strong>
               · <strong>{{ contract.source_count }} fichier(s) indexé(s)</strong> · Acheteur {{ contract.buyer_id }} · Lieu : {{ contract.location_type }} {{ contract.location_code }} · CPV {{ contract.cpv }}.</p>
