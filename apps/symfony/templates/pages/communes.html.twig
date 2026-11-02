@@ -9,10 +9,10 @@
     <p class="geo-coverage"><strong>Couverture :</strong> {{ communesCoverage.label }} · {{ communesCoverage.count|number_format(0, ',', ' ') }} communes référencées.</p>
     {% include 'partials/geography-search.html.twig' with {geoQuery: communesQuery, geoSearchId: 'directory', geoMode: 'directory'} %}
     {% if communesCoverage.available and not communesCoverage.postals %}
-        <p class="budget-gap">Référentiel postal non chargé : la recherche par code postal est indisponible. Lancez l’import La Poste ; les recherches par nom et les codes INSEE explicites restent possibles.</p>
+        <p class="budget-gap">Référentiel postal non chargé : exécutez php bin/console app:geography:install --env=demo pour restaurer l’index INSEE / La Poste.</p>
     {% endif %}
     {% if not communesCoverage.available %}
-        <p class="budget-gap">L’import INSEE 2026 n’a pas encore été effectué. L’annuaire national et la recherche complète seront disponibles après exécution de l’importateur. Les trois villes pilotes restent accessibles.</p>
+        <p class="budget-gap">Référentiel INSEE 2026 absent : exécutez php bin/console app:geography:install --env=demo puis php bin/console app:demo:prepare --env=demo.</p>
     {% endif %}
 </section>
 {% if communesDetail %}
@@ -22,7 +22,7 @@
         <div><dt>Code officiel INSEE</dt><dd>{{ communesDetail.code }}</dd></div>
         <div><dt>Département</dt><dd>{{ communesDetail.department }} ({{ communesDetail.departmentCode }})</dd></div>
         <div><dt>Région</dt><dd>{{ communesDetail.region }} ({{ communesDetail.regionCode }})</dd></div>
-        <div><dt>Simulation</dt><dd>{{ communesDetail.pilotId ? 'Ville pilote fictive disponible' : 'Pas de scénario fictif pour cette commune' }}</dd></div>
+        <div><dt>Simulation</dt><dd>Espace communal fictif indépendant, initialement vide.</dd></div>
     </dl>
     <div class="geo-actions">
         <form method="post" action="{{ civic_path('territory_choose') }}">
@@ -33,9 +33,7 @@
             <button class="button primary" type="submit">Choisir cette commune dans tout le site</button>
         </form>
         <a class="button" href="{{ civic_path('section', {view: 'budget', scope: communesDetail.code}) }}#explorateur">Voir ses finances et la traçabilité</a>
-        {% if communesDetail.pilotId %}
-            <a class="button" href="{{ civic_path('section', {view: 'proposals', territory: communesDetail.pilotId}) }}">Expériences fictives de la ville</a>
-        {% endif %}
+
         <a class="button" href="{{ civic_path('site_communes', {region: communesDetail.regionCode, department: communesDetail.departmentCode}) }}">Autres communes de ce département</a>
     </div>
     <p class="small muted">Une fiche communale n’atteste pas de l’existence de données financières pour l’année choisie. Le budget ne montre que les chiffres effectivement importés et sourcés.</p>
@@ -67,7 +65,8 @@
     <div class="geo-result-grid">
         {% for commune in communesResults|slice(0, 40) %}
             <a class="geo-link" href="{{ civic_path('site_commune', {code: commune.code}) }}">
-                <strong>{{ commune.name }}</strong> <small>{{ commune.code }}{% if commune.department is defined %} · {{ commune.department }}{% endif %}{% if commune.postalCodes is defined and commune.postalCodes %} · CP {{ commune.postalCodes }}{% endif %}</small>
+                <strong>{{ commune.name }}</strong>
+                <small>{% if commune.postalCodes is defined and commune.postalCodes %}CP {{ commune.postalCodes }} · {% endif %}Code INSEE {{ commune.code }}{% if commune.department is defined %} · {{ commune.department }}{% endif %}</small>
             </a>
         {% else %}
             <p>Aucun résultat pour ce périmètre. Essayez un nom ou code postal ; pour un identifiant administratif, saisissez INSEE:76351.</p>

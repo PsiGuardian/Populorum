@@ -29,7 +29,7 @@ Exemple avec la version propre (voir la page Releases pour le dernier tag dispon
 mkdir -p "$HOME/Téléchargements/populorum-clean"
 cd "$HOME/Téléchargements/populorum-clean"
 
-curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.8.1-clean/Populorum-v0.8.1-clean.tar.gz
+curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.8.2-clean/Populorum-v0.8.1-clean.tar.gz
 curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.8.1-clean/SHA256SUMS.txt
 sha256sum -c SHA256SUMS.txt
 tar -xzf Populorum-v0.8.1-clean.tar.gz

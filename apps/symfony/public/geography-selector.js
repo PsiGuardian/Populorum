@@ -43,9 +43,23 @@
             option.setAttribute('role', 'option');
             option.setAttribute('aria-selected', 'false');
             const label = document.createElement('strong');
-            label.textContent = city.name + ' · ' + city.code;
+            // Postal input: show the exact matching postal codes first, never the INSEE code as the match.
+            // The API returns only postal codes respecting the typed prefix/exact value.
+            const matchingPostals = (city.postalCodes || '').split(',').map(x => x.trim()).filter(Boolean);
+            const postalMatch = result.postalQuery ? matchingPostals.filter(code =>
+              /^\d{5}$/.test(code) && (term.length === 5 ? code === term : code.startsWith(term))
+            ) : [];
+            if (result.postalQuery && !postalMatch.length) continue;
+            label.textContent = result.postalQuery
+              ? city.name + ' · CP ' + postalMatch.join(', ')
+              : city.name;
             const description = document.createElement('small');
-            description.textContent = [city.department, city.region, city.postalCodes].filter(Boolean).join(' · ');
+            description.textContent = [
+              'Code INSEE ' + city.code,
+              city.department,
+              city.region,
+              ...(!result.postalQuery && city.postalCodes ? ['Codes postaux ' + city.postalCodes] : []),
+            ].filter(Boolean).join(' · ');
             option.append(label, description);
             if (chooser) {
               option.type = 'button';
@@ -71,7 +85,9 @@
             allUrl.searchParams.set('q', term);
             all.href = allUrl.pathname + allUrl.search;
             all.textContent = result.postalQuery
-              ? 'Voir toutes les communes du code postal ' + term
+              ? (term.length === 5
+                ? 'Voir toutes les communes du code postal ' + term
+                : 'Voir toutes les communes des codes postaux ' + term + 'xx…')
               : 'Voir tous les résultats dans l’annuaire';
             list.appendChild(all);
           }
@@ -80,7 +96,7 @@
           feedback.textContent = (result.communes || []).length
             ? (result.communes || []).length + ' commune(s) proposée(s) — choisissez une commune ou ouvrez la liste complète.'
             : (/^\d{5}$/.test(term) && !result.postalAvailable
-              ? 'Index postal absent : exécutez l’import La Poste. Aucun code INSEE ne sera substitué.'
+              ? 'Référentiel postal absent : utilisez php bin/console app:geography:install --env=demo.'
               : 'Aucune commune trouvée. Vérifiez le référentiel et le code saisi.');
         } catch (error) {
           if (error.name !== 'AbortError') feedback.textContent = 'Recherche indisponible. Ouvrez l’annuaire ou saisissez le code INSEE.';

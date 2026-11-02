@@ -148,7 +148,8 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
                 }
                 $q = $db->prepare('SELECT communes.code, communes.name, communes.department_name AS department,'
                     . ' communes.region_name AS region,'
-                    . " (SELECT GROUP_CONCAT(postal_code, ', ') FROM postal_codes p2 WHERE p2.code=communes.code) AS postalCodes"
+                    // Only matching postal codes are returned to the UI; never mix other postcodes.
+                    . ' GROUP_CONCAT(DISTINCT p.postal_code) AS postalCodes'
                     . ' FROM postal_codes p JOIN communes ON communes.code=p.code'
                     . (strlen($term) === 5 ? ' WHERE p.postal_code = ?' : ' WHERE p.postal_code LIKE ?')
                     . ' GROUP BY communes.code ORDER BY communes.name, communes.code LIMIT ? OFFSET ?');

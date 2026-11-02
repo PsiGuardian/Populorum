@@ -137,7 +137,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="v0.8.1-clean"
+          TAG="v0.8.2-clean"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release exists, nothing replaced."
             exit 0
@@ -147,5 +147,5 @@ jobs:
           (cd release && sha256sum Populorum-v0.8.1-clean.tar.gz > SHA256SUMS.txt)
           gh release create "$TAG" release/Populorum-v0.8.1-clean.tar.gz release/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
-            --title "Populorum v0.8.1 — installation INSEE native PHP" \
+            --title "Populorum v0.8.2 — recherche postale stricte" \
             --notes-file docs/RELEASE_NOTES_INSTALL.md
