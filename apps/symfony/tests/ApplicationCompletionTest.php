@@ -708,7 +708,7 @@ final class ApplicationCompletionTest extends TestCase
             )->getStatusCode(),
         );
         $budget = $this->request(
-            '/budget-et-priorites?scope=75056&saving=100',
+            '/budget-et-priorites/scope/75056/saving/100',
         )->getContent();
         self::assertStringContainsString('Cible de 1 € non atteinte', $budget);
         self::assertStringContainsString('4 322 lignes', $budget);
