@@ -195,6 +195,29 @@ def main() -> None:
                 print(f'PAGE {path:38} HTTP={http_ms_median:8.2f}  PHP={php_ms_median if php_ms_median is not None else "n/a"}', flush=True)
             print('NOTE: CI fixture timings are not timings of the optional 1.7GB DECP production DB.', flush=True)
 
+            # Stateless beta profile: create, revisit, delete without browser cookies.
+            profile_browser = urllib.request.build_opener()
+            with closing(profile_browser.open(url + '/compte-test', timeout=28)) as response:
+                assert response.status == 200
+                profile_form = response.read().decode('utf-8')
+                assert 'Créer un compte de test' in profile_form
+                assert 'POPULORUM_BETA' not in str(response.headers), 'Unexpected profile cookie'
+            form_token = re.search(r'name="_token" value="([a-f0-9]{64})"', profile_form)
+            assert form_token, 'Stateless profile form token missing'
+            details = urlencode({'_token': form_token.group(1), 'first_name': 'Alex',
+                                 'last_name': 'Fictif', 'age': '32', 'commune_code': '66134'}).encode()
+            with closing(profile_browser.open(urllib.request.Request(
+                url + '/compte-test', data=details, method='POST',
+                headers={'Origin': url}
+            ), timeout=28)) as response:
+                assert response.status == 200
+                html = response.read().decode('utf-8', 'replace')
+                assert 'Alex Fictif' in html, 'IP-only profile not restored'
+                assert 'POPULORUM_BETA' not in str(response.headers), 'Unexpected profile cookie'
+            with closing(profile_browser.open(url + '/compte-test', timeout=28)) as response:
+                assert 'Alex Fictif' in response.read().decode('utf-8'), 'Revisit failed without cookie'
+            print('PASS IP-only beta profile POST/revisit, no account cookie', flush=True)
+
             # A municipality outside the old pilot fixtures must have an isolated local workspace.
             import re
             from urllib.parse import urlencode

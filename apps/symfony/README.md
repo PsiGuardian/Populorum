@@ -1,3 +1,5 @@
+> **Installation complète en un seul endroit :** [LIRE_AVANT_INSTALLATION.md](https://github.com/PsiGuardian/Populorum/blob/main/LIRE_AVANT_INSTALLATION.md). Cette page inclut les commandes facultatives pour télécharger les bases INSEE, DECP (marchés publics) et SSMSI depuis GitHub Releases. La release v0.10.0-clean reprend la même notice directement dans sa description.
+
 # Démos Kratos — Symfony 8.1 et SQLite
 
 Application native **PHP 8.4 / Symfony 8.1 / Doctrine / Twig / Symfony Form et Validator**, sans dépendance React, Node.js ni service JavaScript côté serveur. La base est un fichier SQLite : `var/populorum.sqlite`.
@@ -160,3 +162,7 @@ Voir [le modèle narratif, les archives et les tests](docs/FICTIONAL_MINDS.md). 
 Chaque personnage conserve son opinion et ses douze réponses. Pour l’adoption, chaque famille fictive déclarée compte au maximum une voix, quelle que soit sa taille. Le résultat familial et les opinions individuelles sont affichés séparément. Majorité des POUR/CONTRE au sein de la famille ; égalité ou seules abstentions = abstention familiale ; quorum calculé sur les familles. Rattachements et règle sont figés à l’ouverture. Voir [la règle, ses exemples et ses tests](docs/FAMILY_SUFFRAGE.md).
 
 La charte 1.1 et ses 28 versions documentaires portent l’amendement. Les anciennes consultations gardent leurs règles ; ouvrir un nouveau laboratoire pour tester le nouveau millésime.
+
+### Comptes de test facultatifs
+
+`/compte-test` : nom, prénom, âge et commune INSEE (données déclaratives, noms fictifs acceptés). Aucun rôle privilégié, aucun cookie propre au compte ; l'empreinte HMAC de l'adresse IP est conservée 30 jours. Les adresses IP partagées ne sont pas des identifiants sécurisés. Voir `/confidentialite`.
