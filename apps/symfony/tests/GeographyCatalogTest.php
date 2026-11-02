@@ -7,25 +7,21 @@ use PHPUnit\Framework\TestCase;
 
 final class GeographyCatalogTest extends TestCase
 {
-    public function testPilotFallbackWithoutNationalIndex(): void
+    public function testMissingIndexDoesNotInventFormerPilotMunicipalities(): void
     {
         $root = sys_get_temp_dir() . '/populorum-geo-' . bin2hex(random_bytes(6));
-        mkdir($root . '/data', 0700, true);
+        mkdir($root, 0700, true);
         try {
-            file_put_contents($root . '/data/cities.json', json_encode([
-                ['id' => 't1', 'name' => 'Paris', 'code' => '75056', 'region' => 'Île-de-France', 'department' => 'Paris', 'sourceUrl' => 'https://www.insee.fr/'],
-            ], JSON_THROW_ON_ERROR));
             $catalog = new GeographyCatalog($root);
             self::assertFalse($catalog->coverage()['available']);
-            self::assertSame('Paris', $catalog->find('75056')['name']);
-            self::assertSame('t1', $catalog->find('75056')['pilotId']);
-            self::assertNull($catalog->find('99999'));
-            self::assertSame('75056', $catalog->search('Par')[0]['code']);
-            self::assertSame('75056', $catalog->cityPage('11', '75', 0)['rows'][0]['code']);
-            self::assertSame(1, $catalog->coverage()['count']);
+            self::assertSame(0, $catalog->coverage()['count']);
+            self::assertNull($catalog->find('75056'));
+            self::assertSame([], $catalog->search('Paris'));
+            self::assertSame([], $catalog->search('66300'));
+            self::assertSame([], $catalog->regions());
+            self::assertSame([], $catalog->departments('11'));
+            self::assertSame(['rows' => [], 'total' => 0], $catalog->cityPage('11', '75', 0));
         } finally {
-            @unlink($root . '/data/cities.json');
-            @rmdir($root . '/data');
             @rmdir($root);
         }
     }
@@ -49,6 +45,14 @@ final class GeographyCatalogTest extends TestCase
             self::assertSame(['76351'], array_column($catalog->search('76600', 50), 'code'));
             self::assertSame('Le Havre', $catalog->search('76610', 50)[0]['name']);
             self::assertSame(['76600'], array_column($catalog->search('INSEE:76600'), 'code'));
+            foreach (['66', '663'] as $prefix) {
+                $candidates = $catalog->search($prefix, 50);
+                self::assertNotEmpty($candidates);
+                foreach ($candidates as $candidate) {
+                    $codes = explode(', ', $candidate['postalCodes']);
+                    self::assertNotEmpty(array_filter($codes, static fn (string $code): bool => str_starts_with($code, $prefix)), $candidate['name']);
+                }
+            }
             $results = $catalog->search('66300', 50);
             self::assertCount(18, $results);
             self::assertContains('Passa', array_column($results, 'name'));

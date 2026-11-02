@@ -13,6 +13,7 @@ final class DemoDatabase
         private Connection $connection,
         private string $projectDir,
         private RelationalProjection $projection,
+        private ?GeographyCatalog $geography = null,
     ) {
     }
 
@@ -30,11 +31,15 @@ final class DemoDatabase
             512,
             JSON_THROW_ON_ERROR,
         );
-        $pilots = json_decode(
-            (string) file_get_contents($this->projectDir . '/data/cities.json'),
-            true, 512, JSON_THROW_ON_ERROR,
+        // Historical signed example: retain only its own municipality references.
+        // Never load the entire national table to initialize a legacy workspace.
+        $pilots = $state['territories'];
+        $codes = array_column($pilots, 'code');
+        $municipalities = $this->connection->fetchAllAssociative(
+            'SELECT * FROM municipalities WHERE code IN (' .
+                implode(', ', array_fill(0, count($codes), '?')) . ')',
+            $codes,
         );
-        $municipalities = $this->connection->fetchAllAssociative('SELECT * FROM municipalities');
         $byCode = array_column($municipalities, null, 'code');
         $ordered = [];
         foreach ($pilots as $pilot) {
@@ -83,6 +88,40 @@ final class DemoDatabase
         return $state;
     }
 
+    /** Espace fictif vide, isolé pour chaque commune INSEE 2026. */
+    private function seedForCommune(string $code): array
+    {
+        $commune = $this->geography?->find($code);
+        if ($commune === null) {
+            throw new \DomainException('Commune INSEE indisponible : installez le référentiel géographique.', 404);
+        }
+        $state = json_decode((string) file_get_contents($this->projectDir . '/data/reference-scenario.json'), true, 512, JSON_THROW_ON_ERROR);
+        foreach (['citizens', 'proposals', 'consultations', 'votes', 'experiments', 'adaptations',
+            'finance', 'governance', 'cases', 'appeals', 'alerts', 'resources', 'nodes',
+            'events', 'operations'] as $collection) {
+            $state[$collection] = [];
+        }
+        $territoryId = 'c' . $code;
+        $state['territories'] = [[
+            'id' => $territoryId, 'name' => $commune['name'], 'code' => $code,
+            'region' => $commune['region'], 'department' => $commune['department'],
+            'vintage' => 2026, 'sourceUrl' => $commune['source'],
+            'fictional' => false, 'history' => [],
+        ]];
+        // Participant logiciel de démonstration ; pas un habitant réel de la commune.
+        $state['citizens'] = [[
+            'id' => 'u1', 'name' => 'Participant fictif', 'territoryId' => $territoryId,
+            'familyId' => 'family-demo-' . $code, 'role' => 'citizen',
+            'consent' => true, 'suspended' => false, 'fictional' => true, 'history' => [],
+        ]];
+        $state['preferences']['dataset'] = 'national-communes-2026-v1';
+        $state['preferences']['votingUnit'] = 'family';
+        $state['preferences']['notice'] = 'Commune réelle INSEE ; simulation fictive vide. Aucun habitant, vote, budget ou résultat réel inventé.';
+        $state['keyPair'] = null;
+
+        return $state;
+    }
+
     /** @return array{revision: int, state: array} */
     public function workspace(string $owner): array
     {
@@ -93,7 +132,8 @@ final class DemoDatabase
         );
 
         if (!$row) {
-            $state = $this->seed();
+            $local = preg_match('/:commune:((?:[0-9]{5}|2[AB][0-9]{3}))\\z/D', $owner, $match) === 1;
+            $state = $local ? $this->seedForCommune($match[1]) : $this->seed();
             if (
                 str_starts_with(
                     $state['preferences']['dataset'] ?? '',
@@ -239,33 +279,46 @@ final class DemoDatabase
         });
     }
 
+    /** Synchronise le référentiel national COG 2026 dans Doctrine, sans créer de citoyens ni votes. */
     public function importCities(): int
     {
-        $cities = json_decode(
-            file_get_contents($this->projectDir . '/data/cities.json'),
-            true,
-            512,
-            JSON_THROW_ON_ERROR,
-        );
-        $insertedCities = 0;
-
-        foreach ($cities as $city) {
-            $insertedCities += $this->connection->executeStatement(
-                <<<'SQL'
-                INSERT OR IGNORE INTO municipalities (code, name, region, department, vintage, source_url)
-                VALUES (?, ?, ?, ?, ?, ?)
-                SQL,
-                [
-                    $city['code'],
-                    $city['name'],
-                    $city['region'],
-                    $city['department'],
-                    $city['vintage'],
-                    $city['sourceUrl'],
-                ],
-            );
+        $file = $this->projectDir . '/data/geography/communes-2026.sqlite';
+        if (!is_file($file)) {
+            throw new \RuntimeException('Référentiel INSEE absent : exécutez python3 tools/install_reference_indexes.py avant app:demo:prepare.');
+        }
+        $source = new \PDO('sqlite:file:' . $file . '?mode=ro', null, null, [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+        ]);
+        $source->exec('PRAGMA query_only=ON');
+        $year = $source->query("SELECT value FROM metadata WHERE key='vintage'")->fetchColumn();
+        if ($year !== '2026') {
+            throw new \RuntimeException('Référentiel INSEE incompatible : millésime 2026 exigé.');
+        }
+        $count = (int) $source->query('SELECT COUNT(*) FROM communes')->fetchColumn();
+        if ($count < 30000) {
+            throw new \RuntimeException('Référentiel INSEE incomplet.');
         }
 
-        return $insertedCities;
+        $select = $source->query('SELECT code, name, region_name, department_name FROM communes ORDER BY code');
+        $this->connection->transactional(function () use ($select): void {
+            $insert = $this->connection->prepare(<<<'SQL'
+                INSERT INTO municipalities (code, name, region, department, vintage, source_url)
+                VALUES (?, ?, ?, ?, 2026, ?)
+                ON CONFLICT(code) DO UPDATE SET
+                    name = excluded.name, region = excluded.region,
+                    department = excluded.department, vintage = excluded.vintage,
+                    source_url = excluded.source_url
+                SQL);
+            while (($city = $select->fetch(\PDO::FETCH_ASSOC)) !== false) {
+                $insert->bindValue(1, $city['code']);
+                $insert->bindValue(2, $city['name']);
+                $insert->bindValue(3, $city['region_name']);
+                $insert->bindValue(4, $city['department_name']);
+                $insert->bindValue(5, 'https://www.insee.fr/fr/information/8740222');
+                $insert->executeStatement();
+            }
+        });
+
+        return $count;
     }
 }

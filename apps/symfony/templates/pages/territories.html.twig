@@ -8,13 +8,13 @@
             </div>
             <h1>Les territoires</h1>
             <p>
-                Trois villes pilotes pour les expériences fictives. Le référentiel géographique national est consultable séparément, sans inventer de citoyens ou de votes.
+                Toutes les communes du référentiel INSEE 2026 sont disponibles. Chacune possède un espace de simulation indépendant, sans données fictives préremplies.
             </p>
         </div>
     </div>
     <section class="panel geo-landing">
         <h2>Toutes les communes françaises</h2>
-        <p>Retrouvez une commune par son nom ou son code INSEE, puis consultez sa fiche et les comptes publics disponibles. Les scénarios fictifs restent réservés aux trois villes pilotes.</p>
+        <p>Retrouvez une commune par son nom, son code postal ou son code INSEE. Les comptes publics affichés proviennent des sources réellement importées.</p>
         <p>La sélection commune en haut de la page s'applique aux différentes rubriques du site.</p>
         <a class="button" href="{{ civic_path('site_communes') }}">Explorer le répertoire par région et département</a>
     </section>
@@ -22,7 +22,7 @@
     <div class="territory-explorer">
         <div class="map-large">
             <h2>{{ selectedCommune ? selectedCommune.name : 'France · répertoire géographique' }}</h2>
-            <p>Le catalogue national INSEE constitue la référence géographique. Les bilans ci-contre sont exclusivement ceux des scénarios pilotes.</p>
+            <p>Le catalogue INSEE constitue la référence géographique. Les bilans sont exclusivement ceux des simulations enregistrées dans cet espace de travail.</p>
             <a class="button" href="{{ selectedCommune ? civic_path('site_commune', {code:selectedCommune.code}) : civic_path('site_communes') }}">{{ selectedCommune ? 'Ouvrir la fiche communale' : 'Parcourir toutes les communes' }}</a>
         </div>
         <div>
@@ -228,7 +228,7 @@
     </div>
     <div class="notice">
         <p>
-            Les expériences du laboratoire sont limitées à ces trois communes pilotes. Le catalogue des communes françaises est distinct et accessible depuis l’annuaire national.
+            Chaque commune INSEE possède son propre périmètre. Les anciens exemples pédagogiques ne sont jamais présentés comme des faits réels.
         </p>
     </div>
     {% for adaptation in state.adaptations %}

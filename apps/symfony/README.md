@@ -2,7 +2,7 @@
 
 Application native **PHP 8.4 / Symfony 8.1 / Doctrine / Twig / Symfony Form et Validator**, sans dépendance React, Node.js ni service JavaScript côté serveur. La base est un fichier SQLite : `var/populorum.sqlite`.
 
-Le projet reste une simulation fictive. Les seules communes initiales sont **Paris (75056), Marseille (13055), Le Havre (76351)**. Leurs noms, rattachements et codes communaux viennent du COG INSEE 2026. Les 300 personnages (100 par ville), les 27 projets expérimentaux (neuf par ville), votes et résultats sont fictifs. Les projets s’appuient sur des sources publiques datées, distinctes des hypothèses et résultats inventés. Voir [recherche et fixtures](docs/MUNICIPAL_FIXTURES.md).
+Le projet reste une simulation fictive. **Les 34 875 communes du COG INSEE 2026** sont synchronisées dans Doctrine à l’installation. Un espace de simulation vide et indépendant peut être créé pour toute commune sélectionnée. La sélection géographique n’invente ni votes, ni habitants, ni résultats. Un ancien jeu de démonstration de 300 personnages et de 27 propositions fictives est conservé **uniquement pour compatibilité avec les scénarios historiques non sélectionnés**. Les nouveaux espaces communaux démarrent vides, sans habitants ni propositions fictives préremplis. Les projets s’appuient sur des sources publiques datées, distinctes des hypothèses et résultats inventés. Voir [recherche et fixtures](docs/MUNICIPAL_FIXTURES.md).
 
 ## Installation — 28 locales
 

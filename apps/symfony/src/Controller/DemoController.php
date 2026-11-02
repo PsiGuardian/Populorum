@@ -92,14 +92,17 @@ final class DemoController extends AbstractController
     {
         $account = $this->getUser();
         if ($account instanceof CivicAccount) {
-            return $account->workspaceId;
+            $owner = $account->workspaceId;
+        } else {
+            $session = $request->getSession();
+            if (!$session->has('simulation_owner')) {
+                $session->set('simulation_owner', bin2hex(random_bytes(24)));
+            }
+            $owner = $session->get('simulation_owner');
         }
-        $session = $request->getSession();
-        if (!$session->has('simulation_owner')) {
-            $session->set('simulation_owner', bin2hex(random_bytes(24)));
-        }
+        $selected = $this->territorySelection->current($request, 'home');
 
-        return $session->get('simulation_owner');
+        return $owner . ($selected !== null ? ':commune:' . $selected['code'] : '');
     }
 
     /** Données publiques destinées à Twig : le coffre et l’anti-rejeu restent côté serveur. */

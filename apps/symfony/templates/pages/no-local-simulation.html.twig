@@ -7,12 +7,12 @@
 </div></div>
 <section class="panel geo-empty">
     <h2>Pas de scénario local pour cette commune</h2>
-    <p>La commune figure dans le référentiel national INSEE, mais aucun scénario fictif n’a été créé pour elle. Il serait trompeur d’afficher les trois villes pilotes comme si elles représentaient {{ selectedCommune.name }}.</p>
+    <p>La commune figure dans le référentiel national INSEE, mais aucun scénario fictif n’a été créé pour elle. Les informations d’une autre commune ne doivent jamais être attribuées à {{ selectedCommune.name }}.</p>
     <div class="geo-actions">
         <a class="button primary" href="{{ civic_path('site_commune', {code: selectedCommune.code}) }}">Fiche de la commune</a>
         <a class="button" href="{{ civic_path('section', {view: 'budget', scope: selectedCommune.code}) }}#explorateur">Vérifier ses finances publiées</a>
         <a class="button" href="{{ civic_path('site_communes') }}">Explorer d’autres communes</a>
     </div>
-    <p class="small muted">Les simulations pédagogiques restent accessibles en choisissant « France » : elles sont alors explicitement identifiées comme exemples pilotes, et non comme données couvrant toutes les communes.</p>
+    <p class="small muted">La sélection territoriale doit rester liée au code INSEE exact, sans importer d’habitants, de votes ni de dépenses fictives d’une autre commune.</p>
 </section>
 {% endblock %}

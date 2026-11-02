@@ -29,11 +29,11 @@ Exemple avec la version propre (voir la page Releases pour le dernier tag dispon
 mkdir -p "$HOME/Téléchargements/populorum-clean"
 cd "$HOME/Téléchargements/populorum-clean"
 
-curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.7.1-clean/Populorum-v0.7.1-clean.tar.gz
-curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.7.1-clean/SHA256SUMS.txt
+curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.8.0-clean/Populorum-v0.8.0-clean.tar.gz
+curl -fLO https://github.com/PsiGuardian/Populorum/releases/download/v0.8.0-clean/SHA256SUMS.txt
 sha256sum -c SHA256SUMS.txt
-tar -xzf Populorum-v0.7.1-clean.tar.gz
-cd Populorum-v0.7.1-clean/apps/symfony
+tar -xzf Populorum-v0.8.0-clean.tar.gz
+cd Populorum-v0.8.0-clean/apps/symfony
 ```
 
 Le tag de cette section est exploitable **après publication de la release**. Pour une archive de branche `main`, extraire son ZIP et se placer simplement dans `Populorum-main/apps/symfony`.
@@ -55,9 +55,9 @@ composer install --no-interaction --prefer-dist --no-progress &&
 test -f vendor/autoload.php &&
 php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
 php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
 python3 tools/install_reference_indexes.py &&
 python3 tools/verify_geography.py &&
+php bin/console app:demo:prepare --env=demo &&
 php bin/console cache:clear --env=demo --no-debug &&
 php bin/console doctrine:schema:validate --env=demo &&
 python3 tests/http_smoke.py
@@ -73,9 +73,13 @@ APP_ENV=demo APP_DEBUG=0 php -S 127.0.0.1:5412 -t public
 
 Ouvrir **http://127.0.0.1:5412/**. Arrêter avec Ctrl+C. Le serveur intégré PHP convient aux tests locaux, pas à un service public.
 
-## 4. Installer les référentiels nationaux INSEE et DECP
+## 4. Référentiel national et espaces communaux
 
-La base géographique INSEE est fournie en archive compressée avec les sources et est **installée et testée dans la section 3**. Pour revérifier sans réseau :
+L’installation synchronise désormais les **34 875 communes officielles INSEE 2026** dans Doctrine. Choisir une commune par nom ou code postal ouvre un espace de simulation **indépendant et vide** (pas de population, de vote ou de budget fictif attribué automatiquement). Les codes à 2–4 chiffres recherchent exclusivement des préfixes postaux ; 5 chiffres désignent un code postal exact. Pour un code administratif : `INSEE:76600`.
+
+## 5. Installer les référentiels nationaux INSEE et DECP
+
+La base géographique INSEE est fournie en archive compressée avec les sources et est **installée puis synchronisée dans Doctrine dans la section 3**, avant la création des scénarios. Pour revérifier sans réseau :
 
 ```bash
 python3 tools/install_reference_indexes.py
@@ -85,11 +89,11 @@ python3 tools/verify_geography.py
 
 Pour installer le référentiel depuis GitHub Releases et, après sa mise en ligne, la base nationale DECP **en un seul fichier de 1,7 Go**, suivre le [guide détaillé des données nationales](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md). Cette opération est indépendante de `var/populorum.sqlite` et ne doit pas écraser les données existantes.
 
-## 5. Mettre à jour sans perdre les données
+## 6. Mettre à jour sans perdre les données
 
 Avant toute mise à jour, arrêter PHP et sauvegarder **`.env.local`, `var/`, `.guardian-shield/`**, ainsi que les bases nationales séparées. Ne jamais les écraser par les fixtures de la release. Après extraction des nouveaux fichiers sources, depuis `apps/symfony`, relancer les mêmes étapes de la section 3. La génération de clés est idempotente : elle conserve l'existant.
 
-## 6. Diagnostic et limites
+## 7. Diagnostic et limites
 
 - `vendor/autoload.php` absent : exécuter `composer install` depuis `apps/symfony` et vérifier sa réussite ; le serveur ne peut pas fonctionner sans les dépendances.
 - HTTP 500 : conserver l'erreur exacte de PHP, consulter `var/log/demo.log` si présent, puis `python3 tests/http_smoke.py` pour reproduire.

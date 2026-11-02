@@ -15,7 +15,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(
     name: 'app:demo:prepare',
-    description: 'Initialise les trois villes et les comptes Guardian dédiés à la démonstration',
+    description: 'Synchronise les communes INSEE 2026 et initialise les comptes de démonstration',
 )]
 final class DemoSetupCommand extends Command
 {
@@ -41,7 +41,7 @@ final class DemoSetupCommand extends Command
         ) {
             throw new \RuntimeException('Préparation réservée à une instance de démonstration.');
         }
-        $insertedCities = $this->database->importCities();
+        $communeCount = $this->database->importCities();
         $this->store->initialize();
         if (!$this->accounts->find(self::PUBLIC_USERNAME)) {
             $this->accounts->add(
@@ -76,7 +76,7 @@ final class DemoSetupCommand extends Command
             ]);
         }
         $output->writeln(
-            "Trois villes disponibles ($insertedCities insertion(s)). Compte public Guardian : demo, rôle developer, mutations distantes interdites. Les clés et l’administrateur sont privés.",
+            "Référentiel national INSEE 2026 : $communeCount communes synchronisées. Comptes de démonstration configurés ; identifiants et clés administrateur privés.",
         );
 
         return Command::SUCCESS;
