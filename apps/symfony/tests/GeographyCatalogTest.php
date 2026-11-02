@@ -42,19 +42,28 @@ final class GeographyCatalogTest extends TestCase
             self::assertTrue($catalog->coverage()['available']);
             self::assertTrue($catalog->coverage()['postals']);
 
-            self::assertSame(['76351'], array_column($catalog->search('76600', 50), 'code'));
+            $exactLeHavre = $catalog->search('76600', 50);
+            self::assertSame(['76351'], array_column($exactLeHavre, 'code'));
+            self::assertSame('76600', $exactLeHavre[0]['postalCodes']);
+            self::assertSame('76610', $catalog->search('76610', 50)[0]['postalCodes']);
             self::assertSame('Le Havre', $catalog->search('76610', 50)[0]['name']);
             self::assertSame(['76600'], array_column($catalog->search('INSEE:76600'), 'code'));
             foreach (['66', '663'] as $prefix) {
                 $candidates = $catalog->search($prefix, 50);
                 self::assertNotEmpty($candidates);
                 foreach ($candidates as $candidate) {
-                    $codes = explode(', ', $candidate['postalCodes']);
-                    self::assertNotEmpty(array_filter($codes, static fn (string $code): bool => str_starts_with($code, $prefix)), $candidate['name']);
+                    $codes = array_map('trim', explode(',', $candidate['postalCodes']));
+                    self::assertNotEmpty($codes);
+                    foreach ($codes as $code) {
+                        self::assertStringStartsWith($prefix, $code, $candidate['name']);
+                    }
                 }
             }
             $results = $catalog->search('66300', 50);
             self::assertCount(18, $results);
+            foreach ($results as $city) {
+                self::assertSame('66300', $city['postalCodes'], $city['name']);
+            }
             self::assertContains('Passa', array_column($results, 'name'));
             self::assertContains('Thuir', array_column($results, 'name'));
             self::assertContains('Trouillas', array_column($results, 'name'));

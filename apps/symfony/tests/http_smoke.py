@@ -102,7 +102,14 @@ def main() -> None:
             assert data['postalQuery'] is True
             assert len(data['communes']) == 18, len(data['communes'])
             assert len({city['code'] for city in data['communes']}) == 18
+            assert all(row['postalCodes'] == '66300' for row in data['communes']), data['communes']
             print('PASS /communes/suggestions?q=66300: all 18 municipalities', flush=True)
+            with closing(browser.open(url + '/communes/suggestions?q=76600', timeout=28)) as result:
+                assert result.status == 200
+                havre = json.load(result)
+            assert [item['name'] for item in havre['communes']] == ['Le Havre']
+            assert havre['communes'][0]['postalCodes'] == '76600'
+            print('PASS 76600: no extra 76610/76620 displayed as matches', flush=True)
             for prefix in ('66', '663'):
                 with closing(browser.open(url + '/communes/suggestions?q=' + prefix, timeout=28)) as result:
                     assert result.status == 200
@@ -110,7 +117,7 @@ def main() -> None:
                 assert data['postalQuery'] is True
                 assert data['communes']
                 for row in data['communes']:
-                    assert any(code.strip().startswith(prefix) for code in row['postalCodes'].split(',')), (prefix, row)
+                    assert all(code.strip().startswith(prefix) for code in row['postalCodes'].split(',')), (prefix, row)
                 print('PASS postal prefix ' + prefix + ': only matching postal codes', flush=True)
 
             # A municipality outside the old pilot fixtures must have an isolated local workspace.
