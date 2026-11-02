@@ -19,9 +19,8 @@ L'archive géographique est déjà dans les sources officielles de l'application
 
 ```bash
 cd apps/symfony
-python3 tools/install_reference_indexes.py
-python3 tools/install_reference_indexes.py --check
-python3 tools/verify_geography.py
+php bin/console app:geography:install --env=demo
+php bin/console app:geography:install --check --env=demo
 ```
 
 Le fichier vérifié pour la distribution nationale contient **34 875 communes** et **35 313 correspondances postales** (millésime 2026, `PRAGMA quick_check=ok`). Son SHA-256 est :
@@ -34,7 +33,7 @@ Le fichier vérifié pour la distribution nationale contient **34 875 communes**
 
 Release de données : [data-national-2026](https://github.com/PsiGuardian/Populorum/releases/tag/data-national-2026).
 
-**Cette release est créée par le workflow de publication uniquement après validation de l'archive source.** Tant qu'elle n'est pas publiée, utiliser la section 1.
+**Cette release contient la base INSEE officielle vérifiée.** Sans accès au réseau, utiliser l'archive incluse (section 1).
 
 ```bash
 # Depuis apps/symfony
@@ -48,15 +47,14 @@ if test -e data/geography/communes-2026.sqlite; then
 else
   install -m 0644 /tmp/populorum-communes-2026.sqlite data/geography/communes-2026.sqlite
 fi
-python3 tools/install_reference_indexes.py --check
-python3 tools/verify_geography.py
+php bin/console app:geography:install --check --env=demo
 ```
 
 Si une base géographique est déjà installée, ne pas la remplacer sans sauvegarde et décision explicite.
 
 ## 3 — Installer l'index national DECP (un seul fichier de 1,7 Go)
 
-Le fichier `public-procurement.sqlite` sera **ajouté manuellement** aux assets de la release [data-national-2026](https://github.com/PsiGuardian/Populorum/releases/tag/data-national-2026), accompagné de `public-procurement.sqlite.sha256`. **Il n'est pas encore garanti disponible** : contrôler sa présence sur la page GitHub avant de lancer ces commandes.
+Le fichier `public-procurement.sqlite` doit être **ajouté manuellement** aux assets de la release [data-national-2026](https://github.com/PsiGuardian/Populorum/releases/tag/data-national-2026), accompagné de `public-procurement.sqlite.sha256`. **Il n'est pas encore garanti disponible** : contrôler sa présence sur la page GitHub avant de lancer ces commandes.
 
 La taille d'un asset GitHub Releases doit rester strictement inférieure à 2 Gio (2 147 483 648 octets). Avant l'envoi, vérifier aussi le schéma attendu `populorum-decp-1` et l'intégrité SQLite. Ne pas importer un ancien index au format incompatible.
 
@@ -104,7 +102,7 @@ python3 tools/verify_decp_history.py --db data/research/public-procurement.sqlit
 ## 4 — Vérifications après installation
 
 ```bash
-python3 tools/verify_geography.py
+php bin/console app:geography:install --check --env=demo
 python3 tools/decp_pipeline.py status
 php bin/console cache:clear --env=demo --no-debug
 php bin/console debug:router --env=demo

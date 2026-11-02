@@ -50,23 +50,24 @@ composer install --no-interaction --prefer-dist --no-progress &&
 test -f vendor/autoload.php &&
 php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
 php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
+php bin/console app:geography:install --env=demo &&
 php bin/console app:demo:prepare --env=demo &&
 php bin/console cache:clear --env=demo --no-debug &&
 php bin/console doctrine:schema:validate --env=demo &&
 python3 tests/http_smoke.py
 ```
 
-Ces commandes sont directement modifiables dans le terminal. Aucun script de version antérieure ou installateur Arch n'est nécessaire. Le contrôle `tests/http_smoke.py` lance un vrai serveur avec **une copie temporaire de la base**.
+Les commandes s'exécutent depuis `apps/symfony`. Le référentiel national est restauré par PHP/Symfony. Le contrôle `tests/http_smoke.py` lance un vrai serveur avec **une copie temporaire de la base**.
 
 ```bash
 APP_ENV=demo APP_DEBUG=0 php -S 127.0.0.1:5412 -t public
 ```
 
-**Bases nationales :** installer le référentiel INSEE/code postal via `python3 tools/install_reference_indexes.py`, puis suivre [installation des données nationales](docs/INSTALLATION_DONNEES_NATIONALES.md) pour la base DECP indépendante d'environ 1,7 Go (fichier unique, publication séparée). La base nationale de marchés est distincte de `var/populorum.sqlite`.
+**Bases nationales :** installer et vérifier INSEE/La Poste via `php bin/console app:geography:install --env=demo` et `php bin/console app:geography:install --check --env=demo` (la préparation de la démo effectue aussi la restauration automatique), puis suivre [installation des données nationales](docs/INSTALLATION_DONNEES_NATIONALES.md) pour la base DECP indépendante d'environ 1,7 Go (fichier unique, publication séparée). La base nationale de marchés est distincte de `var/populorum.sqlite`.
 
 ## Le fichier SQLite demandé
 
-Deux fichiers versionnés contiennent uniquement le référentiel public des trois villes et les tables initiales :
+Deux fichiers versionnés conservent un instantané minimal de l'ancienne démonstration pédagogique. **Ils ne remplacent pas le référentiel national INSEE**, restauré depuis les sources lors de l'installation :
 
 - `data/populorum-demo.sqlite` : base SQLite prête à copier, sans simulation de visiteur ni clé privée.
 - `data/populorum-demo.sql` : export SQL lisible et reproductible du même état.
@@ -76,6 +77,7 @@ L’installation par migrations est recommandée. Pour utiliser plutôt la base 
 ```bash
 mkdir -p var
 cp data/populorum-demo.sqlite var/populorum.sqlite
+php bin/console app:geography:install --env=demo
 php bin/console app:demo:prepare --env=demo
 ```
 

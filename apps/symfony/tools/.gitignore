@@ -12,7 +12,5 @@
 !import_budget_national.py
 !import_codes_postaux.py
 !import_communes_insee.py
-!install_reference_indexes.py
-!verify_geography.py
 !recount.php
 !verify-export.php
