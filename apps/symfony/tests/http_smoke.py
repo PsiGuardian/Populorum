@@ -191,8 +191,8 @@ def main() -> None:
                 timings.append((path, statistics.median(http_ms),
                                 statistics.median(php_ms) if php_ms else None))
             print('===== WARM HTTP PAGE TIMINGS / fresh CI SQLite fixture (ms) =====', flush=True)
-            for path, http, php in sorted(timings, key=lambda x: x[1], reverse=True):
-                print(f'PAGE {path:38} HTTP={http:8.2f}  PHP={php if php is not None else "n/a"}', flush=True)
+            for path, http_ms_median, php_ms_median in sorted(timings, key=lambda x: x[1], reverse=True):
+                print(f'PAGE {path:38} HTTP={http_ms_median:8.2f}  PHP={php_ms_median if php_ms_median is not None else "n/a"}', flush=True)
             print('NOTE: CI fixture timings are not timings of the optional 1.7GB DECP production DB.', flush=True)
 
             # A municipality outside the old pilot fixtures must have an isolated local workspace.
