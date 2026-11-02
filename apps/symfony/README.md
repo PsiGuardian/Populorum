@@ -62,7 +62,7 @@ Ces commandes sont directement modifiables dans le terminal. Aucun script de ver
 APP_ENV=demo APP_DEBUG=0 php -S 127.0.0.1:5412 -t public
 ```
 
-La base nationale de marchés DECP est distincte et optionnelle : [archives DECP](docs/ARCHIVES_DECP.md).
+**Bases nationales :** installer le référentiel INSEE/code postal via `python3 tools/install_reference_indexes.py`, puis suivre [installation des données nationales](docs/INSTALLATION_DONNEES_NATIONALES.md) pour la base DECP indépendante d'environ 1,7 Go (fichier unique, publication séparée). La base nationale de marchés est distincte de `var/populorum.sqlite`.
 
 ## Le fichier SQLite demandé
 

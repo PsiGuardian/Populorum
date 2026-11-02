@@ -1,8 +1,8 @@
 # Populorum — installation propre, sans installateur spécifique à une distribution
 
-**Sources officielles :** [Releases](https://github.com/PsiGuardian/Populorum/releases) | [application Symfony](apps/symfony/README.md) | [données nationales optionnelles](apps/symfony/docs/ARCHIVES_DECP.md).
+**Sources officielles :** [Releases](https://github.com/PsiGuardian/Populorum/releases) | [application Symfony](apps/symfony/README.md) | [installation des données nationales](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md).
 
-Populorum est un simulateur fictif (PHP 8.4+, Symfony 8.1, SQLite). Il se télécharge sans dépendances PHP, sans clés privées et sans index DECP de 1,9 Go. Les dépendances sont définies dans `apps/symfony/composer.lock`.
+Populorum est un simulateur fictif (PHP 8.4+, Symfony 8.1, SQLite). Il se télécharge sans dépendances PHP, sans clés privées et sans index DECP national de ~1,7 Go. Les dépendances sont définies dans `apps/symfony/composer.lock`.
 
 ## 1. Paquets système
 
@@ -71,16 +71,28 @@ APP_ENV=demo APP_DEBUG=0 php -S 127.0.0.1:5412 -t public
 
 Ouvrir **http://127.0.0.1:5412/**. Arrêter avec Ctrl+C. Le serveur intégré PHP convient aux tests locaux, pas à un service public.
 
-## 4. Mettre à jour sans perdre les données
+## 4. Installer les référentiels nationaux INSEE et DECP
+
+La base géographique INSEE est fournie en archive compressée avec les sources et s'installe localement **sans réseau** :
+
+```bash
+python3 tools/install_reference_indexes.py
+python3 tools/install_reference_indexes.py --check
+python3 tools/verify_geography.py
+```
+
+Pour installer le référentiel depuis GitHub Releases et, après sa mise en ligne, la base nationale DECP **en un seul fichier de 1,7 Go**, suivre le [guide détaillé des données nationales](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md). Cette opération est indépendante de `var/populorum.sqlite` et ne doit pas écraser les données existantes.
+
+## 5. Mettre à jour sans perdre les données
 
 Avant toute mise à jour, arrêter PHP et sauvegarder **`.env.local`, `var/`, `.guardian-shield/`**, ainsi que les bases nationales séparées. Ne jamais les écraser par les fixtures de la release. Après extraction des nouveaux fichiers sources, depuis `apps/symfony`, relancer les mêmes étapes de la section 3. La génération de clés est idempotente : elle conserve l'existant.
 
-## 5. Diagnostic et limites
+## 6. Diagnostic et limites
 
 - `vendor/autoload.php` absent : exécuter `composer install` depuis `apps/symfony` et vérifier sa réussite ; le serveur ne peut pas fonctionner sans les dépendances.
 - HTTP 500 : conserver l'erreur exacte de PHP, consulter `var/log/demo.log` si présent, puis `python3 tests/http_smoke.py` pour reproduire.
 - Extensions absentes : installer/activer les extensions **pour le PHP CLI** utilisé par Composer, sans `--ignore-platform-reqs`.
 - HTTPS et PHP-FPM : pour un déploiement réel, faire pointer DocumentRoot vers `apps/symfony/public/` et protéger les clés privées.
-- Index national DECP : installation **indépendante et optionnelle**, voir [ARCHIVES_DECP.md](apps/symfony/docs/ARCHIVES_DECP.md).
+- Référentiel INSEE + index DECP : voir [INSTALLATION_DONNEES_NATIONALES.md](apps/symfony/docs/INSTALLATION_DONNEES_NATIONALES.md).
 
 Les outils de construction et correctifs historiques ont été supprimés de la distribution. Seuls les outils opérationnels pérennes et les tests isolés sont conservés.
