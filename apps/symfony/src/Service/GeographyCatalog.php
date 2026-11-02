@@ -193,7 +193,6 @@ final class GeographyCatalog implements \Symfony\Contracts\Service\ResetInterfac
         return [];
     }
 
-
     /**
      * National paginated atlas: the database filters before returning any rows.
      * No aggregation or pairwise comparison of all 34,875 municipalities in PHP.
