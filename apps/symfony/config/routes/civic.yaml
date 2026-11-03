@@ -5,12 +5,12 @@ site_territories:
     methods: [GET]
 site_proposals:
     path: /chemins
-    controller: App\Controller\DemoController::page
+    controller: App\Controller\PolicyCatalogController::proposals
     defaults: { view: proposals }
     methods: [GET]
 site_consultations:
     path: /consultations
-    controller: App\Controller\DemoController::page
+    controller: App\Controller\PolicyCatalogController::consultations
     defaults: { view: consultations }
     methods: [GET]
 site_experiments:
