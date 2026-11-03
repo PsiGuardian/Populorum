@@ -62,6 +62,25 @@ CREATE TABLE IF NOT EXISTS policy_vote_history (
     choice TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS policy_deliberations (
+    id TEXT PRIMARY KEY,
+    measure_id TEXT NOT NULL REFERENCES policy_measures(id),
+    citizen_id TEXT NOT NULL,
+    participant_label TEXT NOT NULL,
+    parent_id TEXT REFERENCES policy_deliberations(id),
+    depth INTEGER NOT NULL CHECK (depth BETWEEN 0 AND 6),
+    cause_text TEXT NOT NULL,
+    cause_degree TEXT NOT NULL CHECK (cause_degree IN ('probable', 'observee', 'demontree')),
+    cause_source TEXT NOT NULL DEFAULT '',
+    consequence_text TEXT NOT NULL,
+    consequence_degree TEXT NOT NULL CHECK (consequence_degree IN ('probable', 'observee', 'demontree')),
+    consequence_source TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_policy_deliberations_measure
+    ON policy_deliberations(measure_id, created_at DESC, id DESC);
+CREATE INDEX IF NOT EXISTS idx_policy_deliberations_author
+    ON policy_deliberations(measure_id, citizen_id);
 """
 
 STOPWORDS = re.compile(

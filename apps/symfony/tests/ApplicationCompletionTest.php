@@ -720,6 +720,27 @@ final class ApplicationCompletionTest extends TestCase
         );
     }
 
+    public function testRealCommuneLinksDoNotUseObsoletePilotTerritoryRegex(): void
+    {
+        $urls = new App\Twig\CivicUrlExtension($this->kernel->getContainer()->get('router'));
+        self::assertSame(
+            '/chemins',
+            $urls->path('section', ['view' => 'proposals', 'territory' => 'c13068']),
+        );
+        self::assertSame(
+            '/consultations',
+            $urls->path('section', ['view' => 'consultations', 'territory' => 'c13068']),
+        );
+
+        $page = $this->request('/territoires');
+        self::assertSame(200, $page->getStatusCode());
+        $html = $page->getContent();
+        self::assertStringContainsString('Propositions de loi nationales', $html);
+        self::assertStringContainsString('Consultations nationales', $html);
+        self::assertStringContainsString('Fiche communale', $html);
+        self::assertStringNotContainsString('/recherche/proposals/c13068', $html);
+    }
+
     public function testMunicipalFixtureRendersEveryPageAndFiltersByCity(): void
     {
         $_SERVER['POPULORUM_SCENARIO'] = '';
