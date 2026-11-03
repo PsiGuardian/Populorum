@@ -294,22 +294,14 @@ final class ApplicationCompletionTest extends TestCase
         self::assertTrue(new SimulationEngine()->verify($state)['valid']);
         self::assertCount(1500, $state['citizens']);
         self::assertCount(13500, $state['votes']);
-        $seen = [];
-        for ($page = 1; $page <= 5; ++$page) {
-            $response = $this->request('/liste/consultations/all/' . $page);
-            self::assertSame(200, $response->getStatusCode());
-            preg_match_all('/data-consultation-id="([^"]+)"/', $response->getContent(), $matches);
-            self::assertCount(27, $matches[1]);
-            $seen = array_merge($seen, $matches[1]);
-            self::assertStringContainsString('sur 135 résultat', $response->getContent());
-            self::assertLessThan(250000, strlen($response->getContent()));
+        foreach (['/liste/consultations/all/1', '/liste/proposals/t1/1'] as $oldPath) {
+            $oldResponse = $this->request($oldPath);
+            self::assertSame(303, $oldResponse->getStatusCode());
+            self::assertStringContainsString(
+                '/mesures',
+                (string) $oldResponse->headers->get('Location'),
+            );
         }
-        self::assertSame(array_column($state['consultations'], 'id'), $seen);
-        $filtered = $this->request('/liste/consultations/t2/1');
-        self::assertStringContainsString('sur 45 résultat', $filtered->getContent());
-        $search = $this->request('/liste/proposals/t1/1/' . rawurlencode($state['proposals'][0]['title']));
-        self::assertSame(200, $search->getStatusCode());
-        self::assertStringContainsString('sur 5 résultat', $search->getContent());
         $workers = $this->request('/liste/services/all/2?skill=water');
         self::assertSame(200, $workers->getStatusCode());
         self::assertStringContainsString('skill=water', $workers->getContent());
@@ -336,30 +328,14 @@ final class ApplicationCompletionTest extends TestCase
         );
         $_SERVER['POPULORUM_TIMING'] = '1';
         try {
-            $list = $this->request('/consultations');
-            self::assertSame(200, $list->getStatusCode());
-            self::assertSame(
-                27,
-                substr_count($list->getContent(), 'data-consultation-id='),
-            );
-            self::assertLessThan(500000, strlen($list->getContent()));
-            self::assertStringNotContainsString(
-                'Participations nominatives fictives',
-                $list->getContent(),
-            );
-            self::assertStringContainsString(
-                'Voir les votes, les familles et le texte figé',
-                $list->getContent(),
-            );
-            $detail = $this->request('/consultations/fiche/c1');
-            self::assertStringContainsString(
-                'Participations nominatives fictives',
-                $detail->getContent(),
-            );
-            self::assertStringContainsString(
-                'Décompte des familles et règle figée',
-                $detail->getContent(),
-            );
+            foreach (['/consultations', '/consultations/fiche/c1'] as $oldPath) {
+                $oldResponse = $this->request($oldPath);
+                self::assertSame(303, $oldResponse->getStatusCode());
+                self::assertStringContainsString(
+                    '/mesures',
+                    (string) $oldResponse->headers->get('Location'),
+                );
+            }
             $home = $this->request('/');
             self::assertStringContainsString(
                 'db_read;dur=',
@@ -722,9 +698,8 @@ final class ApplicationCompletionTest extends TestCase
             self::assertStringNotContainsString('Balances détaillées DGFiP · commune pilote sélectionnée', $page->getContent());
             // The pilot is not invented on other simulation pages either.
             $fiction = $this->request('/consultations');
-            self::assertSame(200, $fiction->getStatusCode());
-            self::assertStringNotContainsString('Pas de scénario local', $fiction->getContent());
-            self::assertStringContainsString('0–0 sur 0 résultat', $fiction->getContent());
+            self::assertSame(303, $fiction->getStatusCode());
+            self::assertStringContainsString('/mesures', (string) $fiction->headers->get('Location'));
             // No re-use of an unrelated pilot's detailed ledger on an unknown budget.
             self::assertSame(400, $this->request('/budget-et-priorites/account/6%20OR%201%3D1')->getStatusCode());
         } finally {
@@ -753,8 +728,6 @@ final class ApplicationCompletionTest extends TestCase
             [
                 '/',
                 '/territories',
-                '/proposals',
-                '/consultations',
                 '/experiments',
                 '/convergence',
                 '/memory',
@@ -771,9 +744,11 @@ final class ApplicationCompletionTest extends TestCase
                 $path,
             );
         }
-        $html = $this->request('/proposals?territory=t3')->getContent();
-        self::assertSame(9, substr_count($html, 'class="proposal-card"'));
-        self::assertStringNotContainsString('/ Paris</div>', $html);
+        foreach (['/proposals?territory=t3', '/consultations'] as $oldPath) {
+            $redirect = $this->request($oldPath);
+            self::assertSame(303, $redirect->getStatusCode());
+            self::assertStringContainsString('/mesures', (string) $redirect->headers->get('Location'));
+        }
         $state = $this->store->workspace('municipal-test')['state'];
         self::assertCount(300, $state['citizens']);
         self::assertSame(
@@ -788,9 +763,9 @@ final class ApplicationCompletionTest extends TestCase
                 new SimulationEngine()->publicState($state),
             )['valid'],
         );
-        self::assertStringContainsString(
-            'href="https://',
-            $this->request('/proposals?id=p1')->getContent(),
+        self::assertSame(
+            303,
+            $this->request('/proposals?id=p1')->getStatusCode(),
         );
     }
 
@@ -810,15 +785,9 @@ final class ApplicationCompletionTest extends TestCase
             $results['data'][0]['tally']['individual']['total'],
         );
         self::assertLessThan(100, $results['data'][0]['tally']['total']);
-        self::assertStringContainsString(
-            'une famille compte au maximum une voix',
-            preg_replace(
-                '/\s+/u',
-                ' ',
-                strip_tags(
-                    $this->request('/consultations?id=c1')->getContent(),
-                ),
-            ),
+        self::assertSame(
+            303,
+            $this->request('/consultations?id=c1')->getStatusCode(),
         );
         $portrait = $this->request('/characters/u1?consultation=c1');
         self::assertSame(200, $portrait->getStatusCode());
@@ -880,12 +849,12 @@ final class ApplicationCompletionTest extends TestCase
             $workspace['revision'],
             $state,
         );
-        $html = $this->request('/proposals')->getContent();
-        self::assertStringContainsString(
-            '&lt;script&gt;window.injected=true&lt;/script&gt;',
-            $html,
-        );
+        // L'exemple signé reste archivé, mais il n'est jamais rendu sur le
+        // nouveau catalogue de propositions de loi officielles.
+        self::assertSame(303, $this->request('/proposals')->getStatusCode());
+        $html = $this->request('/mesures')->getContent();
         self::assertStringNotContainsString('<script>window.injected', $html);
+        self::assertStringNotContainsString('window.injected=true', $html);
     }
 
     public function testResourcePaginationAndAdversarialInputAreHandled(): void
@@ -1137,7 +1106,8 @@ final class ApplicationCompletionTest extends TestCase
     public function testLoginRequiredModeBlocksApiWritesAndAllowsPublicReading(): void
     {
         $_SERVER['POPULORUM_REQUIRE_LOGIN'] = '1';
-        self::assertSame(200, $this->request('/proposals')->getStatusCode());
+        self::assertSame(303, $this->request('/proposals')->getStatusCode());
+        self::assertSame(200, $this->request('/mesures')->getStatusCode());
         self::assertSame(
             401,
             $this->request(
