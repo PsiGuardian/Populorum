@@ -1,113 +1,92 @@
-# Catalogue de mesures politiques sourcées — Populorum
+# Catalogue de propositions de loi officielles — Populorum
 
-## Objectif et limites
+## Périmètre
 
-Cette fonctionnalité propose des consultations **fictives, exploratoires et non représentatives**
-sur des intentions politiques et des propositions de loi documentées.
-Le vote n'a aucun effet juridique et ne représente pas une élection, une enquête
-d'opinion ou une preuve d'approbation par un corps électoral.
+**Seules les propositions de loi déposées officiellement au Sénat sont présentées
+et soumises à la simulation de vote.** Les programmes électoraux, promesses,
+intentions, démonstrations fictives, propositions de résolution, projets du
+Gouvernement, textes promulgués, caduques ou rejetés ne figurent pas dans
+l'interface des propositions.
 
-- L'identité politique de la source n'apparaît **pas avant clôture** sur la fiche
-  ni sur le bulletin ; la référence officielle et l'attribution sont conservées
-  hors de la présentation publique et deviennent visibles après clôture.
-- Il est possible de retrouver l'auteur d'un texte par recherche externe :
-  cette présentation ne garantit pas un aveuglement absolu.
-- **Une famille de test d'un membre par compte de test**, compte lié à une IP
-  pseudonymisée : aucun contrôle de l'identité ou de l'unicité des personnes.
-  Changer d'IP peut permettre de créer un autre profil, ce qui rend le résultat
-  impropre à une décision réelle.
-- Participation libre, sans quorum interne. Le règlement et les modalités sont
-  fixés pendant toute la consultation, mais de nouveaux profils peuvent
-  participer jusqu'à la clôture (protocole distinct des consultations historiques
-  dont l'admissibilité est figée à l'ouverture).
-- Les réponses **pour / contre / abstention** sont révisables jusqu'à la clôture.
-  Les révisions sont historisées. Résultats et provenance dévoilés après clôture.
-- Un dossier déposé n'est pas nécessairement une loi adoptée. Les mesures
-  de programme sont datées de leur édition ; elles ne sont pas les engagements
-  actuels d'un acteur si celui-ci a changé de position.
+La source parlementaire est l'export « Liste des propositions de loi déposées
+au Sénat » : https://data.senat.fr/aide/liste-des-propositions-de-loi-deposees-au-senat/
+Le jeu de données est sous Licence Ouverte :
+https://www.data.gouv.fr/datasets/travaux-legislatifs-senat
 
-## Sources et état du corpus
+Cet export contient les intitulés, numéros, dates de dépôt, auteurs, liens de
+dossiers et états parlementaires. **Un dépôt n'est pas une loi votée**, et le
+vote proposé dans Populorum porte sur l'idée résumée par l'intitulé ; il ne
+remplace pas l'examen des articles de loi.
 
-### Corpus de départ
+Les auteurs et sources sont conservés pour vérification mais ne figurent pas sur
+le bulletin avant clôture. Un titre de loi peut permettre de retrouver son
+auteur par recherche externe : cette neutralité n'est pas un anonymat absolu.
 
-Le fichier data/policy-programme-measures.json contient **45 mesures éditoriales**
-attribuées en interne à trois programmes :
-- Marine Le Pen, programme présidentiel de **2022** :
-  https://rassemblementnational.fr/22-mesures
-- L'Avenir en commun, édition **2025** :
-  https://programme.lafranceinsoumise.fr/wp-content/uploads/2025/avenir_en_commun_2025.pdf
-- Sarah Knafo, programme municipal de Paris **2026** :
-  https://sarahpourparis.fr/Programme-Sarah-Knafo-Paris-2026.pdf
+## Transition depuis les anciennes propositions fictives
 
-Les libellés sont reformulés pour la simulation, et les numéros/sections
-permettent de retrouver l'original. Ils ne constituent pas 45 lois distinctes.
+- Le fichier de 45 mesures provenant de programmes électoraux a été retiré du
+  dépôt ; elles ne sont plus importables automatiquement.
+- Les anciennes routes /proposals et /consultations redirigent vers /mesures.
+- Les anciennes actions Web/API de création, modification et vote de
+  propositions fictives sont désactivées.
+- Les fiches de programmes précédemment importées dans la base annexe sont
+  **masquées et interdites au vote**, pas détruites ; leurs votes antérieurs
+  restent conservés. Les bases de simulation historiques conservent aussi
+  leurs événements, pour ne pas effacer la mémoire ni fausser leurs empreintes
+  d'intégrité. Les anciens contenus pédagogiques d'autres pages demeurent
+  distincts de la bibliothèque législative.
 
-### Extension à 200 puis 1 000 dossiers vérifiables
+## Installation du catalogue (sans toucher aux bases déjà installées)
 
-Le Sénat publie l'export des **propositions de loi déposées** avec la date,
-le numéro, le titre, le ou les auteurs, le lien et l'état du dossier.
-Documentation :
-https://data.senat.fr/aide/liste-des-propositions-de-loi-deposees-au-senat/
-
-Dans le répertoire apps/symfony, télécharger le CSV et importer le catalogue
-sans modifier la base principale :
+Exécuter dans apps/symfony, depuis une installation synchronisée avec main :
 
 ~~~bash
 mkdir -p var
 curl -fLsS --retry 3 \
   'https://www.data.gouv.fr/api/1/datasets/r/7698274a-65f6-4687-8b2b-6961199b6922' \
-  -o /tmp/populorum-senat-propositions.csv
+  -o /tmp/populorum-propositions-senat.csv
 
 python3 tools/import_policy_catalog.py \
-  --senat-csv /tmp/populorum-senat-propositions.csv \
+  --senat-csv /tmp/populorum-propositions-senat.csv \
   --limit 200 --days 90
 ~~~
 
-Lire les statistiques affichées : valid_candidates, inserted, database_total.
-**Ne pas annoncer 200 mesures tant que database_total ne le confirme pas.**
-Le CSV peut évoluer : si ses colonnes changent, l'importeur doit échouer
-explicitement plutôt que d'inventer des lignes. Aucun téléchargement ne
-s'exécute automatiquement lors de l'installation de Symfony.
+Le script **refuse de démarrer sans fichier CSV officiel**. Il n'intègre
+aucune mesure de programme ni proposition inventée pour atteindre le quota.
 
-Pour importer **1 000** mesures à partir du même export, répéter la commande
-avec --limit 1000. L'import est idempotent et préserve les votes, les
-clôtures et les références existantes (INSERT OR IGNORE).
+La valeur `database_total` correspond au nombre de propositions de loi
+officielles présentes, **pas** au nombre total de lignes historiques ;
+`inserted` indique les nouveaux dossiers ajoutés.
+Pour augmenter l'objectif, reprendre avec `--limit 1000`.
 
-L'export officiel est publié sous Licence Ouverte (Sénat). Le corpus de
-programmes doit conserver la date et la référence de l'édition consultée.
-Les titres sénatoriaux sont des **titres source non expertisés** : ils ne
-restituent pas le détail d'un texte article par article. Ne pas faire une
-simulation causale chiffrée sans analyse complémentaire de la proposition.
+L'import est idempotent, ne réinitialise pas les consultations, préserve les
+votes et utilise le fichier indépendant `var/policy-catalog.sqlite`.
+Pour éviter les faux positifs, l'importeur n'accepte que les URLs de dossiers
+du Sénat, en HTTPS, et que les types « proposition de loi ». Il exclut
+les statuts non poursuivis dans le même dossier et les textes promulgués
+selon l'état de l'export téléchargé.
 
-## Navigation et données
+Un contrôle éditorial reste nécessaire : titres très similaires, évolutions
+de statuts et contenu exact des articles ne sont pas déduits des métadonnées.
+Des propositions portant un intitulé identique peuvent être dédoublonnées
+par l'importeur même si leurs dossiers diffèrent ; un rapprochement juridique
+détaillé sera nécessaire avant toute prétention à l'exhaustivité.
 
-- /mesures : bibliothèque paginée, filtres France/Paris et recherche.
-- /mesures/{id} : question neutre, axes de vérification, vote fictif.
-- Le vote nécessite un compte actif créé via /compte-test.
-- Les mesures nationales sont accessibles à toutes les communes, les
-  mesures de Paris ne sont votables que par les profils rattachés à Paris.
+## Participation
 
-Les nouvelles données sont dans **var/policy-catalog.sqlite**, séparée de
-var/populorum.sqlite et des bases INSEE/DECP. Aucune migration des bases
-existantes n'est nécessaire.
+- /mesures : consultation et recherche paginée de dossiers officiels.
+- /mesures/{id} : vote fictif sur le principe d'une proposition de loi,
+  Pour / Contre / Abstention.
+- Seuls les comptes de test peuvent enregistrer un bulletin.
+- Une position active par compte de test et par dossier, avec possibilité de
+  révision jusqu'à clôture ; historique des révisions.
+- Les votes des comptes liés à une IP ne garantissent ni personne unique,
+  ni échantillonnage représentatif ; aucun effet juridique.
+- L'attribution est dévoilée après clôture, avec le résultat agrégé.
+- Les consultations historiques du moteur civique original ne sont pas
+  réécrites ni converties.
 
-### Base source et traçabilité
-
-La table policy_measures conserve origin_actor, source_url,
-source_reference, source_date, legal_status et review_status.
-Avant clôture, le contrôleur n'envoie pas les premiers champs au navigateur.
-La table policy_votes contient un seul vote actif par couple
-(mesure, citizenId) et policy_vote_history garde les révisions.
-
-Les votes ne sont pas cryptographiquement certifiés comme les événements
-du moteur principal ; ne pas les annoncer comme inviolables. L'importation
-ne déduit pas une appartenance partisane des sénateurs et n'impose pas
-une répartition artificielle entre partis ; la diversité éditoriale et
-les similarités sémantiques entre dossiers doivent être vérifiées avant
-une exploitation publique. Le dédoublonnage automatique ne traite que
-les titres normalisés, pas toutes les reformulations équivalentes.
-
-## Tests
+## Contrôles techniques
 
 ~~~bash
 python3 tests/policy_catalog_import_test.py
@@ -115,5 +94,4 @@ php vendor/bin/phpunit tests/PolicyCatalogTest.php
 php bin/console lint:twig templates --env=demo
 ~~~
 
-Les données, sources et positions doivent être vérifiées à chaque publication
-pour tenir compte de leur évolution, avec sauvegarde de l'édition d'origine.
+Seuls des dossiers issus de sources publiques vérifiées peuvent être présentés.
