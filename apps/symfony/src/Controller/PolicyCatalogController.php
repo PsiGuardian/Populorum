@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Service\BetaVisitorProfiles;
 use App\Service\PolicyCatalog;
+use App\Service\PolicyDeliberation;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,6 +17,7 @@ final class PolicyCatalogController extends AbstractController
 {
     public function __construct(
         private readonly PolicyCatalog $catalog,
+        private readonly PolicyDeliberation $deliberations,
         private readonly BetaVisitorProfiles $profiles,
     ) {
     }
@@ -101,12 +103,28 @@ final class PolicyCatalogController extends AbstractController
             && ($territory === 'FR' || $profile['communeCode'] === $territory);
         $existing = $this->catalog->existingVote($id, $profile);
         $fromConsultations = $request->query->getString('from') === 'consultations';
+        $deliberationVisible = $measure['closed'] || $existing !== null;
+        $replyId = $request->query->getString('reply');
+        $reply = $deliberationVisible
+            ? $this->deliberations->entry($id, $replyId)
+            : null;
 
         return $this->uncached('pages/policy-detail.html.twig', [
             'measure' => $measure,
             'profile' => $profile,
             'eligible' => $eligible,
             'existingVote' => $existing,
+            'deliberationVisible' => $deliberationVisible,
+            'canDeliberate' => $eligible && $existing !== null,
+            'causalTree' => $this->deliberations->page(
+                $id, $deliberationVisible,
+                $request->query->getInt('treePage', 1),
+            ),
+            'reply' => $reply,
+            'contributed' => $request->query->getBoolean('contributed'),
+            'deliberationToken' => $this->profiles->formToken(
+                $request, 'policy.deliberate:' . $id,
+            ),
             'token' => $this->profiles->formToken($request, 'policy.vote:' . $id),
             'saved' => $request->query->getBoolean('saved'),
             'backRoute' => $fromConsultations ? 'site_consultations' : 'site_proposals',
@@ -151,6 +169,52 @@ final class PolicyCatalogController extends AbstractController
         return $this->redirectToRoute(
             'policy_detail',
             ['id' => $id, 'saved' => 1, 'from' => $fromConsultations ? 'consultations' : 'proposals'],
+            Response::HTTP_SEE_OTHER,
+        );
+    }
+
+    #[Route(
+        '/mesures/{id}/deliberer',
+        name: 'policy_deliberation_add',
+        requirements: ['id' => 'pm_[a-f0-9]{24}'],
+        methods: ['POST'],
+    )]
+    public function deliberate(Request $request, string $id): Response
+    {
+        if (!$this->sameOrigin($request)
+            || !$this->profiles->validFormToken(
+                $request, 'policy.deliberate:' . $id,
+                $request->request->getString('_token'),
+            )) {
+            return new Response('Formulaire de délibération expiré ou origine non autorisée.', 403);
+        }
+        $profile = $this->currentProfile($request);
+        if ($profile === null) {
+            return new Response('Un compte de test actif est nécessaire pour délibérer.', 403);
+        }
+        try {
+            $this->deliberations->add($id, $profile, [
+                'parentId' => $request->request->getString('parent_id'),
+                'causeText' => $request->request->getString('cause_text'),
+                'causeDegree' => $request->request->getString('cause_degree'),
+                'causeSource' => $request->request->getString('cause_source'),
+                'consequenceText' => $request->request->getString('consequence_text'),
+                'consequenceDegree' => $request->request->getString('consequence_degree'),
+                'consequenceSource' => $request->request->getString('consequence_source'),
+            ]);
+        } catch (\DomainException $error) {
+            $status = in_array($error->getCode(), [400, 403, 404, 429, 503], true)
+                ? $error->getCode() : 400;
+
+            return new Response($error->getMessage(), $status);
+        }
+        $from = $request->request->getString('_from') === 'consultations'
+            ? 'consultations' : 'proposals';
+
+        return $this->redirect(
+            $this->generateUrl('policy_detail', [
+                'id' => $id, 'from' => $from, 'contributed' => 1,
+            ]) . '#arbre-causal',
             Response::HTTP_SEE_OTHER,
         );
     }
