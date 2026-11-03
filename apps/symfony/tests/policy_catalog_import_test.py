@@ -121,6 +121,20 @@ class OfficialBillImportTests(unittest.TestCase):
         ):
             self.assertIsNone(MODULE.validated(example | wrong))
 
+    def test_homonymous_proposals_are_separate_if_official_dossiers_differ(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = MODULE.senate_measures(self.sample(root))
+            same_title = records[1].copy()
+            same_title["sourceUrl"] = (
+                "https://www.senat.fr/dossier-legislatif/ppl26-999.html"
+            )
+            imported = MODULE.import_records(
+                root / "catalog.sqlite", [records[1], same_title], limit=200
+            )
+            self.assertEqual(2, imported["inserted"])
+            self.assertEqual(2, imported["database_total"])
+
     def test_import_requires_official_file_and_does_not_invent_records(self):
         cmd = [sys.executable, str(ROOT / "tools/import_policy_catalog.py")]
         result = subprocess.run(cmd, capture_output=True, text=True)
