@@ -68,7 +68,7 @@ final class FictionalCitizenCreationTest extends TestCase
         $state = $engine->enrollBetaParticipant($state, $profile, $commune);
 
         self::assertTrue($engine->verify($state)['valid']);
-        $this->expectException(\DomainException::class);
+        $this->expectException(DomainException::class);
         $this->expectExceptionCode(403);
         $engine->apply($state, 'citizen.create', [
             'citizenId' => $profile['citizenId'],
