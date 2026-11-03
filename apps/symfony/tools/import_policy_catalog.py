@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS policy_measures (
     origin_actor TEXT NOT NULL,
     legal_status TEXT NOT NULL,
     review_status TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open',
     opened_at TEXT NOT NULL,
     closes_at TEXT NOT NULL,
     created_at TEXT NOT NULL
@@ -267,6 +268,13 @@ def import_records(db_path: Path, items: list[dict], limit: int = 200, days: int
         db.execute("PRAGMA foreign_keys = ON")
         db.execute("PRAGMA busy_timeout = 5000")
         db.executescript(SCHEMA)
+        # Migration non destructive du catalogue créé avec la toute première version.
+        columns = {row[1] for row in db.execute("PRAGMA table_info(policy_measures)")}
+        if "status" not in columns:
+            db.execute(
+                "ALTER TABLE policy_measures ADD COLUMN status TEXT NOT NULL DEFAULT 'open'"
+            )
+            db.commit()
         start = datetime.now(timezone.utc)
         opened = start.isoformat(timespec="seconds")
         closes = (start + timedelta(days=days)).isoformat(timespec="seconds")
