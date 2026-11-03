@@ -26,7 +26,7 @@ auteur par recherche externe : cette neutralité n'est pas un anonymat absolu.
 
 - Le fichier de 45 mesures provenant de programmes électoraux a été retiré du
   dépôt ; elles ne sont plus importables automatiquement.
-- Les anciennes routes /proposals et /consultations redirigent vers /mesures.
+- Les anciennes propositions fictives sont remplacées par les rubriques officielles /chemins (bibliothèque) et /consultations (vote et suivi). L’URL historique /proposals redirige vers /mesures.
 - Les anciennes actions Web/API de création, modification et vote de
   propositions fictives sont désactivées.
 - Les fiches de programmes précédemment importées dans la base annexe sont
@@ -86,6 +86,48 @@ doublons de contenu.
 - L'attribution est dévoilée après clôture, avec le résultat agrégé.
 - Les consultations historiques du moteur civique original ne sont pas
   réécrites ni converties.
+
+## Délibération causale après le vote
+
+Le bulletin reste un choix libre entre Pour, Contre et Abstention. Pour
+argumenter publiquement, le citoyen doit **d'abord enregistrer son vote**
+et compléter ensuite un **couple causal obligatoire** dans l'arbre de
+la fiche officielle /mesures/{id} :
+
+- Cause (25–1 500 caractères), degré de preuve : probable / observée /
+  présentée comme démontrée, URL HTTPS si possible ;
+- Conséquence (25–1 500 caractères), degré de preuve identique,
+  URL HTTPS si possible ;
+- Si une cause ou une conséquence est présentée comme « démontrée »,
+  une URL HTTPS est obligatoire. La présence d'une URL ne constitue pas une
+  vérification par l'application ni une preuve scientifique ;
+- Réponse possible à une branche antérieure du même dossier (six niveaux
+  supplémentaires maximum), sans champ de commentaire libre. Les corrections
+  prennent la forme de nouvelles branches plutôt que de réécritures.
+- Le vote d'origine n'est jamais modifié par la contribution. Les branches
+  restent ajoutables **après la clôture**, à condition que le compte actif
+  ait participé au scrutin de simulation.
+
+Pendant que le scrutin est ouvert, seuls les profils de test ayant déjà voté
+peuvent lire et compléter son arbre, pour éviter d'influencer les visiteurs
+n'ayant pas encore pris position. Après clôture, l'arbre devient public,
+même pour ceux qui n'ont pas participé.
+
+Les branches n'affichent qu'un libellé de compte de test pseudonyme, jamais
+l'adresse IP, son empreinte ni le prénom/nom déclarés. Les nouveaux argumentaires
+libres sont refusés côté serveur, tandis que les anciens restent conservés
+avec les votes préexistants. Toutes les branches sont historiques et
+persistent après suppression du profil, sans données de nom.
+
+Stockage : table `policy_deliberations` de `var/policy-catalog.sqlite`.
+Création additive via l'importeur ou au premier accès à l'arbre ; aucun
+changement des anciens bulletins ou de la base INSEE/DECP.
+Les branchements ne modifient pas le statut parlementaire d'une proposition.
+
+Limites : aucune modération éditoriale humaine ni vérification automatique
+du sens du texte n'est assurée. Les classifications « probable »,
+« observée » et « démontrée » sont déclaratives ; un lien ne garantit
+ni crédibilité ni lien causal.
 
 ## Contrôles techniques
 
