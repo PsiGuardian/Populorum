@@ -236,6 +236,8 @@ final class PolicyDeliberation
                 }
             }
             $id = 'pc_' . bin2hex(random_bytes(12));
+            $createdAt = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
+                ->format('Y-m-d\TH:i:s.uP');
             $insert = $db->prepare(
                 'INSERT INTO policy_deliberations (
                     id, measure_id, citizen_id, participant_label, parent_id, depth,
@@ -249,7 +251,7 @@ final class PolicyDeliberation
                 $parentId !== '' ? $parentId : null,
                 $depth, $causeText, $causeDegree, $causeSource,
                 $consequenceText, $consequenceDegree, $consequenceSource,
-                new \DateTimeImmutable('now', new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s.uP'),
+                $createdAt,
             ]);
             self::storeRevision($db, [
                 'id' => $id,
@@ -259,7 +261,7 @@ final class PolicyDeliberation
                 'consequence_text' => $consequenceText,
                 'consequence_degree' => $consequenceDegree,
                 'consequence_source' => $consequenceSource,
-            ], 1, gmdate('Y-m-d\TH:i:s+00:00'));
+            ], 1, $createdAt);
             $db->commit();
 
             return $id;
