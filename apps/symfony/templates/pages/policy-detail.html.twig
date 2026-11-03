@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Évaluer une mesure · Populorum</title>
+    <title>Voter sur une proposition de loi · Populorum</title>
     <link rel="stylesheet" href="/app.css">
 </head>
 <body>
 <main class="native-page" style="max-width:980px;margin:auto;padding:1.5rem">
-    <p><a href="{{ path('policy_catalog') }}">← Bibliothèque de mesures</a> ·
+    <p><a href="{{ path('policy_catalog') }}">← Propositions de loi officielles</a> ·
         <a href="{{ path('section', {view:'citizen'}) }}">Mon laboratoire</a></p>
     <section class="panel">
         <p class="eyebrow">CONSULTATION EXPLORATOIRE · NON REPRÉSENTATIVE · SANS EFFET JURIDIQUE</p>
         <p class="small muted">{{ measure.category }} ·
-            {{ measure.territoryCode == 'FR' ? 'France entière' : 'Commune de Paris' }}</p>
+            France entière · texte déposé au Sénat</p>
         <h1>{{ measure.label }}</h1>
-        <p>Question soumise : <strong>Êtes-vous favorable à l'étude et à la mise en œuvre du
-            dispositif ci-dessus ?</strong></p>
-        <p>La formulation décrit une intention ou un texte déposé ; elle ne signifie
-            ni qu'une loi a été adoptée, ni qu'elle est techniquement réalisable telle quelle.</p>
+        <p>Question soumise : <strong>Êtes-vous favorable au principe exprimé par
+            cette proposition de loi ?</strong></p>
+        <p>Le texte a effectivement été déposé au Parlement, mais l'intitulé affiché
+            n'en reproduit pas les articles. Il ne préjuge ni de l'adoption
+            ni du contenu définitif de la loi. Le vote porte ici sur son principe général.</p>
         <h2>Analyse cause-effet à approfondir</h2>
         <ul>
             <li>Quel problème vérifiable cette mesure est-elle censée traiter ?</li>
@@ -28,7 +29,7 @@
         </ul>
         <p class="small muted">
             Aucun coût chiffré ou bénéfice garanti n'est inventé par le catalogue.
-            Le programme d'origine et les analyses indépendantes doivent être comparés
+            Le dossier législatif original et les analyses indépendantes doivent être comparés
             avant toute décision publique. Les mesures ne sont pas appliquées ici.
         </p>
     </section>
@@ -43,8 +44,8 @@
                 Les comptes sont liés à une IP, ce qui ne garantit pas l'unicité d'une personne.</p>
             <h3>Provenance et dossier historique</h3>
             <p><strong>Origine :</strong> {{ measure.originActor }}</p>
-            <p><strong>Nature :</strong> {{ measure.sourceType }} ·
-                <strong>Édition/dépôt :</strong> {{ measure.sourceDate }}</p>
+            <p><strong>Nature :</strong> proposition de loi déposée ·
+                <strong>Date de dépôt :</strong> {{ measure.sourceDate }}</p>
             <p><strong>Situation au moment de l'import :</strong> {{ measure.legalStatus }}.
                 Ce statut doit être revérifié dans le dossier original.</p>
             <p><strong>Référence :</strong> {{ measure.sourceReference }}</p>
