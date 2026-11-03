@@ -841,8 +841,6 @@ final class SimulationEngine
             'id' => $objectId,
             'name' => $name,
             'territoryId' => $payload['territoryId'],
-            'familyId' => 'family-' . $objectId,
-            'familyLabel' => 'Famille fictive indépendante',
             'consent' => false,
             'role' => 'citizen',
             'suspended' => false,
