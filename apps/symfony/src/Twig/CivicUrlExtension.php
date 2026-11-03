@@ -76,6 +76,15 @@ final class CivicUrlExtension extends AbstractExtension
         if ($name !== 'section') {
             return $this->router->generate($name, $parameters);
         }
+        // Les rubriques 2 et 3 sont désormais des pages nationales autonomes :
+        // les anciens identifiants de communes réelles (c13068, etc.) ne doivent
+        // jamais être transmis au routeur t1/t2/t3 des anciennes simulations.
+        if (($parameters['view'] ?? '') === 'proposals') {
+            return $this->router->generate('site_proposals');
+        }
+        if (($parameters['view'] ?? '') === 'consultations') {
+            return $this->router->generate('site_consultations');
+        }
         $view = $parameters['view'] ?? 'proposals';
         unset($parameters['view']);
         if (
