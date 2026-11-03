@@ -49,7 +49,7 @@ class PolicyCatalogImportTests(unittest.TestCase):
                 "Session;Numéro de dépôt;Date de dépôt;Auteurs;Titre complet;"
                 "Type de texte;URL du dossier législatif;Etat du dossier;Thème\n"
                 "2026;450;02/11/2026;Groupe fictif;Proposition de loi visant à améliorer "
-                "l'accès aux soins;Proposition de loi;https://www.senat.fr/dossier-legislatif/"
+                "l'accès aux soins;Proposition de loi;http://www.senat.fr/dossier-legislatif/"
                 "ppl26-450.html;En première lecture;Santé\n"
                 "2026;451;03/11/2026;Groupe fictif;Proposition de loi visant à développer "
                 "les transports collectifs;Proposition de loi;https://www.senat.fr/dossier-legislatif/"
@@ -67,6 +67,8 @@ class PolicyCatalogImportTests(unittest.TestCase):
             self.assertIn("transports collectifs", actual[0]["label"])
             self.assertEqual("FR", actual[0]["territoryCode"])
             self.assertTrue(MODULE.validated(actual[0]))
+            self.assertTrue(MODULE.validated(actual[1]))
+            self.assertTrue(actual[1]["sourceUrl"].startswith("https://www.senat.fr/"))
             self.assertIsNone(MODULE.validated(actual[-1]))
             self.assertEqual("Santé", MODULE.theme("Améliorer l'accès aux soins"))
 
