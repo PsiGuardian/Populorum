@@ -115,19 +115,223 @@
                         {% endfor %}
                     </div>
                 </fieldset>
-                <p>
-                    <label for="policy-argument">Votre argumentaire (facultatif)</label>
-                    <textarea id="policy-argument" name="argument" rows="4"
-                              maxlength="2000"
-                              placeholder="Expliquez votre raisonnement, une cause, une conséquence ou une réserve."></textarea>
-                </p>
-                <p class="small muted">Évitez toute donnée personnelle dans
-                    votre argumentaire. L'attribution politique n'est pas affichée
-                    tant que la consultation est ouverte.</p>
+                <p class="small muted">Les prises de position et les délibérations
+                    sont séparées : pour expliquer votre choix, utilisez ensuite
+                    l’arbre des causes et conséquences. Aucun commentaire libre
+                    n’est enregistré dans le bulletin.</p>
                 <button type="submit">Enregistrer ma position fictive</button>
             </form>
         </section>
     {% endif %}
+
+    <section class="policy-panel policy-deliberation" id="arbre-causal"
+             aria-labelledby="deliberation-title">
+        <div class="eyebrow">APRÈS LE VOTE · DÉLIBÉRATION STRUCTURÉE</div>
+        <h2 id="deliberation-title">L’arbre des causes et conséquences</h2>
+        <p>
+            Une proposition de loi peut susciter plusieurs raisonnements contradictoires.
+            Dans cet espace, on ne publie pas de message libre : chaque contribution
+            doit exposer <strong>une cause ET une conséquence</strong>,
+            distinguer une hypothèse d’un fait observé ou présenté comme démontré,
+            et citer une source lorsque c’est possible.
+        </p>
+        <div class="policy-causal-principle" aria-label="Structure obligatoire d’une contribution">
+            <div>Cause identifiée <small>Probable · observée · documentée</small></div>
+            <span aria-hidden="true">→</span>
+            <div>Proposition de loi <small>Texte parlementaire officiel</small></div>
+            <span aria-hidden="true">→</span>
+            <div>Conséquence envisagée <small>Probable · observée · documentée</small></div>
+        </div>
+        <p class="small muted">
+            Une URL citée ne constitue pas à elle seule une démonstration :
+            la fiabilité de la source et le lien causal restent à examiner.
+            Les contributions sont des analyses de participants, jamais des faits
+            certifiés par Populorum. L’arbre ne modifie pas le résultat du scrutin.
+        </p>
+
+        {% if not deliberationVisible %}
+            <div class="policy-empty">
+                <h3>La délibération s’ouvre après votre vote</h3>
+                <p>Exprimez d’abord Pour, Contre ou Abstention sur cette proposition.
+                    L’arbre devient alors consultable et vous pouvez y ajouter
+                    une cause et une conséquence. Après clôture du scrutin,
+                    le raisonnement collectif devient consultable par tous.</p>
+                {% if not profile %}
+                    <a class="policy-link primary" href="{{ path('beta_profile') }}">
+                        Créer un compte de test
+                    </a>
+                {% endif %}
+            </div>
+        {% else %}
+            {% if contributed %}
+                <p class="policy-tag voted" role="status">Votre analyse causale a été publiée.</p>
+            {% endif %}
+            <div class="policy-results-title">
+                <h3>{{ causalTree.total }} contribution(s) structurée(s)</h3>
+                <p>Branche initiale ou réponse à une analyse précédente</p>
+            </div>
+            {% set degrees = {
+                probable: 'Probable · hypothèse à tester',
+                observee: 'Observée · à corroborer',
+                demontree: 'Présentée comme démontrée · source à vérifier'
+            } %}
+            <div class="policy-causal-branches">
+                {% for node in causalTree.rows %}
+                    <article class="policy-causal-branch"
+                             id="deliberation-{{ node.id }}"
+                             style="--causal-depth: {{ node.depth }}">
+                        <header class="policy-causal-header">
+                            <div class="policy-tags">
+                                <span class="policy-tag">Branche {{ node.depth + 1 }}</span>
+                                <span class="policy-tag">{{ node.participant_label }}</span>
+                                <span class="policy-tag">
+                                    {{ node.created_at|date('d/m/Y · H:i', 'UTC') }} UTC
+                                </span>
+                            </div>
+                            {% if node.parent_id %}
+                                <p class="small muted">
+                                    Réponse à une cause précédente :
+                                    « {{ node.parent_cause|slice(0, 135) }}{{ node.parent_cause|length > 135 ? '…' : '' }} »
+                                </p>
+                            {% endif %}
+                        </header>
+                        <div class="policy-causal-pair">
+                            <div class="policy-causal-fact">
+                                <h4>Cause avancée</h4>
+                                <span class="policy-tag">{{ degrees[node.cause_degree] }}</span>
+                                <p>{{ node.cause_text|nl2br }}</p>
+                                {% if node.cause_source %}
+                                    <a href="{{ node.cause_source }}" target="_blank"
+                                       rel="nofollow noopener noreferrer">
+                                        Examiner la source de la cause ↗
+                                    </a>
+                                {% else %}
+                                    <small>Sans source externe fournie</small>
+                                {% endif %}
+                            </div>
+                            <span class="policy-causal-arrow" aria-hidden="true">→</span>
+                            <div class="policy-causal-fact">
+                                <h4>Conséquence envisagée</h4>
+                                <span class="policy-tag">{{ degrees[node.consequence_degree] }}</span>
+                                <p>{{ node.consequence_text|nl2br }}</p>
+                                {% if node.consequence_source %}
+                                    <a href="{{ node.consequence_source }}" target="_blank"
+                                       rel="nofollow noopener noreferrer">
+                                        Examiner la source de la conséquence ↗
+                                    </a>
+                                {% else %}
+                                    <small>Sans source externe fournie</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if canDeliberate and node.depth < 6 %}
+                            <p class="policy-causal-actions">
+                                <a class="policy-link" href="{{ path('policy_detail', {
+                                    id: measure.id, from: policySection,
+                                    reply: node.id
+                                }) }}#deliberation-form">
+                                    Ajouter une branche en réponse
+                                </a>
+                            </p>
+                        {% endif %}
+                    </article>
+                {% else %}
+                    <div class="policy-empty">
+                        <h3>La première branche reste à écrire</h3>
+                        <p>Proposez une cause, une conséquence et leur degré de preuve.
+                            Les contributions suivantes pourront développer,
+                            contester ou compléter ce raisonnement.</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if causalTree.pages > 1 %}
+                <nav class="policy-pagination" aria-label="Pagination des branches causales">
+                    {% if causalTree.page > 1 %}
+                        <a class="policy-link" href="{{ path('policy_detail', {
+                            id: measure.id, from: policySection,
+                            treePage: causalTree.page - 1
+                        }) }}#arbre-causal">← Analyses précédentes</a>
+                    {% endif %}
+                    <span>Page {{ causalTree.page }} sur {{ causalTree.pages }}</span>
+                    {% if causalTree.page < causalTree.pages %}
+                        <a class="policy-link" href="{{ path('policy_detail', {
+                            id: measure.id, from: policySection,
+                            treePage: causalTree.page + 1
+                        }) }}#arbre-causal">Analyses suivantes →</a>
+                    {% endif %}
+                </nav>
+            {% endif %}
+
+            {% if canDeliberate %}
+                <form id="deliberation-form" class="policy-causal-form"
+                      method="post"
+                      action="{{ path('policy_deliberation_add', {id: measure.id}) }}">
+                    <h3>Apporter un raisonnement causal</h3>
+                    <p class="small muted">Chaque publication est conservée comme
+                        une nouvelle branche. Pour corriger votre position, publiez
+                        une branche complémentaire explicitant les faits nouveaux.</p>
+                    {% if reply %}
+                        <div class="policy-causal-reply">
+                            Vous répondez à une analyse de {{ reply.participant_label }} :
+                            « {{ reply.cause_text|slice(0, 135) }}… »
+                            <a href="{{ path('policy_detail', {
+                                id: measure.id, from: policySection
+                            }) }}#deliberation-form">Créer une branche indépendante</a>
+                        </div>
+                    {% endif %}
+                    <input type="hidden" name="_token" value="{{ deliberationToken }}">
+                    <input type="hidden" name="_from" value="{{ policySection }}">
+                    <input type="hidden" name="parent_id" value="{{ reply ? reply.id : '' }}">
+                    <div class="policy-causal-form-grid">
+                        <fieldset>
+                            <legend>1. Cause obligatoire</legend>
+                            <label for="causal-cause-text">Quelle cause avancez-vous ?</label>
+                            <textarea id="causal-cause-text" name="cause_text"
+                                      minlength="25" maxlength="1500" rows="5"
+                                      required placeholder="Décrivez un mécanisme causal concret, avec ses limites."></textarea>
+                            <label for="causal-cause-degree">Degré de preuve</label>
+                            <select id="causal-cause-degree" name="cause_degree" required>
+                                <option value="probable">Probable · hypothèse</option>
+                                <option value="observee">Observée · à corroborer</option>
+                                <option value="demontree">Présentée comme démontrée · source obligatoire</option>
+                            </select>
+                            <label for="causal-cause-source">Source HTTPS (si possible)</label>
+                            <input id="causal-cause-source" type="url" name="cause_source"
+                                   maxlength="500" placeholder="https://...">
+                        </fieldset>
+                        <fieldset>
+                            <legend>2. Conséquence obligatoire</legend>
+                            <label for="causal-consequence-text">Quelle conséquence en découlerait ?</label>
+                            <textarea id="causal-consequence-text" name="consequence_text"
+                                      minlength="25" maxlength="1500" rows="5"
+                                      required placeholder="Décrivez un effet favorable, défavorable ou indirect testable."></textarea>
+                            <label for="causal-consequence-degree">Degré de preuve</label>
+                            <select id="causal-consequence-degree" name="consequence_degree" required>
+                                <option value="probable">Probable · hypothèse</option>
+                                <option value="observee">Observée · à corroborer</option>
+                                <option value="demontree">Présentée comme démontrée · source obligatoire</option>
+                            </select>
+                            <label for="causal-consequence-source">Source HTTPS (si possible)</label>
+                            <input id="causal-consequence-source" type="url"
+                                   name="consequence_source" maxlength="500"
+                                   placeholder="https://...">
+                        </fieldset>
+                    </div>
+                    <p class="small muted">Les contributions sont publiques après votre vote,
+                        et après clôture elles sont consultables même sans compte.
+                        Seul un identifiant pseudonyme du profil de test est affiché.
+                        Pas de discussion libre ni de données personnelles.</p>
+                    <button type="submit">Publier la cause et la conséquence</button>
+                </form>
+            {% else %}
+                <p class="policy-disclaimer">Pour ajouter une branche,
+                    vous devez avoir exprimé un vote sur ce texte à l’aide
+                    d’un compte de test encore actif. Les consultations closes
+                    conservent l’accès à l’arbre pour les anciens votants.</p>
+            {% endif %}
+        {% endif %}
+    </section>
 
     <aside class="policy-disclaimer">
         <strong>Échéance de la consultation expérimentale</strong>
