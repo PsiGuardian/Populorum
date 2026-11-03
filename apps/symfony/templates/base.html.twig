@@ -31,8 +31,8 @@
             <nav aria-label="Navigation principale">
                 {% set primaryNavigation = {
                     home: 'Comprendre et agir',
-                    proposals: 'Arbres et propositions',
-                    consultations: 'Donner mon avis',
+                    proposals: 'Propositions de loi',
+                    consultations: 'Voter sur les textes',
                     convergence: 'Comparer aux observations',
                     accounts: 'Récits et inquiétudes',
                     services: 'Services et missions',
@@ -58,7 +58,7 @@
                 {% endfor %}
                 <a href="{{ path('policy_catalog') }}" class="plain">
                     <span aria-hidden="true">◇</span>
-                    <span>Mesures publiques à examiner</span>
+                    <span>Propositions parlementaires</span>
                 </a>
                 <details class="secondary-nav" {{ view in secondaryNavigation ? 'open' : '' }}>
                     <summary>Sources, suivi et cadre</summary>
