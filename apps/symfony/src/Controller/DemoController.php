@@ -972,34 +972,6 @@ final class DemoController extends AbstractController
                 unset($payload['revision'], $payload['operationId']);
                 // L’auteur vient de la session : un champ de formulaire ne peut pas l’usurper.
                 $payload['citizenId'] = $context['actor']['id'];
-                if (
-                    in_array(
-                        $type,
-                        ['proposal.create', 'proposal.revise'],
-                        true,
-                    )
-                ) {
-                    foreach (
-                        $proposal['nodes'] ??
-                            array_map(
-                                static fn (string $category): array => [
-                                    'category' => $category,
-                                ],
-                                SimulationEngine::CATEGORIES,
-                            ) as $nodeIndex => $node
-                    ) {
-                        $payload['nodes'][] = [
-                            'id' => $node['id'] ?? 'n' . $nodeIndex,
-                            'category' => $node['category'],
-                            'content' => $payload['node' . $nodeIndex] ?? '',
-                            'kind' => $payload['kind' . $nodeIndex],
-                        ];
-                        unset(
-                            $payload['node' . $nodeIndex],
-                            $payload['kind' . $nodeIndex],
-                        );
-                    }
-                }
                 // Le contrôle optimiste empêche un ancien formulaire d’écraser une autre écriture.
                 $workspace = $this->database->workspace($this->owner($request));
                 if ($workspace['revision'] !== $revision) {
@@ -1435,9 +1407,6 @@ final class DemoController extends AbstractController
             }
             $payload = $body['payload'];
             $allowed = array_keys(ActionForms::TYPES[$type]['fields']);
-            if (in_array($type, ['proposal.create', 'proposal.revise'], true)) {
-                $allowed = array_merge($allowed, ['nodes', 'edges', 'sources']);
-            }
             if (array_diff(array_keys($payload), $allowed)) {
                 throw new \DomainException('Champ non autorisé.');
             }
