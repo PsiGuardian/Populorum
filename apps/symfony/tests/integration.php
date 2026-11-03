@@ -375,9 +375,7 @@ try {
         [
             '/',
             '/territories',
-            '/proposals',
-            '/proposals?id=p1',
-            '/consultations',
+            '/mesures',
             '/experiments',
             '/convergence',
             '/memory',
@@ -395,6 +393,15 @@ try {
         if ($response->getStatusCode() !== 200) {
             file_put_contents(dirname(__DIR__) . '/var/failed-page.html', $response->getContent());
         }
+    }
+    // Les anciennes pages fictives n'exposent plus aucun bulletin.
+    foreach (['/proposals', '/proposals?id=p1', '/consultations'] as $oldPath) {
+        $oldResponse = $request($oldPath);
+        check(
+            $oldResponse->getStatusCode() === 303
+                && str_contains((string) $oldResponse->headers->get('Location'), '/mesures'),
+            'Ancienne page fictive redirigée vers les propositions officielles : ' . $oldPath,
+        );
     }
     // Le filtre doit garder la fiche attendue, pas seulement retourner une page HTTP 200.
     foreach (['t1' => 'Paris', 't2' => 'Marseille', 't3' => 'Le Havre'] as $territoryId => $cityName) {
