@@ -877,7 +877,7 @@ final class DemoController extends AbstractController
         if (in_array($type, ['citizen.create', 'citizen.update', 'citizen.erase'], true)) {
             if ($this->activeBetaProfile($request) !== null) {
                 if ($request->isMethod('POST')) {
-                    throw $this->createAccessDeniedException('Gérez votre identité depuis le compte de test.');
+                    throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('Gérez votre identité depuis le compte de test.');
                 }
                 $this->addFlash('info', 'Votre compte de test est déjà votre participant actif. Gérez-le depuis cette page.');
 
@@ -885,7 +885,7 @@ final class DemoController extends AbstractController
             }
             if ($type === 'citizen.create' && $this->getUser() instanceof CivicAccount) {
                 if ($request->isMethod('POST')) {
-                    throw $this->createAccessDeniedException('Ce compte possède déjà un personnage actif.');
+                    throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('Ce compte possède déjà un personnage actif.');
                 }
                 $this->addFlash('info', 'Ce compte possède déjà son identité de personnage.');
 
