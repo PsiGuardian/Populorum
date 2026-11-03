@@ -34,6 +34,7 @@ final class RequestProtectionSubscriber implements EventSubscriberInterface
             || (!str_starts_with($request->getPathInfo(), '/action/')
                 && !str_starts_with($request->getPathInfo(), '/agir/')
                 && $request->getPathInfo() !== '/recherche'
+                && !str_starts_with($request->getPathInfo(), '/mesures/')
                 && !str_starts_with($request->getPathInfo(), '/api/v1/actions/'))
         ) {
             return;

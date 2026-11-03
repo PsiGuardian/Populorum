@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS policy_measures (
     origin_actor TEXT NOT NULL,
     legal_status TEXT NOT NULL,
     review_status TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open',
     opened_at TEXT NOT NULL,
     closes_at TEXT NOT NULL,
     created_at TEXT NOT NULL
@@ -208,6 +209,16 @@ def senate_measures(csv_path: Path) -> list[dict]:
         source_type = field(row, "type de texte", "type", "nature")
         if not title or not url or not date:
             continue
+        # Les anciens liens des exports officiels peuvent encore utiliser HTTP.
+        # Forcer HTTPS uniquement pour le nom de domaine institutionnel Sénat.
+        parsed = urlparse(url)
+        if parsed.scheme == "http" and (
+            parsed.hostname == "senat.fr"
+            or (parsed.hostname or "").endswith(".senat.fr")
+        ):
+            url = "https://" + (parsed.netloc or "") + (parsed.path or "")
+            if parsed.query:
+                url += "?" + parsed.query
         if "promulgu" in folded(legal_status):
             continue  # Une loi déjà promulguée ne doit pas être présentée comme projet en attente.
         if source_type and not (
@@ -257,6 +268,13 @@ def import_records(db_path: Path, items: list[dict], limit: int = 200, days: int
         db.execute("PRAGMA foreign_keys = ON")
         db.execute("PRAGMA busy_timeout = 5000")
         db.executescript(SCHEMA)
+        # Migration non destructive du catalogue créé avec la toute première version.
+        columns = {row[1] for row in db.execute("PRAGMA table_info(policy_measures)")}
+        if "status" not in columns:
+            db.execute(
+                "ALTER TABLE policy_measures ADD COLUMN status TEXT NOT NULL DEFAULT 'open'"
+            )
+            db.commit()
         start = datetime.now(timezone.utc)
         opened = start.isoformat(timespec="seconds")
         closes = (start + timedelta(days=days)).isoformat(timespec="seconds")

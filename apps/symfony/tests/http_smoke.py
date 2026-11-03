@@ -45,8 +45,17 @@ def main() -> None:
         with sqlite3.connect(source_db.as_uri() + "?mode=ro", uri=True) as source:
             with sqlite3.connect(temporary_db) as destination:
                 source.backup(destination, pages=1000, sleep=0.05)
+        temporary_catalog = Path(temp) / "policy-catalog.sqlite"
+        subprocess.run(
+            ["python3", "tools/import_policy_catalog.py", "--db",
+             str(temporary_catalog), "--limit", "45"],
+            cwd=ROOT, check=True, capture_output=True, text=True,
+        )
         environment = dict(os.environ)
-        environment.update(APP_ENV="demo", APP_DEBUG="0", POPULORUM_DEMO="1", POPULORUM_TIMING="1", DATABASE_URL="sqlite:///" + str(temporary_db))
+        environment.update(APP_ENV="demo", APP_DEBUG="0", POPULORUM_DEMO="1",
+                           POPULORUM_TIMING="1",
+                           POPULORUM_POLICY_CATALOG_PATH=str(temporary_catalog),
+                           DATABASE_URL="sqlite:///" + str(temporary_db))
         # Do not set POPULORUM_SCENARIO=reference: test the actual install.
         environment.pop("POPULORUM_SCENARIO", None)
         server = subprocess.Popen(
@@ -218,6 +227,55 @@ def main() -> None:
             with closing(profile_browser.open(url + '/compte-test', timeout=28)) as response:
                 assert 'Alex Fictif' in response.read().decode('utf-8'), 'Revisit failed without cookie'
             print('PASS IP-only beta profile POST/revisit, no account cookie', flush=True)
+            # Vote réel par HTTP : la source politique reste absente pendant le scrutin.
+            with closing(profile_browser.open(url + '/mesures?scope=FR', timeout=28)) as response:
+                assert response.status == 200
+                index_html = response.read().decode('utf-8', 'replace')
+            match = re.search(r'href="(/mesures/pm_[a-f0-9]{24})"', index_html)
+            assert match, 'No national policy measure available in catalogue: ' + index_html[:1300]
+            detail_path = match.group(1)
+            with closing(profile_browser.open(url + detail_path, timeout=28)) as response:
+                detail_html = response.read().decode('utf-8', 'replace')
+                assert response.status == 200
+                assert 'Enregistrer ma position fictive' in detail_html
+                assert 'Origine :' not in detail_html
+                assert 'Marine Le Pen' not in detail_html
+            token = re.search(r'name="_token" value="([a-f0-9]{64})"', detail_html)
+            assert token, 'Policy voting token absent'
+            for choice in ('pour', 'contre'):
+                vote_data = urlencode({
+                    '_token': token.group(1), 'choice': choice,
+                    'argument': 'Analyse fictive des coûts et alternatives',
+                }).encode()
+                with closing(profile_browser.open(urllib.request.Request(
+                    url + detail_path + '/vote', data=vote_data, method='POST',
+                    headers={'Origin': url}
+                ), timeout=28)) as response:
+                    final = response.read().decode('utf-8', 'replace')
+                    assert response.status == 200
+                    assert 'Position enregistrée.' in final
+            with sqlite3.connect(temporary_catalog) as catalog_db:
+                id_value = detail_path.rsplit('/', 1)[-1]
+                assert catalog_db.execute(
+                    "SELECT COUNT(*) FROM policy_votes WHERE measure_id = ?",
+                    (id_value,),
+                ).fetchone()[0] == 1, 'More than one active vote from one beta profile'
+                assert catalog_db.execute(
+                    "SELECT COUNT(*) FROM policy_vote_history WHERE measure_id = ?",
+                    (id_value,),
+                ).fetchone()[0] == 2, 'Policy vote revision history missing'
+                catalog_db.execute(
+                    "UPDATE policy_measures SET closes_at = ? WHERE id = ?",
+                    ('2026-01-01T00:00:00+00:00', id_value),
+                )
+                catalog_db.commit()
+            with closing(profile_browser.open(url + detail_path, timeout=28)) as response:
+                closed_html = response.read().decode('utf-8', 'replace')
+                assert 'Provenance et dossier historique' in closed_html
+                assert 'Contre :' in closed_html
+                assert 'Enregistrer ma position fictive' not in closed_html
+            print('PASS policy catalogue end-to-end: imported source, blind vote, revision, disclosure', flush=True)
+
             # Existing accounts must not reach the obsolete fictional-persona creator.
             with closing(profile_browser.open(url + '/citizen', timeout=28)) as response:
                 citizen_html = response.read().decode('utf-8', 'replace')

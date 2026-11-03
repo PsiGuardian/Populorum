@@ -42,6 +42,34 @@ class PolicyCatalogImportTests(unittest.TestCase):
                     ).fetchone()[0],
                 )
 
+    def test_existing_catalogue_without_status_is_upgraded_without_erasing_votes(self):
+        curated = MODULE.curated_measures()
+        with tempfile.TemporaryDirectory() as directory:
+            dbpath = Path(directory) / "catalog.sqlite"
+            with sqlite3.connect(dbpath) as db:
+                old_schema = MODULE.SCHEMA.replace(
+                    "    status TEXT NOT NULL DEFAULT 'open',\n", ""
+                )
+                db.executescript(old_schema)
+            initial = MODULE.import_records(dbpath, curated, limit=2)
+            self.assertEqual(2, initial["inserted"])
+            with sqlite3.connect(dbpath) as db:
+                measure_id = db.execute("SELECT id FROM policy_measures LIMIT 1").fetchone()[0]
+                db.execute("INSERT INTO policy_votes(measure_id,citizen_id,choice,argument,updated_at) VALUES (?, ?, ?, ?, ?)",
+                           (measure_id, "beta_" + "a" * 24, "pour", "", "2026-11-03T18:00:00+00:00"))
+                db.commit()
+            again = MODULE.import_records(dbpath, curated, limit=2)
+            self.assertEqual(0, again["inserted"])
+            with sqlite3.connect(dbpath) as db:
+                cols = {r[1] for r in db.execute("PRAGMA table_info(policy_measures)")}
+                self.assertIn("status", cols)
+                self.assertEqual(
+                    "open", db.execute("SELECT status FROM policy_measures LIMIT 1").fetchone()[0]
+                )
+                self.assertEqual(
+                    1, db.execute("SELECT COUNT(*) FROM policy_votes").fetchone()[0]
+                )
+
     def test_csv_delimiter_header_sorting_and_real_url_validation(self):
         with tempfile.TemporaryDirectory() as directory:
             csvpath = Path(directory) / "senat.csv"
@@ -49,7 +77,7 @@ class PolicyCatalogImportTests(unittest.TestCase):
                 "Session;Numéro de dépôt;Date de dépôt;Auteurs;Titre complet;"
                 "Type de texte;URL du dossier législatif;Etat du dossier;Thème\n"
                 "2026;450;02/11/2026;Groupe fictif;Proposition de loi visant à améliorer "
-                "l'accès aux soins;Proposition de loi;https://www.senat.fr/dossier-legislatif/"
+                "l'accès aux soins;Proposition de loi;http://www.senat.fr/dossier-legislatif/"
                 "ppl26-450.html;En première lecture;Santé\n"
                 "2026;451;03/11/2026;Groupe fictif;Proposition de loi visant à développer "
                 "les transports collectifs;Proposition de loi;https://www.senat.fr/dossier-legislatif/"
@@ -67,6 +95,8 @@ class PolicyCatalogImportTests(unittest.TestCase):
             self.assertIn("transports collectifs", actual[0]["label"])
             self.assertEqual("FR", actual[0]["territoryCode"])
             self.assertTrue(MODULE.validated(actual[0]))
+            self.assertTrue(MODULE.validated(actual[1]))
+            self.assertTrue(actual[1]["sourceUrl"].startswith("https://www.senat.fr/"))
             self.assertIsNone(MODULE.validated(actual[-1]))
             self.assertEqual("Santé", MODULE.theme("Améliorer l'accès aux soins"))
 
