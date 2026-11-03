@@ -62,7 +62,7 @@ class SenateDossierEnrichmentTests(unittest.TestCase):
                          "commission", "debat", "assemblee"}.issubset(kinds))
         self.assertNotIn("evil.example", " ".join(row["url"] for row in docs))
         self.assertTrue(all(MODULE.official(row["url"]) for row in docs))
-        self.assertEqual(2, len(excerpts) if len(excerpts) == 2 else 3)
+        self.assertEqual(3, len(excerpts))
         self.assertIn("La défense extérieure", excerpts[0])
         self.assertEqual(
             "https://www.senat.fr/leg/exposes-des-motifs/ppl22-262-expose.html",
