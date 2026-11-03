@@ -16,6 +16,16 @@
             </p>
         </div>
     </div>
+    <section class="panel">
+        <h2>Évaluer des mesures publiques documentées</h2>
+        <p>
+            Une bibliothèque distincte permet de donner un avis fictif sur des
+            mesures issues de programmes ou de dossiers législatifs, sans
+            afficher leur attribution pendant le vote. Ce protocole exploratoire
+            n'altère pas les consultations historiques ci-dessous.
+        </p>
+        <a class="button" href="{{ path('policy_catalog') }}">Parcourir les mesures et voter</a>
+    </section>
     {% include 'partials/family-voting-regulation.html.twig' %}
     {{ ui.filter(view, state, q, territory) }}
     {% include 'partials/pagination.html.twig' %}
