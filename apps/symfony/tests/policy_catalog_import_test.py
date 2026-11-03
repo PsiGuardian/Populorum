@@ -42,6 +42,34 @@ class PolicyCatalogImportTests(unittest.TestCase):
                     ).fetchone()[0],
                 )
 
+    def test_existing_catalogue_without_status_is_upgraded_without_erasing_votes(self):
+        curated = MODULE.curated_measures()
+        with tempfile.TemporaryDirectory() as directory:
+            dbpath = Path(directory) / "catalog.sqlite"
+            with sqlite3.connect(dbpath) as db:
+                old_schema = MODULE.SCHEMA.replace(
+                    "    status TEXT NOT NULL DEFAULT 'open',\n", ""
+                )
+                db.executescript(old_schema)
+            initial = MODULE.import_records(dbpath, curated, limit=2)
+            self.assertEqual(2, initial["inserted"])
+            with sqlite3.connect(dbpath) as db:
+                measure_id = db.execute("SELECT id FROM policy_measures LIMIT 1").fetchone()[0]
+                db.execute("INSERT INTO policy_votes(measure_id,citizen_id,choice,argument,updated_at) VALUES (?, ?, ?, ?, ?)",
+                           (measure_id, "beta_" + "a" * 24, "pour", "", "2026-11-03T18:00:00+00:00"))
+                db.commit()
+            again = MODULE.import_records(dbpath, curated, limit=2)
+            self.assertEqual(0, again["inserted"])
+            with sqlite3.connect(dbpath) as db:
+                cols = {r[1] for r in db.execute("PRAGMA table_info(policy_measures)")}
+                self.assertIn("status", cols)
+                self.assertEqual(
+                    "open", db.execute("SELECT status FROM policy_measures LIMIT 1").fetchone()[0]
+                )
+                self.assertEqual(
+                    1, db.execute("SELECT COUNT(*) FROM policy_votes").fetchone()[0]
+                )
+
     def test_csv_delimiter_header_sorting_and_real_url_validation(self):
         with tempfile.TemporaryDirectory() as directory:
             csvpath = Path(directory) / "senat.csv"
