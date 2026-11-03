@@ -26,7 +26,7 @@ final class PolicyDeliberationTest extends TestCase
         $root = sys_get_temp_dir() . '/populorum-causal-' . bin2hex(random_bytes(7));
         self::assertTrue(mkdir($root . '/var', 0700, true));
         $this->roots[] = $root;
-        $db = new PDO('sqlite:' . $root . '/var/catalog.sqlite');
+        $db = new PDO('sqlite:' . $root . '/var/policy-catalog.sqlite');
         $db->exec(
             'CREATE TABLE policy_measures (
                 id TEXT PRIMARY KEY, canonical_key TEXT UNIQUE, label TEXT,
