@@ -49,11 +49,11 @@ def main() -> None:
         official_csv = Path(temp) / "senat-official-fixture.csv"
         official_csv.write_text(
             "Session;Numéro de dépôt;Date de dépôt;Auteurs;Titre complet;"
-            "Type de texte;URL du dossier législatif;Etat du dossier;Thème\\n"
+            "Type de texte;URL du dossier législatif;Etat du dossier;Thème\n"
             "2026;451;03/11/2026;Auteur de test;Proposition de loi concernant "
             "le contrôle des frais municipaux;Proposition de loi;"
             "https://www.senat.fr/dossier-legislatif/ppl26-451.html;"
-            "En première lecture;Finances\\n",
+            "En première lecture;Finances\n",
             encoding="utf-8",
         )
         temporary_catalog = Path(temp) / "policy-catalog.sqlite"
