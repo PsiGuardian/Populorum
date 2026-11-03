@@ -43,6 +43,8 @@ final class BetaVisitorProfilesTest extends TestCase
             self::assertNull($service->find($visitor));
             $created = $service->create($visitor, 'Alex', 'Exemple', '30', '66134');
             self::assertSame('Passa', $created['communeName']);
+            self::assertMatchesRegularExpression('/\Abeta_[a-f0-9]{24}\z/D', $created['citizenId']);
+            self::assertGreaterThan(time(), $created['expiresAt']);
             self::assertSame($created, $service->find($sameAddress));
             self::assertNull($service->find($differentAddress));
             $unchanged = $service->create($sameAddress, 'Autre', 'Personnage', '44', '66134');
