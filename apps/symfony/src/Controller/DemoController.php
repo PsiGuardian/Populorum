@@ -880,9 +880,7 @@ final class DemoController extends AbstractController
         // L'ancien moteur n'accepte plus de nouvelles propositions fictives.
         if (in_array($type, ['proposal.create', 'proposal.publish', 'proposal.revise', 'proposal.node', 'proposal.edge', 'proposal.source', 'territory.adapt', 'consultation.open', 'consultation.close', 'vote.cast'], true)) {
             if ($request->isMethod('POST')) {
-                throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException(
-                    'Seules les propositions de loi déposées officiellement sont soumises au vote.',
-                );
+                throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('Seules les propositions de loi déposées officiellement sont soumises au vote.');
             }
 
             return $this->redirectToRoute('policy_catalog', [], Response::HTTP_SEE_OTHER);
