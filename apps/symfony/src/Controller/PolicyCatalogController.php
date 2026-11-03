@@ -31,7 +31,7 @@ final class PolicyCatalogController extends AbstractController
             'catalog' => $this->catalog->page($page, $search, $scope),
             'search' => $search,
             'scope' => $scope,
-            'hasProfile' => $this->profiles->find($request) !== null,
+            'hasProfile' => $this->currentProfile($request) !== null,
         ]);
     }
 
@@ -47,7 +47,7 @@ final class PolicyCatalogController extends AbstractController
         if ($measure === null) {
             throw $this->createNotFoundException('Mesure introuvable dans le catalogue.');
         }
-        $profile = $this->profiles->find($request);
+        $profile = $this->currentProfile($request);
         $territory = $measure['territoryCode'];
         $eligible = $profile !== null
             && ($territory === 'FR' || $profile['communeCode'] === $territory);
@@ -77,7 +77,7 @@ final class PolicyCatalogController extends AbstractController
             )) {
             return new Response('Formulaire expiré ou origine non autorisée.', 403);
         }
-        $profile = $this->profiles->find($request);
+        $profile = $this->currentProfile($request);
         if ($profile === null) {
             return new Response('Créez un compte de test pour participer.', 403);
         }
@@ -98,6 +98,16 @@ final class PolicyCatalogController extends AbstractController
         return $this->redirectToRoute(
             'policy_detail', ['id' => $id, 'saved' => 1], Response::HTTP_SEE_OTHER,
         );
+    }
+
+    /** Les anciens laboratoires n'ont pas encore la table des profils de test. */
+    private function currentProfile(Request $request): ?array
+    {
+        try {
+            return $this->profiles->find($request);
+        } catch (\DomainException|\Doctrine\DBAL\Exception\TableNotFoundException) {
+            return null;
+        }
     }
 
     private function sameOrigin(Request $request): bool
