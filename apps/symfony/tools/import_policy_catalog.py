@@ -145,7 +145,11 @@ def validated(item: dict) -> dict | None:
         return None
     if not allowed_source(item["sourceUrl"], item["sourceType"]):
         return None
-    key = hashlib.sha256(canonical(label).encode("utf-8")).hexdigest()
+    # L'identité d'une proposition est son dossier parlementaire, non son
+    # intitulé : deux dépôts homonymes restent deux dossiers distincts.
+    key = hashlib.sha256(
+        ("senat:" + item["sourceUrl"].strip()).encode("utf-8")
+    ).hexdigest()
     if not canonical(label):
         return None
     return {
@@ -266,8 +270,17 @@ def import_records(db_path: Path, items: list[dict], limit: int = 200, days: int
         opened = start.isoformat(timespec="seconds")
         closes = (start + timedelta(days=days)).isoformat(timespec="seconds")
         inserted = 0
+        # Compatibilité avec les versions ayant produit un ID depuis le titre :
+        # ne pas recopier un même dossier ni réinitialiser ses anciens votes.
+        known_urls = {
+            row[0] for row in db.execute(
+                "SELECT source_url FROM policy_measures WHERE source_type = 'proposition_de_loi'"
+            )
+        }
         with db:
             for row in unique.values():
+                if row["source_url"] in known_urls:
+                    continue
                 columns = list(row) + ["opened_at", "closes_at", "created_at"]
                 values = list(row.values()) + [opened, closes, opened]
                 placeholders = ",".join("?" for _ in columns)
