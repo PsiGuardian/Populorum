@@ -1054,12 +1054,12 @@ final class ActionForms
         ],
 
         'citizen.create' => [
-            'title' => 'Créer un personnage fictif',
+            'title' => 'Créer un personnage pour le laboratoire fictif',
             'view' => 'citizen',
             'fields' => [
                 'name' => [
                     'type' => 'text',
-                    'label' => 'Nom inventé',
+                    'label' => 'Nom du personnage fictif',
                 ],
                 'territoryId' => [
                     'type' => 'territory',
