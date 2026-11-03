@@ -44,8 +44,8 @@
             <span>Textes sur lesquels mon compte a voté</span>
         </div>
         <div class="policy-metric">
-            <strong>{{ summary.pending|number_format(0, ',', ' ') }}</strong>
-            <span>Textes ouverts sans vote de mon compte</span>
+            <strong>{{ profile ? summary.pending|number_format(0, ',', ' ') : '—' }}</strong>
+            <span>{{ profile ? 'Textes ouverts sur lesquels je n’ai pas voté' : 'Connectez un compte pour suivre vos avis' }}</span>
         </div>
         <div class="policy-metric">
             <strong>{{ summary.closed|number_format(0, ',', ' ') }}</strong>
@@ -151,7 +151,7 @@
                                         Votre position : {{ measure.myChoice|capitalize }}
                                     </span>
                                 {% elseif not measure.closed %}
-                                    <span class="policy-tag pending">Votre vote est attendu</span>
+                                    <span class="policy-tag pending">Aucune position exprimée</span>
                                 {% endif %}
                             {% endif %}
                         </div>
