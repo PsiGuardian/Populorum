@@ -172,6 +172,135 @@ final class PolicyDeliberationTest extends TestCase
         self::assertNotEmpty($entry['parent_cause']);
     }
 
+    public function testAuthorCanReviseTextsAndEachPreviousVersionRemainsVisible(): void
+    {
+        [$catalog, $tree, $db] = $this->setupCatalog();
+        $measureId = 'pm_' . str_repeat('f', 24);
+        $author = $this->profile();
+        $catalog->vote($measureId, $author, 'abstention');
+        $entryId = $tree->add($measureId, $author, $this->causalPayload());
+        $original = $tree->history($measureId, $entryId, true);
+        self::assertCount(1, $original);
+        self::assertSame(1, (int) $original[0]['version']);
+        self::assertSame($this->causalPayload()['causeText'], $original[0]['cause_text']);
+        self::assertSame([], $tree->history($measureId, $entryId, false));
+        self::assertTrue($tree->page($measureId, true, 1, $author['citizenId'])['rows'][0]['mine']);
+        self::assertFalse($tree->page($measureId, true, 1, $this->profile('b')['citizenId'])['rows'][0]['mine']);
+        self::assertNull($tree->editableEntry($measureId, $entryId, $this->profile('b')));
+
+        $corrected = $this->causalPayload();
+        $corrected['causeText'] = 'Les nouvelles observations documentées orientent différemment le raisonnement.';
+        $corrected['causeDegree'] = 'demontree';
+        $corrected['causeSource'] = 'https://www.senat.fr/dossier-legislatif/ppl26-450.html';
+        self::assertSame(2, $tree->revise($measureId, $entryId, $author, $corrected, 1));
+        $current = $tree->editableEntry($measureId, $entryId, $author);
+        self::assertSame(2, (int) $current['version']);
+        self::assertSame($corrected['causeText'], $current['cause_text']);
+        $history = $tree->history($measureId, $entryId, true);
+        self::assertSame([2, 1], array_map(static fn (array $x): int => (int) $x['version'], $history));
+        self::assertSame($corrected['causeText'], $history[0]['cause_text']);
+        self::assertSame($this->causalPayload()['causeText'], $history[1]['cause_text']);
+        self::assertSame('', $history[1]['cause_source']);
+
+        $third = $corrected;
+        $third['consequenceText'] = 'Des changements administratifs supplémentaires pourraient avoir un impact mesurable.';
+        self::assertSame(3, $tree->revise($measureId, $entryId, $author, $third, 2));
+        self::assertCount(3, $tree->history($measureId, $entryId, true));
+        self::assertSame(3, (int) $tree->page($measureId, true)['rows'][0]['version']);
+        self::assertSame('abstention', $catalog->existingVote($measureId, $author));
+        self::assertSame(
+            1, (int) $db->query('SELECT COUNT(*) FROM policy_vote_history')->fetchColumn(),
+        );
+        self::assertSame(
+            1, (int) $db->query('SELECT COUNT(*) FROM policy_deliberations')->fetchColumn(),
+        );
+    }
+
+    public function testEditsRejectOtherAuthorsOutdatedFormsAndUnsubstantiatedProof(): void
+    {
+        [$catalog, $tree, $db] = $this->setupCatalog();
+        $measureId = 'pm_' . str_repeat('f', 24);
+        $author = $this->profile();
+        $other = $this->profile('b');
+        $catalog->vote($measureId, $author, 'pour');
+        $catalog->vote($measureId, $other, 'contre');
+        $entryId = $tree->add($measureId, $author, $this->causalPayload());
+        $changed = $this->causalPayload();
+        $changed['causeText'] = 'Un nouvel élément vient corriger les hypothèses précédemment publiées.';
+        $badEvidence = $changed;
+        $badEvidence['causeDegree'] = 'demontree';
+        foreach ([
+            [$other, $changed, 1, 403],
+            [$author, $badEvidence, 1, 400],
+            [$author, $changed, 7, 409],
+        ] as [$profile, $payload, $expected, $status]) {
+            try {
+                $tree->revise($measureId, $entryId, $profile, $payload, $expected);
+                self::fail('Invalid causal revision accepted.');
+            } catch (DomainException $error) {
+                self::assertSame($status, $error->getCode());
+            }
+        }
+        self::assertSame(2, $tree->revise($measureId, $entryId, $author, $changed, 1));
+        try {
+            $tree->revise($measureId, $entryId, $author, $changed, 1);
+            self::fail('Stale edit accepted.');
+        } catch (DomainException $error) {
+            self::assertSame(409, $error->getCode());
+        }
+        self::assertCount(2, $tree->history($measureId, $entryId, true));
+        self::assertSame(
+            2, (int) $db->query('SELECT COUNT(*) FROM policy_votes')->fetchColumn(),
+        );
+        $db->exec("UPDATE policy_measures SET status = 'closed' WHERE id = '" . $measureId . "'");
+        $later = $changed;
+        $later['causeText'] = 'La consultation est close mais le raisonnement peut encore être corrigé.';
+        self::assertSame(3, $tree->revise($measureId, $entryId, $author, $later, 2));
+        self::assertCount(3, $tree->history($measureId, $entryId, true));
+    }
+
+    public function testOldBranchesWithoutVersionColumnsKeepTheirFirstPublishedText(): void
+    {
+        [$catalog, $tree, $db] = $this->setupCatalog();
+        $measureId = 'pm_' . str_repeat('f', 24);
+        $author = $this->profile();
+        $catalog->vote($measureId, $author, 'pour');
+        // A branch created before the versioning feature is migrated in place.
+        $db->exec(
+            "CREATE TABLE policy_deliberations (
+                id TEXT PRIMARY KEY, measure_id TEXT NOT NULL, citizen_id TEXT NOT NULL,
+                participant_label TEXT NOT NULL, parent_id TEXT, depth INTEGER NOT NULL,
+                cause_text TEXT NOT NULL, cause_degree TEXT NOT NULL,
+                cause_source TEXT NOT NULL, consequence_text TEXT NOT NULL,
+                consequence_degree TEXT NOT NULL, consequence_source TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )",
+        );
+        $entryId = 'pc_' . str_repeat('c', 24);
+        $oldText = 'Cette ancienne observation avait été rédigée avant les révisions versionnées.';
+        $insert = $db->prepare(
+            'INSERT INTO policy_deliberations
+             (id, measure_id, citizen_id, participant_label, parent_id, depth,
+              cause_text, cause_degree, cause_source, consequence_text,
+              consequence_degree, consequence_source, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        );
+        $input = $this->causalPayload();
+        $insert->execute([
+            $entryId, $measureId, $author['citizenId'], 'Compte de test aaaaaaaa',
+            null, 0, $oldText, 'observee', '', $input['consequenceText'],
+            'probable', '', '2026-11-03T20:00:00+00:00',
+        ]);
+        self::assertSame($oldText, $tree->history($measureId, $entryId, true)[0]['cause_text']);
+        $edit = $input;
+        $edit['causeText'] = 'La correction ultérieure doit préserver exactement la rédaction antérieure.';
+        self::assertSame(2, $tree->revise($measureId, $entryId, $author, $edit, 1));
+        $versions = $tree->history($measureId, $entryId, true);
+        self::assertCount(2, $versions);
+        self::assertSame($oldText, $versions[1]['cause_text']);
+        self::assertSame('2026-11-03T20:00:00+00:00', $versions[1]['recorded_at']);
+    }
+
     public function testCausalAnalysisCanContinueAfterVotingClosesWithoutChangingBallots(): void
     {
         [$catalog, $tree, $db] = $this->setupCatalog();
