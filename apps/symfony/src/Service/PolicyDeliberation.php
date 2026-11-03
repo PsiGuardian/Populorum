@@ -73,7 +73,7 @@ final class PolicyDeliberation
             $db->exec("ALTER TABLE policy_deliberations ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''");
         }
         $db->exec(
-            "CREATE TABLE IF NOT EXISTS policy_deliberation_revisions (
+            'CREATE TABLE IF NOT EXISTS policy_deliberation_revisions (
                 entry_id TEXT NOT NULL REFERENCES policy_deliberations(id),
                 version INTEGER NOT NULL CHECK (version > 0),
                 cause_text TEXT NOT NULL,
@@ -84,7 +84,7 @@ final class PolicyDeliberation
                 consequence_source TEXT NOT NULL,
                 recorded_at TEXT NOT NULL,
                 PRIMARY KEY (entry_id, version)
-            )",
+            )',
         );
 
         return $db;
@@ -93,8 +93,7 @@ final class PolicyDeliberation
     /** Lecture publique uniquement après vote personnel ou clôture du scrutin. */
     public function page(
         string $measureId, bool $visible, int $number = 1, ?string $citizenId = null,
-    ): array
-    {
+    ): array {
         $empty = ['rows' => [], 'total' => 0, 'page' => 1, 'pages' => 0];
         if (!$visible) {
             return $empty;
@@ -425,9 +424,7 @@ final class PolicyDeliberation
             }
             $version = (int) $before['version'];
             if ($version !== $expectedVersion) {
-                throw new \DomainException(
-                    'Cette branche a déjà été modifiée : rechargez-la avant de corriger votre texte.', 409,
-                );
+                throw new \DomainException('Cette branche a déjà été modifiée : rechargez-la avant de corriger votre texte.', 409);
             }
             $changed = false;
             foreach ($updated as $field => $value) {
