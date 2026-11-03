@@ -52,6 +52,7 @@ final class DemoDatabase
             $next = (new SimulationEngine())->enrollBetaParticipant($workspace['state'], $profile, $commune);
             try {
                 $this->save(self::BETA_WORKSPACE, $workspace['revision'], $next);
+
                 return;
             } catch (\DomainException $error) {
                 if ($error->getCode() !== 409 || $attempt === 3) {
@@ -72,6 +73,7 @@ final class DemoDatabase
             }
             try {
                 $this->save(self::BETA_WORKSPACE, $workspace['revision'], $next);
+
                 return;
             } catch (\DomainException $error) {
                 if ($error->getCode() !== 409 || $attempt === 3) {
