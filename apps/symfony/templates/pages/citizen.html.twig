@@ -148,15 +148,19 @@
             {{
                 ui.badge(
                     actor.consent
-                        ? 'Publication nominative fictive consentie'
+                        ? (betaProfile ? 'Publication du nom de test autorisée' : 'Publication nominative fictive consentie')
                         : 'Consentement non donné',
                     actor.consent ? 'green' : 'gray'
                 )
             }}
             <div class="action-links">
                 {{ ui.action('citizen.preferences', 'Préférences de lecture') }}
-                {{ ui.action('citizen.create', 'Créer un personnage') }}
-                {{ ui.action('citizen.update', 'Rectifier mon personnage') }}
+                {% if not betaProfile and not app.user %}
+                    {{ ui.action('citizen.create', 'Créer un personnage fictif (laboratoire)') }}
+                {% endif %}
+                {% if not betaProfile %}
+                    {{ ui.action('citizen.update', 'Rectifier mon personnage') }}
+                {% endif %}
                 {% if actor.consent %}
                     {{
                         ui.action(
@@ -174,14 +178,16 @@
                         )
                     }}
                 {% endif %}
-                {{
-                    ui.action(
-                        'citizen.erase',
-                        'Effacer le nom fictif',
-                        {},
-                        'plain danger'
-                    )
-                }}
+                {% if not betaProfile %}
+                    {{
+                        ui.action(
+                            'citizen.erase',
+                            'Effacer le nom fictif',
+                            {},
+                            'plain danger'
+                        )
+                    }}
+                {% endif %}
                 <a
                     class="plain"
                     href="{{
