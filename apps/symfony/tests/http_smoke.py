@@ -22,8 +22,8 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 ROUTES = (
-    ("/", ("Démos Kratos", "Du problème aux conséquences")),
-    ("/proposals", ("chemin",)),
+    ("/", ("Démos Kratos", "Propositions de loi")),
+    ("/proposals", ("Propositions de loi",)),
     ("/budget", ("Budget",)),
     ("/mesures", ("Bibliothèque des mesures",)),
 )
@@ -45,10 +45,22 @@ def main() -> None:
         with sqlite3.connect(source_db.as_uri() + "?mode=ro", uri=True) as source:
             with sqlite3.connect(temporary_db) as destination:
                 source.backup(destination, pages=1000, sleep=0.05)
+        # Fixture de test technique, jamais exposée sur une installation utilisateur.
+        official_csv = Path(temp) / "senat-official-fixture.csv"
+        official_csv.write_text(
+            "Session;Numéro de dépôt;Date de dépôt;Auteurs;Titre complet;"
+            "Type de texte;URL du dossier législatif;Etat du dossier;Thème\\n"
+            "2026;451;03/11/2026;Auteur de test;Proposition de loi concernant "
+            "le contrôle des frais municipaux;Proposition de loi;"
+            "https://www.senat.fr/dossier-legislatif/ppl26-451.html;"
+            "En première lecture;Finances\\n",
+            encoding="utf-8",
+        )
         temporary_catalog = Path(temp) / "policy-catalog.sqlite"
         subprocess.run(
             ["python3", "tools/import_policy_catalog.py", "--db",
-             str(temporary_catalog), "--limit", "45"],
+             str(temporary_catalog), "--senat-csv", str(official_csv),
+             "--limit", "1"],
             cwd=ROOT, check=True, capture_output=True, text=True,
         )
         environment = dict(os.environ)
@@ -274,7 +286,7 @@ def main() -> None:
                 assert 'Provenance et dossier historique' in closed_html
                 assert 'Contre :' in closed_html
                 assert 'Enregistrer ma position fictive' not in closed_html
-            print('PASS policy catalogue end-to-end: imported source, blind vote, revision, disclosure', flush=True)
+            print('PASS official bill catalogue: source filtered, beta vote, revision and disclosure', flush=True)
 
             # Existing accounts must not reach the obsolete fictional-persona creator.
             with closing(profile_browser.open(url + '/citizen', timeout=28)) as response:
