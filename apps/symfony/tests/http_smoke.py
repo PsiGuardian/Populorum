@@ -263,12 +263,13 @@ def main() -> None:
                 assert 'Enregistrer ma position fictive' in detail_html
                 assert 'Origine :' not in detail_html
                 assert 'Marine Le Pen' not in detail_html
+                assert 'La délibération s’ouvre après votre vote' in detail_html
+                assert 'id="deliberation-form"' not in detail_html
             token = re.search(r'name="_token" value="([a-f0-9]{64})"', detail_html)
             assert token, 'Policy voting token absent'
             for choice in ('pour', 'contre'):
                 vote_data = urlencode({
                     '_token': token.group(1), 'choice': choice,
-                    'argument': 'Analyse fictive des coûts et alternatives',
                 }).encode()
                 with closing(profile_browser.open(urllib.request.Request(
                     url + detail_path + '/vote', data=vote_data, method='POST',
@@ -277,6 +278,77 @@ def main() -> None:
                     final = response.read().decode('utf-8', 'replace')
                     assert response.status == 200
                     assert 'Position enregistrée.' in final
+            # La délibération n'accepte ni commentaires libres ni preuves prétendues sans source.
+            with closing(profile_browser.open(url + detail_path, timeout=28)) as response:
+                voted_detail = response.read().decode('utf-8', 'replace')
+                assert 'L’arbre des causes et conséquences' in voted_detail
+                assert 'id="deliberation-form"' in voted_detail
+                assert 'Origine :' not in voted_detail
+            causal_token = re.search(
+                r'<form id="deliberation-form".*?name="_token" value="([a-f0-9]{64})"',
+                voted_detail, re.S
+            )
+            assert causal_token, 'No post-vote causal-deliberation CSRF token'
+            contribution = {
+                '_token': causal_token.group(1),
+                '_from': 'consultations',
+                'parent_id': '',
+                'cause_text': 'Des délais administratifs persistants peuvent expliquer la réforme envisagée.',
+                'cause_degree': 'demontree',
+                'cause_source': 'https://www.senat.fr/dossier-legislatif/ppl26-451.html',
+                'consequence_text': 'Le changement proposé pourrait faciliter les démarches dans plusieurs collectivités.',
+                'consequence_degree': 'probable',
+                'consequence_source': '',
+            }
+            bad = contribution | {'cause_source': ''}
+            try:
+                profile_browser.open(urllib.request.Request(
+                    url + detail_path + '/deliberer', data=urlencode(bad).encode(),
+                    method='POST', headers={'Origin': url}
+                ), timeout=28)
+                raise AssertionError('Unsourced allegedly demonstrated cause accepted')
+            except urllib.error.HTTPError as error:
+                assert error.code == 400, ('Causal proof', error.code)
+                error.close()
+            with closing(profile_browser.open(urllib.request.Request(
+                url + detail_path + '/deliberer', data=urlencode(contribution).encode(),
+                method='POST', headers={'Origin': url}
+            ), timeout=28)) as response:
+                causal_html = response.read().decode('utf-8', 'replace')
+                assert response.status == 200
+                assert 'Votre analyse causale a été publiée.' in causal_html
+                assert 'Des délais administratifs persistants' in causal_html
+                assert 'id="deliberation-form"' in causal_html
+            with sqlite3.connect(temporary_catalog) as catalog_db:
+                first_branch = catalog_db.execute(
+                    "SELECT id FROM policy_deliberations ORDER BY rowid DESC LIMIT 1"
+                ).fetchone()[0]
+                assert first_branch.startswith('pc_')
+                assert catalog_db.execute(
+                    "SELECT COUNT(*) FROM policy_deliberations"
+                ).fetchone()[0] == 1
+            reply = contribution | {
+                'parent_id': first_branch,
+                'cause_degree': 'observee',
+                'cause_source': '',
+                'consequence_degree': 'probable',
+            }
+            with closing(profile_browser.open(urllib.request.Request(
+                url + detail_path + '/deliberer', data=urlencode(reply).encode(),
+                method='POST', headers={'Origin': url}
+            ), timeout=28)) as response:
+                assert response.status == 200
+                assert '2 contribution(s) structurée(s)' in response.read().decode(
+                    'utf-8', 'replace'
+                )
+            with sqlite3.connect(temporary_catalog) as catalog_db:
+                linked = catalog_db.execute(
+                    "SELECT parent_id, depth FROM policy_deliberations "
+                    "ORDER BY rowid DESC LIMIT 1"
+                ).fetchone()
+                assert linked == (first_branch, 1), ('Threaded causal response', linked)
+            print('PASS post-vote causal tree: blocked unsourced proofs, two linked branches', flush=True)
+
             with closing(profile_browser.open(
                 url + '/consultations?status=open&participation=voted', timeout=28
             )) as response:
