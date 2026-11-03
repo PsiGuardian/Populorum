@@ -872,6 +872,26 @@ final class DemoController extends AbstractController
         if (!isset(ActionForms::TYPES[$type])) {
             throw $this->createNotFoundException();
         }
+        // Un profil de test a déjà un participant et une seule famille.
+        // L'ancien formulaire ne doit pas générer de personnages électoraux supplémentaires.
+        if (in_array($type, ['citizen.create', 'citizen.update', 'citizen.erase'], true)) {
+            if ($this->activeBetaProfile($request) !== null) {
+                if ($request->isMethod('POST')) {
+                    throw $this->createAccessDeniedException('Gérez votre identité depuis le compte de test.');
+                }
+                $this->addFlash('info', 'Votre compte de test est déjà votre participant actif. Gérez-le depuis cette page.');
+
+                return $this->redirectToRoute('beta_profile');
+            }
+            if ($type === 'citizen.create' && $this->getUser() instanceof CivicAccount) {
+                if ($request->isMethod('POST')) {
+                    throw $this->createAccessDeniedException('Ce compte possède déjà un personnage actif.');
+                }
+                $this->addFlash('info', 'Ce compte possède déjà son identité de personnage.');
+
+                return $this->redirectToRoute('section', ['view' => 'citizen']);
+            }
+        }
         if (
             filter_var(
                 $_SERVER['POPULORUM_REQUIRE_LOGIN'] ?? false,
@@ -979,10 +999,19 @@ final class DemoController extends AbstractController
                     $operationId,
                 );
                 $this->database->save($this->owner($request), $revision, $next);
-                $this->addFlash(
-                    'success',
-                    'Opération enregistrée dans votre simulation fictive.',
-                );
+                if ($type === 'citizen.create') {
+                    // L'identité vient de l'objet réellement créé, jamais d'un champ du navigateur.
+                    $created = end($next['citizens']);
+                    if (is_array($created) && is_string($created['id'] ?? null)) {
+                        $request->getSession()->set('citizen_id', $created['id']);
+                    }
+                    $this->addFlash('success', 'Personnage fictif créé et sélectionné dans votre laboratoire.');
+                } else {
+                    $this->addFlash(
+                        'success',
+                        'Opération enregistrée dans votre simulation fictive.',
+                    );
+                }
 
                 if (str_starts_with($type, 'tender.')) {
                     return $this->redirect(
@@ -1340,6 +1369,13 @@ final class DemoController extends AbstractController
     {
         if (!isset(ActionForms::TYPES[$type])) {
             return $this->json(['error' => 'Action inconnue.'], 404);
+        }
+        if (in_array($type, ['citizen.create', 'citizen.update', 'citizen.erase'], true)
+            && $this->activeBetaProfile($request) !== null) {
+            return $this->json(['error' => 'Gérez votre identité depuis le compte de test.'], 403);
+        }
+        if ($type === 'citizen.create' && $this->getUser() instanceof CivicAccount) {
+            return $this->json(['error' => 'Ce compte possède déjà un personnage actif.'], 403);
         }
         if (
             filter_var(
