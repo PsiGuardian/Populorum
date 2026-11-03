@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Service\BetaVisitorProfiles;
+use App\Service\DemoDatabase;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,6 +16,7 @@ final class BetaVisitorController extends AbstractController
 {
     public function __construct(
         private readonly BetaVisitorProfiles $profiles,
+        private readonly DemoDatabase $database,
         private readonly RateLimiterFactory $betaProfilesLimiter,
         private readonly string $appSecret,
     ) {
@@ -33,24 +35,29 @@ final class BetaVisitorController extends AbstractController
     {
         $this->protectPost($request, 'create');
         try {
-            $this->profiles->create(
+            $profile = $this->profiles->create(
                 $request,
                 $request->request->getString('first_name'),
                 $request->request->getString('last_name'),
                 $request->request->getString('age'),
                 $request->request->getString('commune_code'),
             );
+            $this->database->enrollBetaParticipant($profile);
         } catch (\DomainException $error) {
             return $this->page($request, null, $error->getMessage(), 422);
         }
 
-        return $this->redirectToRoute('beta_profile', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('section', ['view' => 'citizen'], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/compte-test/effacer', name: 'beta_profile_delete', methods: ['POST'])]
     public function delete(Request $request): Response
     {
         $this->protectPost($request, 'delete');
+        $profile = $this->profiles->find($request);
+        if ($profile !== null) {
+            $this->database->retireBetaParticipant($profile['citizenId']);
+        }
         $this->profiles->delete($request);
 
         return $this->redirectToRoute('beta_profile', [], Response::HTTP_SEE_OTHER);
