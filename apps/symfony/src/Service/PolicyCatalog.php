@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use PDO;
-
 /**
  * Catalogue civique séparé de la base nationale et du laboratoire historique.
  * Un compte de test = une famille expérimentale d'un membre ; aucun vote réel.
@@ -19,15 +17,15 @@ final class PolicyCatalog
     {
     }
 
-    private function database(): ?PDO
+    private function database(): ?\PDO
     {
         $path = $this->projectDir . '/var/policy-catalog.sqlite';
         if (!is_file($path)) {
             return null;
         }
-        $db = new PDO('sqlite:' . $path);
-        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        $db = new \PDO('sqlite:' . $path);
+        $db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $db->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
         $db->exec('PRAGMA foreign_keys = ON');
         $db->exec('PRAGMA busy_timeout = 5000');
 
@@ -75,8 +73,8 @@ final class PolicyCatalog
         foreach ($params as $key => $value) {
             $query->bindValue($key, $value);
         }
-        $query->bindValue(':limit', self::PAGE_SIZE, PDO::PARAM_INT);
-        $query->bindValue(':offset', ($number - 1) * self::PAGE_SIZE, PDO::PARAM_INT);
+        $query->bindValue(':limit', self::PAGE_SIZE, \PDO::PARAM_INT);
+        $query->bindValue(':offset', ($number - 1) * self::PAGE_SIZE, \PDO::PARAM_INT);
         $query->execute();
         $rows = [];
         foreach ($query->fetchAll() as $row) {
@@ -99,7 +97,7 @@ final class PolicyCatalog
         return $row === false ? null : $this->publicRecord($db, $row);
     }
 
-    private function publicRecord(PDO $db, array $row): array
+    private function publicRecord(\PDO $db, array $row): array
     {
         $now = gmdate('Y-m-d\TH:i:s+00:00');
         $closed = $row['status'] !== 'open' || $row['closes_at'] <= $now;
