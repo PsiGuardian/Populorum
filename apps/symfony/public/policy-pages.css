@@ -454,3 +454,211 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+/* Délibération causale structurée : chaque lien relie une cause à une conséquence. */
+.policy-deliberation {
+    scroll-margin-top: 22px;
+}
+.policy-deliberation > .eyebrow {
+    margin-bottom: 10px;
+}
+.policy-deliberation h2 {
+    margin-bottom: 12px;
+}
+.policy-causal-principle {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px;
+    margin: 19px 0 12px;
+    border-radius: 11px;
+    border: 1px solid #dfdfd6;
+    background: #f8f7f2;
+}
+.policy-causal-principle > div {
+    padding: 13px 15px;
+    border-radius: 8px;
+    background: white;
+    border: 1px solid #e0ded7;
+    font-size: 12px;
+    font-weight: 750;
+    flex: 1 1 150px;
+    text-align: center;
+}
+.policy-causal-principle > div:nth-of-type(2) {
+    background: #ece4d5;
+    border-color: #d0bb91;
+}
+.policy-causal-principle small {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    color: #667078;
+    margin-top: 5px;
+}
+.policy-causal-principle > span {
+    font-size: 20px;
+    color: #8d713e;
+}
+.policy-causal-branches {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.policy-causal-branch {
+    --depth-offset: calc(min(var(--causal-depth), 4) * 18px);
+    margin-left: var(--depth-offset);
+    padding: 17px 18px 17px 21px;
+    background: #fcfcfa;
+    border: 1px solid #e3e2dc;
+    border-left: 4px solid #a98e57;
+    border-radius: 10px;
+    scroll-margin-top: 24px;
+    position: relative;
+}
+.policy-causal-branch[style*="depth: 0"] {
+    border-left-color: #305b72;
+}
+.policy-causal-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 14px;
+}
+.policy-causal-header p {
+    margin: 5px 0 0;
+}
+.policy-causal-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+}
+.policy-causal-fact {
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid #e2e4de;
+    border-radius: 8px;
+    background: #fff;
+}
+.policy-causal-fact h4 {
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+.policy-causal-fact p {
+    font-size: 13px;
+    color: #273e48;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    margin: 11px 0;
+}
+.policy-causal-fact a,
+.policy-causal-fact small {
+    font-size: 11px;
+    display: inline-block;
+    word-break: break-all;
+}
+.policy-causal-arrow {
+    font-size: 24px;
+    color: #9d814b;
+}
+.policy-causal-actions {
+    margin: 14px 0 0;
+}
+.policy-causal-form {
+    margin: 23px 0 0;
+    padding: 24px;
+    background: #f7f7f3;
+    border: 1px solid #d9dbd3;
+    border-radius: 10px;
+    scroll-margin-top: 22px;
+}
+.policy-causal-form h3 {
+    margin-bottom: 9px;
+}
+.policy-causal-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+.policy-causal-form fieldset {
+    border: 1px solid #dadbd4;
+    border-radius: 8px;
+    padding: 15px;
+    min-width: 0;
+    background: white;
+}
+.policy-causal-form legend {
+    padding: 0 6px;
+    color: #223842;
+    font-size: 13px;
+    font-weight: 750;
+}
+.policy-causal-form label {
+    display: block;
+    font-weight: 650;
+    font-size: 12px;
+    margin: 9px 0 6px;
+}
+.policy-causal-form input,
+.policy-causal-form select,
+.policy-causal-form textarea {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 7px;
+    border: 1px solid #c8d0cd;
+    background: white;
+    color: #1c303b;
+    font-size: 12px;
+}
+.policy-causal-form textarea {
+    min-height: 118px;
+    resize: vertical;
+    white-space: pre-wrap;
+}
+.policy-causal-form button {
+    background: #1b3746;
+    color: white;
+    margin-top: 17px;
+    padding: 12px 18px;
+    border-radius: 7px;
+    font-weight: 750;
+}
+.policy-causal-form button:hover {
+    background: #2c5367;
+}
+.policy-causal-reply {
+    border-left: 3px solid #bd9859;
+    background: #f2eee5;
+    padding: 13px 15px;
+    margin: 15px 0;
+    font-size: 12px;
+}
+.policy-causal-reply a {
+    display: block;
+    margin-top: 5px;
+}
+@media (max-width: 750px) {
+    .policy-causal-pair,
+    .policy-causal-form-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .policy-causal-arrow {
+        justify-self: center;
+        transform: rotate(90deg);
+    }
+    .policy-causal-branch {
+        margin-left: calc(min(var(--causal-depth), 3) * 9px);
+        padding: 14px;
+    }
+    .policy-causal-form {
+        padding: 17px;
+    }
+    .policy-causal-principle > span {
+        display: none;
+    }
+}
