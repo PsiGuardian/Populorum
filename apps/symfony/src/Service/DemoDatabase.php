@@ -17,6 +17,58 @@ final class DemoDatabase
     ) {
     }
 
+    /** Un laboratoire partagé entre comptes de test, séparé des espaces personnels fictifs. */
+    public const BETA_WORKSPACE = 'beta-community-v1';
+
+    /** Synchronisation idempotente de l'identité et de sa famille dans le scénario partagé. */
+    public function enrollBetaParticipant(array $profile): void
+    {
+        $commune = $this->geography?->find((string) ($profile['communeCode'] ?? ''));
+        if ($commune === null) {
+            throw new \DomainException('La commune du compte de test n’est plus disponible.', 409);
+        }
+        $id = (string) ($profile['citizenId'] ?? '');
+        for ($attempt = 0; $attempt < 4; ++$attempt) {
+            $workspace = $this->workspace(self::BETA_WORKSPACE);
+            $existing = array_column($workspace['state']['citizens'], null, 'id')[$id] ?? null;
+            if ($existing !== null) {
+                if (!empty($existing['betaProfile']) && empty($existing['suspended'])) {
+                    return;
+                }
+                throw new \DomainException('Identité de test déjà désactivée.', 409);
+            }
+            $next = (new SimulationEngine())->enrollBetaParticipant($workspace['state'], $profile, $commune);
+            try {
+                $this->save(self::BETA_WORKSPACE, $workspace['revision'], $next);
+                return;
+            } catch (\DomainException $error) {
+                if ($error->getCode() !== 409 || $attempt === 3) {
+                    throw $error;
+                }
+            }
+        }
+    }
+
+    /** Efface le nom du participant du scénario collectif, sans réécrire les votes figés. */
+    public function retireBetaParticipant(string $citizenId): void
+    {
+        for ($attempt = 0; $attempt < 4; ++$attempt) {
+            $workspace = $this->workspace(self::BETA_WORKSPACE);
+            $next = (new SimulationEngine())->retireBetaParticipant($workspace['state'], $citizenId);
+            if ($next === $workspace['state']) {
+                return;
+            }
+            try {
+                $this->save(self::BETA_WORKSPACE, $workspace['revision'], $next);
+                return;
+            } catch (\DomainException $error) {
+                if ($error->getCode() !== 409 || $attempt === 3) {
+                    throw $error;
+                }
+            }
+        }
+    }
+
     public function seed(): array
     {
         $reference = ($_SERVER['POPULORUM_SCENARIO'] ?? '') === 'reference';
