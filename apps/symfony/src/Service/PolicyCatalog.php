@@ -59,7 +59,7 @@ final class PolicyCatalog
             $where[] = 'territory_code = :territory';
             $params[':territory'] = $territory;
         }
-        $condition = $where ? ' WHERE ' . implode(' AND ', $where) : '';
+        $condition = ' WHERE ' . implode(' AND ', $where);
         $query = $db->prepare('SELECT COUNT(*) FROM policy_measures' . $condition);
         foreach ($params as $key => $value) {
             $query->bindValue($key, $value);
