@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="index,follow">
+    <title>{% block policy_title %}Propositions de loi · Populorum{% endblock %}</title>
+    <link rel="stylesheet" href="/app.css">
+    <link rel="stylesheet" href="/policy-pages.css">
+</head>
+<body class="policy-layout">
+    <a class="skip" href="#main">Aller au contenu</a>
+    <aside class="sidebar">
+        <a class="brand" href="{{ path('home') }}">
+            <svg viewBox="0 0 48 48" aria-hidden="true">
+                <path d="M7 37 24 8 41 37ZM14 37l10-18 10 18M24 8v29"/>
+                <circle cx="24" cy="37" r="3"/>
+            </svg>
+            <span>DÉMOS KRATOS<small>Δῆμος Κράτος</small></span>
+        </a>
+        <div class="sidebar-label">L’ESPACE CITOYEN</div>
+        {% set navigation = [
+            {route:'home', label:'Comprendre et agir'},
+            {route:'site_proposals', label:'Propositions de loi', key:'proposals'},
+            {route:'site_consultations', label:'Voter sur les textes', key:'consultations'},
+            {route:'site_convergence', label:'Comparer aux observations'},
+            {route:'site_accounts', label:'Récits et inquiétudes'},
+            {route:'site_services', label:'Services et missions'},
+            {route:'site_procurement', label:'Besoins et devis'},
+            {route:'site_budget', label:'Budget et priorités'},
+            {route:'site_markets', label:'Marchés publics réels'},
+            {route:'site_communes', label:'Annuaire des communes'},
+            {route:'site_citizen', label:'Mon laboratoire'}
+        ] %}
+        <nav class="policy-nav" aria-label="Navigation principale">
+            {% for entry in navigation %}
+                <a href="{{ path(entry.route) }}"
+                   class="policy-nav-link {{ entry.key|default('') == policySection ? 'active' : '' }}"
+                   {{ entry.key|default('') == policySection ? 'aria-current="page"' : '' }}>
+                    <span class="policy-nav-number" aria-hidden="true">{{ loop.index }}</span>
+                    <span>{{ entry.label }}</span>
+                </a>
+            {% endfor %}
+        </nav>
+        <div class="sidebar-foot">
+            <strong>Une proposition, des conséquences.</strong>
+            <p>Un vote éclairé nécessite de comprendre le texte, ses limites et ses effets possibles.</p>
+            <a href="{{ path('site_charter') }}">Charte et principes ↗</a>
+        </div>
+    </aside>
+
+    <div class="workspace">
+        <header class="topbar">
+            <div class="crumb">
+                <span>Populorum</span>
+                <span aria-hidden="true">›</span>
+                <strong>
+                    {{ policySection == 'consultations' ? 'Voter sur les textes' : 'Propositions de loi' }}
+                </strong>
+            </div>
+            <div class="top-tools">
+                <a class="plain small" href="{{ path('beta_profile') }}">
+                    {{ profile ? 'Gérer mon compte de test' : 'Créer un compte de test' }}
+                </a>
+                {% if profile %}
+                    <a class="profile-chip" href="{{ path('site_citizen') }}">
+                        <span class="avatar" aria-hidden="true">{{ profile.firstName|first|upper }}</span>
+                        <span>{{ profile.firstName }} {{ profile.lastName }}
+                            <small>Participant de démonstration</small>
+                        </span>
+                    </a>
+                {% endif %}
+            </div>
+        </header>
+        <div class="simulation-banner">
+            <span>● VOTE EXPÉRIMENTAL</span>
+            <p>Propositions officiellement déposées · Scrutin fictif, non représentatif · Aucun effet juridique</p>
+            <a class="plain small" href="{{ path('site_charter') }}">La charte ↗</a>
+        </div>
+        <main id="main" class="native-page policy-main" tabindex="-1">
+            <nav class="policy-steps" aria-label="Étapes du parcours législatif">
+                <a href="{{ path('site_proposals') }}"
+                   class="{{ policySection == 'proposals' ? 'selected' : '' }}"
+                   {{ policySection == 'proposals' ? 'aria-current="step"' : '' }}>
+                    <span>02</span> Comprendre les propositions
+                </a>
+                <a href="{{ path('site_consultations') }}"
+                   class="{{ policySection == 'consultations' ? 'selected' : '' }}"
+                   {{ policySection == 'consultations' ? 'aria-current="step"' : '' }}>
+                    <span>03</span> Participer aux consultations
+                </a>
+            </nav>
+            {% block policy_content %}{% endblock %}
+        </main>
+        <footer>
+            <span>DÉMOS KRATOS / POPULORUM</span>
+            <p>Des textes vérifiables. Des décisions réfléchies.</p>
+            <a class="footer-link" href="{{ path('site_charter') }}">Charte</a>
+            <a class="footer-link" href="{{ path('site_privacy') }}">Confidentialité</a>
+        </footer>
+    </div>
+</body>
+</html>
