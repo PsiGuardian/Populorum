@@ -199,7 +199,7 @@
                             <div class="policy-causal-fact">
                                 <h4>Cause avancée</h4>
                                 <span class="policy-tag">{{ degrees[node.cause_degree] }}</span>
-                                <p>{{ node.cause_text|nl2br }}</p>
+                                <p>{{ node.cause_text }}</p>
                                 {% if node.cause_source %}
                                     <a href="{{ node.cause_source }}" target="_blank"
                                        rel="nofollow noopener noreferrer">
@@ -213,7 +213,7 @@
                             <div class="policy-causal-fact">
                                 <h4>Conséquence envisagée</h4>
                                 <span class="policy-tag">{{ degrees[node.consequence_degree] }}</span>
-                                <p>{{ node.consequence_text|nl2br }}</p>
+                                <p>{{ node.consequence_text }}</p>
                                 {% if node.consequence_source %}
                                     <a href="{{ node.consequence_source }}" target="_blank"
                                        rel="nofollow noopener noreferrer">
