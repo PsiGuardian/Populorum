@@ -102,7 +102,7 @@ final class DemoController extends AbstractController
         if (!$request->attributes->has('_populorum_beta_profile')) {
             try {
                 $profile = $this->betaVisitorProfiles->find($request);
-            } catch (\DomainException | \Doctrine\DBAL\Exception\TableNotFoundException) {
+            } catch (\DomainException|\Doctrine\DBAL\Exception\TableNotFoundException) {
                 // Les anciens laboratoires peuvent ne pas avoir la table des profils de test.
                 $profile = null;
             }
