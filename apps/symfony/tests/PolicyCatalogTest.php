@@ -1,0 +1,143 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Service\PolicyCatalog;
+use PHPUnit\Framework\TestCase;
+
+final class PolicyCatalogTest extends TestCase
+{
+    private array $locations = [];
+
+    protected function tearDown(): void
+    {
+        foreach ($this->locations as $root) {
+            foreach (['catalog.sqlite', 'catalog.sqlite-wal', 'catalog.sqlite-shm'] as $file) {
+                @unlink($root . '/var/' . $file);
+            }
+            @rmdir($root . '/var');
+            @rmdir($root);
+        }
+    }
+
+    private function storage(string $territory = 'FR'): array
+    {
+        $root = sys_get_temp_dir() . '/populorum-measures-' . bin2hex(random_bytes(8));
+        self::assertTrue(mkdir($root . '/var', 0700, true));
+        $this->locations[] = $root;
+        $path = $root . '/var/policy-catalog.sqlite';
+        $db = new PDO('sqlite:' . $path);
+        $db->exec(
+            'CREATE TABLE policy_measures (
+                id TEXT PRIMARY KEY, canonical_key TEXT UNIQUE, label TEXT,
+                category TEXT, territory_code TEXT, status TEXT,
+                closes_at TEXT, source_type TEXT, source_url TEXT,
+                source_date TEXT, source_reference TEXT, origin_actor TEXT,
+                legal_status TEXT, review_status TEXT
+            );
+            CREATE TABLE policy_votes (
+                measure_id TEXT, citizen_id TEXT, choice TEXT, argument TEXT,
+                updated_at TEXT, PRIMARY KEY (measure_id, citizen_id)
+            );
+            CREATE TABLE policy_vote_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, measure_id TEXT,
+                citizen_id TEXT, previous_choice TEXT, choice TEXT, updated_at TEXT
+            );',
+        );
+        $query = $db->prepare(
+            'INSERT INTO policy_measures (
+                id, canonical_key, label, category, territory_code, status,
+                closes_at, source_type, source_url, source_date, source_reference,
+                origin_actor, legal_status, review_status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        );
+        $query->execute([
+            'pm_' . str_repeat('f', 24), str_repeat('f', 64), 'Créer un dispositif de test',
+            'Éducation', $territory, 'open',
+            gmdate('Y-m-d\TH:i:s+00:00', time() + 86400),
+            'programme', 'https://rassemblementnational.fr/22-mesures',
+            '2022', 'Mesure 1', 'Origine cachée tant que le vote est ouvert',
+            'Engagement historique', 'source vérifiée',
+        ]);
+
+        return [new PolicyCatalog($root), $db];
+    }
+
+    private function profile(string $id = 'a', string $commune = '66134'): array
+    {
+        return [
+            'citizenId' => 'beta_' . str_repeat($id, 24),
+            'communeCode' => $commune,
+            'expiresAt' => time() + 86400,
+        ];
+    }
+
+    public function testNeutralPageHidesAttributionAndTallyBeforeCloses(): void
+    {
+        [$catalog] = $this->storage();
+        $page = $catalog->page();
+        self::assertSame(1, $page['total']);
+        self::assertCount(1, $page['rows']);
+        $row = $page['rows'][0];
+        self::assertFalse($row['closed']);
+        self::assertArrayNotHasKey('originActor', $row);
+        self::assertArrayNotHasKey('sourceUrl', $row);
+        self::assertArrayNotHasKey('tally', $row);
+        self::assertSame(1, $catalog->page(999)['page']);
+        self::assertSame(0, $catalog->page(1, 'aucune correspondance')['total']);
+    }
+
+    public function testOneActiveVotePerBetaFamilyWithRevisionsAndClose(): void
+    {
+        [$catalog, $db] = $this->storage();
+        $id = 'pm_' . str_repeat('f', 24);
+        $catalog->vote($id, $this->profile(), 'pour', 'Premier raisonnement');
+        $catalog->vote($id, $this->profile(), 'contre', 'Avis révisé');
+        $catalog->vote($id, $this->profile(), 'contre', 'Avis révisé');
+        $catalog->vote($id, $this->profile('b'), 'abstention');
+        self::assertSame('contre', $catalog->existingVote($id, $this->profile()));
+        self::assertSame(
+            2, (int) $db->query('SELECT COUNT(*) FROM policy_votes')->fetchColumn(),
+        );
+        self::assertSame(
+            3, (int) $db->query('SELECT COUNT(*) FROM policy_vote_history')->fetchColumn(),
+        );
+        $db->exec(
+            "UPDATE policy_measures SET closes_at = '2026-01-01T00:00:00+00:00'",
+        );
+        $closed = $catalog->measure($id);
+        self::assertTrue($closed['closed']);
+        self::assertSame('Origine cachée tant que le vote est ouvert', $closed['originActor']);
+        self::assertSame(['pour' => 0, 'contre' => 1, 'abstention' => 1], $closed['tally']);
+        $this->expectException(DomainException::class);
+        $this->expectExceptionCode(409);
+        $catalog->vote($id, $this->profile(), 'pour');
+    }
+
+    public function testTerritoryAndExpiryAreCheckedServerSide(): void
+    {
+        [$catalog] = $this->storage('75056');
+        $id = 'pm_' . str_repeat('f', 24);
+        try {
+            $catalog->vote($id, $this->profile('a', '66134'), 'pour');
+            self::fail('Non-local voter accepted.');
+        } catch (DomainException $error) {
+            self::assertSame(403, $error->getCode());
+        }
+        $catalog->vote($id, $this->profile('a', '75056'), 'pour');
+        $expired = $this->profile('b', '75056');
+        $expired['expiresAt'] = time() - 1;
+        $this->expectException(DomainException::class);
+        $this->expectExceptionCode(403);
+        $catalog->vote($id, $expired, 'contre');
+    }
+
+    public function testMissingCatalogueDoesNotCreateDatabase(): void
+    {
+        $root = sys_get_temp_dir() . '/populorum-absent-' . bin2hex(random_bytes(8));
+        $catalog = new PolicyCatalog($root);
+        self::assertFalse($catalog->page()['available']);
+        self::assertNull($catalog->measure('pm_' . str_repeat('f', 24)));
+        self::assertFalse(is_file($root . '/var/policy-catalog.sqlite'));
+    }
+}
