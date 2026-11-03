@@ -42,6 +42,7 @@ jobs:
       - run: php bin/console app:geography:install --env=demo
       - run: php bin/console app:geography:install --check --env=demo
       - run: python3 tests/http_smoke.py
+      - run: python3 tests/policy_catalog_import_test.py
       - run: composer test
       - run: python3 tests/decp_pipeline_test.py
       - run: python3 tests/decp_history_test.py
@@ -86,6 +87,7 @@ jobs:
           php bin/console app:geography:install --env=demo
           php bin/console app:geography:install --check --env=demo
           python3 tests/http_smoke.py
+          python3 tests/policy_catalog_import_test.py
       - name: Install from freshly extracted clean repository archive
         shell: bash
         run: |
@@ -118,7 +120,7 @@ jobs:
           allowed = {'.gitignore','bootstrap.php','decp_archive.py','decp_index_health.py','decp_pipeline.py',
             'verify_decp_history.py','backfill_decp_history.py','import_decp.py','import_budget_national.py',
             'import_codes_postaux.py','import_communes_insee.py',
-            'recount.php','verify-export.php','import_ssmsi_national.py'}
+            'recount.php','verify-export.php','import_ssmsi_national.py','import_policy_catalog.py'}
           present = {p.name for p in Path('tools').iterdir() if p.is_file()}
           assert present == allowed, f'Unexpected/absent tooling: extra={sorted(present-allowed)} missing={sorted(allowed-present)}'
           print('OK — clean tools inventory:', len(allowed) - 1)
