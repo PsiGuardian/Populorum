@@ -277,7 +277,7 @@ final class PolicyDeliberation
         $parsed = parse_url($url);
         if (strlen($url) > 500 || filter_var($url, FILTER_VALIDATE_URL) === false
             || $parsed === false || ($parsed['scheme'] ?? '') !== 'https'
-            || !isset($parsed['host']) || isset($parsed['user'], $parsed['pass'])) {
+            || empty($parsed['host']) || isset($parsed['user']) || isset($parsed['pass'])) {
             throw new \DomainException('Source invalide : indiquez une adresse HTTPS publique.', 400);
         }
 
