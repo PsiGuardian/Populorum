@@ -1,87 +1,153 @@
-<!doctype html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Propositions de loi déposées · Populorum</title>
-    <link rel="stylesheet" href="/app.css">
-</head>
-<body>
-<main class="native-page" style="max-width:1080px;margin:auto;padding:1.5rem" id="main">
-    <p><a href="{{ path('home') }}">DÉMOS KRATOS / POPULORUM</a> ·
-        <a href="{{ path('section', {view:'citizen'}) }}">Mon laboratoire</a> ·
-        <a href="{{ path('beta_profile') }}">Compte de test</a></p>
-    <section class="panel">
-        <p class="eyebrow">SIMULATION PUBLIQUE · AUCUN EFFET JURIDIQUE</p>
-        <h1>Propositions de loi déposées au Sénat</h1>
-        <p>Seuls les dossiers de propositions de loi effectivement déposées au Sénat
-            sont présentés. Les programmes électoraux et les anciens exemples fictifs
-            sont exclus. Pendant le vote, l'attribution est masquée ; elle et la
-            source sont révélées après clôture. L'intitulé officiel ne remplace pas
-            la lecture des articles de la proposition de loi.</p>
-        <p class="small muted">Les comptes de test sont des profils IP non vérifiés :
-            les résultats ne constituent ni une élection ni un sondage représentatif.
-            Une famille provisoire d'un membre par compte de test ; aucune participation
-            ou abstention minimale exigée. L'admissibilité reste ouverte aux nouveaux
-            comptes jusqu'à la clôture de ce scrutin exploratoire.</p>
+{% extends 'pages/policy-shell.html.twig' %}
+
+{% block policy_title %}Propositions de loi officielles · Populorum{% endblock %}
+
+{% block policy_content %}
+    <section class="policy-hero">
+        <div class="eyebrow">RUBRIQUE 02 · DÉCOUVRIR ET COMPRENDRE</div>
+        <h1>Explorer les propositions de loi</h1>
+        <p>
+            Retrouvez les propositions de loi déposées au Sénat : des textes réels,
+            identifiés par leur dossier parlementaire. Recherchez par sujet, comparez
+            les intentions et examinez les conséquences possibles avant de vous prononcer.
+        </p>
+        <p class="small muted">
+            Une proposition de loi déposée n'est pas une loi adoptée. Le catalogue
+            reproduit son intitulé, pas ses articles complets. L'origine politique
+            reste masquée pendant la consultation fictive.
+        </p>
+        <div class="policy-hero-actions">
+            <a class="policy-link primary" href="{{ path('site_consultations') }}">
+                Accéder aux votes · Rubrique 03
+            </a>
+            <a class="policy-link" href="{{ path('site_charter') }}">Comprendre la démarche</a>
+        </div>
+    </section>
+
+    <section class="policy-metrics" aria-label="Statistiques des dossiers officiels">
+        <div class="policy-metric">
+            <strong>{{ summary.total|number_format(0, ',', ' ') }}</strong>
+            <span>Propositions officielles importées</span>
+        </div>
+        <div class="policy-metric">
+            <strong>{{ summary.open|number_format(0, ',', ' ') }}</strong>
+            <span>Consultations de simulation ouvertes</span>
+        </div>
+        <div class="policy-metric">
+            <strong>{{ summary.closed|number_format(0, ',', ' ') }}</strong>
+            <span>Consultations de simulation clôturées</span>
+        </div>
+        <div class="policy-metric">
+            <strong>{{ categories|length }}</strong>
+            <span>Thématiques présentes</span>
+        </div>
     </section>
 
     {% if not catalog.available %}
-        <section class="panel">
-            <h2>Aucune proposition de loi officielle importée</h2>
-            <p>L'administrateur doit importer le CSV officiel des propositions de loi
-                déposées au Sénat. Aucun contenu fictif ne prend sa place.</p>
+        <section class="policy-empty" role="status">
+            <h2>Catalogue officiel non installé</h2>
+            <p>La base SQLite des propositions de loi n'est pas encore disponible.
+                L'administrateur doit importer le CSV officiel du Sénat.
+                Aucun dossier fictif n'est affiché en remplacement.</p>
         </section>
     {% else %}
-        <section class="panel">
-            <h2>{{ catalog.total }} propositions de loi officielles</h2>
-            <form method="get" action="{{ path('policy_catalog') }}">
-                <label for="policy-query">Rechercher un sujet</label>
-                <input id="policy-query" type="search" name="q" maxlength="100" value="{{ search }}">
-                <label for="policy-scope">Périmètre</label>
-                <select id="policy-scope" name="scope">
-                    <option value="" {{ scope == '' ? 'selected' : '' }}>France entière (textes nationaux)</option>
+        <form method="get" action="{{ path('site_proposals') }}" class="policy-filter-bar"
+              aria-label="Rechercher des propositions de loi">
+            <div class="policy-filter-field policy-filter-query">
+                <label for="policy-q">Rechercher dans les intitulés</label>
+                <input id="policy-q" name="q" type="search" maxlength="100"
+                       value="{{ search }}" placeholder="Ex. santé, logement, transports">
+            </div>
+            <div class="policy-filter-field">
+                <label for="policy-category">Thématique</label>
+                <select id="policy-category" name="category">
+                    <option value="">Toutes les thématiques</option>
+                    {% for option in categories %}
+                        <option value="{{ option }}" {{ option == category ? 'selected' : '' }}>
+                            {{ option }}
+                        </option>
+                    {% endfor %}
                 </select>
-                <button type="submit" class="button">Filtrer</button>
-            </form>
-            {% if not hasProfile %}
-                <p class="notice">
-                    <a href="{{ path('beta_profile') }}">Créer un compte de test</a> pour enregistrer vos
-                    choix. La lecture des mesures ne nécessite aucun compte.
-                </p>
-            {% endif %}
+            </div>
+            <div class="policy-filter-field">
+                <label for="policy-status">Consultation de simulation</label>
+                <select id="policy-status" name="status">
+                    <option value="all" {{ status == 'all' ? 'selected' : '' }}>Toutes</option>
+                    <option value="open" {{ status == 'open' ? 'selected' : '' }}>Ouvertes</option>
+                    <option value="closed" {{ status == 'closed' ? 'selected' : '' }}>Clôturées</option>
+                </select>
+            </div>
+            <button type="submit">Rechercher</button>
+        </form>
+
+        <section aria-labelledby="official-bills-heading">
+            <div class="policy-results-title">
+                <h2 id="official-bills-heading">Dossiers parlementaires</h2>
+                <p>{{ catalog.total|number_format(0, ',', ' ') }} résultat(s) avec ces filtres</p>
+            </div>
+            <div class="policy-results">
+                {% for measure in catalog.rows %}
+                    <article class="policy-entry">
+                        <div class="policy-tags">
+                            <span class="policy-tag">Proposition de loi officielle</span>
+                            <span class="policy-tag">{{ measure.category }}</span>
+                            <span class="policy-tag {{ measure.closed ? 'closed' : 'open' }}">
+                                {{ measure.closed ? 'Scrutin clos' : 'Scrutin ouvert' }}
+                            </span>
+                        </div>
+                        <h3>{{ measure.label }}</h3>
+                        <p>Texte déposé au Sénat · Périmètre national ·
+                            Conséquences et faisabilité à analyser</p>
+                        <div class="policy-inline-actions">
+                            <a class="policy-link primary"
+                               href="{{ path('policy_detail', {id: measure.id}) }}">
+                                {{ measure.closed ? 'Consulter le résultat' : 'Examiner la proposition' }}
+                            </a>
+                        </div>
+                    </article>
+                {% else %}
+                    <div class="policy-empty">
+                        <h2>Aucun texte correspondant</h2>
+                        <p>Modifiez votre recherche ou vos filtres. Aucun exemple inventé
+                            ne remplace les propositions officielles absentes.</p>
+                        <a class="policy-link" href="{{ path('site_proposals') }}">
+                            Effacer les filtres
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
         </section>
-        {% for measure in catalog.rows %}
-            <article class="panel">
-                <p class="small muted">{{ measure.category }} ·
-                    France ·
-                    {{ measure.closed ? 'Consultation clôturée' : 'Consultation ouverte' }}</p>
-                <h2>{{ measure.label }}</h2>
-                <p class="small muted">Proposition de loi déposée officiellement ; son intitulé ne garantit ni
-                    adoption, ni faisabilité, ni effets déterminés.</p>
-                <p><a class="button" href="{{ path('policy_detail', {id:measure.id}) }}">
-                    {{ measure.closed ? 'Consulter les résultats et la provenance' : 'Examiner et donner mon avis' }}
-                </a></p>
-            </article>
-        {% else %}
-            <section class="panel"><p>Aucune mesure ne correspond à ce filtre.</p></section>
-        {% endfor %}
+
         {% if catalog.pages > 1 %}
-            <nav class="panel" aria-label="Pagination des mesures">
-                <p>Page {{ catalog.page }} sur {{ catalog.pages }}</p>
+            <nav class="policy-pagination" aria-label="Pages des propositions de loi">
                 {% if catalog.page > 1 %}
-                    <a class="button" href="{{ path('policy_catalog', {page:catalog.page-1, q:search, scope:scope}) }}">Page précédente</a>
+                    <a class="policy-link"
+                       href="{{ path('site_proposals', {
+                           page: catalog.page - 1, q: search,
+                           category: category, status: status
+                       }) }}">← Précédente</a>
+                {% else %}
+                    <span>Début du catalogue</span>
                 {% endif %}
+                <span>Page {{ catalog.page }} sur {{ catalog.pages }}</span>
                 {% if catalog.page < catalog.pages %}
-                    <a class="button" href="{{ path('policy_catalog', {page:catalog.page+1, q:search, scope:scope}) }}">Page suivante</a>
+                    <a class="policy-link"
+                       href="{{ path('site_proposals', {
+                           page: catalog.page + 1, q: search,
+                           category: category, status: status
+                       }) }}">Suivante →</a>
+                {% else %}
+                    <span>Fin du catalogue</span>
                 {% endif %}
             </nav>
         {% endif %}
     {% endif %}
-    <p class="small muted">Seules les propositions de loi parlementaires non signalées
-        promulguées, rejetées ou caduques dans l'export utilisé sont affichées.
-        Leur état réel doit être revérifié dans le dossier du Sénat.
-        Aucune loi n'est appliquée par Populorum.</p>
-</main>
-</body>
-</html>
+
+    <aside class="policy-disclaimer">
+        <strong>Distinction essentielle : dépôt parlementaire ≠ loi en vigueur.</strong>
+        <p>Les catégories sont attribuées automatiquement à partir du titre.
+            Les états des dossiers proviennent du dernier export importé et peuvent
+            avoir évolué. Les scrutins présentés sont des simulations non représentatives,
+            sans pouvoir législatif ni application automatique.</p>
+    </aside>
+{% endblock %}
