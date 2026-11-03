@@ -367,6 +367,93 @@ final class SimulationEngine
         ];
     }
 
+    /**
+     * Enrôlement serveur d'un compte de test dans le laboratoire collectif.
+     * La famille est provisoirement composée de ce seul participant.
+     * Aucun bulletin historique et aucun registre d'admissibilité déjà figé ne sont modifiés.
+     */
+    public function enrollBetaParticipant(array $state, array $profile, array $commune): array
+    {
+        if ($state['events'] && !$this->verify($state)['valid']) {
+            $this->fail('Intégrité du laboratoire invalide.', 409);
+        }
+        $id = (string) ($profile['citizenId'] ?? '');
+        $code = (string) ($profile['communeCode'] ?? '');
+        if (!preg_match('/\Abeta_[a-f0-9]{24}\z/D', $id)
+            || !preg_match('/\A(?:[0-9]{5}|2[AB][0-9]{3})\z/D', $code)
+            || ($commune['code'] ?? '') !== $code) {
+            $this->fail('Compte de test ou commune non valide.', 400);
+        }
+        foreach ($state['citizens'] as $citizen) {
+            if ($citizen['id'] === $id) {
+                return $state;
+            }
+        }
+        $territoryId = null;
+        foreach ($state['territories'] as $territory) {
+            if ($territory['code'] === $code) {
+                $territoryId = $territory['id'];
+                break;
+            }
+        }
+        if ($territoryId === null) {
+            $territoryId = 'c' . $code;
+            $state['territories'][] = [
+                'id' => $territoryId,
+                'name' => $commune['name'],
+                'code' => $code,
+                'region' => $commune['region'],
+                'department' => $commune['department'],
+                'vintage' => 2026,
+                'sourceUrl' => $commune['source'],
+                'fictional' => false,
+                'history' => [],
+            ];
+        }
+        $state['citizens'][] = [
+            'id' => $id,
+            'name' => trim($profile['firstName'] . ' ' . $profile['lastName']),
+            'territoryId' => $territoryId,
+            'familyId' => 'family-' . $id,
+            'familyLabel' => 'Famille du compte de test',
+            'role' => 'citizen',
+            'consent' => true,
+            'suspended' => false,
+            'fictional' => true,
+            'betaProfile' => true,
+            'betaExpiresAt' => (int) ($profile['expiresAt'] ?? 0),
+            'history' => [],
+        ];
+        $this->recordAuditEvent($state, 'beta.enroll', $id, ['citizenId' => $id]);
+
+        return $state;
+    }
+
+    /** Effacement du profil affiché ; les résultats historiques demeurent traçables sous pseudonyme. */
+    public function retireBetaParticipant(array $state, string $citizenId): array
+    {
+        if ($state['events'] && !$this->verify($state)['valid']) {
+            $this->fail('Intégrité du laboratoire invalide.', 409);
+        }
+        foreach ($state['citizens'] as &$citizen) {
+            if ($citizen['id'] !== $citizenId || empty($citizen['betaProfile'])) {
+                continue;
+            }
+            $citizen['name'] = 'Compte de test effacé';
+            $citizen['familyLabel'] = 'Famille de test désactivée';
+            $citizen['consent'] = false;
+            $citizen['suspended'] = true;
+            $citizen['betaExpiresAt'] = 0;
+            unset($citizen);
+            $this->recordAuditEvent($state, 'beta.retire', $citizenId, ['citizenId' => $citizenId]);
+
+            return $state;
+        }
+        unset($citizen);
+
+        return $state;
+    }
+
     /** Sceau initial propre à cette instance ; aucune clé privée dans les fixtures versionnées. */
     public function initializeFixture(array $state): array
     {
