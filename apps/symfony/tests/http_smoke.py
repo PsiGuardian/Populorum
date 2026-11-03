@@ -232,7 +232,7 @@ def main() -> None:
                 assert response.status == 200
                 index_html = response.read().decode('utf-8', 'replace')
             match = re.search(r'href="(/mesures/pm_[a-f0-9]{24})"', index_html)
-            assert match, 'No national policy measure available in catalogue'
+            assert match, 'No national policy measure available in catalogue: ' + index_html[:1300]
             detail_path = match.group(1)
             with closing(profile_browser.open(url + detail_path, timeout=28)) as response:
                 detail_html = response.read().decode('utf-8', 'replace')
