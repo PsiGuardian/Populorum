@@ -68,9 +68,10 @@ selon l'état de l'export téléchargé.
 
 Un contrôle éditorial reste nécessaire : titres très similaires, évolutions
 de statuts et contenu exact des articles ne sont pas déduits des métadonnées.
-Des propositions portant un intitulé identique peuvent être dédoublonnées
-par l'importeur même si leurs dossiers diffèrent ; un rapprochement juridique
-détaillé sera nécessaire avant toute prétention à l'exhaustivité.
+Deux propositions portant le même intitulé mais déposées dans des dossiers
+distincts restent identifiables séparément par leur URL officielle. Un
+rapprochement juridique détaillé reste nécessaire pour identifier les vrais
+doublons de contenu.
 
 ## Participation
 
