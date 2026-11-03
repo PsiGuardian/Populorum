@@ -9,7 +9,7 @@
     </section>
     {% endif %}
 
-    {% if not app.user %}
+    {% if not app.user and not betaProfile %}
         <form method="post" action="{{ civic_path('demo_new_workspace') }}">
             <input
                 type="hidden"
@@ -44,7 +44,7 @@
                     state.mentalSimulation.maxRound
                 }} : 300 voix narratives, neuf votes locaux par personnage, douze
                 réponses par proposition. Les retours sont entièrement inventés.
-            </p><a
+            </p>{% if not betaProfile %}<a
                 class="button"
                 href="{{
                 civic_path(
@@ -56,7 +56,7 @@
                 }}"
             >
                 Mon portrait, mes raisonnements et leurs versions
-            </a>
+            </a>{% endif %}
             {% if
                 state.mentalSimulation.round
                     >= state.mentalSimulation.maxRound %}
@@ -84,7 +84,17 @@
     <div class="two-columns">
         <section class="panel">
             <h2>Votre personnage actif</h2>
-            {% if app.user %}
+            {% if betaProfile %}
+                <p><strong>Compte de test actif :</strong> {{ actor.name }}.</p>
+                <p class="small muted">
+                    Votre identité de démonstration est reconnue par l'adresse IP et non par
+                    une connexion sécurisée. Toute personne utilisant la même adresse
+                    peut partager ce compte. Une seule famille électorale de test
+                    vous est attribuée, avec un membre et au maximum une voix par
+                    nouvelle consultation admissible.
+                </p>
+                <a class="button" href="{{ civic_path('beta_profile') }}">Gérer mon compte de test</a>
+            {% elseif app.user %}
                 <p>
                     Compte de laboratoire connecté : {{
                         app.user.userIdentifier
@@ -102,7 +112,7 @@
                     Connexion à un laboratoire partagé
                 </a>
             {% endif %}
-            {% if not app.user %}
+            {% if not app.user and not betaProfile %}
                 <form
                     method="post"
                     action="{{ civic_path('persona') }}"
@@ -219,6 +229,28 @@
             </p>
         </section>
     </div>
+    {% if betaProfile %}
+    <section class="panel section" aria-label="Liste des comptes de test participants">
+        <h2>Comptes de test dans le laboratoire partagé</h2>
+        <p class="small muted">
+            Les noms peuvent être fictifs. Chaque nouveau compte correspond provisoirement
+            à une famille d'un membre. Les comptes désactivés ne peuvent plus participer ;
+            ils ne sont pas ajoutés aux consultations déjà ouvertes dont les règles sont figées.
+        </p>
+        <ul>
+            {% for citizen in state.citizens %}
+                {% if citizen.betaProfile|default(false) and not citizen.suspended|default(false) %}
+                    <li>
+                        <strong>{{ citizen.name }}</strong>
+                        — {{ territoryMap[citizen.territoryId].name }}
+                        — 1 membre / 1 famille
+                        {% if citizen.id == actor.id %}<strong>(vous)</strong>{% endif %}
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
     <section class="panel section">
         <h2>Comprendre les mots</h2>
         <div class="glossary">

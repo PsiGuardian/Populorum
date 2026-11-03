@@ -89,7 +89,7 @@
                     <a class="plain small" href="{{ guardianPath }}">Profiler démo ↗</a>
                     <a class="profile-chip" href="{{ civic_path('section', {view: 'citizen'}) }}">
                         <span class="avatar">{{ actor.name|first }}</span>
-                        <span>{{ actor.name }}<small>Personnage fictif</small></span>
+                        <span>{{ actor.name }}<small>{{ betaProfile|default(null) ? 'Compte de test actif · IP' : 'Personnage fictif' }}</small></span>
                     </a>
                 </div>
             </header>

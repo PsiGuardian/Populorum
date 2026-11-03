@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\CivicAccount;
 use App\Form\SimulationActionType;
 use App\Service\ActionForms;
+use App\Service\BetaVisitorProfiles;
 use App\Service\CharterRenderer;
 use App\Service\CharterRepository;
 use App\Service\DemoDatabase;
@@ -46,6 +47,7 @@ final class DemoController extends AbstractController
 
     public function __construct(
         private DemoDatabase $database,
+        private BetaVisitorProfiles $betaVisitorProfiles,
         private SimulationEngine $engine,
         private string $projectDir,
         private CharterRenderer $charterRenderer,
@@ -88,12 +90,36 @@ final class DemoController extends AbstractController
         );
     }
 
+    /**
+     * Profil de test identifié par IP : participation fictive, sans authentification forte.
+     * Mise en cache dans la requête uniquement pour conserver un acteur cohérent.
+     */
+    private function activeBetaProfile(Request $request): ?array
+    {
+        if ($this->getUser() instanceof CivicAccount) {
+            return null;
+        }
+        if (!$request->attributes->has('_populorum_beta_profile')) {
+            try {
+                $profile = $this->betaVisitorProfiles->find($request);
+            } catch (\DomainException|\Doctrine\DBAL\Exception\TableNotFoundException) {
+                // Les anciens laboratoires peuvent ne pas avoir la table des profils de test.
+                $profile = null;
+            }
+            $request->attributes->set('_populorum_beta_profile', $profile);
+        }
+
+        return $request->attributes->get('_populorum_beta_profile');
+    }
+
     /** Une session de navigateur possède son scénario ; ce n’est pas une identité civique. */
     private function owner(Request $request): string
     {
         $account = $this->getUser();
         if ($account instanceof CivicAccount) {
             $owner = $account->workspaceId;
+        } elseif ($this->activeBetaProfile($request) !== null) {
+            return DemoDatabase::BETA_WORKSPACE;
         } else {
             $session = $request->getSession();
             if (!$session->has('simulation_owner')) {
@@ -114,6 +140,10 @@ final class DemoController extends AbstractController
         bool $tallies = true,
         bool $includeVotes = true,
     ): array {
+        $betaProfile = $this->activeBetaProfile($request);
+        if ($betaProfile !== null) {
+            $this->database->enrollBetaParticipant($betaProfile);
+        }
         $workspace = PerformanceTrace::measure(
             'workspace',
             fn () => $complete
@@ -128,9 +158,14 @@ final class DemoController extends AbstractController
         $actor =
             $account instanceof CivicAccount
                 ? $account->citizenId
-                : $request->getSession()->get('citizen_id', 'u1');
+                : ($betaProfile !== null
+                    ? $betaProfile['citizenId']
+                    : $request->getSession()->get('citizen_id', 'u1'));
         $citizens = array_column($state['citizens'], null, 'id');
         if (!isset($citizens[$actor])) {
+            if ($betaProfile !== null) {
+                throw new \DomainException('Le compte de test actif ne figure pas dans le laboratoire.', 409);
+            }
             $actor = 'u1';
         }
 
@@ -148,6 +183,9 @@ final class DemoController extends AbstractController
 
         // A single session-backed geographical selector, independent from pilot fixtures.
         $selectedCommune = $this->territorySelection->current($request, $view);
+        if ($selectedCommune === null && $betaProfile !== null) {
+            $selectedCommune = $this->geography->find($betaProfile['communeCode']);
+        }
         $selectedPilotId = \App\Service\TerritorySelection::pilotId(
             $selectedCommune, $state['territories'],
         );
@@ -162,6 +200,7 @@ final class DemoController extends AbstractController
             'view' => $view,
             'labels' => $labels,
             'actor' => $citizens[$actor],
+            'betaProfile' => $betaProfile,
             'territoryMap' => array_column($state['territories'], null, 'id'),
             'citizenMap' => $citizens,
             'proposalMap' => array_column($state['proposals'], null, 'id'),
@@ -287,8 +326,8 @@ final class DemoController extends AbstractController
         ) {
             throw $this->createAccessDeniedException('Jeton invalide.');
         }
-        if ($this->getUser() instanceof CivicAccount) {
-            throw $this->createAccessDeniedException('Le compte reste lié à son espace de participation.');
+        if ($this->getUser() instanceof CivicAccount || $this->activeBetaProfile($request) !== null) {
+            throw $this->createAccessDeniedException('Le compte actif reste lié à son laboratoire.');
         }
         $request
             ->getSession()
@@ -1088,8 +1127,8 @@ final class DemoController extends AbstractController
     #[Route('/persona', name: 'persona', methods: ['POST'])]
     public function persona(Request $request): Response
     {
-        if ($this->getUser()) {
-            throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('Un compte connecté conserve son identité de personnage.');
+        if ($this->getUser() || $this->activeBetaProfile($request) !== null) {
+            throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('Un compte actif conserve son identité de participant.');
         }
         if (
             !$this->isCsrfTokenValid(
