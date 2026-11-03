@@ -43,7 +43,9 @@ final class PolicyCatalog
             return ['rows' => [], 'total' => 0, 'page' => 1, 'pages' => 0, 'available' => false];
         }
         $number = max(1, min(10000, $number));
-        $where = [];
+        // Uniquement les propositions de loi parlementaires déposées officiellement.
+        // Les anciennes fiches de programme restent archivées en SQLite, mais invisibles.
+        $where = ["source_type = 'proposition_de_loi'"];
         $params = [];
         if ($search !== '') {
             $where[] = "label LIKE :search ESCAPE '!'";
@@ -93,7 +95,7 @@ final class PolicyCatalog
         if ($db === null) {
             return null;
         }
-        $query = $db->prepare('SELECT * FROM policy_measures WHERE id = ?');
+        $query = $db->prepare("SELECT * FROM policy_measures WHERE id = ? AND source_type = 'proposition_de_loi'");
         $query->execute([$id]);
         $row = $query->fetch();
 
@@ -158,8 +160,9 @@ final class PolicyCatalog
         $db->exec('BEGIN IMMEDIATE');
         try {
             $query = $db->prepare(
-                'SELECT territory_code FROM policy_measures
-                 WHERE id = ? AND status = ? AND closes_at > ?',
+                "SELECT territory_code FROM policy_measures
+                 WHERE id = ? AND source_type = 'proposition_de_loi'
+                   AND status = ? AND closes_at > ?",
             );
             $query->execute([$id, 'open', $now]);
             $row = $query->fetch();
