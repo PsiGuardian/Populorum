@@ -217,6 +217,27 @@ def main() -> None:
             with closing(profile_browser.open(url + '/compte-test', timeout=28)) as response:
                 assert 'Alex Fictif' in response.read().decode('utf-8'), 'Revisit failed without cookie'
             print('PASS IP-only beta profile POST/revisit, no account cookie', flush=True)
+            # Existing accounts must not reach the obsolete fictional-persona creator.
+            with closing(profile_browser.open(url + '/citizen', timeout=28)) as response:
+                citizen_html = response.read().decode('utf-8', 'replace')
+                assert response.status == 200
+                assert 'Compte de test actif' in citizen_html
+                assert 'Alex Fictif' in citizen_html
+                assert 'Comptes de test dans le laboratoire partagé' in citizen_html
+                assert 'Créer un personnage fictif (laboratoire)' not in citizen_html
+            with closing(profile_browser.open(url + '/action/citizen.create', timeout=28)) as response:
+                assert response.status == 200
+                assert response.geturl().split('?', 1)[0] == url + '/compte-test'
+            try:
+                profile_browser.open(urllib.request.Request(
+                    url + '/action/citizen.create', data=b'no-extra-account=1', method='POST'
+                ), timeout=28)
+                raise AssertionError('An active beta account reached the legacy character creator')
+            except urllib.error.HTTPError as error:
+                assert error.code == 403, ('Legacy persona creation', error.code)
+                error.close()
+            print('PASS active beta participant and legacy persona creation refused', flush=True)
+
 
             # A municipality outside the old pilot fixtures must have an isolated local workspace.
             import re
