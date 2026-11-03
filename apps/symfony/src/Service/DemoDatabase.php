@@ -28,6 +28,18 @@ final class DemoDatabase
             throw new \DomainException('La commune du compte de test n’est plus disponible.', 409);
         }
         $id = (string) ($profile['citizenId'] ?? '');
+        // Lecture indexée rapide : évite de décoder le scénario collectif à chaque page.
+        $existingJson = $this->connection->fetchOne(
+            'SELECT data FROM citizen_records WHERE scenario_id = ? AND object_id = ?',
+            [self::BETA_WORKSPACE, $id],
+        );
+        if (is_string($existingJson)) {
+            $existing = json_decode($existingJson, true, 512, JSON_THROW_ON_ERROR);
+            if (!empty($existing['betaProfile']) && empty($existing['suspended'])) {
+                return;
+            }
+            throw new \DomainException('Identité de test déjà désactivée.', 409);
+        }
         for ($attempt = 0; $attempt < 4; ++$attempt) {
             $workspace = $this->workspace(self::BETA_WORKSPACE);
             $existing = array_column($workspace['state']['citizens'], null, 'id')[$id] ?? null;
