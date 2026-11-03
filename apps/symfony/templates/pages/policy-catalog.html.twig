@@ -12,9 +12,9 @@
             les intentions et examinez les conséquences possibles avant de vous prononcer.
         </p>
         <p class="small muted">
-            Une proposition de loi déposée n'est pas une loi adoptée. Le catalogue
-            reproduit son intitulé, pas ses articles complets. L'origine politique
-            reste masquée pendant la consultation fictive.
+            Une proposition de loi déposée n'est pas une loi adoptée. Les auteurs,
+            la date de dépôt et les références du Sénat sont visibles dès l'ouverture.
+            Les motifs et documents originaux sont accessibles dans chaque fiche.
         </p>
         <div class="policy-hero-actions">
             <a class="policy-link primary" href="{{ path('site_consultations') }}">
@@ -96,6 +96,9 @@
                             </span>
                         </div>
                         <h3>{{ measure.label }}</h3>
+                        <p><strong>Auteur(s) :</strong> {{ measure.originActor }}</p>
+                        <p>Déposé le {{ measure.sourceDate }} · {{ measure.sourceReference }} ·
+                            <strong>État parlementaire à l'import :</strong> {{ measure.legalStatus }}</p>
                         <p>Texte déposé au Sénat · Périmètre national ·
                             Conséquences et faisabilité à analyser</p>
                         <div class="policy-inline-actions">
