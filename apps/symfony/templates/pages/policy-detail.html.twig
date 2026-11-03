@@ -1,104 +1,139 @@
-<!doctype html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Voter sur une proposition de loi · Populorum</title>
-    <link rel="stylesheet" href="/app.css">
-</head>
-<body>
-<main class="native-page" style="max-width:980px;margin:auto;padding:1.5rem">
-    <p><a href="{{ path('policy_catalog') }}">← Propositions de loi officielles</a> ·
-        <a href="{{ path('section', {view:'citizen'}) }}">Mon laboratoire</a></p>
-    <section class="panel">
-        <p class="eyebrow">CONSULTATION EXPLORATOIRE · NON REPRÉSENTATIVE · SANS EFFET JURIDIQUE</p>
-        <p class="small muted">{{ measure.category }} ·
-            France entière · texte déposé au Sénat</p>
+{% extends 'pages/policy-shell.html.twig' %}
+
+{% block policy_title %}Voter sur une proposition de loi · Populorum{% endblock %}
+
+{% block policy_content %}
+    <p class="small muted">
+        <a href="{{ path(backRoute) }}">← Revenir aux
+            {{ policySection == 'consultations' ? 'consultations' : 'propositions de loi' }}
+        </a>
+    </p>
+    <section class="policy-hero">
+        <div class="eyebrow">DOSSIER PARLEMENTAIRE · VOTE EXPÉRIMENTAL</div>
+        <div class="policy-tags">
+            <span class="policy-tag">{{ measure.category }}</span>
+            <span class="policy-tag">France entière</span>
+            <span class="policy-tag {{ measure.closed ? 'closed' : 'open' }}">
+                {{ measure.closed ? 'Consultation clôturée' : 'Consultation ouverte' }}
+            </span>
+        </div>
         <h1>{{ measure.label }}</h1>
-        <p>Question soumise : <strong>Êtes-vous favorable au principe exprimé par
-            cette proposition de loi ?</strong></p>
-        <p>Le texte a effectivement été déposé au Parlement, mais l'intitulé affiché
-            n'en reproduit pas les articles. Il ne préjuge ni de l'adoption
-            ni du contenu définitif de la loi. Le vote porte ici sur son principe général.</p>
-        <h2>Analyse cause-effet à approfondir</h2>
+        <p>Question soumise : <strong>Êtes-vous favorable au principe exprimé
+            par cette proposition de loi ?</strong></p>
+        <p class="small muted">Le dossier a été officiellement déposé au Sénat.
+            Son intitulé ne reproduit pas les articles du texte et ne prouve pas
+            que celui-ci a été adopté ni qu'il est applicable tel quel.</p>
+    </section>
+
+    <section class="policy-panel" aria-labelledby="causes-and-effects">
+        <h2 id="causes-and-effects">Avant de voter : causes, effets et limites</h2>
+        <p>Pour vous forger une opinion, examinez le problème visé par le texte,
+            les bénéficiaires potentiels, les contraintes budgétaires et juridiques,
+            les alternatives et les conséquences imprévues.</p>
         <ul>
-            <li>Quel problème vérifiable cette mesure est-elle censée traiter ?</li>
-            <li>Quels sont les effets favorables possibles, pour quelles populations ?</li>
-            <li>Quels coûts, contraintes juridiques et effets défavorables sont à examiner ?</li>
-            <li>Quels indicateurs et alternatives permettraient de vérifier les résultats ?</li>
+            <li>Quels faits vérifiables justifient cette proposition ?</li>
+            <li>Quels changements pourrait-elle introduire dans la vie quotidienne ?</li>
+            <li>Quels coûts, risques et effets indirects faudrait-il mesurer ?</li>
+            <li>Quelles données permettraient de vérifier les résultats après application ?</li>
         </ul>
         <p class="small muted">
-            Aucun coût chiffré ou bénéfice garanti n'est inventé par le catalogue.
-            Le dossier législatif original et les analyses indépendantes doivent être comparés
-            avant toute décision publique. Les mesures ne sont pas appliquées ici.
+            Populorum ne prétend pas avoir calculé les coûts ou les bénéfices de
+            chaque texte. Il s'agit de questions d'examen, pas de conséquences
+            établies scientifiquement.
         </p>
     </section>
 
     {% if measure.closed %}
-        <section class="panel">
-            <h2>Consultation clôturée : résultat de simulation</h2>
-            <p>Pour : <strong>{{ measure.tally.pour }}</strong> ·
-                Contre : <strong>{{ measure.tally.contre }}</strong> ·
-                Abstention : <strong>{{ measure.tally.abstention }}</strong></p>
-            <p>Chaque profil de test ayant participé compte une famille d'un membre.
-                Les comptes sont liés à une IP, ce qui ne garantit pas l'unicité d'une personne.</p>
-            <h3>Provenance et dossier historique</h3>
+        <section class="policy-panel" aria-labelledby="results-heading">
+            <h2 id="results-heading">Consultation clôturée : résultat de simulation</h2>
+            <div class="policy-score">
+                <div><strong>{{ measure.tally.pour }}</strong>Pour :</div>
+                <div><strong>{{ measure.tally.contre }}</strong>Contre :</div>
+                <div><strong>{{ measure.tally.abstention }}</strong>Abstention :</div>
+            </div>
+            <p class="small muted">Chaque compte de test constitue provisoirement
+                une famille d'un membre. Ces chiffres n'ont pas de valeur
+                statistique représentative et ne sont pas des résultats électoraux.</p>
+        </section>
+        <section class="policy-panel" aria-labelledby="origin-heading">
+            <h2 id="origin-heading">Provenance et dossier historique</h2>
             <p><strong>Origine :</strong> {{ measure.originActor }}</p>
-            <p><strong>Nature :</strong> proposition de loi déposée ·
-                <strong>Date de dépôt :</strong> {{ measure.sourceDate }}</p>
-            <p><strong>Situation au moment de l'import :</strong> {{ measure.legalStatus }}.
-                Ce statut doit être revérifié dans le dossier original.</p>
-            <p><strong>Référence :</strong> {{ measure.sourceReference }}</p>
-            <p><a href="{{ measure.sourceUrl }}" rel="noopener noreferrer"
-                target="_blank">Consulter le document source ↗</a></p>
+            <p><strong>Nature :</strong> {{ measure.sourceType }}</p>
+            <p><strong>Date de dépôt :</strong> {{ measure.sourceDate }}</p>
+            <p><strong>État à la date de l'import :</strong> {{ measure.legalStatus }}</p>
+            <p><strong>Référence officielle :</strong> {{ measure.sourceReference }}</p>
+            <p><a class="policy-link" href="{{ measure.sourceUrl }}"
+                  rel="noopener noreferrer" target="_blank">
+                Consulter le dossier officiel du Sénat ↗
+            </a></p>
+            <p class="small muted">Le dossier peut avoir évolué depuis l'importation.
+                Son état actuel doit être vérifié sur le site parlementaire.</p>
         </section>
     {% elseif not profile %}
-        <section class="panel">
-            <h2>Participer</h2>
-            <p>Un <a href="{{ path('beta_profile') }}">compte de test</a>
-                est nécessaire pour voter. Il est pseudonyme, lié à l'adresse IP
-                et ne constitue pas une authentification d'électeur réel.</p>
+        <section class="policy-panel">
+            <h2>Créer un compte de test pour participer</h2>
+            <p>Vous pouvez lire les propositions sans compte. Pour enregistrer
+                un avis, un profil expérimental est nécessaire ; son identité
+                repose sur l'adresse IP, sans vérification d'état civil.</p>
+            <a class="policy-link primary" href="{{ path('beta_profile') }}">
+                Accéder au compte de test
+            </a>
         </section>
     {% elseif not eligible %}
-        <section class="panel">
-            <h2>Participation territoriale</h2>
-            <p>Cette proposition concerne uniquement la commune de Paris.
-                Le compte de test doit appartenir à cette commune pour y voter.
-                Vous pouvez consulter la mesure sans participer à ce scrutin local.</p>
+        <section class="policy-panel">
+            <h2>Participation non disponible dans ce territoire</h2>
+            <p>Ce texte ne correspond pas au périmètre territorial de votre profil
+                de test. Vous pouvez l'examiner sans voter sur cette consultation.</p>
         </section>
     {% else %}
-        <section class="panel">
-            <h2>Exprimer une position</h2>
-            {% if saved %}<p class="notice" role="status">Position enregistrée.</p>{% endif %}
-            <p>Une position active par famille de test et par mesure.
-                Vous pouvez la réviser jusqu'à la clôture.
-                Aucun quorum interne n'est imposé.</p>
-            {% if existingVote %}
-                <p class="notice">Votre dernière position : <strong>{{ existingVote|upper }}</strong></p>
+        <section class="policy-panel" aria-labelledby="vote-form-heading">
+            <h2 id="vote-form-heading">Exprimer votre position</h2>
+            {% if saved %}
+                <p class="policy-tag voted" role="status">Position enregistrée.</p>
             {% endif %}
-            <form method="post" action="{{ path('policy_vote', {id:measure.id}) }}">
+            <p>Une seule position active par compte de test et par texte.
+                Elle peut être modifiée jusqu'à la clôture ; chaque modification
+                reste historisée. Aucune obligation de participation.</p>
+            {% if existingVote %}
+                <p class="policy-tag voted">Votre dernière position :
+                    <strong>{{ existingVote|upper }}</strong>
+                </p>
+            {% endif %}
+            <form method="post" class="policy-vote-form"
+                  action="{{ path('policy_vote', {id: measure.id}) }}">
                 <input type="hidden" name="_token" value="{{ token }}">
+                <input type="hidden" name="_from" value="{{ policySection }}">
                 <fieldset>
                     <legend>Votre choix</legend>
-                    {% for value, label in {pour:'Pour', contre:'Contre', abstention:'Abstention'} %}
-                        <label style="display:block;margin:.5rem 0">
-                            <input type="radio" name="choice" value="{{ value }}"
-                                {{ existingVote == value ? 'checked' : '' }} required>
-                            {{ label }}
-                        </label>
-                    {% endfor %}
+                    <div class="policy-vote-options">
+                        {% for value, label in {pour:'Pour', contre:'Contre', abstention:'Abstention'} %}
+                            <label>
+                                <input type="radio" name="choice" value="{{ value }}"
+                                       {{ existingVote == value ? 'checked' : '' }} required>
+                                {{ label }}
+                            </label>
+                        {% endfor %}
+                    </div>
                 </fieldset>
-                <label for="policy-argument">Argumentaire personnel (facultatif)</label>
-                <textarea id="policy-argument" name="argument" rows="4" maxlength="2000"
-                    placeholder="Exprimez une cause, une conséquence ou une réserve sans désigner de personnes privées."></textarea>
-                <p class="small muted">Vos révisions sont conservées sous un identifiant technique
-                    pseudonyme. Le nom du promoteur n'est pas montré tant que la consultation est ouverte.</p>
-                <button class="button" type="submit">Enregistrer ma position fictive</button>
+                <p>
+                    <label for="policy-argument">Votre argumentaire (facultatif)</label>
+                    <textarea id="policy-argument" name="argument" rows="4"
+                              maxlength="2000"
+                              placeholder="Expliquez votre raisonnement, une cause, une conséquence ou une réserve."></textarea>
+                </p>
+                <p class="small muted">Évitez toute donnée personnelle dans
+                    votre argumentaire. L'attribution politique n'est pas affichée
+                    tant que la consultation est ouverte.</p>
+                <button type="submit">Enregistrer ma position fictive</button>
             </form>
         </section>
     {% endif %}
-    <p class="small muted">Clôture programmée : {{ measure.closesAt }} (UTC).
-        Les résultats et la provenance sont publiés après clôture uniquement.</p>
-</main>
-</body>
-</html>
+
+    <aside class="policy-disclaimer">
+        <strong>Échéance de la consultation expérimentale</strong>
+        <p>Clôture programmée : {{ measure.closesAt|date('d/m/Y à H:i', 'UTC') }}
+            (heure UTC). Les résultats agrégés et la provenance du dossier
+            deviennent publics après clôture uniquement.
+            Ce bulletin ne modifie aucune loi ni consultation historique.</p>
+    </aside>
+{% endblock %}
