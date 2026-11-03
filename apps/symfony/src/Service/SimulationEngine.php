@@ -701,7 +701,7 @@ final class SimulationEngine
                 $payload,
                 $actor,
             ),
-            'citizen.create' => $this->createCitizen($state, $payload),
+            'citizen.create' => $this->createCitizen($state, $payload, $actor),
             'citizen.withdraw' => $this->withdrawConsent(
                 $state,
                 $payload,
@@ -816,8 +816,13 @@ final class SimulationEngine
         return $state;
     }
 
-    private function createCitizen(array &$state, array $payload): string
+    private function createCitizen(array &$state, array $payload, array $actor): string
     {
+        // Le compte de test correspond déjà à une famille d'un membre.
+        // Un personnage supplémentaire ne doit jamais créer une voix additionnelle.
+        if (!empty($actor['betaProfile'])) {
+            $this->fail('Les comptes de test participent avec leur propre identité. Impossible de créer une voix supplémentaire.', 403);
+        }
         $name = $this->requireText($payload['name'] ?? '', 2, 80);
         $this->findItemIndex(
             $state,
@@ -836,9 +841,12 @@ final class SimulationEngine
             'id' => $objectId,
             'name' => $name,
             'territoryId' => $payload['territoryId'],
+            'familyId' => 'family-' . $objectId,
+            'familyLabel' => 'Famille fictive indépendante',
             'consent' => false,
             'role' => 'citizen',
             'suspended' => false,
+            'fictional' => true,
             'history' => [],
         ];
 
