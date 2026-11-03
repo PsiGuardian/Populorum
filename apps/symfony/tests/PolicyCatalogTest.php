@@ -91,9 +91,9 @@ final class PolicyCatalogTest extends TestCase
     {
         [$catalog, $db] = $this->storage();
         $id = 'pm_' . str_repeat('f', 24);
-        $catalog->vote($id, $this->profile(), 'pour', 'Premier raisonnement');
-        $catalog->vote($id, $this->profile(), 'contre', 'Avis révisé');
-        $catalog->vote($id, $this->profile(), 'contre', 'Avis révisé');
+        $catalog->vote($id, $this->profile(), 'pour');
+        $catalog->vote($id, $this->profile(), 'contre');
+        $catalog->vote($id, $this->profile(), 'contre');
         $catalog->vote($id, $this->profile('b'), 'abstention');
         self::assertSame('contre', $catalog->existingVote($id, $this->profile()));
         self::assertSame(
@@ -112,6 +112,21 @@ final class PolicyCatalogTest extends TestCase
         $this->expectException(DomainException::class);
         $this->expectExceptionCode(409);
         $catalog->vote($id, $this->profile(), 'pour');
+    }
+
+    public function testUnstructuredNewBallotArgumentsAreRefused(): void
+    {
+        [$catalog, $db] = $this->storage();
+        $id = 'pm_' . str_repeat('f', 24);
+        try {
+            $catalog->vote($id, $this->profile(), 'pour', 'Texte libre interdit');
+            self::fail('Unstructured opinion unexpectedly accepted.');
+        } catch (DomainException $error) {
+            self::assertSame(400, $error->getCode());
+        }
+        self::assertSame(
+            0, (int) $db->query('SELECT COUNT(*) FROM policy_votes')->fetchColumn(),
+        );
     }
 
     public function testExpiredProfileCannotVote(): void
@@ -167,7 +182,7 @@ final class PolicyCatalogTest extends TestCase
         self::assertSame(1, $catalog->page(1, '', '', 'Santé')['total']);
         self::assertSame(1, $catalog->page(1, '', '', '', 'open')['total']);
 
-        $catalog->vote($id, $profile, 'pour', 'Explication factuelle');
+        $catalog->vote($id, $profile, 'pour');
         $summary = $catalog->summary($profile);
         self::assertSame(1, $summary['voted']);
         self::assertSame(0, $summary['pending']);
