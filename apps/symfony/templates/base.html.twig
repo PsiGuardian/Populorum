@@ -56,6 +56,10 @@
                         <span>{{ label }}</span>
                     </a>
                 {% endfor %}
+                <a href="{{ path('policy_catalog') }}" class="plain">
+                    <span aria-hidden="true">◇</span>
+                    <span>Mesures publiques à examiner</span>
+                </a>
                 <details class="secondary-nav" {{ view in secondaryNavigation ? 'open' : '' }}>
                     <summary>Sources, suivi et cadre</summary>
                     {% for section in secondaryNavigation %}
