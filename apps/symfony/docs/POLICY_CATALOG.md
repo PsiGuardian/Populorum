@@ -102,8 +102,20 @@ la fiche officielle /mesures/{id} :
   une URL HTTPS est obligatoire. La présence d'une URL ne constitue pas une
   vérification par l'application ni une preuve scientifique ;
 - Réponse possible à une branche antérieure du même dossier (six niveaux
-  supplémentaires maximum), sans champ de commentaire libre. Les corrections
-  prennent la forme de nouvelles branches plutôt que de réécritures.
+  supplémentaires maximum), sans champ de commentaire libre.
+- L'auteur original peut **modifier les textes, sources et degrés de preuve**
+  de sa propre branche, même une fois la consultation clôturée, s'il possède
+  toujours le même compte de test actif et avait voté. La date de création,
+  le parent et le rattachement au texte de loi ne peuvent pas être modifiés.
+- Chaque correction produit une version numérotée (v1, v2, v3…), enregistrée
+  dans `policy_deliberation_revisions` avec sa date exacte. Tous les textes
+  précédents, qualifications et liens de preuve restent consultables depuis
+  « Historique des versions », par les votants durant le scrutin, et par
+  tous après clôture. Une migration non destructive préserve les anciennes
+  branches sans versions : leur première correction enregistre d'abord la v1.
+- Les formulaires incluent le numéro de version initial ; une sauvegarde sur
+  une version dépassée est refusée (HTTP 409), afin de ne pas écraser
+  silencieusement des modifications faites dans un autre onglet.
 - Le vote d'origine n'est jamais modifié par la contribution. Les branches
   restent ajoutables **après la clôture**, à condition que le compte actif
   ait participé au scrutin de simulation.
@@ -119,9 +131,12 @@ libres sont refusés côté serveur, tandis que les anciens restent conservés
 avec les votes préexistants. Toutes les branches sont historiques et
 persistent après suppression du profil, sans données de nom.
 
-Stockage : table `policy_deliberations` de `var/policy-catalog.sqlite`.
-Création additive via l'importeur ou au premier accès à l'arbre ; aucun
-changement des anciens bulletins ou de la base INSEE/DECP.
+Stockage : tables `policy_deliberations` (état courant de chaque branche) et
+`policy_deliberation_revisions` (historique intégral des versions), dans
+`var/policy-catalog.sqlite`. Création et migration additives via l'importeur
+ou au premier accès à l'arbre ; aucun changement des bulletins existants
+ni des bases INSEE/DECP. Ce journal est immuable pour les utilisateurs
+dans l'application, mais il n'est pas encore signé cryptographiquement.
 Les branchements ne modifient pas le statut parlementaire d'une proposition.
 
 Limites : aucune modération éditoriale humaine ni vérification automatique
