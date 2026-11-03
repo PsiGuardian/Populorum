@@ -1408,7 +1408,9 @@ final class SimulationEngine
                     fn (array $participant): bool => $participant[
                         'territoryId'
                     ] === $proposal['territoryId']
-                        && !$participant['suspended'],
+                        && !$participant['suspended']
+                        && (!isset($participant['betaExpiresAt'])
+                            || $participant['betaExpiresAt'] > time()),
                 ),
                 'id',
             ),
