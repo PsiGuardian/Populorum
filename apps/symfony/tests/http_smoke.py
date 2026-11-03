@@ -25,6 +25,7 @@ ROUTES = (
     ("/", ("Démos Kratos", "Du problème aux conséquences")),
     ("/proposals", ("chemin",)),
     ("/budget", ("Budget",)),
+    ("/mesures", ("Bibliothèque des mesures",)),
 )
 
 def main() -> None:
