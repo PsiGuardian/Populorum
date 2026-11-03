@@ -178,47 +178,21 @@
                             {% endfor %}
                         </details>
                         <div class="row-links">
-                            <a
-                                class="plain"
-                                href="{{
-                                civic_path(
-                                    'section',
-                                    {
-                                        view: 'proposals',
-                                        territory: city.id
-                                    }
-                                )
-                                }}"
-                            >
-                                Chemins locaux →
+                            <a class="plain"
+                               href="{{ civic_path('site_commune', {code: city.code}) }}">
+                                Fiche communale →
                             </a>
-                            <a
-                                class="plain"
-                                href="{{
-                                civic_path(
-                                    'section',
-                                    {
-                                        view: 'consultations',
-                                        territory: city.id
-                                    }
-                                )
-                                }}"
-                            >
-                                Consultations →
+                            <a class="plain"
+                               href="{{ civic_path('site_proposals') }}">
+                                Propositions de loi nationales →
                             </a>
-                            <a
-                                class="plain"
-                                href="{{
-                                civic_path(
-                                    'section',
-                                    {
-                                        view: 'experiments',
-                                        territory: city.id
-                                    }
-                                )
-                                }}"
-                            >
-                                Bilans →
+                            <a class="plain"
+                               href="{{ civic_path('site_consultations') }}">
+                                Consultations nationales →
+                            </a>
+                            <a class="plain"
+                               href="{{ civic_path('site_experiments') }}">
+                                Bilans de simulation →
                             </a>
                         </div>
                     </article>
