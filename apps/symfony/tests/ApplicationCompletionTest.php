@@ -722,7 +722,7 @@ final class ApplicationCompletionTest extends TestCase
 
     public function testRealCommuneLinksDoNotUseObsoletePilotTerritoryRegex(): void
     {
-        $urls = new \App\Twig\CivicUrlExtension($this->kernel->getContainer()->get('router'));
+        $urls = new App\Twig\CivicUrlExtension($this->kernel->getContainer()->get('router'));
         self::assertSame(
             '/chemins',
             $urls->path('section', ['view' => 'proposals', 'territory' => 'c13068']),
