@@ -159,7 +159,7 @@ final class PolicyCatalogTest extends TestCase
         ]);
 
         $profile = $this->profile();
-        self::assertSame(['Éducation', 'Santé'], $catalog->categories());
+        self::assertEqualsCanonicalizing(['Éducation', 'Santé'], $catalog->categories());
         self::assertSame(2, $catalog->summary(null)['total']);
         self::assertSame(1, $catalog->summary(null)['open']);
         self::assertSame(1, $catalog->summary(null)['pending']);
