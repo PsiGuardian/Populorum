@@ -21,11 +21,16 @@ final class FictionalCitizenCreationTest extends TestCase
         return $state;
     }
 
-    public function testCreatedFictionalCharacterReceivesIndependentFamilyAndNoAutomaticConsent(): void
+    public function testCreatedFictionalCharacterCannotMintNewFamilyAndHasNoAutomaticConsent(): void
     {
         $engine = new SimulationEngine();
         $state = $this->reference();
         $before = $state['consultations'];
+        $familiesBefore = (new FamilySuffrage())->freeze(
+            $state['citizens'],
+            array_column($state['citizens'], 'id'),
+            't1',
+        );
         $count = count($state['citizens']);
 
         $result = $engine->apply($state, 'citizen.create', [
@@ -38,8 +43,7 @@ final class FictionalCitizenCreationTest extends TestCase
         $created = end($result['citizens']);
         self::assertSame('Personnage temporaire 9999', $created['name']);
         self::assertSame('t1', $created['territoryId']);
-        self::assertSame('family-' . $created['id'], $created['familyId']);
-        self::assertSame('Famille fictive indépendante', $created['familyLabel']);
+        self::assertArrayNotHasKey('familyId', $created);
         self::assertTrue($created['fictional']);
         self::assertFalse($created['consent']);
         self::assertTrue($engine->verify($result)['valid']);
@@ -47,10 +51,10 @@ final class FictionalCitizenCreationTest extends TestCase
 
         $families = (new FamilySuffrage())->freeze(
             $result['citizens'],
-            [$created['id']],
+            array_column($result['citizens'], 'id'),
             't1',
         );
-        self::assertSame([$created['id']], $families[$created['familyId']]);
+        self::assertSame($familiesBefore, $families);
     }
 
     public function testBetaAccountCannotMintAdditionalFictionalFamily(): void
