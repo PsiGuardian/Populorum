@@ -72,7 +72,7 @@ final class PolicyCatalogTest extends TestCase
         ];
     }
 
-    public function testNeutralPageHidesAttributionAndTallyBeforeCloses(): void
+    public function testParliamentaryAttributionIsPublicButVoteTallyWaitsForClosure(): void
     {
         [$catalog] = $this->storage();
         $page = $catalog->page();
@@ -80,8 +80,11 @@ final class PolicyCatalogTest extends TestCase
         self::assertCount(1, $page['rows']);
         $row = $page['rows'][0];
         self::assertFalse($row['closed']);
-        self::assertArrayNotHasKey('originActor', $row);
-        self::assertArrayNotHasKey('sourceUrl', $row);
+        self::assertSame('Origine cachée tant que le vote est ouvert', $row['originActor']);
+        self::assertSame(
+            'https://www.senat.fr/dossier-legislatif/ppl26-450.html', $row['sourceUrl'],
+        );
+        self::assertSame('En première lecture', $row['legalStatus']);
         self::assertArrayNotHasKey('tally', $row);
         self::assertSame(1, $catalog->page(999)['page']);
         self::assertSame(0, $catalog->page(1, 'aucune correspondance')['total']);
@@ -189,7 +192,10 @@ final class PolicyCatalogTest extends TestCase
         $voted = $catalog->page(1, '', '', '', 'open', $profile['citizenId'], 'voted');
         self::assertSame(1, $voted['total']);
         self::assertSame('pour', $voted['rows'][0]['myChoice']);
-        self::assertArrayNotHasKey('originActor', $voted['rows'][0]);
+        self::assertSame(
+            'Origine cachée tant que le vote est ouvert',
+            $voted['rows'][0]['originActor'],
+        );
         self::assertSame(
             0, $catalog->page(1, '', '', '', 'open', $profile['citizenId'], 'pending')['total'],
         );
