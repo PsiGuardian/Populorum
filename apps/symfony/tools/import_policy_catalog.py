@@ -75,12 +75,26 @@ CREATE TABLE IF NOT EXISTS policy_deliberations (
     consequence_text TEXT NOT NULL,
     consequence_degree TEXT NOT NULL CHECK (consequence_degree IN ('probable', 'observee', 'demontree')),
     consequence_source TEXT NOT NULL DEFAULT '',
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    version INTEGER NOT NULL DEFAULT 1,
+    updated_at TEXT NOT NULL DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_policy_deliberations_measure
     ON policy_deliberations(measure_id, created_at DESC, id DESC);
 CREATE INDEX IF NOT EXISTS idx_policy_deliberations_author
     ON policy_deliberations(measure_id, citizen_id);
+CREATE TABLE IF NOT EXISTS policy_deliberation_revisions (
+    entry_id TEXT NOT NULL REFERENCES policy_deliberations(id),
+    version INTEGER NOT NULL CHECK (version > 0),
+    cause_text TEXT NOT NULL,
+    cause_degree TEXT NOT NULL,
+    cause_source TEXT NOT NULL,
+    consequence_text TEXT NOT NULL,
+    consequence_degree TEXT NOT NULL,
+    consequence_source TEXT NOT NULL,
+    recorded_at TEXT NOT NULL,
+    PRIMARY KEY (entry_id, version)
+);
 """
 
 STOPWORDS = re.compile(
@@ -285,6 +299,18 @@ def import_records(db_path: Path, items: list[dict], limit: int = 200, days: int
                 "ALTER TABLE policy_measures ADD COLUMN status TEXT NOT NULL DEFAULT 'open'"
             )
             db.commit()
+        branch_cols = {
+            row[1] for row in db.execute("PRAGMA table_info(policy_deliberations)")
+        }
+        if "version" not in branch_cols:
+            db.execute(
+                "ALTER TABLE policy_deliberations ADD COLUMN version INTEGER NOT NULL DEFAULT 1"
+            )
+        if "updated_at" not in branch_cols:
+            db.execute(
+                "ALTER TABLE policy_deliberations ADD COLUMN updated_at TEXT NOT NULL DEFAULT ''"
+            )
+        db.commit()
         start = datetime.now(timezone.utc)
         opened = start.isoformat(timespec="seconds")
         closes = (start + timedelta(days=days)).isoformat(timespec="seconds")

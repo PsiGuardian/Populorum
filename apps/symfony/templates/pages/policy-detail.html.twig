@@ -166,6 +166,11 @@
             {% if contributed %}
                 <p class="policy-tag voted" role="status">Votre analyse causale a été publiée.</p>
             {% endif %}
+            {% if edited %}
+                <p class="policy-tag voted" role="status">
+                    Votre nouvelle version a été enregistrée et l’ancienne reste consultable ci-dessous.
+                </p>
+            {% endif %}
             <div class="policy-results-title">
                 <h3>{{ causalTree.total }} contribution(s) structurée(s)</h3>
                 <p>Branche initiale ou réponse à une analyse précédente</p>
@@ -184,9 +189,15 @@
                             <div class="policy-tags">
                                 <span class="policy-tag">Branche {{ node.depth + 1 }}</span>
                                 <span class="policy-tag">{{ node.participant_label }}</span>
+                                <span class="policy-tag">Version {{ node.version }}</span>
                                 <span class="policy-tag">
                                     {{ node.created_at|date('d/m/Y · H:i', 'UTC') }} UTC
                                 </span>
+                                {% if node.version > 1 %}
+                                    <span class="policy-tag voted">
+                                        Modifiée le {{ node.updated_at|date('d/m/Y · H:i', 'UTC') }} UTC
+                                    </span>
+                                {% endif %}
                             </div>
                             {% if node.parent_id %}
                                 <p class="small muted">
@@ -224,16 +235,30 @@
                                 {% endif %}
                             </div>
                         </div>
-                        {% if canDeliberate and node.depth < 6 %}
-                            <p class="policy-causal-actions">
+                        <div class="policy-causal-actions policy-inline-actions">
+                            {% if canDeliberate and node.depth < 6 %}
                                 <a class="policy-link" href="{{ path('policy_detail', {
                                     id: measure.id, from: policySection,
                                     reply: node.id
                                 }) }}#deliberation-form">
                                     Ajouter une branche en réponse
                                 </a>
-                            </p>
-                        {% endif %}
+                            {% endif %}
+                            {% if canDeliberate and node.mine %}
+                                <a class="policy-link" href="{{ path('policy_detail', {
+                                    id: measure.id, from: policySection,
+                                    edit: node.id, treePage: causalTree.page
+                                }) }}#revision-form">
+                                    Modifier mes textes
+                                </a>
+                            {% endif %}
+                            <a class="policy-link" href="{{ path('policy_detail', {
+                                id: measure.id, from: policySection,
+                                history: node.id, treePage: causalTree.page
+                            }) }}#causal-history">
+                                Historique des versions ({{ node.version }})
+                            </a>
+                        </div>
                     </article>
                 {% else %}
                     <div class="policy-empty">
@@ -244,6 +269,47 @@
                     </div>
                 {% endfor %}
             </div>
+
+            {% if history is not empty %}
+                <section class="policy-causal-history" id="causal-history"
+                         aria-labelledby="causal-history-title">
+                    <h3 id="causal-history-title">Historique de la branche · {{ history|length }} version(s)</h3>
+                    <p class="small muted">Les textes, qualifications et sources de toutes les versions
+                        restent lisibles. Les versions antérieures ne sont ni effacées ni réécrites.</p>
+                    {% for past in history %}
+                        <article class="policy-history-version">
+                            <h4>Version {{ past.version }}
+                                <span class="small muted">· {{ past.recorded_at|date('d/m/Y à H:i:s', 'UTC') }} UTC</span>
+                            </h4>
+                            <div class="policy-causal-pair">
+                                <div class="policy-causal-fact">
+                                    <h4>Cause</h4>
+                                    <span class="policy-tag">{{ degrees[past.cause_degree] }}</span>
+                                    <p>{{ past.cause_text }}</p>
+                                    {% if past.cause_source %}
+                                        <a href="{{ past.cause_source }}" target="_blank"
+                                           rel="nofollow noopener noreferrer">Source de cette version ↗</a>
+                                    {% else %}
+                                        <small>Aucune source externe</small>
+                                    {% endif %}
+                                </div>
+                                <span class="policy-causal-arrow" aria-hidden="true">→</span>
+                                <div class="policy-causal-fact">
+                                    <h4>Conséquence</h4>
+                                    <span class="policy-tag">{{ degrees[past.consequence_degree] }}</span>
+                                    <p>{{ past.consequence_text }}</p>
+                                    {% if past.consequence_source %}
+                                        <a href="{{ past.consequence_source }}" target="_blank"
+                                           rel="nofollow noopener noreferrer">Source de cette version ↗</a>
+                                    {% else %}
+                                        <small>Aucune source externe</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </section>
+            {% endif %}
 
             {% if causalTree.pages > 1 %}
                 <nav class="policy-pagination" aria-label="Pagination des branches causales">
@@ -268,9 +334,9 @@
                       method="post"
                       action="{{ path('policy_deliberation_add', {id: measure.id}) }}">
                     <h3>Apporter un raisonnement causal</h3>
-                    <p class="small muted">Chaque publication est conservée comme
-                        une nouvelle branche. Pour corriger votre position, publiez
-                        une branche complémentaire explicitant les faits nouveaux.</p>
+                    <p class="small muted">Chaque nouvelle branche possède sa propre histoire.
+                        Pour corriger vos propres textes, utilisez « Modifier mes textes » :
+                        l’ancienne version restera dans l’historique consultable.</p>
                     {% if reply %}
                         <div class="policy-causal-reply">
                             Vous répondez à une analyse de {{ reply.participant_label }} :
@@ -324,6 +390,73 @@
                         Pas de discussion libre ni de données personnelles.</p>
                     <button type="submit">Publier la cause et la conséquence</button>
                 </form>
+            {% if editing %}
+                <form id="revision-form" class="policy-causal-form policy-revision-form"
+                      method="post"
+                      action="{{ path('policy_deliberation_edit', {
+                          id: measure.id, entryId: editing.id
+                      }) }}">
+                    <div class="eyebrow">CORRECTION D'UNE BRANCHE EXISTANTE</div>
+                    <h3>Modifier mes textes · version {{ editing.version }}</h3>
+                    <p>Modifiez la cause, la conséquence, leur degré de preuve ou leurs sources.
+                        La nouvelle version sera publiée sans effacer les textes précédents.
+                        Le vote et la place de la branche dans l’arbre restent inchangés.</p>
+                    <input type="hidden" name="_token" value="{{ revisionToken }}">
+                    <input type="hidden" name="_from" value="{{ policySection }}">
+                    <input type="hidden" name="expected_version" value="{{ editing.version }}">
+                    <div class="policy-causal-form-grid">
+                        <fieldset>
+                            <legend>1. Corriger la cause</legend>
+                            <label for="edit-cause-text">Cause obligatoire</label>
+                            <textarea id="edit-cause-text" name="cause_text"
+                                      minlength="25" maxlength="1500" rows="5"
+                                      required>{{ editing.cause_text }}</textarea>
+                            <label for="edit-cause-degree">Degré de preuve</label>
+                            <select id="edit-cause-degree" name="cause_degree" required>
+                                {% for degree, title in degrees %}
+                                    <option value="{{ degree }}"
+                                        {{ editing.cause_degree == degree ? 'selected' : '' }}>
+                                        {{ title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <label for="edit-cause-source">Source HTTPS (si possible)</label>
+                            <input id="edit-cause-source" type="url"
+                                   name="cause_source" maxlength="500"
+                                   value="{{ editing.cause_source }}">
+                        </fieldset>
+                        <fieldset>
+                            <legend>2. Corriger la conséquence</legend>
+                            <label for="edit-consequence-text">Conséquence obligatoire</label>
+                            <textarea id="edit-consequence-text" name="consequence_text"
+                                      minlength="25" maxlength="1500" rows="5"
+                                      required>{{ editing.consequence_text }}</textarea>
+                            <label for="edit-consequence-degree">Degré de preuve</label>
+                            <select id="edit-consequence-degree" name="consequence_degree" required>
+                                {% for degree, title in degrees %}
+                                    <option value="{{ degree }}"
+                                        {{ editing.consequence_degree == degree ? 'selected' : '' }}>
+                                        {{ title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <label for="edit-consequence-source">Source HTTPS (si possible)</label>
+                            <input id="edit-consequence-source" type="url"
+                                   name="consequence_source" maxlength="500"
+                                   value="{{ editing.consequence_source }}">
+                        </fieldset>
+                    </div>
+                    <p class="small muted">La qualification « présentée comme démontrée »
+                        nécessite toujours une URL HTTPS. La correction est réservée
+                        à l’auteur ayant voté et utilisant le même compte de test actif.</p>
+                    <div class="policy-inline-actions">
+                        <button type="submit">Enregistrer la nouvelle version</button>
+                        <a class="policy-link" href="{{ path('policy_detail', {
+                            id: measure.id, from: policySection
+                        }) }}#arbre-causal">Annuler</a>
+                    </div>
+                </form>
+            {% endif %}
             {% else %}
                 <p class="policy-disclaimer">Pour ajouter une branche,
                     vous devez avoir exprimé un vote sur ce texte à l’aide

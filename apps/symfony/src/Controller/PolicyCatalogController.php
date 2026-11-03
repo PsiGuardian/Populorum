@@ -108,6 +108,12 @@ final class PolicyCatalogController extends AbstractController
         $reply = $deliberationVisible
             ? $this->deliberations->entry($id, $replyId)
             : null;
+        $editId = $request->query->getString('edit');
+        $editing = $eligible && $existing !== null
+            ? $this->deliberations->editableEntry($id, $editId, $profile)
+            : null;
+        $historyId = $request->query->getString('history');
+        $history = $this->deliberations->history($id, $historyId, $deliberationVisible);
 
         return $this->uncached('pages/policy-detail.html.twig', [
             'measure' => $measure,
@@ -119,7 +125,17 @@ final class PolicyCatalogController extends AbstractController
             'causalTree' => $this->deliberations->page(
                 $id, $deliberationVisible,
                 $request->query->getInt('treePage', 1),
+                $eligible && $existing !== null ? $profile['citizenId'] : null,
             ),
+            'editing' => $editing,
+            'historyId' => $historyId,
+            'history' => $history,
+            'edited' => $request->query->getBoolean('edited'),
+            'revisionToken' => $editing !== null
+                ? $this->profiles->formToken(
+                    $request, 'policy.deliberate.edit:' . $id . ':' . $editing['id'],
+                )
+                : '',
             'reply' => $reply,
             'contributed' => $request->query->getBoolean('contributed'),
             'deliberationToken' => $this->profiles->formToken(
@@ -215,6 +231,57 @@ final class PolicyCatalogController extends AbstractController
             $this->generateUrl('policy_detail', [
                 'id' => $id, 'from' => $from, 'contributed' => 1,
             ]) . '#arbre-causal',
+            Response::HTTP_SEE_OTHER,
+        );
+    }
+
+    #[Route(
+        '/mesures/{id}/deliberations/{entryId}/modifier',
+        name: 'policy_deliberation_edit',
+        requirements: [
+            'id' => 'pm_[a-f0-9]{24}',
+            'entryId' => 'pc_[a-f0-9]{24}',
+        ],
+        methods: ['POST'],
+    )]
+    public function editDeliberation(Request $request, string $id, string $entryId): Response
+    {
+        if (!$this->sameOrigin($request)
+            || !$this->profiles->validFormToken(
+                $request, 'policy.deliberate.edit:' . $id . ':' . $entryId,
+                $request->request->getString('_token'),
+            )) {
+            return new Response('Révision expirée ou origine non autorisée.', 403);
+        }
+        $profile = $this->currentProfile($request);
+        if ($profile === null) {
+            return new Response('Compte de test actif requis.', 403);
+        }
+        try {
+            $this->deliberations->revise(
+                $id, $entryId, $profile, [
+                    'causeText' => $request->request->getString('cause_text'),
+                    'causeDegree' => $request->request->getString('cause_degree'),
+                    'causeSource' => $request->request->getString('cause_source'),
+                    'consequenceText' => $request->request->getString('consequence_text'),
+                    'consequenceDegree' => $request->request->getString('consequence_degree'),
+                    'consequenceSource' => $request->request->getString('consequence_source'),
+                ], $request->request->getInt('expected_version'),
+            );
+        } catch (\DomainException $error) {
+            $status = in_array($error->getCode(), [400, 403, 404, 409, 503], true)
+                ? $error->getCode() : 400;
+
+            return new Response($error->getMessage(), $status);
+        }
+        $from = $request->request->getString('_from') === 'consultations'
+            ? 'consultations' : 'proposals';
+
+        return $this->redirect(
+            $this->generateUrl('policy_detail', [
+                'id' => $id, 'from' => $from,
+                'history' => $entryId, 'edited' => 1,
+            ]) . '#causal-history',
             Response::HTTP_SEE_OTHER,
         );
     }

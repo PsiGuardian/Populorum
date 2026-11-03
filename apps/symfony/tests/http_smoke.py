@@ -347,6 +347,63 @@ def main() -> None:
                     "ORDER BY rowid DESC LIMIT 1"
                 ).fetchone()
                 assert linked == (first_branch, 1), ('Threaded causal response', linked)
+            with closing(profile_browser.open(
+                url + detail_path + '?from=consultations&edit=' + first_branch, timeout=28
+            )) as response:
+                edit_html = response.read().decode('utf-8', 'replace')
+                assert response.status == 200
+                assert 'id="revision-form"' in edit_html
+                assert 'Modifier mes textes' in edit_html
+                assert 'Des délais administratifs persistants' in edit_html
+            edit_token = re.search(
+                r'<form id="revision-form".*?name="_token" value="([a-f0-9]{64})"',
+                edit_html, re.S
+            )
+            assert edit_token, 'Author-only causal revision token unavailable'
+            correction = contribution | {
+                '_token': edit_token.group(1),
+                '_from': 'consultations',
+                'expected_version': '1',
+                'cause_text': 'La cause initiale est corrigée pour prendre en compte des données nouvelles.',
+                'cause_degree': 'observee',
+                'cause_source': '',
+                'consequence_text': 'La nouvelle conséquence doit encore être mesurée après la réforme proposée.',
+            }
+            with closing(profile_browser.open(urllib.request.Request(
+                url + detail_path + '/deliberations/' + first_branch + '/modifier',
+                data=urlencode(correction).encode(),
+                method='POST', headers={'Origin': url}
+            ), timeout=28)) as response:
+                history_html = response.read().decode('utf-8', 'replace')
+                assert response.status == 200
+                assert 'l’ancienne reste consultable' in history_html
+                assert 'Version 2' in history_html
+                assert 'Version 1' in history_html
+                assert 'Des délais administratifs persistants' in history_html
+                assert 'La cause initiale est corrigée' in history_html
+                assert 'id="causal-history"' in history_html
+            try:
+                profile_browser.open(urllib.request.Request(
+                    url + detail_path + '/deliberations/' + first_branch + '/modifier',
+                    data=urlencode(correction).encode(),
+                    method='POST', headers={'Origin': url}
+                ), timeout=28)
+                raise AssertionError('Stale causal revision unexpectedly accepted')
+            except urllib.error.HTTPError as error:
+                assert error.code == 409, ('Stale causal revision', error.code)
+                error.close()
+            with sqlite3.connect(temporary_catalog) as catalog_db:
+                rows = catalog_db.execute(
+                    "SELECT version, cause_text FROM policy_deliberation_revisions "
+                    "WHERE entry_id = ? ORDER BY version", (first_branch,)
+                ).fetchall()
+                assert len(rows) == 2
+                assert rows[0][0] == 1 and rows[1][0] == 2
+                assert rows[0][1] != rows[1][1]
+                assert catalog_db.execute(
+                    "SELECT COUNT(*) FROM policy_deliberations"
+                ).fetchone()[0] == 2, 'Editing created an extra causal branch'
+            print('PASS causal revision timeline: original version retained and stale edit rejected', flush=True)
             print('PASS post-vote causal tree: blocked unsourced proofs, two linked branches', flush=True)
 
             with closing(profile_browser.open(
