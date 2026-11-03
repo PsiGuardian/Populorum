@@ -16,6 +16,7 @@
             </p>
         </div>
     </div>
+    {% include 'partials/family-voting-regulation.html.twig' %}
     {{ ui.filter(view, state, q, territory) }}
     {% include 'partials/pagination.html.twig' %}
     {% for consultation in consultationList %}
