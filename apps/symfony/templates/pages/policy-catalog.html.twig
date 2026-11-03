@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bibliothèque de mesures · Populorum</title>
+    <title>Propositions de loi déposées · Populorum</title>
     <link rel="stylesheet" href="/app.css">
 </head>
 <body>
@@ -13,11 +13,12 @@
         <a href="{{ path('beta_profile') }}">Compte de test</a></p>
     <section class="panel">
         <p class="eyebrow">SIMULATION PUBLIQUE · AUCUN EFFET JURIDIQUE</p>
-        <h1>Bibliothèque des mesures à examiner</h1>
-        <p>Consultez et évaluez des mesures politiques documentées sans afficher l'identité
-            de leur promoteur pendant le vote. La source et le statut juridique sont
-            publiés après clôture. Les textes importés des dossiers parlementaires
-            sont des intitulés officiels, pas une transcription intégrale de la loi.</p>
+        <h1>Propositions de loi déposées au Sénat</h1>
+        <p>Seuls les dossiers de propositions de loi effectivement déposées au Sénat
+            sont présentés. Les programmes électoraux et les anciens exemples fictifs
+            sont exclus. Pendant le vote, l'attribution est masquée ; elle et la
+            source sont révélées après clôture. L'intitulé officiel ne remplace pas
+            la lecture des articles de la proposition de loi.</p>
         <p class="small muted">Les comptes de test sont des profils IP non vérifiés :
             les résultats ne constituent ni une élection ni un sondage représentatif.
             Une famille provisoire d'un membre par compte de test ; aucune participation
@@ -27,21 +28,19 @@
 
     {% if not catalog.available %}
         <section class="panel">
-            <h2>Catalogue non installé</h2>
-            <p>Les fichiers de données du catalogue sont indépendants des bases INSEE, DECP
-                et de la simulation d'origine. Ils doivent être importés par l'opérateur.</p>
+            <h2>Aucune proposition de loi officielle importée</h2>
+            <p>L'administrateur doit importer le CSV officiel des propositions de loi
+                déposées au Sénat. Aucun contenu fictif ne prend sa place.</p>
         </section>
     {% else %}
         <section class="panel">
-            <h2>{{ catalog.total }} mesures référencées</h2>
+            <h2>{{ catalog.total }} propositions de loi officielles</h2>
             <form method="get" action="{{ path('policy_catalog') }}">
                 <label for="policy-query">Rechercher un sujet</label>
                 <input id="policy-query" type="search" name="q" maxlength="100" value="{{ search }}">
                 <label for="policy-scope">Périmètre</label>
                 <select id="policy-scope" name="scope">
-                    <option value="" {{ scope == '' ? 'selected' : '' }}>Tous les territoires</option>
-                    <option value="FR" {{ scope == 'FR' ? 'selected' : '' }}>France entière</option>
-                    <option value="75056" {{ scope == '75056' ? 'selected' : '' }}>Paris</option>
+                    <option value="" {{ scope == '' ? 'selected' : '' }}>France entière (textes nationaux)</option>
                 </select>
                 <button type="submit" class="button">Filtrer</button>
             </form>
@@ -55,11 +54,11 @@
         {% for measure in catalog.rows %}
             <article class="panel">
                 <p class="small muted">{{ measure.category }} ·
-                    {{ measure.territoryCode == 'FR' ? 'France' : 'Paris' }} ·
+                    France ·
                     {{ measure.closed ? 'Consultation clôturée' : 'Consultation ouverte' }}</p>
                 <h2>{{ measure.label }}</h2>
-                <p class="small muted">Proposition documentée ; faisabilité, coûts, conséquences
-                    et conformité juridique à apprécier séparément.</p>
+                <p class="small muted">Proposition de loi déposée officiellement ; son intitulé ne garantit ni
+                    adoption, ni faisabilité, ni effets déterminés.</p>
                 <p><a class="button" href="{{ path('policy_detail', {id:measure.id}) }}">
                     {{ measure.closed ? 'Consulter les résultats et la provenance' : 'Examiner et donner mon avis' }}
                 </a></p>
@@ -79,9 +78,10 @@
             </nav>
         {% endif %}
     {% endif %}
-    <p class="small muted">Les propositions des programmes historiques sont datées selon
-        leurs éditions. Les dossiers déposés ne sont pas nécessairement des lois adoptées.
-        Aucune mesure n'est appliquée par Populorum.</p>
+    <p class="small muted">Seules les propositions de loi parlementaires non signalées
+        promulguées, rejetées ou caduques dans l'export utilisé sont affichées.
+        Leur état réel doit être revérifié dans le dossier du Sénat.
+        Aucune loi n'est appliquée par Populorum.</p>
 </main>
 </body>
 </html>
