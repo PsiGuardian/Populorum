@@ -252,9 +252,12 @@ final class PolicyCatalog
         if (!in_array($choice, ['pour', 'contre', 'abstention'], true)) {
             throw new \DomainException('Choix invalide.', 400);
         }
-        $argument = trim($argument);
-        if (mb_strlen($argument) > 2000) {
-            throw new \DomainException('Argument limité à 2 000 caractères.', 400);
+        // L'argumentaire libre est désormais interdit : seuls les couples
+        // cause / conséquence structurés constituent une délibération.
+        if (trim($argument) !== '') {
+            throw new \DomainException(
+                'Les arguments doivent être publiés dans l’arbre des causes et conséquences.', 400,
+            );
         }
         $now = gmdate('Y-m-d\TH:i:s+00:00');
         $db->exec('BEGIN IMMEDIATE');
@@ -278,9 +281,7 @@ final class PolicyCatalog
             );
             $find->execute([$id, $citizenId]);
             $previous = $find->fetch();
-            if ($previous !== false
-                && $previous['choice'] === $choice
-                && $previous['argument'] === $argument) {
+            if ($previous !== false && $previous['choice'] === $choice) {
                 $db->commit();
 
                 return;
@@ -290,7 +291,7 @@ final class PolicyCatalog
                  VALUES (?, ?, ?, ?, ?)
                  ON CONFLICT(measure_id, citizen_id)
                  DO UPDATE SET choice = excluded.choice,
-                     argument = excluded.argument, updated_at = excluded.updated_at',
+                     argument = policy_votes.argument, updated_at = excluded.updated_at',
             );
             $upsert->execute([$id, $citizenId, $choice, $argument, $now]);
             $audit = $db->prepare(
