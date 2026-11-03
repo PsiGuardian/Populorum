@@ -255,9 +255,7 @@ final class PolicyCatalog
         // L'argumentaire libre est désormais interdit : seuls les couples
         // cause / conséquence structurés constituent une délibération.
         if (trim($argument) !== '') {
-            throw new \DomainException(
-                'Les arguments doivent être publiés dans l’arbre des causes et conséquences.', 400,
-            );
+            throw new \DomainException('Les arguments doivent être publiés dans l’arbre des causes et conséquences.', 400);
         }
         $now = gmdate('Y-m-d\TH:i:s+00:00');
         $db->exec('BEGIN IMMEDIATE');
