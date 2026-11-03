@@ -267,14 +267,14 @@ final class PolicyDeliberationTest extends TestCase
         $catalog->vote($measureId, $author, 'pour');
         // A branch created before the versioning feature is migrated in place.
         $db->exec(
-            "CREATE TABLE policy_deliberations (
+            'CREATE TABLE policy_deliberations (
                 id TEXT PRIMARY KEY, measure_id TEXT NOT NULL, citizen_id TEXT NOT NULL,
                 participant_label TEXT NOT NULL, parent_id TEXT, depth INTEGER NOT NULL,
                 cause_text TEXT NOT NULL, cause_degree TEXT NOT NULL,
                 cause_source TEXT NOT NULL, consequence_text TEXT NOT NULL,
                 consequence_degree TEXT NOT NULL, consequence_source TEXT NOT NULL,
                 created_at TEXT NOT NULL
-            )",
+            )',
         );
         $entryId = 'pc_' . str_repeat('c', 24);
         $oldText = 'Cette ancienne observation avait été rédigée avant les révisions versionnées.';
