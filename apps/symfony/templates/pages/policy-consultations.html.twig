@@ -15,7 +15,8 @@
         <p class="small muted">
             Les bulletins sont des positions expérimentales, sans effet juridique.
             Une position par compte et par texte, modifiable jusqu'à la clôture.
-            Les résultats et la provenance politique deviennent visibles après celle-ci.
+            Les auteurs et les sources parlementaires sont visibles dès le dépôt ;
+            seuls les résultats agrégés de notre simulation apparaissent après clôture.
         </p>
         <div class="policy-hero-actions">
             {% if profile %}
@@ -156,6 +157,8 @@
                             {% endif %}
                         </div>
                         <h3>{{ measure.label }}</h3>
+                        <p><strong>Auteur(s) :</strong> {{ measure.originActor }} ·
+                            <strong>État au dernier import :</strong> {{ measure.legalStatus }}</p>
                         <p>
                             {{ measure.closed ? 'Consultez le résultat agrégé et les sources.' :
                                 'Votre avis porte sur le principe général indiqué par le titre.' }}

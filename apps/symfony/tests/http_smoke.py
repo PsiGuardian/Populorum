@@ -63,6 +63,33 @@ def main() -> None:
              "--limit", "1"],
             cwd=ROOT, check=True, capture_output=True, text=True,
         )
+        # Source documentary fixture: the UI uses an offline institutional cache,
+        # not a web request during an ordinary page visit.
+        with sqlite3.connect(temporary_catalog) as senate_db:
+            bill_id = senate_db.execute(
+                "SELECT id FROM policy_measures WHERE source_type = 'proposition_de_loi'"
+            ).fetchone()[0]
+            senate_db.executescript(
+                "CREATE TABLE policy_senate_documents ("
+                "measure_id TEXT, kind TEXT, label TEXT, url TEXT, "
+                "source_section TEXT, sort_order INTEGER);"
+                "CREATE TABLE policy_senate_context ("
+                "measure_id TEXT PRIMARY KEY, excerpt_text TEXT, "
+                "excerpt_url TEXT, synced_at TEXT);"
+            )
+            senate_db.execute(
+                "INSERT INTO policy_senate_documents VALUES (?, ?, ?, ?, ?, ?)",
+                (bill_id, "rapport", "Rapport parlementaire de référence",
+                 "https://www.senat.fr/rap/l22-376/l22-376.html",
+                 "Travaux de commission", 0),
+            )
+            senate_db.execute(
+                "INSERT INTO policy_senate_context VALUES (?, ?, ?, ?)",
+                (bill_id, "Les auteurs avancent des arguments qui doivent être "
+                 "vérifiés dans le document officiel et les analyses indépendantes.",
+                 "https://www.senat.fr/leg/exposes-des-motifs/ppl22-262-expose.html",
+                 "2026-11-03T20:00:00+00:00"),
+            )
         environment = dict(os.environ)
         environment.update(APP_ENV="demo", APP_DEBUG="0", POPULORUM_DEMO="1",
                            POPULORUM_TIMING="1",
@@ -250,7 +277,7 @@ def main() -> None:
                     assert 'Alex Fictif' in page_html
                     assert 'policy-pages.css' in page_html
                     assert 'class="proposal-card"' not in page_html
-            # Vote réel par HTTP : la source politique reste absente pendant le scrutin.
+            # Source politique visible immédiatement ; seul le décompte du vote est différé.
             with closing(profile_browser.open(url + '/mesures?scope=FR', timeout=28)) as response:
                 assert response.status == 200
                 index_html = response.read().decode('utf-8', 'replace')
@@ -261,8 +288,12 @@ def main() -> None:
                 detail_html = response.read().decode('utf-8', 'replace')
                 assert response.status == 200
                 assert 'Enregistrer ma position fictive' in detail_html
-                assert 'Origine :' not in detail_html
-                assert 'Marine Le Pen' not in detail_html
+                assert 'Auteur de test' in detail_html
+                assert 'État parlementaire au dernier import' in detail_html
+                assert 'Les auteurs avancent des arguments' in detail_html
+                assert 'Rapport parlementaire de référence' in detail_html
+                assert 'Ouvrir le dossier officiel du Sénat' in detail_html
+                assert 'Consultation clôturée : résultat' not in detail_html
                 assert 'La délibération s’ouvre après votre vote' in detail_html
                 assert 'id="deliberation-form"' not in detail_html
             token = re.search(r'name="_token" value="([a-f0-9]{64})"', detail_html)
@@ -283,7 +314,7 @@ def main() -> None:
                 voted_detail = response.read().decode('utf-8', 'replace')
                 assert 'L’arbre des causes et conséquences' in voted_detail
                 assert 'id="deliberation-form"' in voted_detail
-                assert 'Origine :' not in voted_detail
+                assert 'Auteur de test' in voted_detail
             causal_token = re.search(
                 r'<form id="deliberation-form".*?name="_token" value="([a-f0-9]{64})"',
                 voted_detail, re.S
@@ -436,7 +467,8 @@ def main() -> None:
                 catalog_db.commit()
             with closing(profile_browser.open(url + detail_path, timeout=28)) as response:
                 closed_html = response.read().decode('utf-8', 'replace')
-                assert 'Provenance et dossier historique' in closed_html
+                assert 'Consultation clôturée : résultat' in closed_html
+                assert 'Auteur de test' in closed_html
                 assert 'Contre :' in closed_html
                 assert 'Enregistrer ma position fictive' not in closed_html
             with closing(profile_browser.open(

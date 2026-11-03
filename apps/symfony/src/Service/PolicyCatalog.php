@@ -7,7 +7,7 @@ namespace App\Service;
 /**
  * Catalogue civique séparé de la base nationale et du laboratoire historique.
  * Un compte de test = une famille expérimentale d'un membre ; aucun vote réel.
- * Les sources et acteurs ne sont jamais transmis pour une consultation ouverte.
+ * Auteurs et documents officiels sont toujours publics, sans lien avec le vote.
  */
 final class PolicyCatalog
 {
@@ -37,7 +37,7 @@ final class PolicyCatalog
 
     /**
      * Catalogue national paginé ; peut servir à l'exploration ou au tableau de vote.
-     * Les dossiers de programme, textes fictifs et auteurs restent hors des bulletins.
+     * Les dossiers de programme et textes fictifs restent exclus du catalogue.
      *
      * @return array{rows: array, total: int, page: int, pages: int, available: bool}
      */
@@ -214,15 +214,15 @@ final class PolicyCatalog
             'closesAt' => $row['closes_at'],
             'closed' => $closed,
             'reviewStatus' => $row['review_status'],
+            // Données parlementaires publiques, à tout moment et sans compte.
+            'sourceType' => $row['source_type'],
+            'sourceUrl' => $row['source_url'],
+            'sourceDate' => $row['source_date'],
+            'sourceReference' => $row['source_reference'],
+            'originActor' => $row['origin_actor'],
+            'legalStatus' => $row['legal_status'],
         ];
         if ($closed) {
-            // La traçabilité devient publique seulement après clôture.
-            $public['sourceType'] = $row['source_type'];
-            $public['sourceUrl'] = $row['source_url'];
-            $public['sourceDate'] = $row['source_date'];
-            $public['sourceReference'] = $row['source_reference'];
-            $public['originActor'] = $row['origin_actor'];
-            $public['legalStatus'] = $row['legal_status'];
             $query = $db->prepare(
                 'SELECT choice, COUNT(*) AS count FROM policy_votes
                  WHERE measure_id = ? GROUP BY choice',

@@ -18,9 +18,10 @@ dossiers et états parlementaires. **Un dépôt n'est pas une loi votée**, et l
 vote proposé dans Populorum porte sur l'idée résumée par l'intitulé ; il ne
 remplace pas l'examen des articles de loi.
 
-Les auteurs et sources sont conservés pour vérification mais ne figurent pas sur
-le bulletin avant clôture. Un titre de loi peut permettre de retrouver son
-auteur par recherche externe : cette neutralité n'est pas un anonymat absolu.
+**Les auteurs, références, liens documentaires et statuts parlementaires sont
+publics à tout moment.** Seuls les décomptes de notre vote expérimental sont
+révélés après clôture. La transparence documentaire fait partie du principe
+de délibération éclairée.
 
 ## Transition depuis les anciennes propositions fictives
 
@@ -83,9 +84,76 @@ doublons de contenu.
   révision jusqu'à clôture ; historique des révisions.
 - Les votes des comptes liés à une IP ne garantissent ni personne unique,
   ni échantillonnage représentatif ; aucun effet juridique.
-- L'attribution est dévoilée après clôture, avec le résultat agrégé.
+- L'auteur et le dossier parlementaire sont visibles **avant le vote**.
+  Le résultat agrégé du vote fictif est affiché après clôture.
 - Les consultations historiques du moteur civique original ne sont pas
   réécrites ni converties.
+
+## Enrichissement documentaire : explorer les ressources du Sénat
+
+Le CSV officiel répertorie les auteurs, dates, références, types et états des
+propositions de loi ; il ne contient pas, à lui seul, les explications et
+rapports. Les **dossiers législatifs officiels** relient les autres ressources.
+
+### Synchronisation locale et progressive
+
+Dans \`apps/symfony\`, après l'import de \`var/policy-catalog.sqlite\` :
+
+~~~bash
+python3 tools/enrich_senate_dossiers.py --limit 20 --offset 0
+python3 tools/enrich_senate_dossiers.py --limit 20 --offset 20
+~~~
+
+- \`--limit\` limite le nombre de dossiers (1–2000 par lot). \`--offset\` permet
+  de continuer sans retraiter les précédents. \`--force\` actualise un lot déjà
+  synchronisé (les liens peuvent avoir changé sur le site officiel).
+- Une pause de 0,6 seconde entre les accès au Sénat est prévue par défaut.
+  \`--pause\` et \`--timeout\` permettent d'ajuster le rythme et les délais.
+- L'import ne s'exécute **jamais lors de la visite d'une page**. Il reste un
+  acte explicite de l'administrateur, sans plugins ni services payants.
+- La synchronisation est idempotente et sépare ses tables des bulletins,
+  de la liste des communes et des données de marchés publics.
+- Une erreur réseau laisse intactes les anciennes données documentaires.
+  Un dossier sans documents identifiés est signalé au lieu d'être inventé.
+
+### Sources directement rattachées à chaque dossier
+
+À partir des liens trouvés dans le dossier du Sénat, le synchroniseur classe
+**uniquement les documents réellement présents** : texte initial, exposé des
+motifs, texte de commission, rapports, amendements, débats en séance,
+comptes rendus de commission, synthèses, procédure, navette vers l'Assemblée
+nationale. La disponibilité varie selon le texte et son parcours législatif.
+
+Les pages d'exposés des motifs peuvent aussi fournir des **passages originaux
+bornés** (maximum 2 500 caractères). Ces extraits sont attribués explicitement
+aux auteurs, accompagnés du lien vers le document complet. Ce ne sont **pas**
+des résumés générés automatiquement et encore moins une preuve indépendante
+que les problèmes avancés ou les effets annoncés sont établis.
+
+Le cache est situé dans les tables \`policy_senate_documents\` et
+\`policy_senate_context\` de \`var/policy-catalog.sqlite\`. Chaque dossier conserve
+sa date locale de synchronisation. Les anciennes contributions causales et
+leurs versions ne sont pas touchées.
+
+### Répertoires de ressources pour les prochaines intégrations
+
+Le Sénat fournit aussi :
+- **DOSLEG** : dossiers législatifs et textes parlementaires depuis 1977,
+  avec liens vers documents plus récents ; https://data.senat.fr/dosleg/
+- **MONALISA / Akoma Ntoso** : dispositifs des textes au format XML structuré,
+  utile pour représenter les articles et leurs modifications ;
+  https://data.senat.fr/les-donnees-dispositifs-des-textes-monalisa/
+- **AMELI** : amendements en commission et en séance, auteur, objet et sort ;
+  https://data.senat.fr/aide/liste-des-amendements/
+- **Comptes rendus des débats**, **questions écrites/orales**, **fiches
+  des sénateurs** : https://data.senat.fr/donnees/
+
+**Périmètre réellement implémenté :** index des liens documentaires trouvés sur
+chaque dossier et extraits limités de l'exposé des motifs. La résolution
+automatique des questions connexes, l'interprétation article par article des
+XML Akoma Ntoso et les comparaisons historiques de votes parlementaires
+nécessitent une extension spécifique. Un texte ou un rapport non trouvé
+dans l'index n'est pas déclaré inexistant.
 
 ## Délibération causale après le vote
 
@@ -148,7 +216,9 @@ ni crédibilité ni lien causal.
 
 ~~~bash
 python3 tests/policy_catalog_import_test.py
+python3 tests/senate_dossier_enrichment_test.py
 php vendor/bin/phpunit tests/PolicyCatalogTest.php
+php vendor/bin/phpunit tests/SenateDossierTest.php
 php bin/console lint:twig templates --env=demo
 ~~~
 

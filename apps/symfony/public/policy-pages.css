@@ -710,3 +710,85 @@
         padding: 12px;
     }
 }
+
+
+/* Fiche parlementaire : provenance réelle et ressources documentaires toujours visibles. */
+.policy-legislative-facts {
+    margin: 18px 0 14px;
+    padding: 16px 19px;
+    background: rgba(255,255,255,.82);
+    border-left: 4px solid #977a48;
+    border-radius: 8px;
+}
+.policy-legislative-facts p {
+    margin: 6px 0;
+    font-size: 12px;
+    line-height: 1.55;
+}
+.policy-senate-context .eyebrow,
+#ressources-senat .eyebrow {
+    margin-bottom: 12px;
+}
+.policy-senate-excerpts {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    margin: 17px 0;
+}
+.policy-senate-excerpts blockquote {
+    border-left: 3px solid #b99d68;
+    background: #f6f5ef;
+    margin: 0;
+    padding: 14px 18px;
+    font-size: 13px;
+    font-style: normal;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+.policy-document-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
+    margin: 19px 0;
+}
+.policy-document-group {
+    background: #fafaf7;
+    border: 1px solid #e2e2da;
+    border-radius: 9px;
+    padding: 17px;
+    min-width: 0;
+}
+.policy-document-group h3 {
+    font-size: 14px;
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.policy-document-group ul {
+    margin: 0;
+    padding-left: 18px;
+}
+.policy-document-group li {
+    padding: 5px 0;
+    font-size: 12px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+.policy-document-group a {
+    color: #1e5871;
+    font-weight: 650;
+}
+.policy-document-group small {
+    display: block;
+    color: #6e7474;
+    margin-top: 3px;
+}
+@media (max-width: 750px) {
+    .policy-document-grid {
+        grid-template-columns: 1fr;
+    }
+    .policy-legislative-facts {
+        padding: 12px;
+    }
+}

@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Service\BetaVisitorProfiles;
 use App\Service\PolicyCatalog;
 use App\Service\PolicyDeliberation;
+use App\Service\SenateDossier;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,6 +19,7 @@ final class PolicyCatalogController extends AbstractController
     public function __construct(
         private readonly PolicyCatalog $catalog,
         private readonly PolicyDeliberation $deliberations,
+        private readonly SenateDossier $senateDossiers,
         private readonly BetaVisitorProfiles $profiles,
     ) {
     }
@@ -117,6 +119,7 @@ final class PolicyCatalogController extends AbstractController
 
         return $this->uncached('pages/policy-detail.html.twig', [
             'measure' => $measure,
+            'senateDossier' => $this->senateDossiers->forMeasure($id),
             'profile' => $profile,
             'eligible' => $eligible,
             'existingVote' => $existing,
