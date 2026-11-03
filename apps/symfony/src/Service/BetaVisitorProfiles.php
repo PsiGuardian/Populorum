@@ -44,7 +44,16 @@ final class BetaVisitorProfiles
         }
         $commune = $this->geography->find((string) $row['commune_code']);
 
+        // Identité de participation stable pour la durée du profil, sans exposer l'IP ni son empreinte.
+        $citizenId = 'beta_' . substr(hash_hmac(
+            'sha256',
+            'populorum-beta-citizen-v1:' . $this->fingerprint($request) . ':' . $row['created_at'],
+            $this->appSecret,
+        ), 0, 24);
+
         return [
+            'citizenId' => $citizenId,
+            'expiresAt' => (int) $row['expires_at'],
             'firstName' => (string) $row['first_name'],
             'lastName' => (string) $row['last_name'],
             'age' => (int) $row['age'],
