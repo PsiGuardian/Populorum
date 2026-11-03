@@ -19,7 +19,7 @@ final class PolicyCatalog
 
     private function database(): ?\PDO
     {
-        $path = $this->projectDir . '/var/policy-catalog.sqlite';
+        $path = $_SERVER['POPULORUM_POLICY_CATALOG_PATH'] ?? $this->projectDir . '/var/policy-catalog.sqlite';
         if (!is_file($path)) {
             return null;
         }
