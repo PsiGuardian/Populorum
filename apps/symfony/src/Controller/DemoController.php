@@ -348,6 +348,11 @@ final class DemoController extends AbstractController
     )]
     public function page(Request $request, string $view = 'home'): Response
     {
+        // Les propositions et consultations fictives sont conservées uniquement
+        // comme archives techniques et ne sont plus présentées comme bulletins.
+        if (in_array($view, ['proposals', 'consultations'], true)) {
+            return $this->redirectToRoute('policy_catalog', [], Response::HTTP_SEE_OTHER);
+        }
         $publicBases = [
             'marches-publics' => ['view' => 'markets', 'route' => 'site_markets'],
             'communes' => ['view' => 'communes', 'route' => 'site_communes'],
@@ -872,6 +877,16 @@ final class DemoController extends AbstractController
         if (!isset(ActionForms::TYPES[$type])) {
             throw $this->createNotFoundException();
         }
+        // L'ancien moteur n'accepte plus de nouvelles propositions fictives.
+        if (in_array($type, ['proposal.create', 'proposal.publish', 'proposal.revise', 'proposal.node', 'proposal.edge', 'proposal.source', 'territory.adapt', 'consultation.open', 'consultation.close', 'vote.cast'], true)) {
+            if ($request->isMethod('POST')) {
+                throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException(
+                    'Seules les propositions de loi déposées officiellement sont soumises au vote.',
+                );
+            }
+
+            return $this->redirectToRoute('policy_catalog', [], Response::HTTP_SEE_OTHER);
+        }
         // Un profil de test a déjà un participant et une seule famille.
         // L'ancien formulaire ne doit pas générer de personnages électoraux supplémentaires.
         if (in_array($type, ['citizen.create', 'citizen.update', 'citizen.erase'], true)) {
@@ -1369,6 +1384,11 @@ final class DemoController extends AbstractController
     {
         if (!isset(ActionForms::TYPES[$type])) {
             return $this->json(['error' => 'Action inconnue.'], 404);
+        }
+        if (in_array($type, ['proposal.create', 'proposal.publish', 'proposal.revise', 'proposal.node', 'proposal.edge', 'proposal.source', 'territory.adapt', 'consultation.open', 'consultation.close', 'vote.cast'], true)) {
+            return $this->json([
+                'error' => 'Les actions sur des propositions fictives sont désactivées.',
+            ], 403);
         }
         if (in_array($type, ['citizen.create', 'citizen.update', 'citizen.erase'], true)
             && $this->activeBetaProfile($request) !== null) {
