@@ -348,6 +348,11 @@ final class DemoController extends AbstractController
     )]
     public function page(Request $request, string $view = 'home'): Response
     {
+        // Les propositions et consultations fictives sont conservées uniquement
+        // comme archives techniques et ne sont plus présentées comme bulletins.
+        if (in_array($view, ['proposals', 'consultations'], true)) {
+            return $this->redirectToRoute('policy_catalog', [], Response::HTTP_SEE_OTHER);
+        }
         $publicBases = [
             'marches-publics' => ['view' => 'markets', 'route' => 'site_markets'],
             'communes' => ['view' => 'communes', 'route' => 'site_communes'],
@@ -872,6 +877,14 @@ final class DemoController extends AbstractController
         if (!isset(ActionForms::TYPES[$type])) {
             throw $this->createNotFoundException();
         }
+        // L'ancien moteur n'accepte plus de nouvelles propositions fictives.
+        if (in_array($type, ['proposal.create', 'proposal.publish', 'proposal.revise', 'proposal.node', 'proposal.edge', 'proposal.source', 'territory.adapt', 'consultation.open', 'consultation.close', 'vote.cast'], true)) {
+            if ($request->isMethod('POST')) {
+                throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('Seules les propositions de loi déposées officiellement sont soumises au vote.');
+            }
+
+            return $this->redirectToRoute('policy_catalog', [], Response::HTTP_SEE_OTHER);
+        }
         // Un profil de test a déjà un participant et une seule famille.
         // L'ancien formulaire ne doit pas générer de personnages électoraux supplémentaires.
         if (in_array($type, ['citizen.create', 'citizen.update', 'citizen.erase'], true)) {
@@ -959,34 +972,6 @@ final class DemoController extends AbstractController
                 unset($payload['revision'], $payload['operationId']);
                 // L’auteur vient de la session : un champ de formulaire ne peut pas l’usurper.
                 $payload['citizenId'] = $context['actor']['id'];
-                if (
-                    in_array(
-                        $type,
-                        ['proposal.create', 'proposal.revise'],
-                        true,
-                    )
-                ) {
-                    foreach (
-                        $proposal['nodes'] ??
-                            array_map(
-                                static fn (string $category): array => [
-                                    'category' => $category,
-                                ],
-                                SimulationEngine::CATEGORIES,
-                            ) as $nodeIndex => $node
-                    ) {
-                        $payload['nodes'][] = [
-                            'id' => $node['id'] ?? 'n' . $nodeIndex,
-                            'category' => $node['category'],
-                            'content' => $payload['node' . $nodeIndex] ?? '',
-                            'kind' => $payload['kind' . $nodeIndex],
-                        ];
-                        unset(
-                            $payload['node' . $nodeIndex],
-                            $payload['kind' . $nodeIndex],
-                        );
-                    }
-                }
                 // Le contrôle optimiste empêche un ancien formulaire d’écraser une autre écriture.
                 $workspace = $this->database->workspace($this->owner($request));
                 if ($workspace['revision'] !== $revision) {
@@ -1370,6 +1355,11 @@ final class DemoController extends AbstractController
         if (!isset(ActionForms::TYPES[$type])) {
             return $this->json(['error' => 'Action inconnue.'], 404);
         }
+        if (in_array($type, ['proposal.create', 'proposal.publish', 'proposal.revise', 'proposal.node', 'proposal.edge', 'proposal.source', 'territory.adapt', 'consultation.open', 'consultation.close', 'vote.cast'], true)) {
+            return $this->json([
+                'error' => 'Les actions sur des propositions fictives sont désactivées.',
+            ], 403);
+        }
         if (in_array($type, ['citizen.create', 'citizen.update', 'citizen.erase'], true)
             && $this->activeBetaProfile($request) !== null) {
             return $this->json(['error' => 'Gérez votre identité depuis le compte de test.'], 403);
@@ -1417,9 +1407,6 @@ final class DemoController extends AbstractController
             }
             $payload = $body['payload'];
             $allowed = array_keys(ActionForms::TYPES[$type]['fields']);
-            if (in_array($type, ['proposal.create', 'proposal.revise'], true)) {
-                $allowed = array_merge($allowed, ['nodes', 'edges', 'sources']);
-            }
             if (array_diff(array_keys($payload), $allowed)) {
                 throw new \DomainException('Champ non autorisé.');
             }

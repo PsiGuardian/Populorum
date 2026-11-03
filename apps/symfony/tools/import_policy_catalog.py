@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Import de mesures politiques documentées dans un catalogue SQLite indépendant.
+"""Importer uniquement des propositions de loi réellement déposées au Sénat.
 
-Les mesures du programme sont des exemples éditoriaux attribués en interne.
-Les propositions du Sénat proviennent du CSV officiel (sans inférence de lois en vigueur).
-Aucun compte, bulletin, scénario ni base Populorum existante n'est modifié.
+La source est l'export CSV officiel du Sénat, fourni explicitement par l'opérateur.
+Les programmes électoraux, intentions et propositions fictives ne sont jamais importés.
+Les anciens votes et données historiques restent intacts : seul le catalogue officiel
+est visible via l'interface.
 """
 from __future__ import annotations
 
@@ -21,7 +22,6 @@ import unicodedata
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
-CURATED = ROOT / "data" / "policy-programme-measures.json"
 DEFAULT_DB = ROOT / "var" / "policy-catalog.sqlite"
 SENAT_EXPORT = "https://www.data.gouv.fr/api/1/datasets/r/7698274a-65f6-4687-8b2b-6961199b6922"
 
@@ -68,13 +68,6 @@ STOPWORDS = re.compile(
     r"\b(proposition\s+de\s+loi|visant\s+[àa]|tendant\s+[àa])\b",
     re.IGNORECASE,
 )
-ATTRIBUTIONS = re.compile(
-    r"\b(?:sarah\s+knafo|marine\s+le\s+pen|jean[\s-]+luc\s+melenchon|"
-    r"rassemblement\s+national|france\s+insoumise|reconquete|"
-    r"les\s+republicains|parti\s+socialiste)\b",
-    re.IGNORECASE,
-)
-
 
 def folded(value: str) -> str:
     text = unicodedata.normalize("NFKD", value)
@@ -127,13 +120,9 @@ def allowed_source(url: str, kind: str) -> bool:
     if parsed.scheme != "https" or parsed.username or parsed.password:
         return False
     host = (parsed.hostname or "").lower()
-    if kind == "proposition_de_loi":
-        return host == "senat.fr" or host.endswith(".senat.fr")
-    return host in {
-        "rassemblementnational.fr",
-        "programme.lafranceinsoumise.fr",
-        "sarahpourparis.fr",
-    }
+    return kind == "proposition_de_loi" and (
+        host == "senat.fr" or host.endswith(".senat.fr")
+    )
 
 
 def validated(item: dict) -> dict | None:
@@ -145,14 +134,22 @@ def validated(item: dict) -> dict | None:
     if any(not isinstance(item.get(key), str) or not item[key].strip() for key in required):
         return None
     label = " ".join(item["label"].split())
-    if len(label) < 15 or len(label) > 340 or ATTRIBUTIONS.search(folded(label)):
+    if len(label) < 15 or len(label) > 1200:
         return None
     territory = item["territoryCode"]
-    if territory != "FR" and not re.fullmatch(r"[0-9]{5}|2[AB][0-9]{3}", territory):
+    if territory != "FR" or item["sourceType"] != "proposition_de_loi":
+        return None
+    if any(x in folded(item["legalStatus"]) for x in (
+        "promulgu", "caduc", "non adopt", "retir", "irrecev", "poursuivi"
+    )):
         return None
     if not allowed_source(item["sourceUrl"], item["sourceType"]):
         return None
-    key = hashlib.sha256(canonical(label).encode("utf-8")).hexdigest()
+    # L'identité d'une proposition est son dossier parlementaire, non son
+    # intitulé : deux dépôts homonymes restent deux dossiers distincts.
+    key = hashlib.sha256(
+        ("senat:" + item["sourceUrl"].strip()).encode("utf-8")
+    ).hexdigest()
     if not canonical(label):
         return None
     return {
@@ -165,14 +162,6 @@ def validated(item: dict) -> dict | None:
         "legal_status": item["legalStatus"],
         "review_status": item["reviewStatus"],
     }
-
-
-def curated_measures(path: Path = CURATED) -> list[dict]:
-    with path.open(encoding="utf-8") as stream:
-        source = json.load(stream)
-    if source.get("schemaVersion") != 1 or not isinstance(source.get("measures"), list):
-        raise ValueError("Format du corpus de programme non reconnu.")
-    return source["measures"]
 
 
 def senate_measures(csv_path: Path) -> list[dict]:
@@ -219,11 +208,13 @@ def senate_measures(csv_path: Path) -> list[dict]:
             url = "https://" + (parsed.netloc or "") + (parsed.path or "")
             if parsed.query:
                 url += "?" + parsed.query
-        if "promulgu" in folded(legal_status):
-            continue  # Une loi déjà promulguée ne doit pas être présentée comme projet en attente.
-        if source_type and not (
-            "proposition" in folded(source_type) or "ppl" in folded(source_type)
-        ):
+        # Exclure lois promulguées, propositions caduques, rejetées, retirées
+        # et poursuivies dans un autre dossier pour ne présenter que des textes vivants.
+        if not legal_status or any(x in folded(legal_status) for x in (
+            "promulgu", "caduc", "non adopt", "retir", "irrecev", "poursuivi"
+        )):
+            continue
+        if "proposition de loi" not in folded(source_type):
             continue
         measures.append({
             "label": title,
@@ -279,15 +270,26 @@ def import_records(db_path: Path, items: list[dict], limit: int = 200, days: int
         opened = start.isoformat(timespec="seconds")
         closes = (start + timedelta(days=days)).isoformat(timespec="seconds")
         inserted = 0
+        # Compatibilité avec les versions ayant produit un ID depuis le titre :
+        # ne pas recopier un même dossier ni réinitialiser ses anciens votes.
+        known_urls = {
+            row[0] for row in db.execute(
+                "SELECT source_url FROM policy_measures WHERE source_type = 'proposition_de_loi'"
+            )
+        }
         with db:
             for row in unique.values():
+                if row["source_url"] in known_urls:
+                    continue
                 columns = list(row) + ["opened_at", "closes_at", "created_at"]
                 values = list(row.values()) + [opened, closes, opened]
                 placeholders = ",".join("?" for _ in columns)
                 sql = ("INSERT OR IGNORE INTO policy_measures (" + ",".join(columns)
                        + ") VALUES (" + placeholders + ")")
                 inserted += db.execute(sql, values).rowcount
-        total = db.execute("SELECT COUNT(*) FROM policy_measures").fetchone()[0]
+        total = db.execute(
+            "SELECT COUNT(*) FROM policy_measures WHERE source_type = 'proposition_de_loi'"
+        ).fetchone()[0]
     finally:
         db.close()
     return {
@@ -299,14 +301,17 @@ def import_records(db_path: Path, items: list[dict], limit: int = 200, days: int
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--senat-csv", type=Path, help="Export officiel CSV des propositions de loi déposées au Sénat")
+    parser.add_argument(
+        "--senat-csv", type=Path, required=True,
+        help="CSV officiel des propositions de loi déposées au Sénat (obligatoire)",
+    )
     parser.add_argument("--db", type=Path, default=DEFAULT_DB)
     parser.add_argument("--limit", type=int, default=200)
     parser.add_argument("--days", type=int, default=90)
     args = parser.parse_args(argv)
-    items = curated_measures()
-    if args.senat_csv:
-        items.extend(senate_measures(args.senat_csv))
+    items = senate_measures(args.senat_csv)
+    if not items:
+        parser.error("Aucune proposition de loi en cours trouvée dans l'export officiel.")
     report = import_records(args.db, items, args.limit, args.days)
     print(json.dumps(report, ensure_ascii=False, indent=2))
     if report["valid_candidates"] < args.limit:

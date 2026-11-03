@@ -335,109 +335,49 @@ try {
         'Les vingt-quatre articles restent présents',
     );
 
-    // Une soumission réelle avec CSRF doit pouvoir enregistrer un brouillon vide de contenu.
-    $response = $request('/action/proposal.create');
-    preg_match_all(
-        '/<input[^>]+name="simulation_action\[([^\]]+)\]"[^>]*value="([^"]*)"/',
-        $response->getContent(),
-        $matches,
-        PREG_SET_ORDER,
-    );
-    $fields = [];
-    foreach ($matches as $match) {
-        $fields[$match[1]] = html_entity_decode($match[2], ENT_QUOTES);
+    // L'ancien éditeur des propositions fictives doit être inaccessible via
+    // URL directe, tout en préservant les archives de consultation et les exports.
+    foreach ([
+        '/action/proposal.create',
+        '/action/proposal.revise?proposalId=p3',
+        '/action/proposal.edge?proposalId=p3',
+        '/action/proposal.node?proposalId=p3',
+        '/action/proposal.source?proposalId=p3',
+    ] as $oldPath) {
+        $response = $request($oldPath);
+        $check(
+            $response->getStatusCode() === 303
+                && str_contains((string) $response->headers->get('Location'), '/mesures'),
+            'Éditeur fictif retiré du parcours public : ' . $oldPath,
+        );
     }
-    $fields['title'] = 'Brouillon créé par formulaire natif';
-    $fields['territoryId'] = 't1';
-    foreach (range(0, 11) as $index) {
-        $fields['kind' . $index] = 'hypothesis';
+    foreach ([
+        '/action/proposal.create',
+        '/action/proposal.revise',
+        '/action/proposal.edge',
+        '/action/proposal.node',
+        '/action/proposal.source',
+        '/action/vote.cast',
+    ] as $oldPath) {
+        $response = $request($oldPath, 'POST');
+        $check(
+            $response->getStatusCode() === 403,
+            'Écriture de proposition fictive bloquée : ' . $oldPath,
+        );
     }
-    $response = $request('/action/proposal.create', 'POST', [
-        'simulation_action' => $fields,
-    ]);
-    $check(
-        $response->isRedirect(),
-        'Brouillon incomplet enregistré par Symfony Form avec CSRF',
-    );
-
-    // Prépare une révision après le vote puis lit le véritable export HTTP.
-    $service = $kernel->getContainer()->get('doctrine')->getConnection();
-    $owner = $session->get('simulation_owner');
-    $workspace = json_decode(
-        $service->fetchOne('SELECT state FROM simulations WHERE id = ?', [
-            $owner,
-        ]),
-        true,
-    );
-    $workspace = $apply($workspace, 'proposal.revise', [
-        'citizenId' => 'u4',
-        'proposalId' => 'p2',
-        'reason' => 'Révision postérieure fictive',
-        'solution' => 'NOUVELLE-SOLUTION-HORS-PROTOCOLE',
-    ]);
-    $service->executeStatement(
-        'UPDATE simulations SET state = ?, revision = revision + 1 WHERE id = ?',
-        [json_encode($workspace), $owner],
-    );
     $response = $request('/export/experiment?id=e1');
     $export = json_decode($response->getContent(), true);
     $check(
         $response->getStatusCode() === 200
             && $export['proposal']['solution'] ===
                 $fixture['consultations'][1]['frozen']['solution'],
-        'Export HTTP rattaché à la solution réellement consultée',
+        'Export historique encore vérifiable après retrait de l’éditeur fictif',
     );
-    $check(
-        $export['proposalVersion'] === 1,
-        'Export HTTP identifie la version de référence',
-    );
-    $response = $request('/action/proposal.revise?proposalId=p3');
-    $check(
-        $response->getStatusCode() === 200
-            && str_contains(
-                $response->getContent(),
-                'simulation_action[problem]',
-            )
-            && str_contains(
-                $response->getContent(),
-                'simulation_action[sources][0][label]',
-            ),
-        'Formulaire de révision expose problème et sources existantes',
-    );
-    $response = $request('/action/proposal.edge?proposalId=p3');
-    $check(
-        $response->getStatusCode() === 200
-            && str_contains(
-                $response->getContent(),
-                'name="simulation_action[from]"',
-            ),
-        'Formulaire de relations accessible sans JavaScript',
-    );
-    $session->set('citizen_id', 'u7');
-    $fields = $formFields($request('/action/proposal.node?proposalId=p3')->getContent());
-    $fields['category'] = 'Délai complémentaire';
-    $fields['content'] = 'Trois mois fictifs pour observer';
-    $fields['kind'] = 'hypothesis';
-    $fields['reason'] = 'Compléter le raisonnement fictif';
-    $check($request('/action/proposal.node', 'POST', ['simulation_action' => $fields])->isRedirect(), 'Ajout d’une catégorie par formulaire CSRF natif');
-    $fields = $formFields($request('/action/proposal.revise?proposalId=p3')->getContent());
-    $check(isset($fields['node12']), 'Révision HTTP conserve le treizième élément');
-    $fields['problem'] = 'Problème réexaminé par formulaire';
-    $fields['cause'] = 'Cause réexaminée par formulaire';
-    $fields['reason'] = 'Révision complète fictive';
-    $revisionResponse = $request('/action/proposal.revise', 'POST', ['simulation_action' => $fields]);
-    if (!$revisionResponse->isRedirect()) {
-        file_put_contents(dirname(__DIR__) . '/var/revision-failed.html', $revisionResponse->getContent());
-    }
-    $check($revisionResponse->isRedirect(), 'Révision complète et sources enregistrées par formulaire natif');
     $state = json_decode($request('/api/v1/state')->getContent(), true)['state'];
-    $check($state['proposals'][2]['problem'] === $fields['problem'] && count($state['proposals'][2]['nodes']) === 13 && $engine->verify($state)['valid'], 'Révision HTTP préserve les catégories et l’intégrité signée');
-    $fields = $formFields($request('/action/proposal.source?proposalId=p3')->getContent());
-    $fields['label'] = 'Nouvelle source pédagogique fictive';
-    $fields['date'] = '2026-10-29';
-    $fields['url'] = 'https://example.org/nouvelle-source';
-    $fields['reason'] = 'Documenter la nouvelle hypothèse';
-    $check($request('/action/proposal.source', 'POST', ['simulation_action' => $fields])->isRedirect(), 'Ajout de source par formulaire natif sans JavaScript');
+    $check(
+        $engine->verify($state)['valid'],
+        'Intégrité historique inchangée après refus des écritures fictives',
+    );
 } finally {
     $kernel->shutdown();
     unlink($database);

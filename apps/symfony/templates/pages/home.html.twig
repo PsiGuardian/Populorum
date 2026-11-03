@@ -10,14 +10,14 @@
             <a class="button primary" href="{{ civic_path('site_communes') }}">Parcourir l’annuaire national</a>
             <a class="button" href="{{ civic_path('section', {view: 'budget'}) }}#explorateur">Comprendre les dépenses publiques</a>
         </div>
-        <p class="small muted">Les propositions et consultations suivantes sont des démonstrations fictives de communes pilotes, non des résultats nationaux.</p>
+        <p class="small muted">Les anciens scénarios pédagogiques sont archivés ; les propositions soumises au vote proviennent désormais de dossiers parlementaires officiels.</p>
     </section>
 
     <section class="workbench-intro">
         <div class="eyebrow">
             COMPRENDRE AVANT DE DÉCIDER
         </div>
-        <h1>Du problème aux conséquences.</h1>
+        <h1>Des propositions de loi aux conséquences.</h1>
         <p>
             Explorez un arbre, discutez une solution, puis confrontez les
             attentes aux observations.
@@ -64,102 +64,23 @@
             </a>
         </nav>
     </section>
-    {% if featuredProposal is defined %}
-        {% set proposal = featuredProposal %}
-        <section class="panel workbench" aria-labelledby="tree-heading">
-            <div class="row-header">
-                <div>
-                    <div class="eyebrow">
-                        L’ARBRE AU PREMIER PLAN
-                    </div>
-                    <h2 id="tree-heading">{{ proposal.title }}</h2>
-                    <p>
-                        {{ territoryMap[proposal.territoryId].name }} · {{
-                            proposal.summary
-                        }}
-                    </p>
-                </div>{{ ui.badge('Simulation fictive') }}
-            </div>
-            <form method="get" action="{{ civic_path('home') }}" class="tree-picker">
-                <label for="tree-choice">Choisir un autre problème</label>
-                <select name="id" id="tree-choice">
-                    {% for item in proposalList %}
-                        <option
-                            value="{{ item.id }}"
-                            {{ item.id == proposal.id ? 'selected' : '' }}
-                        >
-                            {{ territoryMap[item.territoryId].name }} · {{
-                                item.title
-                            }}
-                        </option>
-                    {% endfor %}
-                </select>
-                <button class="button" type="submit">Afficher cet arbre</button>
-            </form>
-            {% include 'partials/causal-tree.html.twig' %}
-            <div class="home-node-list">
-                {% for node in proposal.nodes %}
-                    <details id="causal-{{ node.id }}">
-                        <summary>
-                            {{ node.category }}
-                            <small>
-                                {{ node.kind == 'observation'
-                                    ? '· élément documenté à examiner'
-                                    : '· hypothèse' }}
-                            </small>
-                        </summary>
-                        <p>
-                            {{ node.content
-                                ?
-                                : 'Cet élément reste à documenter.' }}
-                        </p>
-                    </details>
-                {% endfor %}
-            </div>
-            <div class="task-actions">
-                <a
-                    class="button primary"
-                    href="{{
-                    civic_path(
-                        'section',
-                        {
-                            view: 'proposals',
-                            id: proposal.id
-                        }
-                    )
-                    }}"
-                >
-                    Ouvrir ce raisonnement et agir →
-                </a>
-                <a
-                    class="button"
-                    href="{{
-                    civic_path(
-                        'section',
-                        {
-                            view: 'convergence',
-                            id: proposal.id
-                        }
-                    )
-                    }}"
-                >
-                    Comparer avec d’autres chemins
-                </a>
-                {{ ui.action('proposal.create', 'Créer mon propre chemin') }}
-            </div>
-        </section>
-    {% else %}
-        <section class="panel">
-            <h2>Le premier arbre reste à construire</h2>{{
-                ui.action(
-                    'proposal.create',
-                    'Décrire un problème',
-                    {},
-                    'button primary'
-                )
-            }}
-        </section>
-    {% endif %}
+    <section class="panel workbench">
+        <div class="eyebrow">UNIQUEMENT DES TEXTES PARLEMENTAIRES OFFICIELS</div>
+        <h2>Propositions de loi déposées au Sénat</h2>
+        <p>
+            Le laboratoire présente les intitulés de propositions de loi issus
+            des dossiers législatifs du Sénat. Aucun personnage ou projet de loi
+            n'est inventé. L'auteur et les sources sont conservés pour l'audit
+            et révélés après la clôture du scrutin de simulation.
+        </p>
+        <p>
+            Une proposition déposée n'est pas une loi adoptée. Les comptes de
+            test peuvent exprimer une position fictive, sans effet juridique.
+        </p>
+        <a class="button primary" href="{{ path('policy_catalog') }}">
+            Voir les propositions de loi officielles
+        </a>
+    </section>
     <section class="two-columns section">
         <article class="panel">
             <div class="eyebrow">
