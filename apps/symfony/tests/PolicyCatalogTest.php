@@ -55,9 +55,9 @@ final class PolicyCatalogTest extends TestCase
             'pm_' . str_repeat('f', 24), str_repeat('f', 64), 'Créer un dispositif de test',
             'Éducation', $territory, 'open',
             gmdate('Y-m-d\TH:i:s+00:00', time() + 86400),
-            'programme', 'https://rassemblementnational.fr/22-mesures',
-            '2022', 'Mesure 1', 'Origine cachée tant que le vote est ouvert',
-            'Engagement historique', 'source vérifiée',
+            'proposition_de_loi', 'https://www.senat.fr/dossier-legislatif/ppl26-450.html',
+            '03/11/2026', 'Dépôt 450', 'Origine cachée tant que le vote est ouvert',
+            'En première lecture', 'titre officiel',
         ]);
 
         return [new PolicyCatalog($root), $db];
@@ -114,22 +114,28 @@ final class PolicyCatalogTest extends TestCase
         $catalog->vote($id, $this->profile(), 'pour');
     }
 
-    public function testTerritoryAndExpiryAreCheckedServerSide(): void
+    public function testExpiredProfileCannotVote(): void
     {
-        [$catalog] = $this->storage('75056');
+        [$catalog] = $this->storage();
         $id = 'pm_' . str_repeat('f', 24);
-        try {
-            $catalog->vote($id, $this->profile('a', '66134'), 'pour');
-            self::fail('Non-local voter accepted.');
-        } catch (DomainException $error) {
-            self::assertSame(403, $error->getCode());
-        }
-        $catalog->vote($id, $this->profile('a', '75056'), 'pour');
-        $expired = $this->profile('b', '75056');
+        $catalog->vote($id, $this->profile('a', '66134'), 'pour');
+        $expired = $this->profile('b', '66134');
         $expired['expiresAt'] = time() - 1;
         $this->expectException(DomainException::class);
         $this->expectExceptionCode(403);
         $catalog->vote($id, $expired, 'contre');
+    }
+
+    public function testOldProgrammeIsHiddenAndCannotReceiveVotes(): void
+    {
+        [$catalog, $db] = $this->storage();
+        $id = 'pm_' . str_repeat('f', 24);
+        $db->exec("UPDATE policy_measures SET source_type = 'programme' WHERE id = '" . $id . "'");
+        self::assertSame(0, $catalog->page()['total']);
+        self::assertNull($catalog->measure($id));
+        $this->expectException(DomainException::class);
+        $this->expectExceptionCode(409);
+        $catalog->vote($id, $this->profile(), 'pour');
     }
 
     public function testMissingCatalogueDoesNotCreateDatabase(): void
