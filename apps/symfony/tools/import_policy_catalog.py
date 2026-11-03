@@ -208,6 +208,16 @@ def senate_measures(csv_path: Path) -> list[dict]:
         source_type = field(row, "type de texte", "type", "nature")
         if not title or not url or not date:
             continue
+        # Les anciens liens des exports officiels peuvent encore utiliser HTTP.
+        # Forcer HTTPS uniquement pour le nom de domaine institutionnel Sénat.
+        parsed = urlparse(url)
+        if parsed.scheme == "http" and (
+            parsed.hostname == "senat.fr"
+            or (parsed.hostname or "").endswith(".senat.fr")
+        ):
+            url = "https://" + (parsed.netloc or "") + (parsed.path or "")
+            if parsed.query:
+                url += "?" + parsed.query
         if "promulgu" in folded(legal_status):
             continue  # Une loi déjà promulguée ne doit pas être présentée comme projet en attente.
         if source_type and not (
