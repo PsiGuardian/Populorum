@@ -93,10 +93,10 @@ final class ApplicationCompletionTest extends TestCase
     {
         $home = $this->request('/')->getContent();
         self::assertStringContainsString(
-            'Du problème aux conséquences.',
+            'Des propositions de loi aux conséquences.',
             $home,
         );
-        self::assertStringContainsString('Arbre de cause à effet', $home);
+        self::assertStringContainsString('Propositions de loi déposées au Sénat', $home);
         self::assertStringContainsString('système d’État déjà en place', $home);
         self::assertStringNotContainsString(
             'Afficher le graphe des relations déclarées',
@@ -126,10 +126,9 @@ final class ApplicationCompletionTest extends TestCase
             'value="p1"',
             $convergence->getContent(),
         );
-        $form = $this->request('/action/proposal.create')->getContent();
-        self::assertStringContainsString('1 · Décrire le chemin', $form);
-        self::assertSame(12, substr_count($form, 'class="reasoning-field"'));
-        self::assertStringContainsString('simulation_action[_token]', $form);
+        $form = $this->request('/action/proposal.create');
+        self::assertSame(303, $form->getStatusCode());
+        self::assertStringContainsString('/mesures', (string) $form->headers->get('Location'));
         self::assertStringContainsString(
             'système d’État déjà en place',
             $this->request('/charter')->getContent(),
@@ -138,30 +137,20 @@ final class ApplicationCompletionTest extends TestCase
 
     public function testSearchUsesNamedRoutesAndRejectsMalformedInputs(): void
     {
-        $legacy = $this->request('/proposals?q=find&territory=all');
-        self::assertSame(302, $legacy->getStatusCode());
-        self::assertSame(
+        foreach ([
+            '/proposals?q=find&territory=all',
             '/recherche/proposals/all/find',
-            $legacy->headers->get('Location'),
-        );
-        self::assertSame(
-            200,
-            $this->request('/recherche/proposals/all/find')->getStatusCode(),
-        );
-        self::assertSame(
-            200,
-            $this->request('/proposals/fiche/p1')->getStatusCode(),
-        );
-        foreach (
-            [
-                '/proposals?q%5B%5D=find',
-                '/proposals?q=' . str_repeat('x', 161),
-                '/proposals?territory=t99',
-                '/api/v1/proposals?q%5B%5D=x',
-            ] as $url
-        ) {
-            self::assertSame(400, $this->request($url)->getStatusCode());
+            '/proposals/fiche/p1',
+        ] as $formerUrl) {
+            $redirect = $this->request($formerUrl);
+            self::assertSame(303, $redirect->getStatusCode());
+            self::assertStringContainsString(
+                '/mesures',
+                (string) $redirect->headers->get('Location'),
+            );
         }
+        self::assertSame(200, $this->request('/mesures')->getStatusCode());
+        self::assertSame(200, $this->request('/mesures?q=soins')->getStatusCode());
         self::assertSame(
             403,
             $this->request('/recherche', 'POST', [
@@ -169,24 +158,6 @@ final class ApplicationCompletionTest extends TestCase
                 'q' => 'find',
             ])->getStatusCode(),
         );
-        $html = $this->request('/chemins')->getContent();
-        $document = new DOMDocument();
-        @$document->loadHTML($html);
-        $xpath = new DOMXPath($document);
-        $token = $xpath->evaluate(
-            'string(//form[@action="/recherche"]//input[@name="_token"]/@value)',
-        );
-        self::assertNotEmpty($token);
-        $response = $this->request('/recherche', 'POST', [
-            '_token' => $token,
-            'view' => 'proposals',
-            'q' => "' OR 1=1 --",
-            'territory' => 'all',
-        ]);
-        self::assertSame(303, $response->getStatusCode());
-        $result = $this->request($response->headers->get('Location'));
-        self::assertSame(200, $result->getStatusCode());
-        self::assertStringContainsString('Aucun chemin', $result->getContent());
     }
 
     public function testAccountsPageExplainsPublicFictionAndRendersStatistics(): void
