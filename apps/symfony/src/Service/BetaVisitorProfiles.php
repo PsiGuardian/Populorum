@@ -35,7 +35,7 @@ final class BetaVisitorProfiles
     public function find(Request $request): ?array
     {
         $row = $this->connection->fetchAssociative(
-            'SELECT first_name, last_name, age, commune_code
+            'SELECT first_name, last_name, age, commune_code, created_at, expires_at
              FROM beta_visitor_profiles WHERE ip_fingerprint = ? AND expires_at > ?',
             [$this->fingerprint($request), time()],
         );
