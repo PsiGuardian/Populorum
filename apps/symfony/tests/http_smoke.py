@@ -239,6 +239,17 @@ def main() -> None:
             with closing(profile_browser.open(url + '/compte-test', timeout=28)) as response:
                 assert 'Alex Fictif' in response.read().decode('utf-8'), 'Revisit failed without cookie'
             print('PASS IP-only beta profile POST/revisit, no account cookie', flush=True)
+            for page_path, heading in (
+                ('/chemins', 'Explorer les propositions de loi'),
+                ('/consultations', 'Voter sur les propositions de loi'),
+            ):
+                with closing(profile_browser.open(url + page_path, timeout=28)) as response:
+                    page_html = response.read().decode('utf-8', 'replace')
+                    assert response.status == 200
+                    assert heading in page_html, 'Expected distinct page: ' + page_path
+                    assert 'Alex Fictif' in page_html
+                    assert 'policy-pages.css' in page_html
+                    assert 'class="proposal-card"' not in page_html
             # Vote réel par HTTP : la source politique reste absente pendant le scrutin.
             with closing(profile_browser.open(url + '/mesures?scope=FR', timeout=28)) as response:
                 assert response.status == 200
@@ -266,6 +277,19 @@ def main() -> None:
                     final = response.read().decode('utf-8', 'replace')
                     assert response.status == 200
                     assert 'Position enregistrée.' in final
+            with closing(profile_browser.open(
+                url + '/consultations?status=open&participation=voted', timeout=28
+            )) as response:
+                dashboard = response.read().decode('utf-8', 'replace')
+                assert response.status == 200
+                assert 'Votre position : Contre' in dashboard
+                assert 'Voter sur les propositions de loi' in dashboard
+            with closing(profile_browser.open(
+                url + '/consultations?status=open&participation=pending', timeout=28
+            )) as response:
+                pending = response.read().decode('utf-8', 'replace')
+                assert 'Aucune consultation correspondante' in pending
+
             with sqlite3.connect(temporary_catalog) as catalog_db:
                 id_value = detail_path.rsplit('/', 1)[-1]
                 assert catalog_db.execute(
@@ -286,6 +310,12 @@ def main() -> None:
                 assert 'Provenance et dossier historique' in closed_html
                 assert 'Contre :' in closed_html
                 assert 'Enregistrer ma position fictive' not in closed_html
+            with closing(profile_browser.open(
+                url + '/consultations?status=closed', timeout=28
+            )) as response:
+                closed_list = response.read().decode('utf-8', 'replace')
+                assert 'Clôturée' in closed_list
+                assert 'Voir les résultats' in closed_list
             print('PASS official bill catalogue: source filtered, beta vote, revision and disclosure', flush=True)
 
             # Existing accounts must not reach the obsolete fictional-persona creator.
