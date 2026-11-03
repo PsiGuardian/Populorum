@@ -10,6 +10,22 @@
             dans le résultat d’adoption, quelle que soit sa taille.
         </p>
     {% endif %}
+    {% if type == 'citizen.create' %}
+        <section class="notice">
+            <h2>Création d’un personnage pédagogique, pas d’un compte</h2>
+            <p>
+                Cette fonction appartient exclusivement au laboratoire fictif privé du navigateur.
+                Le nouveau personnage recevra une famille fictive individuelle, mais aucune
+                identité électorale réelle. Il sera sélectionné automatiquement après sa création.
+                Avant tout vote, son consentement de simulation devra être donné.
+            </p>
+            <p>
+                Pour créer un compte de test participant au laboratoire collectif,
+                utilisez plutôt <a href="{{ civic_path('beta_profile') }}">Créer un compte de test</a>.
+                Un compte ne peut pas générer plusieurs voix en créant des personnages.
+            </p>
+        </section>
+    {% endif %}
     {% if type == 'simulation.advance' %}
         <p class="notice">
             Ce tour applique de nouveaux retours entièrement inventés aux
@@ -70,7 +86,7 @@
                 )
                 }}"
             >
-                Changer de personnage
+                {{ betaProfile|default(null) or app.user ? 'Revenir à mon profil' : 'Choisir un personnage' }}
             </a>.
         </p>
         {% if type == 'proposal.create' or type == 'proposal.revise' %}
