@@ -141,14 +141,10 @@ final class PolicyDeliberation
         $causeSource = self::source($payload['causeSource'] ?? null);
         $consequenceSource = self::source($payload['consequenceSource'] ?? null);
         if ($causeDegree === 'demontree' && $causeSource === '') {
-            throw new \DomainException(
-                'Une cause présentée comme démontrée doit comporter une source vérifiable.', 400,
-            );
+            throw new \DomainException('Une cause présentée comme démontrée doit comporter une source vérifiable.', 400);
         }
         if ($consequenceDegree === 'demontree' && $consequenceSource === '') {
-            throw new \DomainException(
-                'Une conséquence présentée comme démontrée doit comporter une source vérifiable.', 400,
-            );
+            throw new \DomainException('Une conséquence présentée comme démontrée doit comporter une source vérifiable.', 400);
         }
         $parentId = trim((string) ($payload['parentId'] ?? ''));
         if ($parentId !== '' && preg_match('/\Apc_[a-f0-9]{24}\z/D', $parentId) !== 1) {
@@ -179,9 +175,7 @@ final class PolicyDeliberation
             );
             $vote->execute([$measureId, $citizenId]);
             if ($vote->fetchColumn() === false) {
-                throw new \DomainException(
-                    'Exprimez d’abord votre position avant de contribuer à l’arbre causal.', 403,
-                );
+                throw new \DomainException('Exprimez d’abord votre position avant de contribuer à l’arbre causal.', 403);
             }
             $count = $db->prepare(
                 'SELECT COUNT(*) FROM policy_deliberations
@@ -189,9 +183,7 @@ final class PolicyDeliberation
             );
             $count->execute([$measureId, $citizenId]);
             if ((int) $count->fetchColumn() >= 50) {
-                throw new \DomainException(
-                    'Limite de 50 branches par compte et proposition atteinte.', 429,
-                );
+                throw new \DomainException('Limite de 50 branches par compte et proposition atteinte.', 429);
             }
             $depth = 0;
             if ($parentId !== '') {
@@ -202,15 +194,11 @@ final class PolicyDeliberation
                 $parent->execute([$parentId, $measureId]);
                 $parentDepth = $parent->fetchColumn();
                 if ($parentDepth === false) {
-                    throw new \DomainException(
-                        'La branche parent doit appartenir au même dossier.', 400,
-                    );
+                    throw new \DomainException('La branche parent doit appartenir au même dossier.', 400);
                 }
                 $depth = (int) $parentDepth + 1;
                 if ($depth > self::MAX_DEPTH) {
-                    throw new \DomainException(
-                        'Profondeur maximale atteinte : créez une nouvelle branche.', 400,
-                    );
+                    throw new \DomainException('Profondeur maximale atteinte : créez une nouvelle branche.', 400);
                 }
             }
             $id = 'pc_' . bin2hex(random_bytes(12));
@@ -248,9 +236,7 @@ final class PolicyDeliberation
         $text = trim($raw);
         if (mb_strlen($text) < 25 || mb_strlen($text) > 1500
             || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/u', $text)) {
-            throw new \DomainException(
-                $label . ' : fournissez un raisonnement de 25 à 1 500 caractères.', 400,
-            );
+            throw new \DomainException($label . ' : fournissez un raisonnement de 25 à 1 500 caractères.', 400);
         }
 
         return $text;
