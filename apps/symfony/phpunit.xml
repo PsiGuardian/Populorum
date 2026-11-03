@@ -8,6 +8,7 @@
             <file>tests/FamilySuffrageTest.php</file>
             <file>tests/BetaVisitorProfilesTest.php</file>
             <file>tests/BetaCivicParticipationTest.php</file>
+            <file>tests/FictionalCitizenCreationTest.php</file>
             <file>tests/DomainCompletionTest.php</file>
             <file>tests/InterfaceEvidenceTest.php</file>
             <file>tests/CausalAccountsTest.php</file>
