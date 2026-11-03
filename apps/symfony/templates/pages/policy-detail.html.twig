@@ -9,7 +9,7 @@
         </a>
     </p>
     <section class="policy-hero">
-        <div class="eyebrow">DOSSIER PARLEMENTAIRE · VOTE EXPÉRIMENTAL</div>
+        <div class="eyebrow">DOSSIER PARLEMENTAIRE · DOCUMENTS PUBLICS · VOTE EXPÉRIMENTAL</div>
         <div class="policy-tags">
             <span class="policy-tag">{{ measure.category }}</span>
             <span class="policy-tag">France entière</span>
@@ -18,29 +18,136 @@
             </span>
         </div>
         <h1>{{ measure.label }}</h1>
+        <div class="policy-legislative-facts">
+            <p><strong>Auteur(s) :</strong> {{ measure.originActor }}</p>
+            <p><strong>Dépôt :</strong> {{ measure.sourceDate }} ·
+                <strong>Référence :</strong> {{ measure.sourceReference }}</p>
+            <p><strong>État parlementaire au dernier import :</strong> {{ measure.legalStatus }}</p>
+            <p><a class="policy-link" href="{{ measure.sourceUrl }}"
+                  target="_blank" rel="noopener noreferrer">
+                Ouvrir le dossier officiel du Sénat ↗
+            </a></p>
+        </div>
         <p>Question soumise : <strong>Êtes-vous favorable au principe exprimé
             par cette proposition de loi ?</strong></p>
-        <p class="small muted">Le dossier a été officiellement déposé au Sénat.
-            Son intitulé ne reproduit pas les articles du texte et ne prouve pas
-            que celui-ci a été adopté ni qu'il est applicable tel quel.</p>
+        <p class="small muted">
+            Le statut parlementaire ci-dessus ne correspond pas au statut
+            du vote fictif dans Populorum. Un texte déposé n'est pas nécessairement
+            adopté ; l'état du dossier peut avoir évolué depuis l'import.
+        </p>
+    </section>
+
+    <section class="policy-panel policy-senate-context" id="contexte-parlementaire"
+             aria-labelledby="senate-context-title">
+        <div class="eyebrow">DOCUMENTS OFFICIELS · COMPRENDRE AVANT DE VOTER</div>
+        <h2 id="senate-context-title">Pourquoi cette proposition a-t-elle été déposée ?</h2>
+        {% if senateDossier.excerpts is not empty %}
+            <p>Les passages suivants sont des <strong>extraits de l'exposé des motifs
+                rédigé par les auteurs</strong>. Ils expliquent les raisons invoquées,
+                sans démontrer à eux seuls la nécessité ni l'efficacité du texte.</p>
+            <div class="policy-senate-excerpts">
+                {% for paragraph in senateDossier.excerpts %}
+                    <blockquote>{{ paragraph }}</blockquote>
+                {% endfor %}
+            </div>
+            <p><a class="policy-link" href="{{ senateDossier.excerptUrl }}"
+                  target="_blank" rel="noopener noreferrer">
+                Lire l'exposé des motifs dans sa totalité ↗
+            </a></p>
+        {% else %}
+            <p>Le texte du contexte initial n'a pas encore été extrait pour ce dossier.
+                Cela ne signifie pas qu'il n'existe pas : le dossier sénatorial permet
+                de rechercher l'exposé des motifs et les analyses disponibles.</p>
+            <p><a class="policy-link" href="{{ measure.sourceUrl }}"
+                  target="_blank" rel="noopener noreferrer">
+                Examiner les justifications officielles ↗
+            </a></p>
+        {% endif %}
+    </section>
+
+    <section class="policy-panel" id="ressources-senat"
+             aria-labelledby="senate-documents-title">
+        <div class="eyebrow">BIBLIOTHÈQUE DOCUMENTAIRE · LE PARCOURS DU TEXTE</div>
+        <h2 id="senate-documents-title">Textes, rapports, amendements et débats</h2>
+        <p>Le dossier législatif rassemble les documents produits durant les lectures :
+            proposition initiale, éventuel rapport de commission, modifications,
+            amendements et comptes rendus de séance. Un lien absent ici signifie
+            seulement qu'il n'a pas été indexé dans Populorum.</p>
+        {% set kinds = {
+            expose:'Exposés des motifs',
+            texte:'Textes déposés et adoptés',
+            commission:'Travaux et textes de commission',
+            rapport:'Rapports parlementaires',
+            amendement:'Amendements et modifications',
+            debat:'Débats et comptes rendus',
+            synthese:'Synthèses parlementaires',
+            procedure:'Procédure et versions législatives',
+            assemblee:'Navette avec l’Assemblée nationale',
+            autre:'Autres documents'
+        } %}
+        {% if senateDossier.documents is not empty %}
+            <div class="policy-document-grid">
+                {% for kind, title in kinds %}
+                    {% set documents = senateDossier.groups[kind]|default([]) %}
+                    {% if documents is not empty %}
+                        <section class="policy-document-group">
+                            <h3>{{ title }}
+                                <span class="policy-tag">{{ documents|length }}</span>
+                            </h3>
+                            <ul>
+                                {% for document in documents %}
+                                    <li>
+                                        <a href="{{ document.url }}" target="_blank"
+                                           rel="noopener noreferrer">{{ document.label }} ↗</a>
+                                        {% if document.source_section %}
+                                            <small>{{ document.source_section }}</small>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </section>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="policy-empty">
+                <h3>Dossier pas encore indexé localement</h3>
+                <p>Pour ne pas inventer d'informations, Populorum affiche
+                    uniquement le lien institutionnel tant que les ressources
+                    de ce dossier n'ont pas été synchronisées.</p>
+            </div>
+        {% endif %}
+        <p class="small muted">
+            {% if senateDossier.updatedAt %}
+                Dernière extraction locale : {{ senateDossier.updatedAt|date('d/m/Y à H:i', 'UTC') }} UTC.
+            {% else %}
+                Extraction documentaire non effectuée pour ce texte.
+            {% endif %}
+            Les documents du Sénat peuvent avoir été mis à jour depuis cette date.
+        </p>
+        <div class="policy-inline-actions">
+            <a class="policy-link primary" href="{{ measure.sourceUrl }}"
+               target="_blank" rel="noopener noreferrer">
+                Consulter l'intégralité du dossier au Sénat ↗
+            </a>
+        </div>
     </section>
 
     <section class="policy-panel" aria-labelledby="causes-and-effects">
-        <h2 id="causes-and-effects">Avant de voter : causes, effets et limites</h2>
-        <p>Pour vous forger une opinion, examinez le problème visé par le texte,
-            les bénéficiaires potentiels, les contraintes budgétaires et juridiques,
-            les alternatives et les conséquences imprévues.</p>
+        <h2 id="causes-and-effects">Évaluer les arguments, les effets et les preuves</h2>
+        <p>Les motifs sont des affirmations attribuées aux auteurs. Les rapports
+            peuvent contenir des données et objections ; les amendements montrent
+            les modifications envisagées. Comparez ces éléments avant de voter
+            et de les intégrer à l'arbre des causes et conséquences.</p>
         <ul>
-            <li>Quels faits vérifiables justifient cette proposition ?</li>
-            <li>Quels changements pourrait-elle introduire dans la vie quotidienne ?</li>
-            <li>Quels coûts, risques et effets indirects faudrait-il mesurer ?</li>
-            <li>Quelles données permettraient de vérifier les résultats après application ?</li>
+            <li>Quel problème les auteurs affirment-ils vouloir traiter ?</li>
+            <li>Quelles données indépendantes corroborent ou contredisent leurs constats ?</li>
+            <li>Quels articles changeraient concrètement le droit existant ?</li>
+            <li>Quels risques, coûts, alternatives et effets inattendus sont documentés ?</li>
         </ul>
-        <p class="small muted">
-            Populorum ne prétend pas avoir calculé les coûts ou les bénéfices de
-            chaque texte. Il s'agit de questions d'examen, pas de conséquences
-            établies scientifiquement.
-        </p>
+        <p class="small muted">Aucun lien documentaire n'est automatiquement
+            classé comme preuve démontrée. L'arbre citoyen conserve la distinction
+            entre hypothèse, observation et affirmation présentée comme démontrée.</p>
     </section>
 
     {% if measure.closed %}
@@ -55,20 +162,7 @@
                 une famille d'un membre. Ces chiffres n'ont pas de valeur
                 statistique représentative et ne sont pas des résultats électoraux.</p>
         </section>
-        <section class="policy-panel" aria-labelledby="origin-heading">
-            <h2 id="origin-heading">Provenance et dossier historique</h2>
-            <p><strong>Origine :</strong> {{ measure.originActor }}</p>
-            <p><strong>Nature :</strong> {{ measure.sourceType }}</p>
-            <p><strong>Date de dépôt :</strong> {{ measure.sourceDate }}</p>
-            <p><strong>État à la date de l'import :</strong> {{ measure.legalStatus }}</p>
-            <p><strong>Référence officielle :</strong> {{ measure.sourceReference }}</p>
-            <p><a class="policy-link" href="{{ measure.sourceUrl }}"
-                  rel="noopener noreferrer" target="_blank">
-                Consulter le dossier officiel du Sénat ↗
-            </a></p>
-            <p class="small muted">Le dossier peut avoir évolué depuis l'importation.
-                Son état actuel doit être vérifié sur le site parlementaire.</p>
-        </section>
+
     {% elseif not profile %}
         <section class="policy-panel">
             <h2>Créer un compte de test pour participer</h2>
