@@ -227,7 +227,7 @@ final class PolicyDeliberation
                 $parentId !== '' ? $parentId : null,
                 $depth, $causeText, $causeDegree, $causeSource,
                 $consequenceText, $consequenceDegree, $consequenceSource,
-                gmdate('Y-m-d\TH:i:s+00:00'),
+                new \DateTimeImmutable('now', new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s.uP'),
             ]);
             $db->commit();
 
