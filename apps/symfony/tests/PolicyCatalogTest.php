@@ -138,6 +138,55 @@ final class PolicyCatalogTest extends TestCase
         $catalog->vote($id, $this->profile(), 'pour');
     }
 
+    public function testExplorationFiltersAndVotingDashboardAreConsistent(): void
+    {
+        [$catalog, $db] = $this->storage();
+        $id = 'pm_' . str_repeat('f', 24);
+        $closedId = 'pm_' . str_repeat('e', 24);
+        $insert = $db->prepare(
+            'INSERT INTO policy_measures (
+                id, canonical_key, label, category, territory_code, status,
+                closes_at, source_type, source_url, source_date, source_reference,
+                origin_actor, legal_status, review_status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        );
+        $insert->execute([
+            $closedId, str_repeat('e', 64), 'Améliorer l’accès aux soins en zone rurale',
+            'Santé', 'FR', 'closed', '2026-01-01T00:00:00+00:00',
+            'proposition_de_loi', 'https://www.senat.fr/dossier-legislatif/ppl26-999.html',
+            '2026-10-20', 'Dépôt 999', 'Auteur confidentiel avant clôture',
+            'En première lecture', 'titre original',
+        ]);
+
+        $profile = $this->profile();
+        self::assertEqualsCanonicalizing(['Éducation', 'Santé'], $catalog->categories());
+        self::assertSame(2, $catalog->summary(null)['total']);
+        self::assertSame(1, $catalog->summary(null)['open']);
+        self::assertSame(1, $catalog->summary(null)['pending']);
+        self::assertCount(2, $catalog->page()['rows']);
+        self::assertSame(1, $catalog->page(1, '', '', 'Santé')['total']);
+        self::assertSame(1, $catalog->page(1, '', '', '', 'open')['total']);
+
+        $catalog->vote($id, $profile, 'pour', 'Explication factuelle');
+        $summary = $catalog->summary($profile);
+        self::assertSame(1, $summary['voted']);
+        self::assertSame(0, $summary['pending']);
+        $voted = $catalog->page(1, '', '', '', 'open', $profile['citizenId'], 'voted');
+        self::assertSame(1, $voted['total']);
+        self::assertSame('pour', $voted['rows'][0]['myChoice']);
+        self::assertArrayNotHasKey('originActor', $voted['rows'][0]);
+        self::assertSame(
+            0, $catalog->page(1, '', '', '', 'open', $profile['citizenId'], 'pending')['total'],
+        );
+        $closed = $catalog->page(1, '', '', '', 'closed', $profile['citizenId']);
+        self::assertSame(1, $closed['total']);
+        self::assertSame($closedId, $closed['rows'][0]['id']);
+        self::assertSame(
+            'Auteur confidentiel avant clôture', $closed['rows'][0]['originActor'],
+        );
+        self::assertSame(0, $catalog->page(1, '', '', 'Santé\' OR 1=1 --')['total']);
+    }
+
     public function testMissingCatalogueDoesNotCreateDatabase(): void
     {
         $root = sys_get_temp_dir() . '/populorum-absent-' . bin2hex(random_bytes(8));

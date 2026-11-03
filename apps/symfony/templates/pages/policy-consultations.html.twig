@@ -1,0 +1,226 @@
+{% extends 'pages/policy-shell.html.twig' %}
+
+{% block policy_title %}Consultations et votes · Populorum{% endblock %}
+
+{% block policy_content %}
+    <section class="policy-hero">
+        <div class="eyebrow">RUBRIQUE 03 · PARTICIPER ET DÉCIDER</div>
+        <h1>Voter sur les propositions de loi</h1>
+        <p>
+            Exprimez un avis sur le principe de chaque proposition officielle :
+            <strong>Pour, Contre ou Abstention.</strong> Votre participation reste
+            facultative, sans quorum interne, et chaque compte de test dispose
+            provisoirement d'une famille électorale d'un membre.
+        </p>
+        <p class="small muted">
+            Les bulletins sont des positions expérimentales, sans effet juridique.
+            Une position par compte et par texte, modifiable jusqu'à la clôture.
+            Les résultats et la provenance politique deviennent visibles après celle-ci.
+        </p>
+        <div class="policy-hero-actions">
+            {% if profile %}
+                <a class="policy-link primary" href="#consultation-list">Voir les scrutins</a>
+                <a class="policy-link" href="{{ path('beta_profile') }}">
+                    Gérer mon compte de test
+                </a>
+            {% else %}
+                <a class="policy-link primary" href="{{ path('beta_profile') }}">
+                    Créer un compte de test pour voter
+                </a>
+            {% endif %}
+            <a class="policy-link" href="{{ path('site_proposals') }}">
+                Examiner les textes · Rubrique 02
+            </a>
+        </div>
+    </section>
+
+    <section class="policy-metrics" aria-label="Indicateurs des consultations">
+        <div class="policy-metric">
+            <strong>{{ summary.open|number_format(0, ',', ' ') }}</strong>
+            <span>Scrutins de simulation ouverts</span>
+        </div>
+        <div class="policy-metric">
+            <strong>{{ summary.voted|number_format(0, ',', ' ') }}</strong>
+            <span>Textes sur lesquels mon compte a voté</span>
+        </div>
+        <div class="policy-metric">
+            <strong>{{ profile ? summary.pending|number_format(0, ',', ' ') : '—' }}</strong>
+            <span>{{ profile ? 'Textes ouverts sur lesquels je n’ai pas voté' : 'Connectez un compte pour suivre vos avis' }}</span>
+        </div>
+        <div class="policy-metric">
+            <strong>{{ summary.closed|number_format(0, ',', ' ') }}</strong>
+            <span>Consultations clôturées</span>
+        </div>
+    </section>
+
+    {% if not profile %}
+        <section class="policy-panel" aria-labelledby="participation-help">
+            <h2 id="participation-help">Comment participer ?</h2>
+            <p>Les consultations sont consultables sans compte. Pour enregistrer
+                un avis, créez un compte de test puis revenez ici. Chaque compte
+                nouvellement créé représente provisoirement une famille distincte.
+                Les comptes sont liés à l'adresse IP : aucune identité civile
+                ni unicité réelle d'électeur n'est vérifiée.</p>
+            <a class="policy-link primary" href="{{ path('beta_profile') }}">
+                Accéder à mon compte de test
+            </a>
+        </section>
+    {% else %}
+        <section class="policy-panel" aria-labelledby="participant-active">
+            <h2 id="participant-active">Votre participation</h2>
+            <p>
+                Compte actif : <strong>{{ profile.firstName }} {{ profile.lastName }}</strong>.
+                Vos bulletins sont enregistrés sous un identifiant pseudonyme.
+                Chaque prise de position est révisable avant clôture ; les éventuels
+                membres d'une famille future ne sont pas encore simulés dans ce catalogue.
+            </p>
+        </section>
+    {% endif %}
+
+    {% if not catalog.available %}
+        <section class="policy-empty" role="status">
+            <h2>Aucune consultation officielle disponible</h2>
+            <p>Le catalogue doit d'abord être alimenté par l'import des dossiers
+                officiels du Sénat. Il n'est pas remplacé par les anciens votes fictifs.</p>
+            <a class="policy-link" href="{{ path('site_proposals') }}">
+                Voir la bibliothèque
+            </a>
+        </section>
+    {% else %}
+        <form method="get" action="{{ path('site_consultations') }}" class="policy-filter-bar"
+              aria-label="Filtrer les consultations">
+            <div class="policy-filter-field policy-filter-query">
+                <label for="vote-search">Rechercher une proposition</label>
+                <input id="vote-search" name="q" type="search" maxlength="100"
+                       value="{{ search }}" placeholder="Sujet ou mot-clé">
+            </div>
+            <div class="policy-filter-field">
+                <label for="vote-category">Thématique</label>
+                <select id="vote-category" name="category">
+                    <option value="">Toutes les thématiques</option>
+                    {% for option in categories %}
+                        <option value="{{ option }}" {{ option == category ? 'selected' : '' }}>
+                            {{ option }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="policy-filter-field">
+                <label for="vote-status">État du scrutin</label>
+                <select id="vote-status" name="status">
+                    <option value="open" {{ status == 'open' ? 'selected' : '' }}>Ouverts</option>
+                    <option value="closed" {{ status == 'closed' ? 'selected' : '' }}>Clôturés</option>
+                    <option value="all" {{ status == 'all' ? 'selected' : '' }}>Tous</option>
+                </select>
+            </div>
+            {% if profile %}
+                <div class="policy-filter-field">
+                    <label for="vote-participation">Ma participation</label>
+                    <select id="vote-participation" name="participation">
+                        <option value="all" {{ participation == 'all' ? 'selected' : '' }}>
+                            Toutes
+                        </option>
+                        <option value="pending" {{ participation == 'pending' ? 'selected' : '' }}>
+                            Non votées
+                        </option>
+                        <option value="voted" {{ participation == 'voted' ? 'selected' : '' }}>
+                            Déjà votées
+                        </option>
+                    </select>
+                </div>
+            {% endif %}
+            <button type="submit">Appliquer</button>
+        </form>
+
+        <section id="consultation-list" aria-labelledby="consultations-heading">
+            <div class="policy-results-title">
+                <h2 id="consultations-heading">Consultations parlementaires expérimentales</h2>
+                <p>{{ catalog.total|number_format(0, ',', ' ') }} résultat(s)</p>
+            </div>
+            <div class="policy-results">
+                {% for measure in catalog.rows %}
+                    <article class="policy-entry">
+                        <div class="policy-tags">
+                            <span class="policy-tag">{{ measure.category }}</span>
+                            <span class="policy-tag {{ measure.closed ? 'closed' : 'open' }}">
+                                {{ measure.closed ? 'Clôturée' : 'Ouverte' }}
+                            </span>
+                            {% if profile %}
+                                {% if measure.myChoice %}
+                                    <span class="policy-tag voted">
+                                        Votre position : {{ measure.myChoice|capitalize }}
+                                    </span>
+                                {% elseif not measure.closed %}
+                                    <span class="policy-tag pending">Aucune position exprimée</span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <h3>{{ measure.label }}</h3>
+                        <p>
+                            {{ measure.closed ? 'Consultez le résultat agrégé et les sources.' :
+                                'Votre avis porte sur le principe général indiqué par le titre.' }}
+                            {% if not measure.closed %}
+                                Clôture prévue : {{ measure.closesAt|date('d/m/Y') }}.
+                            {% endif %}
+                        </p>
+                        <div class="policy-inline-actions">
+                            <a class="policy-link primary"
+                               href="{{ path('policy_detail', {id: measure.id, from: 'consultations'}) }}">
+                                {% if measure.closed %}
+                                    Voir les résultats
+                                {% elseif measure.myChoice %}
+                                    Consulter ou modifier mon choix
+                                {% elseif profile %}
+                                    Voter sur cette proposition
+                                {% else %}
+                                    Lire la consultation
+                                {% endif %}
+                            </a>
+                        </div>
+                    </article>
+                {% else %}
+                    <div class="policy-empty">
+                        <h2>Aucune consultation correspondante</h2>
+                        <p>Ce filtre ne retourne aucun dossier. Vous pouvez afficher
+                            toutes les propositions officielles ou revenir aux scrutins ouverts.</p>
+                        <a class="policy-link" href="{{ path('site_consultations') }}">
+                            Voir les scrutins ouverts
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        {% if catalog.pages > 1 %}
+            <nav class="policy-pagination" aria-label="Pages des consultations">
+                {% if catalog.page > 1 %}
+                    <a class="policy-link"
+                       href="{{ path('site_consultations', {
+                           page: catalog.page - 1, q: search, category: category,
+                           status: status, participation: participation
+                       }) }}">← Précédente</a>
+                {% else %}
+                    <span>Début des consultations</span>
+                {% endif %}
+                <span>Page {{ catalog.page }} sur {{ catalog.pages }}</span>
+                {% if catalog.page < catalog.pages %}
+                    <a class="policy-link"
+                       href="{{ path('site_consultations', {
+                           page: catalog.page + 1, q: search, category: category,
+                           status: status, participation: participation
+                       }) }}">Suivante →</a>
+                {% else %}
+                    <span>Fin des consultations</span>
+                {% endif %}
+            </nav>
+        {% endif %}
+    {% endif %}
+
+    <aside class="policy-disclaimer">
+        <strong>Un vote de démonstration n'est pas un suffrage vérifié.</strong>
+        <p>La taille réelle des familles n'est pas authentifiée ; les profils de test
+            sont identifiés par adresse IP et ne garantissent pas une personne unique.
+            Aucune conclusion sur l'opinion générale ou l'adoption d'une loi
+            ne peut être tirée de ces résultats expérimentaux.</p>
+    </aside>
+{% endblock %}

@@ -328,14 +328,14 @@ final class ApplicationCompletionTest extends TestCase
         );
         $_SERVER['POPULORUM_TIMING'] = '1';
         try {
-            foreach (['/consultations', '/consultations/fiche/c1'] as $oldPath) {
-                $oldResponse = $this->request($oldPath);
-                self::assertSame(303, $oldResponse->getStatusCode());
-                self::assertStringContainsString(
-                    '/mesures',
-                    (string) $oldResponse->headers->get('Location'),
-                );
-            }
+            $newBallots = $this->request('/consultations');
+            self::assertSame(200, $newBallots->getStatusCode());
+            self::assertStringContainsString(
+                'Voter sur les propositions de loi',
+                $newBallots->getContent(),
+            );
+            $oldDetail = $this->request('/consultations/fiche/c1');
+            self::assertSame(303, $oldDetail->getStatusCode());
             $home = $this->request('/');
             self::assertStringContainsString(
                 'db_read;dur=',
@@ -698,8 +698,8 @@ final class ApplicationCompletionTest extends TestCase
             self::assertStringNotContainsString('Balances détaillées DGFiP · commune pilote sélectionnée', $page->getContent());
             // The pilot is not invented on other simulation pages either.
             $fiction = $this->request('/consultations');
-            self::assertSame(303, $fiction->getStatusCode());
-            self::assertStringContainsString('/mesures', (string) $fiction->headers->get('Location'));
+            self::assertSame(200, $fiction->getStatusCode());
+            self::assertStringContainsString('Voter sur les propositions de loi', $fiction->getContent());
             // No re-use of an unrelated pilot's detailed ledger on an unknown budget.
             self::assertSame(400, $this->request('/budget-et-priorites/account/6%20OR%201%3D1')->getStatusCode());
         } finally {
@@ -744,11 +744,11 @@ final class ApplicationCompletionTest extends TestCase
                 $path,
             );
         }
-        foreach (['/proposals?territory=t3', '/consultations'] as $oldPath) {
-            $redirect = $this->request($oldPath);
-            self::assertSame(303, $redirect->getStatusCode());
-            self::assertStringContainsString('/mesures', (string) $redirect->headers->get('Location'));
-        }
+        $redirect = $this->request('/proposals?territory=t3');
+        self::assertSame(303, $redirect->getStatusCode());
+        self::assertStringContainsString('/mesures', (string) $redirect->headers->get('Location'));
+        self::assertSame(200, $this->request('/consultations')->getStatusCode());
+        self::assertSame(200, $this->request('/chemins')->getStatusCode());
         $state = $this->store->workspace('municipal-test')['state'];
         self::assertCount(300, $state['citizens']);
         self::assertSame(
@@ -786,7 +786,7 @@ final class ApplicationCompletionTest extends TestCase
         );
         self::assertLessThan(100, $results['data'][0]['tally']['total']);
         self::assertSame(
-            303,
+            200,
             $this->request('/consultations?id=c1')->getStatusCode(),
         );
         $portrait = $this->request('/characters/u1?consultation=c1');

@@ -395,7 +395,7 @@ try {
         }
     }
     // Les anciennes pages fictives n'exposent plus aucun bulletin.
-    foreach (['/proposals', '/proposals?id=p1', '/consultations'] as $oldPath) {
+    foreach (['/proposals', '/proposals?id=p1'] as $oldPath) {
         $oldResponse = $request($oldPath);
         check(
             $oldResponse->getStatusCode() === 303
@@ -403,6 +403,23 @@ try {
             'Ancienne page fictive redirigée vers les propositions officielles : ' . $oldPath,
         );
     }
+    $lawPage = $request('/chemins');
+    $ballotPage = $request('/consultations');
+    check(
+        $lawPage->getStatusCode() === 200
+            && str_contains($lawPage->getContent(), 'Explorer les propositions de loi'),
+        'Page 2 : bibliothèque officielle consultable sans données fictives',
+    );
+    check(
+        $ballotPage->getStatusCode() === 200
+            && str_contains($ballotPage->getContent(), 'Voter sur les propositions de loi'),
+        'Page 3 : consultations distinctes, sans ancien moteur fictif',
+    );
+    check(
+        !str_contains($lawPage->getContent(), 'class="proposal-card"')
+            && !str_contains($ballotPage->getContent(), 'class="proposal-card"'),
+        'Les deux pages n’exposent aucun ancien personnage ou vote fictif',
+    );
     // Le filtre doit garder la fiche attendue, pas seulement retourner une page HTTP 200.
     foreach (['t1' => 'Paris', 't2' => 'Marseille', 't3' => 'Le Havre'] as $territoryId => $cityName) {
         $response = $request('/territories?territory=' . $territoryId);
