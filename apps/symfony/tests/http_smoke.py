@@ -320,7 +320,7 @@ def main() -> None:
             token = re.search(r'name="_token" value="([^"]+)"', selector.group(0))
             assert token, 'Territory CSRF token missing'
             posted = urlencode({'_token': token.group(1), 'code': '66134',
-                                'code_type': 'insee', 'destination': 'proposals'}).encode()
+                                'code_type': 'insee', 'destination': 'budget'}).encode()
             with closing(browser.open(urllib.request.Request(url + '/territoire/choisir', data=posted, method='POST'), timeout=28)) as response:
                 assert response.status == 200
                 local_html = response.read(5_000_000).decode('utf-8', 'replace')
