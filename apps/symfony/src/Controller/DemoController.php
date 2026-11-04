@@ -536,6 +536,14 @@ final class DemoController extends AbstractController
         if ($view === 'services') {
             $context['serviceCatalog'] =
                 \App\Service\EssentialServices::CATALOG;
+            $context['continuityPlanKey'] = $request->query->getString('plan', 'water');
+            if (!isset($context['serviceCatalog'][$context['continuityPlanKey']])) {
+                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException('Plan de continuité inconnu.');
+            }
+            $context['continuityPlan'] = \App\Service\ServiceContinuityPlans::for(
+                $context['continuityPlanKey'],
+            );
+            $context['continuityPhases'] = \App\Service\ServiceContinuityPlans::phases();
             $context['selectedSkill'] = $request->query->getString('skill');
             if (
                 $context['selectedSkill'] !== ''
