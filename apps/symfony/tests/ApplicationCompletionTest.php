@@ -603,6 +603,35 @@ final class ApplicationCompletionTest extends TestCase
         );
     }
 
+    public function testPublicContinuityPlansRenderAndUnknownServiceIsRejected(): void
+    {
+        $water = $this->request('/services-et-missions?plan=water');
+        self::assertSame(200, $water->getStatusCode());
+        $html = (string) $water->getContent();
+        self::assertStringContainsString('Plans publics de continuité', $html);
+        self::assertStringContainsString('Contamination suspectée', $html);
+        self::assertStringContainsString('Obstruction ou chute de débit', $html);
+        self::assertStringContainsString('Fuite ou rupture de canalisation', $html);
+
+        $energy = $this->request('/services-et-missions?plan=energy');
+        self::assertSame(200, $energy->getStatusCode());
+        self::assertStringContainsString(
+            'Préserver l’alimentation énergétique',
+            (string) $energy->getContent(),
+        );
+
+        $health = $this->request('/services-et-missions?plan=health');
+        self::assertSame(200, $health->getStatusCode());
+        self::assertStringContainsString(
+            'Garantir l’accès aux soins urgents',
+            (string) $health->getContent(),
+        );
+
+        self::assertSame(
+            400, $this->request('/services-et-missions?plan=unknown')->getStatusCode(),
+        );
+    }
+
     public function testCityServicesAndPublicBudgetsHaveWorkingNativeRoutes(): void
     {
         $_SERVER['POPULORUM_SCENARIO'] = '';
