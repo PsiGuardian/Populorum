@@ -116,6 +116,29 @@ python3 tools/enrich_senate_dossiers.py --limit 20 --offset 20
 - Une erreur réseau laisse intactes les anciennes données documentaires.
   Un dossier sans documents identifiés est signalé au lieu d'être inventé.
 
+### Éviter les faux rapports issus des menus du Sénat
+
+L'indexeur doit reconnaître **un fichier de rapport individualisé**, par exemple
+`https://www.senat.fr/rap/l22-376/l22-376.html`, et non les menus globaux
+« Derniers rapports », « Tous les rapports » ou les formulaires de recherche.
+
+Si le cache d'une ancienne version contient ces liens génériques, nettoyer
+localement toute la base, sans re-télécharger les quelque 900 dossiers :
+
+~~~bash
+python3 tools/enrich_senate_dossiers.py --clean-cache
+~~~
+
+Le résultat indique `scanned_reports`, `removed_navigation_links` et
+`remaining_reports`. Le nettoyage ne supprime que les faux rapports
+indexés dans `policy_senate_documents` ; les vrais rapports numérotés,
+leurs dossiers, les exposés des motifs, les votes et les arbres restent intacts.
+L'interface filtre également les anciens liens génériques avant le nettoyage.
+
+Les **nouveaux imports** filtrent ces faux liens à la source. Pour actualiser
+les liens d'un dossier déjà indexé, utiliser `--force` avec son lot
+`--offset`/`--limit`, uniquement après avoir vérifié le résultat du nettoyage.
+
 ### Sources directement rattachées à chaque dossier
 
 À partir des liens trouvés dans le dossier du Sénat, le synchroniseur classe
