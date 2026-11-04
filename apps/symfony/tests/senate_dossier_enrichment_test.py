@@ -3,6 +3,8 @@
 import importlib.util
 from pathlib import Path
 import sqlite3
+import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -145,6 +147,15 @@ class SenateDossierEnrichmentTests(unittest.TestCase):
                 2, db.execute("SELECT COUNT(*) FROM policy_senate_documents").fetchone()[0]
             )
             db.close()
+
+    def test_clean_install_exposes_no_legacy_cache_cleanup_command(self):
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "tools" / "enrich_senate_dossiers.py"),
+             "--help"],
+            capture_output=True, text=True, check=True,
+        )
+        self.assertNotIn("--clean-cache", result.stdout)
+        self.assertFalse(hasattr(MODULE, "clean_cached_reports"))
 
     def test_never_assume_missing_report_or_expose_exists(self):
         docs, excerpts, source = MODULE.extract(
