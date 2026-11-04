@@ -53,9 +53,29 @@ final class SenateDossier
              ORDER BY sort_order, label LIMIT 120',
         );
         $query->execute([$measureId]);
-        $documents = $query->fetchAll();
+        $documents = [];
         $groups = [];
-        foreach ($documents as $document) {
+        foreach ($query->fetchAll() as $document) {
+            if ($document['kind'] === 'rapport') {
+                // Defensive display filter for caches created before the importer fix:
+                // /rap/, /rapports/ and /basile/rechercheRapport.do are navigation,
+                // not a numbered report attached to this legislative dossier.
+                $valid = preg_match(
+                    '~^https://(?:www\\.)?senat\\.fr/rap/([a-z]{1,3}[0-9]{2}-[0-9]+)/\\1[^/]*\\.(?:html|pdf)$~iD',
+                    $document['url'],
+                ) === 1;
+                if (!$valid) {
+                    continue;
+                }
+                if (mb_strtolower(trim($document['label'])) === 'rapport') {
+                    $number = preg_replace(
+                        '~^https://(?:www\\.)?senat\\.fr/rap/[a-z]{1,3}[0-9]{2}-([0-9]+)/.*$~iD',
+                        '$1', $document['url'],
+                    );
+                    $document['label'] = 'Rapport parlementaire n° ' . $number;
+                }
+            }
+            $documents[] = $document;
             $groups[$document['kind']][] = $document;
         }
         $query = $db->prepare(
