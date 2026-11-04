@@ -15,6 +15,7 @@
             <file>tests/DomainCompletionTest.php</file>
             <file>tests/InterfaceEvidenceTest.php</file>
             <file>tests/CausalAccountsTest.php</file>
+            <file>tests/ServiceContinuityPlansTest.php</file>
             <file>tests/CityOperationsTest.php</file>
             <file>tests/PublicProcurementTest.php</file>
             <file>tests/SqlInputSecurityTest.php</file>
