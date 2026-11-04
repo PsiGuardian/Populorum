@@ -1,10 +1,12 @@
-> **Installation rapide des bases nationales (sans analyse SQLite intégrale obligatoire) :** [LIRE_AVANT_INSTALLATION.md](https://github.com/PsiGuardian/Populorum/blob/main/LIRE_AVANT_INSTALLATION.md). Cette page inclut les commandes facultatives pour télécharger les bases INSEE, DECP (marchés publics) et SSMSI depuis GitHub Releases. La release v0.10.1-clean reprend la même notice directement dans sa description.
+> **Installation rapide des bases nationales (sans analyse SQLite intégrale obligatoire) :** [LIRE_AVANT_INSTALLATION.md](https://github.com/PsiGuardian/Populorum/blob/main/LIRE_AVANT_INSTALLATION.md). Cette page inclut les commandes facultatives pour télécharger les bases INSEE, DECP (marchés publics) et SSMSI depuis GitHub Releases. La release [v0.11.0-clean](https://github.com/PsiGuardian/Populorum/releases/tag/v0.11.0-clean) présente également les propositions de loi réelles et leurs documents sénatoriaux. L'import parlementaire s'effectue sur une base propre après installation, sans commande de nettoyage d'ancien cache.
 
 # Démos Kratos — Symfony 8.1 et SQLite
 
 Application native **PHP 8.4 / Symfony 8.1 / Doctrine / Twig / Symfony Form et Validator**, sans dépendance React, Node.js ni service JavaScript côté serveur. La base est un fichier SQLite : `var/populorum.sqlite`.
 
 Le projet reste une simulation fictive. **Les 34 875 communes du COG INSEE 2026** sont synchronisées dans Doctrine à l’installation. Un espace de simulation vide et indépendant peut être créé pour toute commune sélectionnée. La sélection géographique n’invente ni votes, ni habitants, ni résultats. Un ancien jeu de démonstration de 300 personnages et de 27 propositions fictives est conservé **uniquement pour compatibilité avec les scénarios historiques non sélectionnés**. Les nouveaux espaces communaux démarrent vides, sans habitants ni propositions fictives préremplis. Les projets s’appuient sur des sources publiques datées, distinctes des hypothèses et résultats inventés. Voir [recherche et fixtures](docs/MUNICIPAL_FIXTURES.md).
+
+**Dossiers officiels du Sénat :** consultez [la documentation du catalogue](docs/POLICY_CATALOG.md) pour importer les propositions de loi, leurs rapports spécifiques et l'exposé des motifs. Les anciens jeux fictifs restent hors du parcours de vote officiel.
 
 ## Installation — 28 locales
 
