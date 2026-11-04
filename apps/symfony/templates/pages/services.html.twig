@@ -42,6 +42,9 @@
         </a><a class="button" href="#missions">Missions par priorité</a>
     </nav>
     {% include 'partials/service-continuity-plan.html.twig' %}
+    {% if continuityPlanKey == 'water' %}
+        {% include 'partials/water-causal-graph.html.twig' %}
+    {% endif %}
     <section id="service-map" class="panel section">
         <h2>Les fonctions à assurer</h2>
         <p>
