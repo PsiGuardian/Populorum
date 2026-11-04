@@ -2970,3 +2970,134 @@ form ul {
 .geo-fast .button {font-size:.8rem; padding:.3rem .55rem;}
 .geo-empty {max-width:860px;}
 @media (max-width:650px) {.geo-navigation {padding:.75rem;} .geo-chooser-controls button {width:100%;}}
+
+
+/* Plans publics de continuité des 28 services civiques — sans détails d'exploitation sensibles. */
+.service-continuity-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin: 1.4rem 0 1.7rem;
+}
+.service-continuity-choices a {
+    display: inline-flex;
+    border: 1px solid #d8d0be;
+    background: #fff;
+    color: #3d4850;
+    padding: .42rem .68rem;
+    border-radius: .5rem;
+    font-size: .78rem;
+    line-height: 1.35;
+    text-decoration: none;
+}
+.service-continuity-choices a.active,
+.service-continuity-choices a:hover {
+    background: #233b46;
+    color: #fff;
+    border-color: #233b46;
+}
+.service-continuity-sheet {
+    border: 1px solid #d5c8ad;
+    border-left: 4px solid #a98a50;
+    border-radius: .75rem;
+    background: #fcfbf8;
+    padding: 1.4rem;
+}
+.service-continuity-sheet h3 {
+    font-size: clamp(1.2rem, 2.8vw, 1.65rem);
+    margin: .3rem 0 .6rem;
+}
+.service-continuity-meta {
+    border-radius: .6rem;
+    background: #edece6;
+    padding: .7rem 1rem;
+    margin: 1.2rem 0;
+    font-size: .87rem;
+}
+.service-continuity-meta p {
+    margin: .35rem 0;
+}
+.service-continuity-phases {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .7rem;
+    margin: 1.2rem 0;
+}
+.service-continuity-phases > div {
+    border: 1px solid #d7dbd7;
+    border-radius: .55rem;
+    background: #fff;
+    padding: .8rem;
+    min-width: 0;
+}
+.service-continuity-phases strong {
+    display: block;
+    margin: .2rem 0;
+}
+.service-continuity-phases p {
+    font-size: .79rem;
+    line-height: 1.5;
+    margin: .35rem 0;
+}
+.service-continuity-number {
+    font-size: .75rem;
+    font-weight: 800;
+    color: #92753d;
+}
+.service-continuity-provisions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .8rem;
+    margin-bottom: 1.3rem;
+}
+.service-continuity-provisions section {
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid #dcdcd3;
+    border-radius: .5rem;
+}
+.service-continuity-provisions h4 {font-size: .92rem;}
+.service-continuity-provisions p {font-size: .86rem;}
+.service-continuity-incidents {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    margin: .8rem 0 1.4rem;
+}
+.service-continuity-incidents details {
+    border: 1px solid #d5d5cc;
+    border-radius: .55rem;
+    padding: .85rem 1rem;
+    background: #fff;
+}
+.service-continuity-incidents summary {
+    font-weight: 750;
+    cursor: pointer;
+    line-height: 1.45;
+}
+.service-continuity-incidents dl {
+    display: grid;
+    grid-template-columns: minmax(100px, 155px) minmax(0, 1fr);
+    gap: .55rem .8rem;
+    margin: 1rem 0 .2rem;
+    font-size: .87rem;
+}
+.service-continuity-incidents dt {font-weight: 700; color: #354955;}
+.service-continuity-incidents dd {margin: 0; overflow-wrap: anywhere;}
+.service-continuity-sources {
+    background: #f4f3ec;
+    padding: 1rem;
+    border-radius: .6rem;
+    margin: 1rem 0;
+}
+.service-continuity-sources ul {padding-left: 1.2rem;}
+.service-continuity-sources li {padding: .3rem 0;}
+@media (max-width: 1000px) {
+    .service-continuity-phases {grid-template-columns: repeat(2, minmax(0, 1fr));}
+    .service-continuity-provisions {grid-template-columns: minmax(0, 1fr);}
+}
+@media (max-width: 600px) {
+    .service-continuity-sheet {padding: .9rem;}
+    .service-continuity-phases {grid-template-columns: minmax(0, 1fr);}
+    .service-continuity-incidents dl {grid-template-columns: minmax(0, 1fr);}
+}
