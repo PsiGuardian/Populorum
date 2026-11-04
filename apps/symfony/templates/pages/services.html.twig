@@ -33,6 +33,7 @@
         </p>
     </section>
     <nav class="task-actions">
+        <a class="button" href="#continuity-plan">Plans de continuité</a>
         <a class="button" href="#service-map">Services et dépendances</a><a
             class="button"
             href="#worker-directory"
@@ -40,6 +41,7 @@
             Annuaire des compétences
         </a><a class="button" href="#missions">Missions par priorité</a>
     </nav>
+    {% include 'partials/service-continuity-plan.html.twig' %}
     <section id="service-map" class="panel section">
         <h2>Les fonctions à assurer</h2>
         <p>
@@ -52,6 +54,11 @@
             {% for key, service in serviceCatalog %}
                 <article>
                     <h3>{{ service.label }}</h3>
+                    <p class="small">
+                        <a href="{{ civic_path('site_services', {plan: key}) }}#continuity-plan">
+                            Ouvrir le plan de continuité →
+                        </a>
+                    </p>
                     <p>
                         {{ service.owner }}
                     </p>
