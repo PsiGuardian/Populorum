@@ -52,6 +52,44 @@ final class SenateDossierTest extends TestCase
         self::assertNull($entry['updatedAt']);
     }
 
+    public function testOldCachedGlobalReportMenusAreHiddenWhileSpecificReportRemains(): void
+    {
+        [$root, $db] = $this->storage();
+        $db->exec(
+            'CREATE TABLE policy_senate_documents (
+                measure_id TEXT, kind TEXT, label TEXT, url TEXT,
+                source_section TEXT, sort_order INTEGER
+            );
+            CREATE TABLE policy_senate_context (
+                measure_id TEXT PRIMARY KEY, excerpt_text TEXT,
+                excerpt_url TEXT, synced_at TEXT
+            );',
+        );
+        $id = 'pm_' . str_repeat('f', 24);
+        $insert = $db->prepare(
+            'INSERT INTO policy_senate_documents VALUES (?, ?, ?, ?, ?, ?)',
+        );
+        foreach ([
+            ['Derniers rapports', 'https://www.senat.fr/rapports/derniers-rapports.html'],
+            ['Tous les rapports', 'https://www.senat.fr/rap/'],
+            ['Rapports d’information', 'https://www.senat.fr/basile/rechercheRapport.do?rch=ra'],
+            ['Rapport', 'https://www.senat.fr/rap/l22-376/l22-376.html'],
+        ] as $index => [$label, $url]) {
+            $insert->execute([$id, 'rapport', $label, $url, '', $index]);
+        }
+        $entry = (new SenateDossier($root))->forMeasure($id);
+        self::assertCount(1, $entry['documents']);
+        self::assertSame(
+            'https://www.senat.fr/rap/l22-376/l22-376.html',
+            $entry['documents'][0]['url'],
+        );
+        self::assertSame('Rapport parlementaire n° 376', $entry['documents'][0]['label']);
+        self::assertCount(1, $entry['groups']['rapport']);
+        self::assertSame(
+            4, (int) $db->query('SELECT COUNT(*) FROM policy_senate_documents')->fetchColumn(),
+        );
+    }
+
     public function testCachedOriginalMotivesAndReportsAreAvailableBeforeVoting(): void
     {
         [$root, $db] = $this->storage();

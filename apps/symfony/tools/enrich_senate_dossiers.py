@@ -55,6 +55,24 @@ def dossier_url(url: str) -> bool:
             and len(url) <= 400)
 
 
+def direct_report(url: str) -> bool:
+    """True for a numbered report file, never for the Senate-wide report index.
+
+    Real links have a report directory and an individual HTML/PDF file,
+    e.g. /rap/l22-376/l22-376.html or /rap/r20-760/r20-760_mono.html.
+    """
+    if not official(url):
+        return False
+    parsed = urlparse(url)
+    if parsed.hostname not in ("senat.fr", "www.senat.fr"):
+        return False
+    match = re.fullmatch(
+        r"/rap/([a-z]{1,3}[0-9]{2}-[0-9]+)/([^/]+)\.(?:html|pdf)",
+        parsed.path, flags=re.IGNORECASE,
+    )
+    return bool(match and match.group(2).lower().startswith(match.group(1).lower()))
+
+
 def classify(label: str, url: str) -> str | None:
     p = urlparse(url)
     path = p.path.lower()
@@ -63,7 +81,7 @@ def classify(label: str, url: str) -> str | None:
         return "expose"
     if "assemblee-nationale.fr" in (p.hostname or ""):
         return "assemblee" if "dossier" in label or "texte" in label else None
-    if "/rap/" in path:
+    if direct_report(url):
         return "rapport"
     if "amendement" in label or "/amendements/" in path:
         return "amendement"
@@ -82,8 +100,6 @@ def classify(label: str, url: str) -> str | None:
         return "commission" if "commission" in label else "texte"
     if "texte de la commission" in label:
         return "commission"
-    if "rapport" in label:
-        return "rapport"
     if "loi promulguée" in label or "loi promulguee" in label:
         return "procedure"
     return None
@@ -275,6 +291,39 @@ def store(conn: sqlite3.Connection, measure_id: str, documents: list[dict],
         )
 
 
+def clean_cached_reports(db_path: Path) -> dict:
+    """Remove navigation/search URLs previously mistaken for report documents.
+
+    Runs offline; touches only policy_senate_documents rows labeled rapport.
+    Does not alter proposals, context excerpts, votes or deliberation trees.
+    """
+    if not db_path.is_file():
+        raise FileNotFoundError("Catalogue SQLite absent.")
+    with sqlite3.connect(db_path, timeout=20) as db:
+        tables = db.execute(
+            "SELECT name FROM sqlite_master "
+            "WHERE type = 'table' AND name = 'policy_senate_documents'"
+        ).fetchone()
+        if not tables:
+            return {"scanned_reports": 0, "removed_navigation_links": 0,
+                    "remaining_reports": 0}
+        rows = db.execute(
+            "SELECT measure_id, url FROM policy_senate_documents WHERE kind = 'rapport'"
+        ).fetchall()
+        invalid = [(measure_id, url) for measure_id, url in rows
+                   if not direct_report(url)]
+        db.executemany(
+            "DELETE FROM policy_senate_documents "
+            "WHERE measure_id = ? AND url = ? AND kind = 'rapport'",
+            invalid,
+        )
+        return {
+            "scanned_reports": len(rows),
+            "removed_navigation_links": len(invalid),
+            "remaining_reports": len(rows) - len(invalid),
+        }
+
+
 def run(db_path: Path, limit: int, offset: int, pause: float, timeout: float,
         force: bool = False) -> dict:
     if limit < 1 or limit > 2000 or offset < 0 or not (0 <= pause <= 30):
@@ -345,7 +394,13 @@ def main() -> int:
                         help="Délai maximal de chaque requête en secondes")
     parser.add_argument("--force", action="store_true",
                         help="Actualiser les dossiers déjà enrichis")
+    parser.add_argument("--clean-cache", action="store_true",
+                        help="Nettoyer hors réseau les faux rapports sans toucher aux votes")
     args = parser.parse_args()
+    if args.clean_cache:
+        stats = clean_cached_reports(args.db)
+        print(json.dumps(stats, ensure_ascii=False, indent=2))
+        return 0
     stats = run(args.db, args.limit, args.offset, args.pause, args.timeout, args.force)
     print(json.dumps(stats, ensure_ascii=False, indent=2))
     print("Nouveaux textes explicatifs : extraits d'auteur, non fact-checkés.")
