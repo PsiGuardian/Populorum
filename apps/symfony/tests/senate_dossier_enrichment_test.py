@@ -71,6 +71,90 @@ class SenateDossierEnrichmentTests(unittest.TestCase):
         self.assertTrue(all("Mesdames" not in p for p in excerpts))
         self.assertNotIn(url, [row["url"] for row in docs])
 
+    def test_generic_report_links_are_not_indexed_as_parliamentary_reports(self):
+        dossier = """
+        <html><body>
+        <nav>
+          <a href="/rapports/derniers-rapports.html">Derniers rapports</a>
+          <a href="/rap/">Tous les rapports et documents de travail</a>
+          <a href="/basile/rechercheRapport.do?rch=ra&amp;dp=1+an">
+            Rapports d'informations</a>
+        </nav>
+        <h2>Travaux de commission</h2>
+        <a href="/rap/l22-376/l22-376.html">Rapport</a>
+        <a href="/rap/r20-760/r20-760_mono.html">Rapport d'information n° 760</a>
+        </body></html>
+        """
+        docs, _, _ = MODULE.extract(
+            "https://www.senat.fr/dossier-legislatif/ppl22-262.html",
+            dossier,
+        )
+        reports = [doc for doc in docs if doc["kind"] == "rapport"]
+        self.assertEqual(2, len(reports))
+        self.assertEqual([
+            "https://www.senat.fr/rap/l22-376/l22-376.html",
+            "https://www.senat.fr/rap/r20-760/r20-760_mono.html",
+        ], [item["url"] for item in reports])
+        for url in (
+            "https://www.senat.fr/rap/",
+            "https://www.senat.fr/rapports/derniers-rapports.html",
+            "https://www.senat.fr/basile/rechercheRapport.do?rch=ra",
+        ):
+            self.assertFalse(MODULE.direct_report(url))
+            self.assertIsNone(MODULE.classify("Rapport", url))
+
+    def test_offline_cache_cleanup_removes_only_false_reports_and_keeps_votes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "catalog.sqlite"
+            db = sqlite3.connect(path)
+            db.execute(
+                "CREATE TABLE policy_senate_documents "
+                "(measure_id TEXT NOT NULL, kind TEXT, label TEXT, "
+                "url TEXT NOT NULL, source_section TEXT, sort_order INTEGER, "
+                "PRIMARY KEY(measure_id, url))"
+            )
+            db.execute(
+                "CREATE TABLE policy_votes (measure_id TEXT, citizen_id TEXT, choice TEXT)"
+            )
+            db.execute(
+                "CREATE TABLE policy_deliberations (id TEXT PRIMARY KEY)"
+            )
+            id_value = "pm_" + "f" * 24
+            old_urls = [
+                "https://www.senat.fr/rapports/derniers-rapports.html",
+                "https://www.senat.fr/rap/",
+                "https://www.senat.fr/basile/rechercheRapport.do?rch=ra",
+                "https://www.senat.fr/rap/l22-376/l22-376.html",
+            ]
+            db.executemany(
+                "INSERT INTO policy_senate_documents VALUES (?,?,?,?,?,?)",
+                [(id_value, "rapport", "Rapport", url, "", i)
+                 for i, url in enumerate(old_urls)],
+            )
+            db.execute(
+                "INSERT INTO policy_votes VALUES (?, ?, ?)",
+                (id_value, "beta_" + "a" * 24, "pour"),
+            )
+            db.execute("INSERT INTO policy_deliberations VALUES ('pc_preserved')")
+            db.commit()
+            result = MODULE.clean_cached_reports(path)
+            self.assertEqual(4, result["scanned_reports"])
+            self.assertEqual(3, result["removed_navigation_links"])
+            self.assertEqual(1, result["remaining_reports"])
+            self.assertEqual(0, MODULE.clean_cached_reports(path)["removed_navigation_links"])
+            self.assertEqual([old_urls[3]], [
+                row[0] for row in db.execute(
+                    "SELECT url FROM policy_senate_documents WHERE kind='rapport'"
+                ).fetchall()
+            ])
+            self.assertEqual(1, db.execute(
+                "SELECT COUNT(*) FROM policy_votes"
+            ).fetchone()[0])
+            self.assertEqual(1, db.execute(
+                "SELECT COUNT(*) FROM policy_deliberations"
+            ).fetchone()[0])
+            db.close()
+
     def test_never_assume_missing_report_or_expose_exists(self):
         docs, excerpts, source = MODULE.extract(
             "https://www.senat.fr/dossier-legislatif/ppl26-1.html",
