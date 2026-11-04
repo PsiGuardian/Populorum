@@ -116,28 +116,23 @@ python3 tools/enrich_senate_dossiers.py --limit 20 --offset 20
 - Une erreur réseau laisse intactes les anciennes données documentaires.
   Un dossier sans documents identifiés est signalé au lieu d'être inventé.
 
-### Éviter les faux rapports issus des menus du Sénat
+### Rapports liés à un dossier : sélection à la source
 
-L'indexeur doit reconnaître **un fichier de rapport individualisé**, par exemple
-`https://www.senat.fr/rap/l22-376/l22-376.html`, et non les menus globaux
-« Derniers rapports », « Tous les rapports » ou les formulaires de recherche.
+Sur une installation neuve, la base du catalogue démarre **vide**.
+L'extracteur n'importe que les rapports individualisés (numéro et fichier
+HTML/PDF du Sénat), par exemple
+`https://www.senat.fr/rap/l22-376/l22-376.html`.
+Les menus généraux (« Derniers rapports », « Tous les rapports ») et
+les moteurs de recherche du Sénat **ne deviennent pas des documents du dossier**.
+Le parcours du dossier conserve les autres ressources réellement référencées.
 
-Si le cache d'une ancienne version contient ces liens génériques, nettoyer
-localement toute la base, sans re-télécharger les quelque 900 dossiers :
-
-~~~bash
-python3 tools/enrich_senate_dossiers.py --clean-cache
-~~~
-
-Le résultat indique `scanned_reports`, `removed_navigation_links` et
-`remaining_reports`. Le nettoyage ne supprime que les faux rapports
-indexés dans `policy_senate_documents` ; les vrais rapports numérotés,
-leurs dossiers, les exposés des motifs, les votes et les arbres restent intacts.
-L'interface filtre également les anciens liens génériques avant le nettoyage.
-
-Les **nouveaux imports** filtrent ces faux liens à la source. Pour actualiser
-les liens d'un dossier déjà indexé, utiliser `--force` avec son lot
-`--offset`/`--limit`, uniquement après avoir vérifié le résultat du nettoyage.
+Il n'existe pas de commande de nettoyage des anciennes données :
+le processus de publication part d'une base de catalogue saine, créée lors
+de l'importation officielle des propositions. Les bases SQLite locales,
+les bulletins et les historiques des utilisateurs **ne sont pas publiés
+dans l'archive GitHub**. En cas de mise à jour d'une installation existante,
+ne pas détruire une base contenant des votes : effectuer une sauvegarde
+et traiter toute migration séparément.
 
 ### Sources directement rattachées à chaque dossier
 
