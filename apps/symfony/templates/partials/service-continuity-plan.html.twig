@@ -1,0 +1,131 @@
+<section id="continuity-plan" class="panel section" aria-labelledby="continuity-heading">
+    <div class="eyebrow">PRÉVENIR · ASSURER · RÉTABLIR</div>
+    <h2 id="continuity-heading">Plans publics de continuité des services essentiels</h2>
+    <p>
+        Chaque fonction publique ou service essentiel possède un cadre de préparation
+        avec responsable, dépendances, moyens de relève et critères de retour.
+        Ces plans sont <strong>des modèles pédagogiques de simulation</strong>,
+        pas des procédures opérationnelles, ni une délégation de compétences.
+        Les emplacements des installations, dispositifs d’accès, paramètres de
+        protection et circuits critiques ne sont pas publiés.
+    </p>
+    <nav class="service-continuity-choices" aria-label="Choisir un plan de continuité">
+        {% for id, service in serviceCatalog %}
+            <a href="{{ civic_path('site_services', {plan: id}) }}#continuity-plan"
+               class="{{ continuityPlanKey == id ? 'active' : '' }}"
+               {{ continuityPlanKey == id ? 'aria-current="true"' : '' }}>
+                {{ service.label }}
+            </a>
+        {% endfor %}
+    </nav>
+    <article class="service-continuity-sheet">
+        <div class="row-header">
+            <div>
+                <div class="eyebrow">SERVICE {{ continuityPlan.priority == 1 ? 'VITAL' : 'DE CONTINUITÉ' }} · FICHE PUBLIQUE</div>
+                <h3>{{ continuityPlan.label }}</h3>
+                <p>{{ continuityPlan.goal }}</p>
+            </div>
+        </div>
+        <div class="service-continuity-meta">
+            <p><strong>Autorité / exploitant à consulter :</strong> {{ continuityPlan.owner }}</p>
+            <p><strong>Intervention :</strong> {{ continuityPlan.regulated ? 'Réservée aux organismes ou professionnels habilités' : 'Coordination citoyenne possible, intervention réelle à faire autoriser' }}</p>
+            <p><strong>Dépendances :</strong> {{ continuityPlan.depends|join(' · ') }}</p>
+            <p><strong>Suivi recommandé :</strong> {{ continuityPlan.indicator }}</p>
+        </div>
+        <div class="service-continuity-phases">
+            {% for phase in continuityPhases %}
+                <div>
+                    <span class="service-continuity-number">{{ loop.index < 10 ? '0' ~ loop.index : loop.index }}</span>
+                    <strong>{{ phase.label }}</strong>
+                    <p>{{ phase.detail }}</p>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="service-continuity-provisions">
+            <section>
+                <h4>Prévention</h4>
+                <p>{{ continuityPlan.prevent }}</p>
+            </section>
+            <section>
+                <h4>Maintien du service en mode dégradé</h4>
+                <p>{{ continuityPlan.alternative }}</p>
+            </section>
+            <section>
+                <h4>Conditions de rétablissement</h4>
+                <p>{{ continuityPlan.restore }}</p>
+            </section>
+        </div>
+        {% if continuityPlanKey == 'water' %}
+            <div class="notice">
+                <h4>« Potable » et « bonne à boire » : deux aspects à suivre</h4>
+                <p>
+                    Une eau potable doit être propre et salubre. Le plan public distingue
+                    en plus la qualité perçue (goût, odeur, aspect), les plaintes des
+                    consommateurs et la régularité de l’approvisionnement. L’absence
+                    d’odeur ou de goût anormal <strong>ne garantit pas l’innocuité</strong>.
+                </p>
+                <p>
+                    En cas de contamination chimique suspectée, <strong>ne pas considérer
+                    que faire bouillir ou désinfecter l’eau la rendrait sûre</strong>.
+                    Les restrictions et leur levée relèvent de l’exploitant et des
+                    autorités sanitaires. Une pollution supposée par un gaz ou des
+                    substances volatiles nécessite une évaluation spécialisée.
+                </p>
+            </div>
+            <div class="row-header">
+                <h4>Scénarios de rupture de la distribution d’eau</h4>
+                <p class="small">Réponses de principe, sans détails d’exploitation sensibles</p>
+            </div>
+            <div class="service-continuity-incidents">
+                {% for scenario in continuityPlan.scenarios %}
+                    <details id="continuity-{{ scenario.id }}">
+                        <summary>{{ scenario.name }}</summary>
+                        <dl>
+                            <dt>Signal d’alerte</dt>
+                            <dd>{{ scenario.signal }}</dd>
+                            <dt>Protection immédiate</dt>
+                            <dd>{{ scenario.protect }}</dd>
+                            <dt>Assurer une continuité</dt>
+                            <dd>{{ scenario.continue }}</dd>
+                            <dt>Réouverture sécurisée</dt>
+                            <dd>{{ scenario.verify }}</dd>
+                        </dl>
+                    </details>
+                {% endfor %}
+            </div>
+            <section class="service-continuity-sources" aria-label="Sources institutionnelles">
+                <h4>Références pour élaborer un véritable PGSSE</h4>
+                <ul>
+                    {% for source in continuityPlan.sources %}
+                        <li>
+                            <a href="{{ source.url }}" target="_blank"
+                               rel="noopener noreferrer">{{ source.title }} ↗</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <p class="small">
+                    Le plan technique réel doit être établi par la personne
+                    responsable de la production ou distribution de l’eau, avec
+                    l’exploitant et les autorités compétentes. Les informations
+                    sur les équipements sensibles, leur implantation et les
+                    modes d’accès doivent rester dans le circuit professionnel.
+                </p>
+            </section>
+        {% else %}
+            <p class="small">
+                Scénarios détaillés, contacts professionnels et documents de
+                contrôle à établir avec les acteurs responsables du domaine.
+                Cette fiche propose un cadre public et ne certifie pas
+                la disponibilité réelle des moyens de secours.
+            </p>
+        {% endif %}
+        <div class="task-actions">
+            <a class="button" href="#missions">
+                Décrire un besoin ou une mission de simulation
+            </a>
+            <a class="button" href="#service-map">
+                Voir les dépendances entre services
+            </a>
+        </div>
+    </article>
+</section>
