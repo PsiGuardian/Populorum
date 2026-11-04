@@ -544,6 +544,17 @@ final class DemoController extends AbstractController
                 $context['continuityPlanKey'],
             );
             $context['continuityPhases'] = \App\Service\ServiceContinuityPlans::phases();
+            if ($context['continuityPlanKey'] === 'water') {
+                $context['waterScenarioKey'] = $request->query->getString('scenario', 'contamination');
+                if (!isset(\App\Service\WaterContinuityGraph::SCENARIOS[$context['waterScenarioKey']])) {
+                    throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException('Scénario Eau inconnu.');
+                }
+                $context['waterGraph'] = \App\Service\WaterContinuityGraph::forScenario($context['waterScenarioKey']);
+                $context['waterNodeLabels'] = array_map(
+                    static fn (array $node): string => $node['label'],
+                    \App\Service\WaterContinuityGraph::NODES,
+                );
+            }
             $context['selectedSkill'] = $request->query->getString('skill');
             if (
                 $context['selectedSkill'] !== ''
