@@ -1,4 +1,4 @@
-# Populorum — installation complète (v0.10.1-clean)
+# Populorum — installation complète (v0.11.0-clean)
 
 **Ce guide est autonome :** téléchargement de l'application, installation Symfony, téléchargement facultatif des bases nationales, contrôles et démarrage. Les commandes se lancent directement dans le terminal ; aucun installateur de distribution ni script ponctuel n'est nécessaire.
 
@@ -13,6 +13,8 @@
 | Marchés publics nationaux (DECP) | **Facultatif**, téléchargement séparé | Le site fonctionne, mais `/marches-publics` et les rapprochements DECP restent sans données nationales |
 | Statistiques SSMSI 2024–2025 | **Facultatif**, téléchargement séparé | L'atlas `/convergence` montre les communes, mais pas les observations nationales correspondantes |
 | Budgets communaux OFGL | **Jeu distinct**, non livré avec les données DECP | Les sections budgétaires dépendant de cet import n'affichent pas de comptes réels |
+| Catalogue des propositions de loi du Sénat | **Facultatif**, CSV officiel importé après installation | `/chemins` et `/consultations` restent sans dossier parlementaire avant import |
+| Rapports et exposés des motifs du Sénat | **Facultatif**, index documentaire construit par lots | Les fiches ne comportent pas encore de bibliothèque documentaire locale |
 
 L'installation de l'application reste possible sans télécharger la volumineuse archive DECP. Les pages de données réelles non alimentées ne doivent **jamais** afficher des résultats inventés.
 
@@ -34,7 +36,7 @@ Sur une autre distribution, installer les équivalents : **PHP 8.4+**, Composer 
 mkdir -p "$HOME/Téléchargements/populorum-clean"
 cd "$HOME/Téléchargements/populorum-clean"
 
-VERSION="v0.10.1-clean"
+VERSION="v0.11.0-clean"
 SOURCE="https://github.com/PsiGuardian/Populorum/releases/download/$VERSION"
 curl -fL --retry 3 -O "$SOURCE/Populorum-$VERSION.tar.gz"
 curl -fL --retry 3 -O "$SOURCE/SHA256SUMS.txt"
@@ -43,7 +45,7 @@ tar -xzf "Populorum-$VERSION.tar.gz"
 cd "Populorum-$VERSION/apps/symfony"
 ```
 
-L'archive ne contient ni `vendor/`, ni bases privées, ni clés de production. En cas d'échec du SHA-256, ne pas installer. Cette version devient téléchargeable après publication réussie de la release `v0.10.1-clean`.
+L'archive ne contient ni `vendor/`, ni bases privées, ni clés de production. En cas d'échec du SHA-256, ne pas installer. Cette version devient téléchargeable après publication réussie de la release `v0.11.0-clean`.
 
 ## 3. Installer Symfony (données de démonstration incluses)
 
@@ -217,7 +219,53 @@ php bin/console cache:clear --env=demo --no-debug
 
 Le téléchargement SSMSI suit lui aussi le mode rapide (SHA-256 et contrôle de quelques lignes), sans relire tout le fichier. L'absence de statistique publiée n'est **jamais** transformée en valeur zéro.
 
-## 7. Démarrer et vérifier le site
+## 7. Facultatif — importer les propositions de loi et les ressources du Sénat
+
+La release contient **le code, mais pas de catalogue parlementaire rempli**.
+L'administrateur construit une base SQLite à partir des données officielles,
+sans réutiliser un ancien cache de rapports ni importer de propositions fictives.
+Aucun bulletin ou arbre de délibération personnel n'est inclus dans l'archive.
+
+Depuis `apps/symfony` :
+
+```bash
+mkdir -p var
+
+curl -fLsS --retry 3 \
+  'https://www.data.gouv.fr/api/1/datasets/r/7698274a-65f6-4687-8b2b-6961199b6922' \
+  -o /tmp/populorum-propositions-senat.csv
+
+python3 tools/import_policy_catalog.py \
+  --senat-csv /tmp/populorum-propositions-senat.csv \
+  --limit 10000 --days 90
+```
+
+**Vérifier que le téléchargement est bien le CSV officiel attendu** avant
+l'importation. Le nombre de dossiers dépend des textes admissibles ; aucun
+dossier fictif ne sera ajouté pour remplir un quota.
+
+Pour enrichir les rapports, exposés des motifs, amendements, textes et débats
+associés à **tous les dossiers importés** (jusqu'à 2 000 par lot) :
+
+```bash
+python3 tools/enrich_senate_dossiers.py \
+  --limit 2000 --offset 0 --pause 0.6 --timeout 20
+```
+
+Sur une base neuve, l'indexeur sélectionne uniquement les documents
+réellement rattachés au dossier. Les liens vers les répertoires généraux
+« Derniers rapports » et « Tous les rapports » sont exclus.
+Les téléchargements parlementaires sont déclenchés explicitement depuis
+le terminal, jamais à l'ouverture de pages Web.
+
+**En cas de mise à jour d'une installation contenant déjà des votes ou
+délibérations :** ne pas effacer `var/policy-catalog.sqlite`. La release
+propre n'en contient aucune. Sauvegarder l'état existant et procéder à une
+migration séparée si ces données doivent être conservées.
+
+Voir [la documentation du catalogue législatif](apps/symfony/docs/POLICY_CATALOG.md).
+
+## 8. Démarrer et vérifier le site
 
 ```bash
 php bin/console doctrine:schema:validate --env=demo
@@ -229,7 +277,7 @@ Ouvrir dans le navigateur : **http://127.0.0.1:5412/**, puis `/communes`, `/conv
 
 Le **compte de test facultatif** propose nom, prénom, âge et commune ; noms fictifs autorisés. Il est sans privilège, reconnu par une empreinte HMAC de l'IP (sans cookie propre au compte) et ne garantit pas une identité. Un même réseau public peut partager le profil. Les informations de confidentialité figurent sur `/confidentialite`.
 
-## 8. Mettre à jour sans perte de données
+## 9. Mettre à jour sans perte de données
 
 Avant une mise à jour, arrêter le serveur et sauvegarder `.env.local`, `var/`, `.guardian-shield/` et les répertoires de bases `data/geography/` et `data/research/`. Après extraction d'une nouvelle archive, rétablir ces données privées puis relancer **Composer, les migrations et les contrôles** de la section 3. Ne jamais écraser la base de simulation ni les référentiels avec des fichiers de démonstration.
 

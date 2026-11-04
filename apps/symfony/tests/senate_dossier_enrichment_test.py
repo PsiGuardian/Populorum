@@ -3,6 +3,8 @@
 import importlib.util
 from pathlib import Path
 import sqlite3
+import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -103,57 +105,57 @@ class SenateDossierEnrichmentTests(unittest.TestCase):
             self.assertFalse(MODULE.direct_report(url))
             self.assertIsNone(MODULE.classify("Rapport", url))
 
-    def test_offline_cache_cleanup_removes_only_false_reports_and_keeps_votes(self):
+    def test_fresh_dossier_cache_contains_only_real_reports(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "catalog.sqlite"
             db = sqlite3.connect(path)
             db.execute(
-                "CREATE TABLE policy_senate_documents "
-                "(measure_id TEXT NOT NULL, kind TEXT, label TEXT, "
-                "url TEXT NOT NULL, source_section TEXT, sort_order INTEGER, "
-                "PRIMARY KEY(measure_id, url))"
+                "CREATE TABLE policy_measures "
+                "(id TEXT PRIMARY KEY, source_type TEXT, source_url TEXT)"
             )
+            bill_id = "pm_" + "f" * 24
+            url = "https://www.senat.fr/dossier-legislatif/ppl22-262.html"
             db.execute(
-                "CREATE TABLE policy_votes (measure_id TEXT, citizen_id TEXT, choice TEXT)"
+                "INSERT INTO policy_measures VALUES (?, ?, ?)",
+                (bill_id, "proposition_de_loi", url),
             )
-            db.execute(
-                "CREATE TABLE policy_deliberations (id TEXT PRIMARY KEY)"
+            db.executescript(MODULE.SCHEMA)
+            html = """
+            <html><body>
+              <nav>
+                <a href="/rapports/derniers-rapports.html">Derniers rapports</a>
+                <a href="/rap/">Tous les rapports et documents de travail</a>
+                <a href="/basile/rechercheRapport.do?rch=ra">Rapports d'information</a>
+              </nav>
+              <h2>Documents associés à cette proposition</h2>
+              <a href="/rap/l22-376/l22-376.html">Rapport</a>
+              <a href="/rap/r20-760/r20-760_mono.html">Rapport d'information 760</a>
+            </body></html>
+            """
+            docs, excerpts, source = MODULE.extract(url, html)
+            MODULE.store(db, bill_id, docs, excerpts, source)
+            stored = db.execute(
+                "SELECT url FROM policy_senate_documents "
+                "WHERE measure_id = ? AND kind = 'rapport' ORDER BY sort_order",
+                (bill_id,),
+            ).fetchall()
+            self.assertEqual([
+                ("https://www.senat.fr/rap/l22-376/l22-376.html",),
+                ("https://www.senat.fr/rap/r20-760/r20-760_mono.html",),
+            ], stored)
+            self.assertEqual(
+                2, db.execute("SELECT COUNT(*) FROM policy_senate_documents").fetchone()[0]
             )
-            id_value = "pm_" + "f" * 24
-            old_urls = [
-                "https://www.senat.fr/rapports/derniers-rapports.html",
-                "https://www.senat.fr/rap/",
-                "https://www.senat.fr/basile/rechercheRapport.do?rch=ra",
-                "https://www.senat.fr/rap/l22-376/l22-376.html",
-            ]
-            db.executemany(
-                "INSERT INTO policy_senate_documents VALUES (?,?,?,?,?,?)",
-                [(id_value, "rapport", "Rapport", url, "", i)
-                 for i, url in enumerate(old_urls)],
-            )
-            db.execute(
-                "INSERT INTO policy_votes VALUES (?, ?, ?)",
-                (id_value, "beta_" + "a" * 24, "pour"),
-            )
-            db.execute("INSERT INTO policy_deliberations VALUES ('pc_preserved')")
-            db.commit()
-            result = MODULE.clean_cached_reports(path)
-            self.assertEqual(4, result["scanned_reports"])
-            self.assertEqual(3, result["removed_navigation_links"])
-            self.assertEqual(1, result["remaining_reports"])
-            self.assertEqual(0, MODULE.clean_cached_reports(path)["removed_navigation_links"])
-            self.assertEqual([old_urls[3]], [
-                row[0] for row in db.execute(
-                    "SELECT url FROM policy_senate_documents WHERE kind='rapport'"
-                ).fetchall()
-            ])
-            self.assertEqual(1, db.execute(
-                "SELECT COUNT(*) FROM policy_votes"
-            ).fetchone()[0])
-            self.assertEqual(1, db.execute(
-                "SELECT COUNT(*) FROM policy_deliberations"
-            ).fetchone()[0])
             db.close()
+
+    def test_clean_install_exposes_no_legacy_cache_cleanup_command(self):
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "tools" / "enrich_senate_dossiers.py"),
+             "--help"],
+            capture_output=True, text=True, check=True,
+        )
+        self.assertNotIn("--clean-cache", result.stdout)
+        self.assertFalse(hasattr(MODULE, "clean_cached_reports"))
 
     def test_never_assume_missing_report_or_expose_exists(self):
         docs, excerpts, source = MODULE.extract(

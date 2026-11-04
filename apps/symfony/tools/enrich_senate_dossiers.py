@@ -291,39 +291,6 @@ def store(conn: sqlite3.Connection, measure_id: str, documents: list[dict],
         )
 
 
-def clean_cached_reports(db_path: Path) -> dict:
-    """Remove navigation/search URLs previously mistaken for report documents.
-
-    Runs offline; touches only policy_senate_documents rows labeled rapport.
-    Does not alter proposals, context excerpts, votes or deliberation trees.
-    """
-    if not db_path.is_file():
-        raise FileNotFoundError("Catalogue SQLite absent.")
-    with sqlite3.connect(db_path, timeout=20) as db:
-        tables = db.execute(
-            "SELECT name FROM sqlite_master "
-            "WHERE type = 'table' AND name = 'policy_senate_documents'"
-        ).fetchone()
-        if not tables:
-            return {"scanned_reports": 0, "removed_navigation_links": 0,
-                    "remaining_reports": 0}
-        rows = db.execute(
-            "SELECT measure_id, url FROM policy_senate_documents WHERE kind = 'rapport'"
-        ).fetchall()
-        invalid = [(measure_id, url) for measure_id, url in rows
-                   if not direct_report(url)]
-        db.executemany(
-            "DELETE FROM policy_senate_documents "
-            "WHERE measure_id = ? AND url = ? AND kind = 'rapport'",
-            invalid,
-        )
-        return {
-            "scanned_reports": len(rows),
-            "removed_navigation_links": len(invalid),
-            "remaining_reports": len(rows) - len(invalid),
-        }
-
-
 def run(db_path: Path, limit: int, offset: int, pause: float, timeout: float,
         force: bool = False) -> dict:
     if limit < 1 or limit > 2000 or offset < 0 or not (0 <= pause <= 30):
@@ -394,13 +361,7 @@ def main() -> int:
                         help="Délai maximal de chaque requête en secondes")
     parser.add_argument("--force", action="store_true",
                         help="Actualiser les dossiers déjà enrichis")
-    parser.add_argument("--clean-cache", action="store_true",
-                        help="Nettoyer hors réseau les faux rapports sans toucher aux votes")
     args = parser.parse_args()
-    if args.clean_cache:
-        stats = clean_cached_reports(args.db)
-        print(json.dumps(stats, ensure_ascii=False, indent=2))
-        return 0
     stats = run(args.db, args.limit, args.offset, args.pause, args.timeout, args.force)
     print(json.dumps(stats, ensure_ascii=False, indent=2))
     print("Nouveaux textes explicatifs : extraits d'auteur, non fact-checkés.")
