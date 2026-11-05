@@ -351,9 +351,7 @@ final class DemoController extends AbstractController
         if ($view === 'services') {
             // Plan and scenario are path segments only; reject ambiguous query alternatives.
             if ($request->query->has('plan') || $request->query->has('scenario')) {
-                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException(
-                    'Utilisez /services/{plan}/{scenario} plutôt que des paramètres de requête.',
-                );
+                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException('Utilisez /services/{plan}/{scenario} plutôt que des paramètres de requête.');
             }
             $plan = $request->attributes->get('plan', 'water');
             $scenario = $request->attributes->get('scenario');
