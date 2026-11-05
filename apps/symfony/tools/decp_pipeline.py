@@ -21,6 +21,7 @@ import time
 from datetime import datetime, timezone
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+from import_procurement_evidence import import_evidence
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / 'data/research'
@@ -283,6 +284,26 @@ def import_all(folder:Path=SOURCES,staging:Path=STAGING,public:Path=PUBLIC):
         if str(source_urls.get(p.name,'')).startswith('https://'):
             cmd+=['--source-url',source_urls[p.name]]
         subprocess.run(cmd,check=True)
+    # Publish only precisely referenced, curated documents whose contract is
+    # actually present. Never fabricate associations for absent contracts.
+    curated=ROOT/'data/curated-procurement'
+    if curated.is_dir():
+        with closing(sqlite3.connect(staging,timeout=30)) as db:
+            for evidence_file in sorted(curated.glob('*.json')):
+                items=json.loads(evidence_file.read_text(encoding='utf-8'))
+                if not isinstance(items,list):
+                    raise ValueError('Dossier documentaire invalide : '+str(evidence_file))
+                matched=[]
+                for item in items:
+                    key=item.get('contract_key') if isinstance(item,dict) else ''
+                    if not key or not db.execute('SELECT 1 FROM contracts WHERE contract_key=?',(key,)).fetchone():
+                        print('Référence non importée; document non associé :',evidence_file.name,key)
+                        continue
+                    matched.append(item)
+                if matched:
+                    added=import_evidence(db,matched)
+                    db.commit()
+                    print('DOCUMENTS SOURCÉS :',evidence_file.name,added,'ajoutés.')
     checkpoint_stage(staging)
     print('BASE DE TRAVAIL VÉRIFIÉE :',db_info(staging,deep=True))
     print('La base publique est inchangée. Arrêter le serveur avant la commande publish --site-stopped.')
