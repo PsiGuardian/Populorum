@@ -113,6 +113,13 @@
             <td>{% if event.amount_cents is not null %}{{ (event.amount_cents / 100)|number_format(2, ',', ' ') }} €{% else %}Non communiqué{% endif %}</td>
         </tr>{% endfor %}</tbody></table></div>
     {% else %}<p>Aucun événement documenté dans les fichiers importés.</p>{% endif %}
+    {% if marketDetails.source_declaration is not null %}
+    <details class="budget-explain">
+        <summary><strong>Voir la déclaration DECP originale complète</strong></summary>
+        <p class="budget-muted">Tous les champs originaux sont conservés sans interprétation : clauses, modalités, prix, observations et identifiants. Cette déclaration ne constitue pas une preuve de paiement.</p>
+        <pre style="max-height:30rem;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere">{{ marketDetails.source_declaration|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
+    </details>
+    {% endif %}
     <h3>Traçabilité des publications</h3>
     {% for src in marketDetails.sources %}
         <p>{{ src.filename }} · <a href="{{ src.source_url }}" rel="noopener noreferrer" target="_blank">{% if 'data.gouv.fr/datasets/' in src.source_url %}Catalogue DECP officiel (URL précise du fichier non connue){% else %}Ressource source officielle{% endif %}</a> · SHA-256 : <code>{{ src.sha256 }}</code> · importé le {{ src.imported_at }}</p>
