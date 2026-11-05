@@ -31,8 +31,10 @@ def main() -> None:
                 CREATE TABLE contracts (contract_key TEXT);
                 CREATE TABLE contract_sources (contract_key TEXT,source_sha TEXT);
                 CREATE TABLE contract_publications (contract_key TEXT,source_sha TEXT);
+                CREATE TABLE contract_records (source_sha TEXT,kind TEXT,ordinal INTEGER);
+                CREATE TABLE procurement_evidence (evidence_id TEXT);
             """)
-            db.execute("INSERT INTO metadata VALUES ('schema','populorum-decp-1')")
+            db.execute("INSERT INTO metadata VALUES ('schema','populorum-decp-2')")
             db.execute("INSERT INTO imports VALUES (?,?)", (source.name, sha))
             db.execute("INSERT INTO contracts VALUES (?)", ("contract-1",))
         output = base / "release"

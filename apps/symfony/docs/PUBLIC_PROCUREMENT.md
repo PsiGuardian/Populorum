@@ -1,5 +1,11 @@
 # Besoins, devis et contrôle des coûts — laboratoire fictif
 
+> **Reconstruction alpha DECP v2 :** voir [PROCUREMENT_EVIDENCE_V2.md](PROCUREMENT_EVIDENCE_V2.md)
+> pour l'identification des lots, les références exactes, la reconstruction SQLite
+> et le rapprochement documentaire. Les anciennes bases DECP v1 doivent être
+> reconstruites ; aucune compatibilité d'exécution n'est assurée.
+
+
 Cette évolution complète les services, missions et finances des trois villes. Elle ne transforme pas le laboratoire en administration municipale opérationnelle et ne déclenche ni marché, ni notification à une entreprise, ni paiement. Toutes les entreprises, qualifications, factures et décisions de ce module sont fictives.
 
 ## Parcours

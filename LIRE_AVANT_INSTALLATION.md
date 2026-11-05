@@ -1,4 +1,4 @@
-# Populorum — installation complète (v0.11.0-clean)
+# Populorum — installation complète (v0.12.0-clean)
 
 **Ce guide est autonome :** téléchargement de l'application, installation Symfony, téléchargement facultatif des bases nationales, contrôles et démarrage. Les commandes se lancent directement dans le terminal ; aucun installateur de distribution ni script ponctuel n'est nécessaire.
 
@@ -36,7 +36,7 @@ Sur une autre distribution, installer les équivalents : **PHP 8.4+**, Composer 
 mkdir -p "$HOME/Téléchargements/populorum-clean"
 cd "$HOME/Téléchargements/populorum-clean"
 
-VERSION="v0.11.0-clean"
+VERSION="v0.12.0-clean"
 SOURCE="https://github.com/PsiGuardian/Populorum/releases/download/$VERSION"
 curl -fL --retry 3 -O "$SOURCE/Populorum-$VERSION.tar.gz"
 curl -fL --retry 3 -O "$SOURCE/SHA256SUMS.txt"
@@ -45,7 +45,7 @@ tar -xzf "Populorum-$VERSION.tar.gz"
 cd "Populorum-$VERSION/apps/symfony"
 ```
 
-L'archive ne contient ni `vendor/`, ni bases privées, ni clés de production. En cas d'échec du SHA-256, ne pas installer. Cette version devient téléchargeable après publication réussie de la release `v0.11.0-clean`.
+L'archive ne contient ni `vendor/`, ni bases privées, ni clés de production. En cas d'échec du SHA-256, ne pas installer. Cette version devient téléchargeable après publication réussie de la release `v0.12.0-clean`.
 
 ## 3. Installer Symfony (données de démonstration incluses)
 
@@ -90,110 +90,62 @@ php bin/console app:geography:install --check --env=demo
 
 **Important :** si vous avez déjà exécuté l'étape 3, la base INSEE existe normalement et sera conservée. La commande ne l'écrase jamais. La base officielle est aussi téléchargeable individuellement à cette adresse : [communes-2026.sqlite](https://github.com/PsiGuardian/Populorum/releases/download/data-national-2026/communes-2026.sqlite).
 
-## 5. Facultatif — installer rapidement la base des marchés publics DECP
+## 5. Facultatif — reconstruire l'index national des marchés publics DECP v2
 
-La base nationale est publiée en une archive unique : [public-procurement.sqlite.tar.gz](https://github.com/PsiGuardian/Populorum/releases/download/data-national-2026/public-procurement.sqlite.tar.gz) (486 882 207 octets, environ 464 Mio). Prévoir plusieurs gigaoctets pour la décompression.
+Le référentiel DECP v2 est **reconstruit à partir des fichiers JSON officiels**
+publiés par les [Ministères économiques et financiers sur data.gouv.fr](https://www.data.gouv.fr/datasets/donnees-essentielles-de-la-commande-publique-fichiers-consolides).
+Il ne réutilise pas l'archive historique `public-procurement.sqlite.tar.gz`
+de la release `data-national-2026`, qui contient un **schéma v1 incompatible**.
 
-**Nouveau mode rapide :** le SHA-256 vérifie que les octets de l'archive correspondent à la distribution officielle ; le décompresseur vérifie le flux gzip ; ensuite SQLite ne lit que le schéma et les premières lignes des tables indispensables. La vérification exhaustive PRAGMA quick_check, susceptible de durer plusieurs dizaines de minutes sur une base de 1,84 Go, est désormais **facultative et distincte de l'installation**. Le système ne modifie pas les données fournies.
+Les données essentielles décrivent des marchés et des concessions notifiés :
+**leur montant déclaré ne prouve ni paiement ni coût final**. Les motifs et
+résultats ne sont affichés comme documentés que si une pièce précise et son
+URL vérifiable leur sont rattachées. Les fichiers sources, leurs empreintes
+et les dates de publication sont conservés.
 
-Depuis apps/symfony, serveur arrêté, coller directement dans le terminal (aucun script à créer) :
+Depuis `apps/symfony`, en conservant les autres bases locales :
 
-~~~bash
-DATA_URL="https://github.com/PsiGuardian/Populorum/releases/download/data-national-2026"
-ARCHIVE="var/reference-downloads/public-procurement.sqlite.tar.gz"
-DECP="data/research/public-procurement.sqlite"
-TEMP="data/research/public-procurement.sqlite.restoring"
-mkdir -p var/reference-downloads data/research
+```bash
+# Contrôler l'espace disponible : sources, index v2, ancienne base et sauvegarde.
+df -h .
 
-(
-  set -euo pipefail
-  if test -e "$DECP"; then
-    echo "DECP déjà installée : aucun écrasement."
-  elif test -e "$TEMP"; then
-    echo "Fichier .restoring présent : aucune modification."
-    echo "Suivre les commandes de reprise indiquées ci-dessous."
-  else
-    echo "[1/5] Téléchargement (reprenable)..."
-    curl -fL --retry 3 -C - -o "$ARCHIVE" \
-      "$DATA_URL/public-procurement.sqlite.tar.gz"
-    echo "[2/5] Vérification SHA-256 du fichier officiel..."
-    printf '%s  %s\n' \
-      '37d8fd44cbd607d8459ec8f5f6e5a97250c576cca0727fd525106f9e87932f41' \
-      "$ARCHIVE" | sha256sum -c -
+# Télécharger ou rafraîchir les ressources officielles.
+# Les fichiers déjà vérifiés sont conservés si leur révision est inchangée.
+python3 tools/decp_pipeline.py download
 
-    echo "[3/5] Identification du fichier SQLite..."
-    MEMBER="$(tar -tzf "$ARCHIVE" | grep -E '(^|/)public-procurement\.sqlite$')"
-    test "$(printf '%s\n' "$MEMBER" | grep -c .)" -eq 1
+# Construire l'index v2 dans une base de travail distincte.
+# L'index public existant reste inchangé.
+python3 tools/decp_pipeline.py import
 
-    echo "[4/5] Décompression de la base (peut durer quelques minutes)..."
-    tar -xOzf "$ARCHIVE" "$MEMBER" > "$TEMP"
+# Vérifier le schéma, les liens et les déclarations sources.
+python3 tools/decp_pipeline.py verify
+```
 
-    echo "[5/5] Vérification légère du schéma et d'un contrat..."
-    CHECK="$(sqlite3 -readonly "$TEMP" "
-      SELECT (SELECT value FROM metadata WHERE key='schema') || '|' ||
-        (SELECT COUNT(*) FROM sqlite_master
-         WHERE type IN ('table','view')
-           AND name IN ('metadata','imports','contracts','participants',
-                        'changes','contract_sources','concession_finance','contract_fts')) || '|' ||
-        (SELECT EXISTS(SELECT 1 FROM imports LIMIT 1)) || '|' ||
-        (SELECT EXISTS(SELECT 1 FROM contracts LIMIT 1));
-    ")"
-    test "$CHECK" = "populorum-decp-1|8|1|1"
+Pour publier **uniquement après réussite de la vérification**, arrêter
+entièrement le serveur Symfony et tout lecteur SQLite de l'index DECP, puis :
 
-    # Lien atomique : échoue si la base publique existe déjà.
-    ln "$TEMP" "$DECP"
-    rm "$TEMP"
-    echo "DECP installée sans contrôle intégral bloquant."
-  fi
-)
-if test -f "$DECP"; then
-  python3 tools/decp_pipeline.py status
-  php bin/console cache:clear --env=demo --no-debug
-fi
-~~~
-
-La commande status est également optimisée : **elle n'exécute plus de PRAGMA quick_check ni de comptage complet**. Elle vérifie simplement la présence des tables, la version du schéma et quelques lignes. Elle ne remplace pas une vérification d'intégrité exhaustive.
-
-### Reprendre un téléchargement déjà extrait
-
-Si le fichier public-procurement.sqlite.restoring existe parce que la commande précédente est restée longtemps dans quick_check, ne supprimez pas le fichier et ne retéléchargez pas les 464 Mio. Attendre que l'ancien processus sqlite3 ou tar ait complètement quitté. Ne jamais publier pendant qu'une extraction est encore active.
-
-Après avoir confirmé que l'extraction précédente a réussi (et non été interrompue), vérifier le SHA-256 du fichier source et comparer la taille réelle du SQLite avec la taille déclarée dans l'archive :
-
-~~~bash
-ARCHIVE="var/reference-downloads/public-procurement.sqlite.tar.gz"
-TEMP="data/research/public-procurement.sqlite.restoring"
-DECP="data/research/public-procurement.sqlite"
-
-printf '%s  %s\n' \
-  '37d8fd44cbd607d8459ec8f5f6e5a97250c576cca0727fd525106f9e87932f41' \
-  "$ARCHIVE" | sha256sum -c -
-
-MEMBER="$(tar -tzf "$ARCHIVE" | grep -E '(^|/)public-procurement\.sqlite$')"
-test "$(printf '%s\n' "$MEMBER" | grep -c .)" -eq 1
-EXPECTED_SIZE="$(tar -tvzf "$ARCHIVE" "$MEMBER" | awk 'NR==1 {print $3}')"
-ACTUAL_SIZE="$(stat -c '%s' "$TEMP")"
-printf 'Archive : %s octets ; extraction : %s octets\n' "$EXPECTED_SIZE" "$ACTUAL_SIZE"
-test "$EXPECTED_SIZE" = "$ACTUAL_SIZE"
-
-sqlite3 -readonly "$TEMP" "SELECT value FROM metadata WHERE key='schema';"
-sqlite3 -readonly "$TEMP" "SELECT 1 FROM contracts LIMIT 1;"
-
-# Uniquement si les contrôles réussissent et l'ancien sqlite3 est terminé :
-test ! -e "$DECP" && ln "$TEMP" "$DECP" && rm "$TEMP"
+```bash
+python3 tools/decp_pipeline.py publish --site-stopped
 python3 tools/decp_pipeline.py status
-~~~
+```
 
-Une taille correcte et un schéma lisible ne prouvent pas que toutes les pages SQLite sont saines. Si la décompression elle-même a été interrompue, **ne pas utiliser cette reprise** : conserver l'archive officielle et refaire une extraction complète vers un nouveau fichier provisoire.
+La commande `publish` conserve une sauvegarde de l'ancienne base dans
+`data/research/decp-backups/` puis remplace l'index de façon contrôlée.
+Ne jamais passer `--site-stopped` si le serveur fonctionne encore.
+**Aucune suppression manuelle de la base actuelle n'est nécessaire.**
+Aucun `cache:clear` ni script de migration temporaire n'est requis.
 
-### Vérification approfondie, uniquement sur demande
+Le téléchargement peut représenter plusieurs gigaoctets. Il conserve les
+URL **exactes** renvoyées par data.gouv.fr dans `resource-catalog.json`
+et vérifie la révision, la taille et le SHA-256 dans
+`resource-catalog-meta.json`. Si l'URL précise est inconnue pour un
+ancien fichier importé, Populorum l'indique et renvoie au catalogue au
+lieu de prétendre disposer de l'URL directe.
 
-~~~bash
-# Facultatif : contrôle intégral qui peut durer très longtemps.
-sqlite3 -readonly data/research/public-procurement.sqlite 'PRAGMA quick_check;'
-~~~
-
-Le contrôle SHA-256 protège le téléchargement contre une modification ou corruption de l'archive, tandis que le contrôle intégral détecte certains défauts internes de la base. Il n'est pas nécessaire de réexécuter systématiquement ce dernier sur l'ordinateur de chaque visiteur.
+Le guide technique détaillé se trouve dans
+[PROCUREMENT_EVIDENCE_V2.md](apps/symfony/docs/PROCUREMENT_EVIDENCE_V2.md).
+Il décrit les preuves, leurs statuts et la recherche BOAMP, qui ne transforme
+jamais automatiquement une correspondance textuelle en justification.
 
 ## 6. Facultatif — statistiques communales SSMSI pour la convergence
 

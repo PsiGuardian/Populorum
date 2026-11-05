@@ -45,7 +45,7 @@ def main():
         assert p.db_info(empty_stage)['contracts']==2
         quick = p.fast_status(empty_stage)
         assert quick['contracts_present'] and quick['imports_present']
-        assert quick['schema'] == 'populorum-decp-1'
+        assert quick['schema'] == 'populorum-decp-2'
         assert quick['integrity_scan'].startswith('not_run')
         assert empty_public.stat().st_size==0, 'Import altered an empty public index'
         # CLI verification/status must not reject a valid staging due to an old zero-byte public file.
@@ -146,6 +146,42 @@ def main():
             out=p.one_download({'title':name,'url':'https://example.org/'+name,'filesize':len(payload)},download_dir)
             assert out.read_bytes()==payload and calls
         finally:p.request=original
+        # Regression: unchanged resource is reused only when its revision and
+        # checksum are independently validated; an updated same-size resource
+        # must be downloaded rather than silently treated as current.
+        original_data=out.read_bytes()
+        previous={'url':'https://example.org/'+name,
+                  'last_modified':'2026-10-01T08:00:00+00:00',
+                  'filesize':len(original_data),'sha256':p.sha(out)}
+        def forbidden(*args,**kwargs):
+            raise AssertionError('Unchanged verified file triggered a download')
+        p.request=forbidden
+        same=p.one_download({'title':name,'url':previous['url'],
+                             'filesize':len(original_data),'last_modified':previous['last_modified']},
+                             download_dir,prior=previous)
+        assert same.read_bytes()==original_data
+        revised=original_data.replace(b'V8TEST-1',b'V8TEST-9')
+        assert revised!=original_data and len(revised)==len(original_data)
+        class RevisedResponse:
+            status=200
+            headers={}
+            url='https://example.org/'+name
+            def __enter__(self):return self
+            def __exit__(self,*args):return False
+            def __init__(self):self.pos=0
+            def read(self, n):
+                chunk=revised[self.pos:self.pos+n];self.pos+=len(chunk);return chunk
+        downloads=[]
+        def changed(url,headers=None):
+            downloads.append((url,headers))
+            return RevisedResponse()
+        p.request=changed
+        newer=p.one_download({'title':name,'url':previous['url'],
+                              'filesize':len(revised),'last_modified':'2026-11-04T08:00:00+00:00'},
+                             download_dir,prior=previous)
+        assert downloads and newer.read_bytes()==revised
+        p.request=original
+        print('OK — fichier consolidé republié avec même taille correctement actualisé')
         print('OK — téléchargement interrompu repris via HTTP Range, octets identiques')
         print('OK — public vide ou coquille SQLite préservés, staging valide, publication refusée')
         print('OK — base étrangère non-DECP jamais ignorée silencieusement')

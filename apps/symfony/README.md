@@ -1,4 +1,4 @@
-> **Installation rapide des bases nationales (sans analyse SQLite intégrale obligatoire) :** [LIRE_AVANT_INSTALLATION.md](https://github.com/PsiGuardian/Populorum/blob/main/LIRE_AVANT_INSTALLATION.md). Cette page inclut les commandes facultatives pour télécharger les bases INSEE, DECP (marchés publics) et SSMSI depuis GitHub Releases. La release [v0.11.0-clean](https://github.com/PsiGuardian/Populorum/releases/tag/v0.11.0-clean) présente également les propositions de loi réelles et leurs documents sénatoriaux. L'import parlementaire s'effectue sur une base propre après installation, sans commande de nettoyage d'ancien cache.
+> **Installation rapide des bases nationales (sans analyse SQLite intégrale obligatoire) :** [LIRE_AVANT_INSTALLATION.md](https://github.com/PsiGuardian/Populorum/blob/main/LIRE_AVANT_INSTALLATION.md). Cette page inclut les commandes facultatives pour télécharger les bases INSEE, DECP (marchés publics) et SSMSI ; l'index DECP v2 se reconstruit depuis data.gouv.fr (l'archive DECP v1 historique n'est plus compatible). La release [v0.12.0-clean](https://github.com/PsiGuardian/Populorum/releases/tag/v0.12.0-clean) présente également les propositions de loi réelles et leurs documents sénatoriaux. L'import parlementaire s'effectue sur une base propre après installation, sans commande de nettoyage d'ancien cache.
 
 # Démos Kratos — Symfony 8.1 et SQLite
 
@@ -67,7 +67,7 @@ Les commandes s'exécutent depuis `apps/symfony`. Le référentiel national est 
 APP_ENV=demo APP_DEBUG=0 php -S 127.0.0.1:5412 -t public
 ```
 
-**Bases nationales :** installer et vérifier INSEE/La Poste via `php bin/console app:geography:install --env=demo` et `php bin/console app:geography:install --check --env=demo` (la préparation de la démo effectue aussi la restauration automatique), puis suivre [installation des données nationales](docs/INSTALLATION_DONNEES_NATIONALES.md) pour la base DECP indépendante (archive unique compressée d'environ 464 Mio, vérifiée par SHA-256). La base nationale de marchés est distincte de `var/populorum.sqlite`.
+**Bases nationales :** installer et vérifier INSEE/La Poste via `php bin/console app:geography:install --env=demo` et `php bin/console app:geography:install --check --env=demo` (la préparation de la démo effectue aussi la restauration automatique), puis suivre [installation des données nationales](docs/INSTALLATION_DONNEES_NATIONALES.md) pour la base DECP indépendante (reconstruction depuis les JSON officiels avec sources SHA-256). La base nationale de marchés est distincte de `var/populorum.sqlite`.
 
 ## Le fichier SQLite demandé
 

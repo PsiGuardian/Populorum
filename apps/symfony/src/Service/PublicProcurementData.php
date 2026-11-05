@@ -34,7 +34,7 @@ final class PublicProcurementData
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
             ]);
             $pdo->exec('PRAGMA query_only=ON');
-            if ($pdo->query("SELECT value FROM metadata WHERE key='schema'")->fetchColumn() !== 'populorum-decp-1') {
+            if ($pdo->query("SELECT value FROM metadata WHERE key='schema'")->fetchColumn() !== 'populorum-decp-2') {
                 return null;
             }
 
@@ -211,7 +211,9 @@ final class PublicProcurementData
             default => 'c.notice_date DESC,c.contract_key',
         };
         $sql = 'SELECT c.contract_key,c.kind,c.buyer_id,c.original_id,c.object,c.cpv,c.nature,c.notice_date,
-            c.amount_initial_cents,c.amount_amended_cents,c.location_type,c.location_code,c.source_name,
+            c.amount_initial_cents,c.amount_amended_cents,c.location_type,c.location_code,c.source_name,c.source_sha,
+            (SELECT i.source_url FROM imports i WHERE i.sha256=c.source_sha LIMIT 1) AS source_url,
+            (SELECT i.filename FROM imports i WHERE i.sha256=c.source_sha LIMIT 1) AS source_filename,
             (SELECT COUNT(*) FROM contract_sources cs WHERE cs.contract_key=c.contract_key) AS source_count
             FROM contracts c' . $condition . ' ORDER BY ' . $orderBy . ' LIMIT ? OFFSET ?';
         $stmt = $db->prepare($sql);
@@ -253,6 +255,45 @@ final class PublicProcurementData
         $stmt->execute([$key]);
         $row['sources'] = $stmt->fetchAll();
         $row['history'] = $this->publicationHistory($db, $key);
+        // Statements are curated and source-linked, never inferred from the DECP
+        // contract amount. Candidate BOAMP matches cannot assert any factual claim.
+        $stmt = $db->prepare('SELECT category,source_type,source_name,source_url,document_title,
+            statement,excerpt,published_at,recorded_at,status
+            FROM procurement_evidence WHERE contract_key=? ORDER BY status ASC,category,document_title LIMIT 100');
+        $stmt->execute([$key]);
+        $row['evidence'] = $stmt->fetchAll();
+        $stmt = $db->prepare('SELECT source_sha,kind,ordinal,record_sha
+            FROM contract_records WHERE contract_key=? ORDER BY source_sha,kind,ordinal LIMIT 100');
+        $stmt->execute([$key]);
+        $row['original_records'] = $stmt->fetchAll();
+        // One authentic original declaration is available for full inspection.
+        // The index stores all occurrences; rendering remains bounded.
+        $stmt = $db->prepare('SELECT cr.record_zlib,cr.record_sha,i.filename,i.source_url,i.sha256
+            FROM contract_records cr JOIN imports i ON i.sha256=cr.source_sha
+            WHERE cr.contract_key=? ORDER BY i.filename DESC,cr.kind,cr.ordinal LIMIT 1');
+        $stmt->execute([$key]);
+        $original = $stmt->fetch();
+        $row['original_declaration_source'] = $original ? [
+            'filename' => $original['filename'],
+            'source_url' => $original['source_url'],
+            'sha256' => $original['sha256'],
+            'record_sha' => $original['record_sha'],
+        ] : null;
+        $compressed = $original['record_zlib'] ?? null;
+        $row['source_declaration'] = null;
+        if (is_string($compressed)) {
+            $json = @gzuncompress($compressed, 2_000_000);
+            if (is_string($json)) {
+                try {
+                    $payload = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+                    if (is_array($payload)) {
+                        $row['source_declaration'] = $payload;
+                    }
+                } catch (\JsonException) {
+                    // An unreadable source declaration must not affect the public page.
+                }
+            }
+        }
         if ($row['kind'] === 'concession') {
             $stmt = $db->prepare('SELECT * FROM concession_finance WHERE contract_key=?');
             $stmt->execute([$key]);

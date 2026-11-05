@@ -17,9 +17,9 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = "PsiGuardian/Populorum"
-FORMAT = "populorum-decp-archive-v1"
+FORMAT = "populorum-decp-archive-v2"
 PART_BYTES = 256 * 1024 * 1024
-SCHEMA = "populorum-decp-1"
+SCHEMA = "populorum-decp-2"
 NAME = re.compile(r"decp-[0-9]{4}-[0-9]{2}\.json\Z")
 TAG = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,79}\Z")
 SHA = re.compile(r"[0-9a-f]{64}\Z")
@@ -39,7 +39,7 @@ def check_index(path: Path) -> list[tuple[str, str]]:
     with sqlite3.connect(path.as_uri() + "?mode=ro", uri=True) as db:
         db.execute("PRAGMA query_only=ON")
         tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-        required = {"metadata", "imports", "contracts", "contract_sources", "contract_publications"}
+        required = {"metadata", "imports", "contracts", "contract_sources", "contract_publications", "contract_records", "procurement_evidence"}
         if not required.issubset(tables):
             raise ValueError("Index incomplet : " + str(sorted(required - tables)))
         if db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone() != (SCHEMA,):

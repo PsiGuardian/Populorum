@@ -128,7 +128,7 @@ def main() -> None:
                     source = root / f"decp-fuzz-{tested:05d}.json"
                     source.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
                     with contextlib.redirect_stdout(io.StringIO()):
-                        assert import_file(db, source, source_url=payload)
+                        assert import_file(db, source, source_url='https://www.data.gouv.fr/datasets/donnees-essentielles-de-la-commande-publique-fichiers-consolides')
                     tested += 1
                     assert table_names(db) == initial_tables, (kind, field, payload)
                     assert db.execute(

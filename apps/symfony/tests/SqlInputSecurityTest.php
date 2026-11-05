@@ -49,30 +49,36 @@ final class SqlInputSecurityTest extends TestCase
             $db = new PDO('sqlite:' . $file, options: [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
             $db->exec(<<<'SQL'
 CREATE TABLE metadata(key TEXT PRIMARY KEY, value TEXT);
-INSERT INTO metadata VALUES ('schema','populorum-decp-1');
+INSERT INTO metadata VALUES ('schema','populorum-decp-2');
 CREATE TABLE contracts(contract_key TEXT PRIMARY KEY, kind TEXT, buyer_id TEXT,
  original_id TEXT, object TEXT, cpv TEXT, nature TEXT, notice_date TEXT,
  amount_initial_cents INTEGER, amount_amended_cents INTEGER,
- location_type TEXT, location_code TEXT, source_name TEXT);
+ location_type TEXT, location_code TEXT, source_name TEXT, source_sha TEXT);
 CREATE TABLE participants(contract_key TEXT, role TEXT, identifier_type TEXT, identifier TEXT);
 CREATE TABLE changes(contract_key TEXT, event_type TEXT, event_id TEXT,
  event_date TEXT, published_date TEXT, amount_cents INTEGER, identifier TEXT, extra TEXT);
 CREATE TABLE imports(sha256 TEXT, filename TEXT, source_url TEXT, imported_at TEXT);
 CREATE TABLE contract_sources(contract_key TEXT, source_sha TEXT);
+CREATE TABLE contract_records(source_sha TEXT,kind TEXT,ordinal INTEGER,
+ contract_key TEXT,record_sha TEXT,record_zlib BLOB);
+CREATE TABLE procurement_evidence(evidence_id TEXT,contract_key TEXT,category TEXT,
+ source_type TEXT,source_name TEXT,source_url TEXT,document_title TEXT,
+ statement TEXT,excerpt TEXT,published_at TEXT,recorded_at TEXT,status TEXT);
 CREATE TABLE concession_finance(contract_key TEXT, subsidy_cents INTEGER);
 CREATE VIRTUAL TABLE contract_fts USING fts5(
  object, original_id, content='contracts', content_rowid='rowid');
 SQL);
-            $insert = $db->prepare('INSERT INTO contracts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)');
+            $insert = $db->prepare('INSERT INTO contracts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
             $insert->execute([str_repeat('a', 40), 'market', '21660134400013', 'A-2025',
                 'Éclairage de Passa', '12345000', 'Marché', '2025-03-01', 50000, null,
-                'Code commune', '66134', 'fixture']);
+                'Code commune', '66134', 'fixture', 'fixture-sha']);
             $insert->execute([str_repeat('b', 40), 'market', '21750560000013', 'B-2025',
                 'Éclairage de Paris', '12345000', 'Marché', '2025-04-01', 80000, null,
-                'Code commune', '75056', 'fixture']);
+                'Code commune', '75056', 'fixture', 'fixture-sha']);
             $insert->execute([str_repeat('c', 40), 'concession', '21660134400013', 'C-2024',
                 'Transport départemental', '67890000', 'Concession', '2024-03-01', 120000, null,
-                'Code département', '66', 'fixture']);
+                'Code département', '66', 'fixture', 'fixture-sha']);
+            $db->exec("INSERT INTO imports VALUES ('fixture-sha','decp-2024-04.json','https://www.data.gouv.fr/datasets/donnees-essentielles-de-la-commande-publique-fichiers-consolides','2026-11-05')");
             $supplier = $db->prepare('INSERT INTO participants VALUES (?, ?, ?, ?)');
             $supplier->execute([str_repeat('a', 40), 'supplier', 'SIRET', '12345678900011']);
             $db->exec("INSERT INTO contract_fts(contract_fts) VALUES('rebuild')");
@@ -81,6 +87,10 @@ SQL);
             $service = new PublicProcurementData($root);
 
             self::assertSame(3, $service->coverage()['contracts']);
+            $market = $service->search(['kind' => 'market'])['items'][0];
+            self::assertSame('fixture-sha', $market['source_sha']);
+            self::assertSame('decp-2024-04.json', $market['source_filename']);
+            self::assertStringStartsWith('https://www.data.gouv.fr/', $market['source_url']);
             self::assertSame(1, $service->cityCount('66134'));
             self::assertSame(2, $service->search(['kind' => 'market'])['total']);
             self::assertSame(2, $service->search(['year' => '2025'])['total']);
