@@ -22,6 +22,22 @@ final class CivicUrlExtension extends AbstractExtension
 
     public function path(string $name, array $parameters = []): string
     {
+        // Canonical service paths never serialize plan/scenario as query parameters.
+        if ($name === 'site_services' || ($name === 'section' && ($parameters['view'] ?? '') === 'services')) {
+            unset($parameters['view']);
+            $plan = $parameters['plan'] ?? null;
+            $scenario = $parameters['scenario'] ?? null;
+            unset($parameters['plan'], $parameters['scenario']);
+            if ($scenario !== null) {
+                return $this->router->generate('site_service_scenario', ['plan' => $plan ?? 'water', 'scenario' => $scenario] + $parameters);
+            }
+            if ($plan !== null) {
+                return $this->router->generate('site_service_plan', ['plan' => $plan] + $parameters);
+            }
+
+            return $this->router->generate('site_services', $parameters);
+        }
+
         // Public filters are path segments, not query strings.
         $publicBase = match (true) {
             $name === 'site_markets' => 'marches-publics',
