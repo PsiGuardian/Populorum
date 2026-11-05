@@ -605,7 +605,7 @@ final class ApplicationCompletionTest extends TestCase
 
     public function testPublicContinuityPlansRenderAndUnknownServiceIsRejected(): void
     {
-        $water = $this->request('/services-et-missions?plan=water');
+        $water = $this->request('/services/water');
         self::assertSame(200, $water->getStatusCode());
         $html = (string) $water->getContent();
         self::assertStringContainsString('Plans publics de continuité', $html);
@@ -613,14 +613,14 @@ final class ApplicationCompletionTest extends TestCase
         self::assertStringContainsString('Obstruction ou chute de débit', $html);
         self::assertStringContainsString('Fuite ou rupture de canalisation', $html);
 
-        $energy = $this->request('/services-et-missions?plan=energy');
+        $energy = $this->request('/services/energy');
         self::assertSame(200, $energy->getStatusCode());
         self::assertStringContainsString(
             'Préserver l’alimentation énergétique',
             (string) $energy->getContent(),
         );
 
-        $health = $this->request('/services-et-missions?plan=health');
+        $health = $this->request('/services/health');
         self::assertSame(200, $health->getStatusCode());
         self::assertStringContainsString(
             'Garantir l’accès aux soins urgents',
@@ -628,7 +628,7 @@ final class ApplicationCompletionTest extends TestCase
         );
 
         self::assertSame(
-            400, $this->request('/services-et-missions?plan=unknown')->getStatusCode(),
+            404, $this->request('/services/unknown')->getStatusCode(),
         );
     }
 
@@ -638,7 +638,7 @@ final class ApplicationCompletionTest extends TestCase
         $this->session->set('simulation_owner', 'city-module-test');
         foreach (
             [
-                '/services-et-missions',
+                '/services',
                 '/budget-et-priorites',
                 '/action/worker.profile',
                 '/action/worker.availability',
@@ -652,13 +652,13 @@ final class ApplicationCompletionTest extends TestCase
             );
         }
         $filtered = $this->request(
-            '/services-et-missions?territory=t3&skill=maintenance',
+            '/services?territory=t3&skill=maintenance',
         );
         self::assertSame(200, $filtered->getStatusCode());
         self::assertSame(
             400,
             $this->request(
-                '/services-et-missions?skill=invalid',
+                '/services?skill=invalid',
             )->getStatusCode(),
         );
         self::assertSame(
