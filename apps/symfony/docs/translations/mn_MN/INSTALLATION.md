@@ -1,4 +1,4 @@
-# Populorum — Суулгах ба шинэчлэх
+# Populorum — Анхны суулгалт
 
 🇲🇳 **Монгол · mn_MN**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 Аль нэг алхам алдаатай бол `&&` дарааллыг зогсооно: үргэлжлүүлэхийн өмнө алдааг зас. http://127.0.0.1:5412/ хаягийг нээ; Ctrl+C нь локал серверийг зогсооно. Эхлүүлэх үйлдэл нь `.env.local` байхгүй үед л үүсгэнэ. Идэвхтэй өгөгдлийн сан нь `var/populorum.sqlite`. Профайлерын cookie нь локал гараар хийх туршилтад ч HTTPS шаарддаг.
-
-## Шинэчлэх
-
-Эх файлуудыг солихын өмнө серверийг зогсоож, өгөгдлийн сан, файлууд болон түлхүүрүүдээ нөөцөл. `.env.local`, `.guardian-shield/` болон `var/`-г хадгал. Идэвхтэй өгөгдлийн санг `data/populorum-demo.sqlite` файлаар хэзээ ч бүү соль. `apps/symfony` дотроос ажиллуул:
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-Бүх алхам амжилттай дууссаны дараа локал серверийг дахин ажиллуул:
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## Алдаа засах
 
