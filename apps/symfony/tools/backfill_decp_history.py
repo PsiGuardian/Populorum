@@ -59,7 +59,7 @@ def main():
     if not args.db.is_file():sys.exit('ERREUR : index absent. Ne pas créer de base vide: '+str(args.db))
     if not args.source_dir.is_dir():sys.exit('ERREUR : dossier JSON absent: '+str(args.source_dir))
     with sqlite3.connect(f'file:{args.db.resolve()}?mode=rw',uri=True,timeout=60) as db:
-        if db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone() != ('populorum-decp-1',):
+        if db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone() != ('populorum-decp-2',):
             sys.exit('ERREUR : index DECP non reconnu')
         print('Bilan:',backfill(db,args.source_dir))
 
