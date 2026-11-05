@@ -34,7 +34,7 @@ final class PublicProcurementData
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
             ]);
             $pdo->exec('PRAGMA query_only=ON');
-            if ($pdo->query("SELECT value FROM metadata WHERE key='schema'")->fetchColumn() !== 'populorum-decp-1') {
+            if ($pdo->query("SELECT value FROM metadata WHERE key='schema'")->fetchColumn() !== 'populorum-decp-2') {
                 return null;
             }
 
@@ -253,6 +253,17 @@ final class PublicProcurementData
         $stmt->execute([$key]);
         $row['sources'] = $stmt->fetchAll();
         $row['history'] = $this->publicationHistory($db, $key);
+        // Statements are curated and source-linked, never inferred from the DECP
+        // contract amount. Candidate BOAMP matches cannot assert any factual claim.
+        $stmt = $db->prepare('SELECT category,source_type,source_name,source_url,document_title,
+            statement,excerpt,published_at,recorded_at,status
+            FROM procurement_evidence WHERE contract_key=? ORDER BY status ASC,category,document_title LIMIT 100');
+        $stmt->execute([$key]);
+        $row['evidence'] = $stmt->fetchAll();
+        $stmt = $db->prepare('SELECT source_sha,kind,ordinal,record_sha
+            FROM contract_records WHERE contract_key=? ORDER BY source_sha,kind,ordinal LIMIT 100');
+        $stmt->execute([$key]);
+        $row['original_records'] = $stmt->fetchAll();
         if ($row['kind'] === 'concession') {
             $stmt = $db->prepare('SELECT * FROM concession_finance WHERE contract_key=?');
             $stmt->execute([$key]);
