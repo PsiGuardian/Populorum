@@ -61,7 +61,7 @@
       {% if marketDetails.history.items is not empty %}
       <div style="overflow-x:auto"><table><thead><tr><th>Fichier de consolidation</th><th>Date publiée dans l'enregistrement</th><th>Montant du contrat déclaré</th><th>Montant dans une modification</th></tr></thead><tbody>
       {% for observation in marketDetails.history.items %}
-        <tr><td><a href="{{ observation.source_url }}" rel="noopener noreferrer" target="_blank">{{ observation.filename }}</a>{% if observation.occurrences > 1 %}<small> · {{ observation.occurrences }} enregistrements</small>{% endif %}</td>
+        <tr><td><a href="{{ observation.source_url }}" rel="noopener noreferrer" target="_blank">{{ observation.filename }}</a>{% if 'data.gouv.fr/datasets/' in observation.source_url %}<small> · Catalogue, URL du fichier non connue</small>{% endif %}{% if observation.occurrences > 1 %}<small> · {{ observation.occurrences }} enregistrements</small>{% endif %}</td>
           <td>{{ observation.declared_publication_date|default('Non communiquée', true) }}</td>
           <td>{% if observation.base_amount_cents is not null %}{{ (observation.base_amount_cents / 100)|number_format(2, ',', ' ') }} €{% else %}Non communiqué{% endif %}</td>
           <td>{% if observation.modification_amount_cents is not null %}{{ (observation.modification_amount_cents / 100)|number_format(2, ',', ' ') }} €{% else %}—{% endif %}</td></tr>
@@ -116,7 +116,14 @@
     {% if marketDetails.source_declaration is not null %}
     <details class="budget-explain">
         <summary><strong>Voir la déclaration DECP originale complète</strong></summary>
-        <p class="budget-muted">Tous les champs originaux sont conservés sans interprétation : clauses, modalités, prix, observations et identifiants. Cette déclaration ne constitue pas une preuve de paiement.</p>
+        <p class="budget-muted">Les champs déclarés dans le fichier consolidé sont restitués sans interprétation. La structure JSON a été canonisée pour vérification ; ce n'est pas une preuve de paiement.</p>
+        {% if marketDetails.original_declaration_source is not null %}
+            <p><strong>Provenance exacte de cette déclaration :</strong> {{ marketDetails.original_declaration_source.filename }}
+                · <a href="{{ marketDetails.original_declaration_source.source_url }}" target="_blank" rel="noopener noreferrer">{% if 'data.gouv.fr/datasets/' in marketDetails.original_declaration_source.source_url %}Catalogue officiel (URL directe indisponible){% else %}Fichier source{% endif %}</a>
+                · SHA-256 fichier : <code>{{ marketDetails.original_declaration_source.sha256 }}</code>
+                · SHA-256 déclaration canonisée : <code>{{ marketDetails.original_declaration_source.record_sha }}</code>
+            </p>
+        {% endif %}
         <pre style="max-height:30rem;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere">{{ marketDetails.source_declaration|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
     </details>
     {% endif %}
@@ -165,6 +172,15 @@
             <h3><a href="{{ civic_path('site_market_detail', {key:contract.contract_key}) }}#contrat-detail">{{ contract.object }}</a></h3>
             <p><strong>{% if contract.amount_initial_cents is not null %}{{ (contract.amount_initial_cents / 100)|number_format(2, ',', ' ') }} € (valeur contractuelle déclarée){% else %}Montant non communiqué{% endif %}</strong>
               · <strong>{{ contract.source_count }} fichier(s) indexé(s)</strong> · Acheteur {{ contract.buyer_id }} · Lieu : {{ contract.location_type }} {{ contract.location_code }} · CPV {{ contract.cpv }}.</p>
+            <p class="budget-muted"><strong>Source :</strong> Ministères économiques et financiers — DECP consolidées
+              {% if contract.source_url %}
+                · <a href="{{ contract.source_url }}" rel="noopener noreferrer" target="_blank">{% if 'data.gouv.fr/datasets/' in contract.source_url %}Catalogue officiel (URL exacte non disponible){% else %}Fichier source officiel{% endif %}</a>
+              {% else %}
+                · <a href="https://www.data.gouv.fr/datasets/donnees-essentielles-de-la-commande-publique-fichiers-consolides">Catalogue officiel (URL exacte non disponible)</a>
+              {% endif %}
+              {% if contract.source_filename %} · {{ contract.source_filename }}{% endif %}
+              {% if contract.source_sha %} · SHA-256 : <code>{{ contract.source_sha }}</code>{% endif %}
+            </p>
             <a href="{{ civic_path('site_market_detail', {key:contract.contract_key}) }}#contrat-detail">Voir l’historique, les titulaires et les sources</a>
           </article>
         {% endfor %}
