@@ -1,4 +1,4 @@
-# Populorum — インストールと更新
+# Populorum — 初回インストール
 
 🇯🇵 **日本語 · ja_JP**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 `&&` により、いずれかの手順でエラーが発生すると処理が止まります。修正してから続けてください。http://127.0.0.1:5412/ を開きます。Ctrl+C でローカルサーバーを停止できます。初期化時に `.env.local` が存在しない場合のみ作成されます。稼働中のデータベースは `var/populorum.sqlite` です。プロファイラーの Cookie には、手動のローカルテストでも HTTPS が必要です。
-
-## 更新
-
-ソースを置き換える前にサーバーを停止し、データベース、ファイル、鍵をバックアップしてください。`.env.local`、`.guardian-shield/`、`var/` を保持します。稼働中のデータベースを `data/populorum-demo.sqlite` で上書きしないでください。`apps/symfony` から実行します。
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-すべての手順が成功したら、ローカルサーバーを再起動します。
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## トラブルシューティング
 
