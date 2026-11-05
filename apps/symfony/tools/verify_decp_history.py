@@ -17,7 +17,7 @@ def verify(path:Path) -> bool:
         required={'metadata','contracts','imports','contract_sources','contract_publications'}
         if not required<=names:
             print('ERREUR : tables absentes :',', '.join(sorted(required-names)));return False
-        if db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()!=('populorum-decp-1',):
+        if db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()!=('populorum-decp-2',):
             print('ERREUR : schéma DECP non reconnu');return False
         contracts=db.execute('SELECT COUNT(*) FROM contracts').fetchone()[0]
         appearances=db.execute('SELECT COUNT(*) FROM contract_sources').fetchone()[0]
