@@ -212,6 +212,8 @@ final class PublicProcurementData
         };
         $sql = 'SELECT c.contract_key,c.kind,c.buyer_id,c.original_id,c.object,c.cpv,c.nature,c.notice_date,
             c.amount_initial_cents,c.amount_amended_cents,c.location_type,c.location_code,c.source_name,
+            (SELECT i.source_url FROM imports i WHERE i.sha256=c.source_sha LIMIT 1) AS source_url,
+            (SELECT i.filename FROM imports i WHERE i.sha256=c.source_sha LIMIT 1) AS source_filename,
             (SELECT COUNT(*) FROM contract_sources cs WHERE cs.contract_key=c.contract_key) AS source_count
             FROM contracts c' . $condition . ' ORDER BY ' . $orderBy . ' LIMIT ? OFFSET ?';
         $stmt = $db->prepare($sql);
@@ -266,10 +268,18 @@ final class PublicProcurementData
         $row['original_records'] = $stmt->fetchAll();
         // One authentic original declaration is available for full inspection.
         // The index stores all occurrences; rendering remains bounded.
-        $stmt = $db->prepare('SELECT record_zlib FROM contract_records WHERE contract_key=?
-            ORDER BY source_sha,kind,ordinal LIMIT 1');
+        $stmt = $db->prepare('SELECT cr.record_zlib,cr.record_sha,i.filename,i.source_url,i.sha256
+            FROM contract_records cr JOIN imports i ON i.sha256=cr.source_sha
+            WHERE cr.contract_key=? ORDER BY i.filename DESC,cr.kind,cr.ordinal LIMIT 1');
         $stmt->execute([$key]);
-        $compressed = $stmt->fetchColumn();
+        $original = $stmt->fetch();
+        $row['original_declaration_source'] = $original ? [
+            'filename' => $original['filename'],
+            'source_url' => $original['source_url'],
+            'sha256' => $original['sha256'],
+            'record_sha' => $original['record_sha'],
+        ] : null;
+        $compressed = $original['record_zlib'] ?? null;
         $row['source_declaration'] = null;
         if (is_string($compressed)) {
             $json = @gzuncompress($compressed, 2_000_000);
