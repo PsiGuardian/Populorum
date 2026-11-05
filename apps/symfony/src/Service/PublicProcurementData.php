@@ -211,7 +211,7 @@ final class PublicProcurementData
             default => 'c.notice_date DESC,c.contract_key',
         };
         $sql = 'SELECT c.contract_key,c.kind,c.buyer_id,c.original_id,c.object,c.cpv,c.nature,c.notice_date,
-            c.amount_initial_cents,c.amount_amended_cents,c.location_type,c.location_code,c.source_name,
+            c.amount_initial_cents,c.amount_amended_cents,c.location_type,c.location_code,c.source_name,c.source_sha,
             (SELECT i.source_url FROM imports i WHERE i.sha256=c.source_sha LIMIT 1) AS source_url,
             (SELECT i.filename FROM imports i WHERE i.sha256=c.source_sha LIMIT 1) AS source_filename,
             (SELECT COUNT(*) FROM contract_sources cs WHERE cs.contract_key=c.contract_key) AS source_count
