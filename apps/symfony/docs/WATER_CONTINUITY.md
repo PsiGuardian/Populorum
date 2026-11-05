@@ -4,7 +4,7 @@ Le référentiel existant `EssentialServices::CATALOG` couvre 28 fonctions. Les 
 
 ## Interface
 
-Ouvrir `/services?plan=water` puis sélectionner un scénario dans le panneau « Graphe cause → effet ». Les six identifiants stables sont :
+Ouvrir `/services/water` puis sélectionner un scénario dans le panneau « Graphe cause → effet ». Les six identifiants stables sont :
 
 - `contamination` : suspicion de contamination, y compris substances volatiles ;
 - `intrusion` : défaut d'intégrité ou retour de fluides ;
@@ -14,6 +14,12 @@ Ouvrir `/services?plan=water` puis sélectionner un scénario dans le panneau «
 - `conflict` : perturbations multiples en crise civile ou conflit armé.
 
 L'affichage provient de `WaterContinuityGraph`. Les flèches indiquent des dépendances possibles, pas des prédictions. Les nœuds affectés relèvent d'un scénario pédagogique fixe. Un approvisionnement de substitution n'est jamais automatiquement considéré comme sûr : sa validation sanitaire reste nécessaire.
+
+Les routes canoniques sont `/services`, `/services/{plan}` et
+`/services/{plan}/{scenario}` ; l'utilisation de `?plan=` ou `?scenario=`
+est refusée. La route `/services/{plan}/{scenario}` n'accepte un scénario que
+pour le plan `water`. Un identifiant inconnu renvoie 404. Aucune redirection
+historique n'est définie.
 
 ## Contrat de sécurité
 
