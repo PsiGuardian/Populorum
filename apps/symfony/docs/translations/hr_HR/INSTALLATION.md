@@ -1,4 +1,4 @@
-# Populorum — Instalacija i ažuriranje
+# Populorum — Prva instalacija
 
 🇭🇷 **Hrvatski · hr_HR**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 Operatori `&&` zaustavljaju niz pri pogrešci: ispravite je prije nastavka. Otvorite http://127.0.0.1:5412/; Ctrl+C zaustavlja lokalni poslužitelj. Inicijalizacija stvara `.env.local` samo ako datoteka ne postoji. Aktivna baza je `var/populorum.sqlite`. Kolačići profilera zahtijevaju HTTPS, čak i pri ručnom lokalnom testiranju.
-
-## Ažuriranje
-
-Prije zamjene izvornog koda zaustavite poslužitelj i sigurnosno kopirajte bazu, datoteke i ključeve. Sačuvajte `.env.local`, `.guardian-shield/` i `var/`. Aktivnu bazu nikada nemojte zamijeniti datotekom `data/populorum-demo.sqlite`. U `apps/symfony` pokrenite:
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-Nakon uspješnog završetka svih koraka ponovno pokrenite lokalni poslužitelj:
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## Rješavanje problema
 

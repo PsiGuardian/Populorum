@@ -57,7 +57,7 @@
 ## Installer le logiciel (version propre)
 
 - **[Installation en commandes terminal (Arch Linux et autres distributions)](LIRE_AVANT_INSTALLATION.md)** — archive vérifiée, commandes directes, données parlementaires facultatives et serveur de démonstration.
-- **[Release v0.12.0-clean](https://github.com/PsiGuardian/Populorum/releases/tag/v0.12.0-clean)** — distribution propre et vérifiée après publication réussie de la CI.
+- **[Release v0.12.1-clean](https://github.com/PsiGuardian/Populorum/releases/tag/v0.12.1-clean)** — distribution propre et vérifiée après publication réussie de la CI.
 - **[Catalogue des propositions de loi et ressources du Sénat](apps/symfony/docs/POLICY_CATALOG.md)** — import d'une base neuve, rapports précis, exposés des motifs, délibération causale avec historique.
 - **[Releases du logiciel et des données](https://github.com/PsiGuardian/Populorum/releases)** — récupérer séparément les jeux de données nationaux facultatifs.
 - **[Archive DECP de 1,9 Go, sources originales et contrôle SHA-256](apps/symfony/docs/ARCHIVES_DECP.md)** — fichiers volontairement exclus du dépôt Git.
@@ -67,7 +67,7 @@ Le site de démonstration fonctionne sans index national DECP. Une release du lo
 ## Documentation
 
 - [Application Symfony — installation et utilisation](apps/symfony/README.md)
-- [Mise à jour, migrations et rapports de performances](LIRE_AVANT_INSTALLATION.md)
+- [Installation neuve, contrôles et rapports de performances](LIRE_AVANT_INSTALLATION.md)
 - [Founding Charter — French](CHARTER.md)
 - [Founding Charter — 28 locales](docs/translations/README.md)
 - [Cahier des charges — Français](docs/specifications/REQUIREMENTS.fr.md)

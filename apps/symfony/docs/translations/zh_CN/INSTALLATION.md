@@ -1,4 +1,4 @@
-# Populorum — 安装与更新
+# Populorum — 首次安装
 
 🇨🇳 **简体中文 · zh_CN**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 任何一步失败时，`&&` 都会停止后续命令；修复错误后再继续。打开 http://127.0.0.1:5412/；按 Ctrl+C 停止本地服务器。初始化仅在 `.env.local` 不存在时创建该文件。运行中的数据库为 `var/populorum.sqlite`。Profiler 的 Cookie 需要 HTTPS，即使是手动本地测试也一样。
-
-## 更新
-
-替换源代码前，停止服务器并备份数据库、文件和密钥。保留 `.env.local`、`.guardian-shield/` 和 `var/`。切勿用 `data/populorum-demo.sqlite` 替换正在使用的数据库。在 `apps/symfony` 中执行：
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-所有步骤成功完成后，重新启动本地服务器：
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## 故障排查
 

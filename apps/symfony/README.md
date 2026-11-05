@@ -1,4 +1,4 @@
-> **Installation rapide des bases nationales (sans analyse SQLite intégrale obligatoire) :** [LIRE_AVANT_INSTALLATION.md](https://github.com/PsiGuardian/Populorum/blob/main/LIRE_AVANT_INSTALLATION.md). Cette page inclut les commandes facultatives pour télécharger les bases INSEE, DECP (marchés publics) et SSMSI ; l'index DECP v2 se reconstruit depuis data.gouv.fr (l'archive DECP v1 historique n'est plus compatible). La release [v0.12.0-clean](https://github.com/PsiGuardian/Populorum/releases/tag/v0.12.0-clean) présente également les propositions de loi réelles et leurs documents sénatoriaux. L'import parlementaire s'effectue sur une base propre après installation, sans commande de nettoyage d'ancien cache.
+> **Installation rapide des bases nationales (sans analyse SQLite intégrale obligatoire) :** [LIRE_AVANT_INSTALLATION.md](https://github.com/PsiGuardian/Populorum/blob/main/LIRE_AVANT_INSTALLATION.md). Cette page inclut les commandes facultatives pour télécharger les bases INSEE, DECP (marchés publics) et SSMSI ; l'index DECP v2 se reconstruit depuis data.gouv.fr (l'archive DECP v1 historique n'est plus compatible). La release [v0.12.1-clean](https://github.com/PsiGuardian/Populorum/releases/tag/v0.12.1-clean) présente également les propositions de loi réelles et leurs documents sénatoriaux. L'import parlementaire s'effectue sur une base propre après installation, sans commande de nettoyage d'ancien cache.
 
 # Démos Kratos — Symfony 8.1 et SQLite
 
@@ -10,7 +10,7 @@ Le projet reste une simulation fictive. **Les 34 875 communes du COG INSEE 2026*
 
 ## Installation — 28 locales
 
-Choisissez votre langue pour lire le guide d’installation et de mise à jour : prérequis, démarrage local, mises à jour et dépannage.
+Choisissez votre langue pour le guide de première installation : prérequis, démarrage local et dépannage. La version alpha part d'une installation neuve, sans reprise de base antérieure.
 
 | Langue | Guide d’installation |
 |---|---|
@@ -151,7 +151,7 @@ composer style:check
 php bin/console doctrine:schema:validate --env=demo
 ```
 
-Les scénarios historiques à neuf personnages sont conservés dans `data/reference-scenario.json` pour les régressions. Les nouveaux laboratoires utilisent `data/scenario.json.gz` (JSON complet compressé sans perte). Un laboratoire déjà créé ne change jamais de population ou de texte voté au chargement d’une mise à jour.
+Les scénarios historiques à neuf personnages sont conservés dans `data/reference-scenario.json` pour les régressions. Les nouveaux laboratoires utilisent `data/scenario.json.gz` (JSON complet compressé sans perte). Chaque nouveau laboratoire est initialisé sans reprendre les votes ou données d'une installation antérieure.
 
 ## Personnages évolutifs — lot 0.4
 

@@ -1,4 +1,4 @@
-# Populorum — Pemasangan dan kemas kini
+# Populorum — Pemasangan pertama
 
 🇲🇾 **Bahasa Melayu · ms_MY**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 Operator `&&` menghentikan turutan jika berlaku ralat: betulkan sebelum meneruskan. Buka http://127.0.0.1:5412/; Ctrl+C menghentikan pelayan setempat. Pengawalan mula mencipta `.env.local` hanya jika fail itu belum wujud. Pangkalan data aktif ialah `var/populorum.sqlite`. Kuki profiler memerlukan HTTPS, termasuk untuk ujian setempat secara manual.
-
-## Kemas kini
-
-Hentikan pelayan dan sandarkan pangkalan data, fail serta kunci sebelum menggantikan sumber. Kekalkan `.env.local`, `.guardian-shield/` dan `var/`. Jangan sekali-kali menggantikan pangkalan data aktif dengan `data/populorum-demo.sqlite`. Dari `apps/symfony`, jalankan:
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-Selepas semua langkah berjaya, mulakan semula pelayan setempat:
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## Penyelesaian masalah
 

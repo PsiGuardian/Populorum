@@ -47,6 +47,7 @@ jobs:
       - run: composer test
       - run: python3 tests/decp_v2_evidence_test.py
       - run: python3 -m py_compile tools/import_decp.py tools/import_procurement_evidence.py tools/enrich_procurement_boamp.py
+      - run: python3 tests/fresh_install_contract_test.py
       - run: python3 tests/decp_pipeline_test.py
       - run: python3 tests/decp_history_test.py
       - run: python3 tests/decp_sql_inputs_test.py
@@ -145,7 +146,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="v0.12.0-clean"
+          TAG="v0.12.1-clean"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release exists, nothing replaced."
             exit 0
@@ -164,5 +165,5 @@ jobs:
           fi
           gh release create "$TAG" "release/$ARCHIVE" release/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
-            --title "Populorum v0.12.0 — marchés publics sourcés et index DECP v2" \
-            --notes-file docs/RELEASE_v0.12.0-clean.md
+            --title "Populorum v0.12.1 — installation neuve et marchés publics sourcés" \
+            --notes-file docs/RELEASE_v0.12.1-clean.md

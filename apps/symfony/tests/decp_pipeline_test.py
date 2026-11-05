@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Offline tests, offline and isolated. Never writes project databases."""
+"""Offline regression for the fresh-install-only national DECP v2 pipeline."""
 from __future__ import annotations
+
 import importlib.util
 import json
 from pathlib import Path
@@ -10,13 +11,16 @@ import subprocess
 import sys
 import tempfile
 
-HERE=Path(__file__).resolve().parents[1] / 'tools'
+HERE=Path(__file__).resolve().parents[1]/'tools'
 spec=importlib.util.spec_from_file_location('pipeline',HERE/'decp_pipeline.py')
 p=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(p)
 
-def save(path:Path,records:list[dict]):
-    path.write_text(json.dumps({'marches':{'marche':records,'contrat-concession':[]}},ensure_ascii=False),encoding='utf-8')
+
+def save(path:Path, records:list[dict]):
+    path.write_text(json.dumps({'marches':{'marche':records,'contrat-concession':[]}},
+                               ensure_ascii=False),encoding='utf-8')
+
 
 def record(identifier:str):
     return {'id':identifier,'acheteur':{'id':'21350068900251'},'codeCPV':'90500000',
@@ -25,167 +29,143 @@ def record(identifier:str):
             'lieuExecution':{'typeCode':'Code département','code':'35'},
             'titulaires':[{'titulaire':{'typeIdentifiant':'SIRET','id':'35005058900240'}}]}
 
-def main():
-    original_importer=HERE/'import_decp.py'
-    if not original_importer.exists():
-        # Test bundle can run in project, where importer is already installed.
-        raise AssertionError('import_decp.py absent du dossier tools')
-    with tempfile.TemporaryDirectory(prefix='populorum-v8-test-') as td:
-        home=Path(td)
-        (home/'tools').mkdir();shutil.copyfile(original_importer,home/'tools/import_decp.py')
-        p.ROOT=home
-        data=home/'sources';data.mkdir()
-        first=data/'decp-2026-07.json';second=data/'decp-2026-08.json'
-        save(first,[record('V8TEST-1')]);save(second,[record('V8TEST-1'),record('V8TEST-2')])
-        public=home/'public.sqlite';stage=home/'staging.sqlite'
-        # An empty legacy index from an archive must never block a first V8 import.
-        empty_public=home/'empty-public.sqlite';empty_public.touch()
-        empty_stage=home/'empty-staging.sqlite'
-        p.import_all(data,empty_stage,empty_public)
-        assert p.db_info(empty_stage)['contracts']==2
-        quick = p.fast_status(empty_stage)
-        assert quick['contracts_present'] and quick['imports_present']
-        assert quick['schema'] == 'populorum-decp-2'
-        assert quick['integrity_scan'].startswith('not_run')
-        assert empty_public.stat().st_size==0, 'Import altered an empty public index'
-        # CLI verification/status must not reject a valid staging due to an old zero-byte public file.
-        for command in ('status','verify'):
-            checked=subprocess.run(
-                [sys.executable,str(HERE/'decp_pipeline.py'),command,
-                 '--staging',str(empty_stage),'--public',str(empty_public),
-                 '--download-dir',str(data)],
-                check=True,capture_output=True,text=True)
-            assert 'sans tables DECP' in checked.stdout and 'travail' in checked.stdout.lower()
-            if command == 'status':
-                assert 'not_run' in checked.stdout, 'Status unexpectedly ran a full integrity check'
-        try:p.publish(empty_stage,empty_public,True)
-        except ValueError as ex:assert 'sans tables DECP' in str(ex)
-        else:raise AssertionError('Publishing over an empty public index was accepted')
-        assert empty_public.stat().st_size==0
-        assert p.db_info(empty_stage)['contracts']==2
-        empty_stage.unlink()
-        # A nonzero SQLite database with no user tables is another common archive placeholder.
-        shell_public=home/'shell-public.sqlite'
-        with sqlite3.connect(shell_public) as db:
-            db.execute('PRAGMA user_version=1')
-        assert shell_public.stat().st_size>0
-        assert p.is_empty_public_placeholder(shell_public)
-        shell_stage=home/'shell-staging.sqlite'
-        p.import_all(data,shell_stage,shell_public)
-        assert p.db_info(shell_stage)['contracts']==2
-        assert shell_public.stat().st_size>0
-        for command in ('status','verify'):
-            checked=subprocess.run(
-                [sys.executable,str(HERE/'decp_pipeline.py'),command,
-                 '--staging',str(shell_stage),'--public',str(shell_public),
-                 '--download-dir',str(data)],
-                check=True,capture_output=True,text=True)
-            assert 'sans tables DECP' in checked.stdout
-        try:p.publish(shell_stage,shell_public,True)
-        except ValueError as ex:assert 'sans tables DECP' in str(ex)
-        else:raise AssertionError('Publishing over shell SQLite was accepted')
-        shell_stage.unlink()
-        # A non-DECP database containing user tables must block importing from it.
-        foreign=home/'foreign.sqlite'
-        with sqlite3.connect(foreign) as db:
-            db.execute('CREATE TABLE other_data(id INTEGER)')
-        assert not p.is_empty_public_placeholder(foreign)
-        try:p.import_all(data,home/'foreign-staging.sqlite',foreign)
-        except ValueError as ex:assert 'Schéma DECP invalide' in str(ex)
-        else:raise AssertionError('Foreign DB was silently ignored')
-        subprocess.run([sys.executable,str(home/'tools/import_decp.py'),str(first),'--db',str(public)],check=True,stdout=subprocess.DEVNULL)
-        assert p.db_info(public)['contracts']==1
-        p.import_all(data,stage,public)
-        fresh=p.db_info(stage,deep=True)
-        assert fresh['contracts']==2 and fresh['imports']==2, fresh
-        assert p.db_info(public)['contracts']==1, 'Import overwrote the production index'
-        # Idempotent repeated import of both files, no duplicate contracts or imports
-        p.import_all(data,stage,public)
-        assert p.db_info(stage)['contracts']==2 and p.db_info(stage)['imports']==2
-        try:p.publish(stage,public,False)
-        except ValueError as ex: assert '--site-stopped' in str(ex)
-        else:raise AssertionError('Publication without confirmation was accepted')
-        p.publish(stage,public,True)
-        assert p.db_info(public)['contracts']==2
-        backups=list((home/'decp-backups').glob('public-*.sqlite'))
-        assert len(backups)==1 and p.db_info(backups[0])['contracts']==1, backups
-        assert not stage.exists()
-        # Failed import must not corrupt the current published index
-        bad=data/'decp-2026-09.json';bad.write_text('{"marches":{"marche":[',encoding='utf-8')
-        try:p.import_all(data,stage,public)
-        except subprocess.CalledProcessError:pass
-        else:raise AssertionError('Truncated JSON was accepted')
-        assert p.db_info(public)['contracts']==2
-        assert p.db_info(stage)['contracts']==2
-        bad.unlink()
-        # HTTPS Range resume test with an in-process stub, no internet access.
-        payload=first.read_bytes()
-        download_dir=home/'download';download_dir.mkdir()
-        name='decp-2026-07.json'
-        offset=37
-        (download_dir/(name+'.part')).write_bytes(payload[:offset])
-        (download_dir/(name+'.part.info')).write_text(json.dumps({'url':'https://example.org/'+name,'title':name}))
+
+def test_fresh_build(home:Path):
+    (home/'tools').mkdir()
+    shutil.copyfile(HERE/'import_decp.py',home/'tools/import_decp.py')
+    p.ROOT=home
+    sources=home/'sources'
+    sources.mkdir()
+    first=sources/'decp-2026-07.json'
+    second=sources/'decp-2026-08.json'
+    save(first,[record('ALPHA-1')])
+    save(second,[record('ALPHA-1'),record('ALPHA-2')])
+    public=home/'public.sqlite'
+    staging=home/'staging.sqlite'
+
+    assert not public.exists() and not staging.exists()
+    p.import_all(sources,staging,public)
+    fresh=p.db_info(staging,deep=True)
+    assert fresh['imports']==2 and fresh['contracts']==2
+    assert fresh['source_records']==3
+    assert not public.exists()
+
+    # Interrupted importer is resumable but cannot become a migration.
+    p.import_all(sources,staging,public)
+    assert p.db_info(staging,deep=True)['source_records']==3
+    assert p.fast_status(staging)['schema']=='populorum-decp-2'
+
+    # No publication when website has not been shut down.
+    try:p.publish(staging,public,False)
+    except ValueError as exc:assert '--site-stopped' in str(exc)
+    else:raise AssertionError('Publication without explicit confirmation')
+
+    # An invalid JSON must never overwrite the staged valid records.
+    invalid=sources/'decp-2026-09.json'
+    invalid.write_text('{"marches":{"marche":[',encoding='utf-8')
+    try:p.import_all(sources,staging,public)
+    except subprocess.CalledProcessError:pass
+    else:raise AssertionError('Truncated DECP JSON accepted')
+    assert p.db_info(staging,deep=True)['source_records']==3
+    invalid.unlink()
+
+    p.publish(staging,public,True)
+    assert not staging.exists()
+    assert p.db_info(public,deep=True)['source_records']==3
+    initial_hash=p.sha(public)
+
+    # Once a public DB exists, NO update, replacement, copy or migration.
+    for attempt in (lambda:p.make_staging(home/'fresh.sqlite',public),
+                    lambda:p.import_all(sources,home/'fresh.sqlite',public),
+                    lambda:p.publish(public,public,True)):
+        try:attempt()
+        except ValueError as exc:
+            assert 'existe' in str(exc) or 'présent' in str(exc)
+        else:raise AssertionError('Existing public index accepted for update')
+    assert p.sha(public)==initial_hash
+
+    # Existing foreign/legacy/empty databases must also never be overwritten.
+    for name, payload in [('foreign.sqlite','CREATE TABLE foreign_data(id INTEGER)'),
+                          ('legacy.sqlite',"""CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT);
+                              INSERT INTO metadata VALUES ('schema','populorum-decp-1');"""),
+                          ('empty.sqlite','')]:
+        existing=home/name
+        if payload:
+            with sqlite3.connect(existing) as db:db.executescript(payload)
+        else:
+            existing.touch()
+        before=p.sha(existing)
+        try:p.make_staging(home/(name+'.staging'),existing)
+        except ValueError:pass
+        else:raise AssertionError('Non-fresh SQLite source accepted: '+name)
+        assert p.sha(existing)==before
+    print('OK — DECP v2 built from blank directory, staged, verified and published once.')
+    print('OK — no import, migration, overwrite or compatibility for existing public DB.')
+
+
+def test_download_revisions(home:Path):
+    source=home/'source.json'
+    save(source,[record('DOWNLOAD-1')])
+    data=source.read_bytes()
+    folder=home/'downloads'
+    folder.mkdir()
+    name='decp-2026-07.json'
+    endpoint='https://example.org/'+name
+    offset=35
+    (folder/(name+'.part')).write_bytes(data[:offset])
+    (folder/(name+'.part.info')).write_text(json.dumps({'url':endpoint,'title':name}))
+
+    class Response:
+        headers={}
+        def __init__(self, body, status=200, start=0):
+            self.payload=body
+            self.status=status
+            self.pos=start
+            self.headers=({'Content-Range':f'bytes {start}-{len(body)-1}/{len(body)}'}
+                          if status==206 else {})
+        def __enter__(self):return self
+        def __exit__(self,*args):return False
+        def read(self, n):
+            block=self.payload[self.pos:self.pos+n]
+            self.pos+=len(block)
+            return block
+
+    orig=p.request
+    try:
         calls=[]
-        class FakeResponse:
-            status=206
-            url='https://example.org/'+name
-            headers={'Content-Range':f'bytes {offset}-{len(payload)-1}/{len(payload)}'}
-            def __init__(self):self.data=payload[offset:];self.pos=0
-            def __enter__(self):return self
-            def __exit__(self,*args):return False
-            def read(self, n):
-                b=self.data[self.pos:self.pos+n];self.pos+=len(b);return b
-        original=p.request
-        try:
-            def stub(url,headers=None):
-                calls.append(headers)
-                assert url=='https://example.org/'+name
-                assert headers=={'Range':f'bytes={offset}-'}
-                return FakeResponse()
-            p.request=stub
-            out=p.one_download({'title':name,'url':'https://example.org/'+name,'filesize':len(payload)},download_dir)
-            assert out.read_bytes()==payload and calls
-        finally:p.request=original
-        # Regression: unchanged resource is reused only when its revision and
-        # checksum are independently validated; an updated same-size resource
-        # must be downloaded rather than silently treated as current.
-        original_data=out.read_bytes()
-        previous={'url':'https://example.org/'+name,
-                  'last_modified':'2026-10-01T08:00:00+00:00',
-                  'filesize':len(original_data),'sha256':p.sha(out)}
-        def forbidden(*args,**kwargs):
-            raise AssertionError('Unchanged verified file triggered a download')
-        p.request=forbidden
-        same=p.one_download({'title':name,'url':previous['url'],
-                             'filesize':len(original_data),'last_modified':previous['last_modified']},
-                             download_dir,prior=previous)
-        assert same.read_bytes()==original_data
-        revised=original_data.replace(b'V8TEST-1',b'V8TEST-9')
-        assert revised!=original_data and len(revised)==len(original_data)
-        class RevisedResponse:
-            status=200
-            headers={}
-            url='https://example.org/'+name
-            def __enter__(self):return self
-            def __exit__(self,*args):return False
-            def __init__(self):self.pos=0
-            def read(self, n):
-                chunk=revised[self.pos:self.pos+n];self.pos+=len(chunk);return chunk
-        downloads=[]
-        def changed(url,headers=None):
-            downloads.append((url,headers))
-            return RevisedResponse()
-        p.request=changed
-        newer=p.one_download({'title':name,'url':previous['url'],
-                              'filesize':len(revised),'last_modified':'2026-11-04T08:00:00+00:00'},
-                             download_dir,prior=previous)
-        assert downloads and newer.read_bytes()==revised
-        p.request=original
-        print('OK — fichier consolidé republié avec même taille correctement actualisé')
-        print('OK — téléchargement interrompu repris via HTTP Range, octets identiques')
-        print('OK — public vide ou coquille SQLite préservés, staging valide, publication refusée')
-        print('OK — base étrangère non-DECP jamais ignorée silencieusement')
-        print('OK — index V8 : 2 fichiers, déduplication, réimportation idempotente')
-        print('OK — isolation de la base publique, publication explicite, sauvegarde restaurable')
-        print('OK — un fichier tronqué annule son import sans altérer la base publique')
-if __name__=='__main__':main()
+        def resume(url,headers=None):
+            calls.append(headers)
+            assert headers=={'Range':f'bytes={offset}-'}
+            return Response(data,206,start=offset)
+        p.request=resume
+        result=p.one_download({'title':name,'url':endpoint,'filesize':len(data)},folder)
+        assert calls and result.read_bytes()==data
+
+        prior={'url':endpoint,'last_modified':'2026-10-01',
+               'filesize':len(data),'sha256':p.sha(result)}
+        def must_not_call(*args,**kwargs):
+            raise AssertionError('Verified source triggered a needless download')
+        p.request=must_not_call
+        p.one_download({'title':name,'url':endpoint,'filesize':len(data),
+                        'last_modified':'2026-10-01'},folder,prior=prior)
+
+        newer=data.replace(b'DOWNLOAD-1',b'DOWNLOAD-9')
+        assert len(newer)==len(data) and newer!=data
+        p.request=lambda url,headers=None:Response(newer)
+        p.one_download({'title':name,'url':endpoint,'filesize':len(data),
+                        'last_modified':'2026-11-04'},folder,prior=prior)
+        assert result.read_bytes()==newer
+    finally:
+        p.request=orig
+    print('OK — HTTP Range resume and revised source of identical size.')
+
+
+def main():
+    with tempfile.TemporaryDirectory(prefix='populorum-decp-fresh-') as folder:
+        home=Path(folder)
+        test_fresh_build(home)
+        test_download_revisions(home)
+
+
+if __name__=='__main__':
+    main()

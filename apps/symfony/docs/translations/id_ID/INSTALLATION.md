@@ -1,4 +1,4 @@
-# Populorum — Instalasi dan pembaruan
+# Populorum — Instalasi pertama
 
 🇮🇩 **Bahasa Indonesia · id_ID**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 Operator `&&` menghentikan urutan jika terjadi kesalahan: perbaiki sebelum melanjutkan. Buka http://127.0.0.1:5412/; Ctrl+C menghentikan server lokal. Inisialisasi membuat `.env.local` hanya jika belum ada. Basis data aktif adalah `var/populorum.sqlite`. Cookie profiler memerlukan HTTPS, termasuk untuk pengujian lokal manual.
-
-## Pembaruan
-
-Hentikan server dan cadangkan basis data, berkas, serta kunci sebelum mengganti sumber. Pertahankan `.env.local`, `.guardian-shield/`, dan `var/`. Jangan pernah mengganti basis data aktif dengan `data/populorum-demo.sqlite`. Dari `apps/symfony`, jalankan:
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-Setelah semua langkah berhasil, jalankan kembali server lokal:
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## Pemecahan masalah
 

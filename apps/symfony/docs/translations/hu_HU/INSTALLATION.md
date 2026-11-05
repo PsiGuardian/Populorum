@@ -1,4 +1,4 @@
-# Populorum — Telepítés és frissítés
+# Populorum — Első telepítés
 
 🇭🇺 **Magyar · hu_HU**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 A `&&` operátorok hiba esetén megszakítják a parancssort: folytatás előtt javítsa a hibát. Nyissa meg a http://127.0.0.1:5412/ címet; a Ctrl+C leállítja a helyi szervert. Az inicializálás csak akkor hozza létre az `.env.local` fájlt, ha még nem létezik. Az aktív adatbázis: `var/populorum.sqlite`. A profiler sütijeihez HTTPS szükséges, kézi helyi teszt esetén is.
-
-## Frissítés
-
-A forrásfájlok cseréje előtt állítsa le a szervert, és készítsen biztonsági másolatot az adatbázisról, a fájlokról és a kulcsokról. Őrizze meg az `.env.local`, `.guardian-shield/` és `var/` tartalmát. Az aktív adatbázist soha ne írja felül a `data/populorum-demo.sqlite` fájllal. Az `apps/symfony` könyvtárban futtassa:
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-Az összes lépés sikeres befejezése után indítsa újra a helyi szervert:
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## Hibaelhárítás
 

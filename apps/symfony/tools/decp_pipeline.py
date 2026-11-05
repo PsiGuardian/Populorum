@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""DECP orchestrator: resumable downloads, isolated SQLite import, explicit publication.
+"""DECP orchestrator: official source downloads and fresh SQLite import; no database upgrades.
 
-This script uses the reusable tools/import_decp.py data parser. It does not migrate Doctrine.
+This script builds a new DECP v2 index from original data. No existing public DB is read, replaced or migrated.
 Run from apps/symfony: python3 tools/decp_pipeline.py all
 Then stop the Symfony server, and explicitly publish with: ... publish --site-stopped
 """
@@ -30,7 +30,7 @@ SOURCES = BASE / 'decp-sources'
 API = 'https://www.data.gouv.fr/api/1/datasets/donnees-essentielles-de-la-commande-publique-fichiers-consolides/'
 NAME = re.compile(r'^decp-[0-9]{4}-[0-9]{2}\.json$', re.I)
 REQUIRED = ('metadata','imports','contracts','participants','changes','contract_sources','concession_finance','contract_records','procurement_evidence')
-USER_AGENT = 'Populorum-DECP-V8/1.0 (national public open data import)'
+USER_AGENT = 'Populorum-DECP-V2/1.0 (national public open data import)'
 
 
 def stamp() -> str:
@@ -242,52 +242,19 @@ def fast_status(path:Path) -> dict:
             'integrity_scan':'not_run (optional: verify)'}
 
 
-def is_empty_public_placeholder(path:Path) -> bool:
-    """Only an empty SQLite shell may be ignored during V8 staging bootstrap.
-
-    A foreign DB with tables or an unreadable DB is never silently discarded.
-    The public file itself is neither modified nor removed.
-    """
-    if path.stat().st_size == 0:
-        return True
-    with closing(sqlite3.connect(f'file:{path.resolve()}?mode=ro',uri=True,timeout=30)) as db:
-        return db.execute(
-            "SELECT 1 FROM sqlite_master WHERE type IN ('table','view','trigger') "
-            "AND name NOT LIKE 'sqlite_%' LIMIT 1"
-        ).fetchone() is None
-
-
 def make_staging(staging:Path=STAGING, public:Path=PUBLIC):
-    if staging.exists():
+    """Fresh-install only: resume a staging index, never read/copy an older public DB."""
+    if public.exists() or public.is_symlink():
+        raise ValueError(
+            'Un index DECP public existe déjà : cette version exige une installation neuve. '
+            'Utiliser un dossier de destination vide; aucun index existant n’est remplacé.'
+        )
+    if staging.exists() or staging.is_symlink():
         db_info(staging)
+        print('Reprise d’un index de travail DECP v2 déjà vérifié :',staging)
         return
     staging.parent.mkdir(parents=True,exist_ok=True)
-    if not public.exists():
-        print('Nouvelle base de travail (pas de base DECP publique existante).')
-        return
-    if is_empty_public_placeholder(public):
-        print('Index public sans tables DECP : amorçage indépendant du staging V8 ; fichier public conservé.')
-        return
-    with closing(sqlite3.connect(f'file:{public.resolve()}?mode=ro',uri=True)) as db:
-        if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='metadata'").fetchone():
-            raise ValueError('Schéma DECP invalide : table metadata absente.')
-        found=db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()
-    if found and found[0]=='populorum-decp-1':
-        print('Reconstruction alpha v2 : la base publique v1 est conservée; création indépendante du staging v2.')
-        return
-    db_info(public)
-    tmp=staging.with_name(staging.name+'.creating')
-    tmp.unlink(missing_ok=True)
-    try:
-        with closing(sqlite3.connect(f'file:{public.resolve()}?mode=ro',uri=True,timeout=60)) as source:
-            with closing(sqlite3.connect(tmp)) as target:
-                source.backup(target,pages=2000,sleep=.1)
-        db_info(tmp)
-        os.replace(tmp,staging)
-    except BaseException:
-        tmp.unlink(missing_ok=True)
-        raise
-    print('Snapshot SQLite public vers base de travail :',staging)
+    print('Création de l’index DECP v2 neuf dans :',staging)
 
 
 def checkpoint_stage(path:Path):
@@ -312,7 +279,7 @@ def import_all(folder:Path=SOURCES,staging:Path=STAGING,public:Path=PUBLIC):
     if not isinstance(source_urls,dict):
         raise ValueError('Manifeste des sources DECP invalide')
     importer=ROOT/'tools/import_decp.py'
-    if not importer.exists():raise ValueError('Script V7 manquant : '+str(importer))
+    if not importer.exists():raise ValueError('Importeur DECP v2 manquant : '+str(importer))
     for n,p in enumerate(files,1):
         print(f'IMPORT [{n}/{len(files)}] {p.name}',flush=True)
         cmd=[sys.executable,str(importer),str(p),'--db',str(staging)]
@@ -349,45 +316,31 @@ def import_all(folder:Path=SOURCES,staging:Path=STAGING,public:Path=PUBLIC):
                     print('DOCUMENTS SOURCÉS :',evidence_file.name,added,'ajoutés.')
     checkpoint_stage(staging)
     print('BASE DE TRAVAIL VÉRIFIÉE :',db_info(staging,deep=True))
-    print('La base publique est inchangée. Arrêter le serveur avant la commande publish --site-stopped.')
+    print('Index de travail prêt. Arrêter le serveur avant publish --site-stopped (destination publique initialement absente).')
 
 
 def publish(staging:Path=STAGING, public:Path=PUBLIC, stopped:bool=False):
-    if not stopped:raise ValueError('Publication refusée : exécuter uniquement avec --site-stopped après arrêt réel du serveur web.')
-    if not staging.exists():raise ValueError('Aucun index de travail. Importer les données en premier.')
+    """Publish a verified fresh index without replacing any existing file."""
+    if not stopped:
+        raise ValueError('Publication refusée : arrêter le serveur puis passer --site-stopped.')
+    if public.exists() or public.is_symlink():
+        raise ValueError(
+            'Index DECP public déjà présent : publication réservée à une installation neuve.'
+        )
+    if not staging.exists() or staging.is_symlink():
+        raise ValueError('Index de travail absent ou invalide : lancer import puis verify.')
     checkpoint_stage(staging)
-    fresh=db_info(staging,deep=True)
-    if public.exists() and is_empty_public_placeholder(public):
-        raise ValueError('Index public sans tables DECP : arrêter le site et déplacer manuellement ce fichier avant publication ; rien n’a été remplacé.')
-    if public.exists():
-        # Callers must stop the site first. Refuse if the public journal is still active.
-        with closing(sqlite3.connect(public,timeout=10)) as db:
-            db.execute('PRAGMA busy_timeout=10000')
-            status=db.execute('PRAGMA wal_checkpoint(TRUNCATE)').fetchone()
-            if status and status[0]!=0:raise ValueError('Lecteurs encore actifs (WAL occupé) : arrêter le serveur.')
-            mode=db.execute('PRAGMA journal_mode=DELETE').fetchone()[0]
-            if mode.lower()!='delete':raise ValueError('Base publique encore en WAL : arrêter les lecteurs.')
-        with closing(sqlite3.connect(f'file:{public.resolve()}?mode=ro',uri=True)) as db:
-            old_version=db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()
-        if old_version and old_version[0]=='populorum-decp-2':
-            previous=db_info(public)
-            if fresh['contracts']<previous['contracts'] or fresh['imports']<previous['imports']:
-                raise ValueError('La nouvelle base est moins complète que la base publique; publication refusée.')
-        elif not old_version or old_version[0]!='populorum-decp-1':
-            raise ValueError('Version publique inconnue : publication refusée.')
-        backups=public.parent/'decp-backups'
-        backups.mkdir(parents=True,exist_ok=True)
-        backup=backups/(public.stem+'-'+stamp()+'.sqlite')
-        with closing(sqlite3.connect(f'file:{public.resolve()}?mode=ro',uri=True,timeout=30)) as source:
-            with closing(sqlite3.connect(backup)) as target:source.backup(target,pages=2000,sleep=.1)
-        with closing(sqlite3.connect(backup)) as db:
-            if db.execute('PRAGMA quick_check').fetchone()[0]!='ok':
-                raise ValueError('Sauvegarde de la base publique non vérifiable.')
-        print('Sauvegarde publique vérifiée :',backup)
-    else:
-        public.parent.mkdir(parents=True,exist_ok=True)
-    os.replace(staging,public)
-    print('INDEX NATIONAL PUBLIÉ :',public)
+    db_info(staging,deep=True)
+    public.parent.mkdir(parents=True,exist_ok=True)
+    # An atomic hard link refuses any existing destination, even if another
+    # process created it between the prior existence check and publication.
+    # Both files live in the same data/research filesystem.
+    try:
+        os.link(staging,public)
+    except FileExistsError as exc:
+        raise ValueError('Index public créé entretemps : aucun écrasement autorisé.') from exc
+    staging.unlink()
+    print('INDEX DECP v2 INSTALLÉ POUR LA PREMIÈRE FOIS :',public)
     print('Statistiques :',db_info(public))
 
 
@@ -406,17 +359,12 @@ def main():
     if opts.command=='verify':
         print('Base de travail :',db_info(opts.staging,deep=True))
         if opts.public.exists():
-            if is_empty_public_placeholder(opts.public):
-                print('Base publique : coquille SQLite sans tables DECP, index non publié.')
-            else:
-                print('Base publique :',db_info(opts.public))
+            print('Index public déjà présent : ce pipeline ne le remplace jamais.')
     if opts.command=='publish':publish(opts.staging,opts.public,opts.site_stopped)
     if opts.command=='status':
         for name,p in [('publique',opts.public),('travail',opts.staging)]:
             if not p.exists():
                 print(name,'absente')
-            elif p == opts.public and is_empty_public_placeholder(p):
-                print(name,p,'coquille SQLite sans tables DECP, index non publié')
             else:
                 try:
                     print(name,p,fast_status(p))

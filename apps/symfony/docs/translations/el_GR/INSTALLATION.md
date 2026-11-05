@@ -1,4 +1,4 @@
-# Populorum — Εγκατάσταση και ενημέρωση
+# Populorum — Πρώτη εγκατάσταση
 
 🇬🇷 **Ελληνικά · el_GR**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 Οι τελεστές `&&` διακόπτουν τη σειρά εντολών σε περίπτωση σφάλματος: διορθώστε το πριν συνεχίσετε. Ανοίξτε το http://127.0.0.1:5412/· το Ctrl+C σταματά τον τοπικό διακομιστή. Η αρχικοποίηση δημιουργεί το `.env.local` μόνο αν δεν υπάρχει. Η ενεργή βάση είναι το `var/populorum.sqlite`. Τα cookies του profiler απαιτούν HTTPS, ακόμη και σε χειροκίνητη τοπική δοκιμή.
-
-## Ενημέρωση
-
-Σταματήστε τον διακομιστή και δημιουργήστε αντίγραφα ασφαλείας της βάσης, των αρχείων και των κλειδιών πριν αντικαταστήσετε τον πηγαίο κώδικα. Διατηρήστε τα `.env.local`, `.guardian-shield/` και `var/`. Μην αντικαθιστάτε ποτέ μια ενεργή βάση με το `data/populorum-demo.sqlite`. Από το `apps/symfony`, εκτελέστε:
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-Αφού ολοκληρωθούν επιτυχώς όλα τα βήματα, επανεκκινήστε τον τοπικό διακομιστή:
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## Αντιμετώπιση προβλημάτων
 

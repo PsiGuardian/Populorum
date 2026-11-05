@@ -1,4 +1,4 @@
-# Populorum — Installazione e aggiornamento
+# Populorum — Prima installazione
 
 🇮🇹 **Italiano · it_IT**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 Gli operatori `&&` interrompono la sequenza se un passaggio fallisce: correggere l’errore prima di continuare. Aprire http://127.0.0.1:5412/; Ctrl+C arresta il server locale. L’inizializzazione crea `.env.local` solo se non esiste. Il database attivo è `var/populorum.sqlite`. I cookie del profiler richiedono HTTPS, anche per una prova manuale locale.
-
-## Aggiornamento
-
-Arrestare il server e salvare database, file e chiavi prima di sostituire i sorgenti. Conservare `.env.local`, `.guardian-shield/` e `var/`. Non sostituire mai un database attivo con `data/populorum-demo.sqlite`. Da `apps/symfony`, eseguire:
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-Dopo il completamento di tutti i passaggi, riavviare il server locale:
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## Risoluzione dei problemi
 

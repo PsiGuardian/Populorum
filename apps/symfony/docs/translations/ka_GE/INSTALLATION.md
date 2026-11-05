@@ -1,4 +1,4 @@
-# Populorum — ინსტალაცია და განახლება
+# Populorum — პირველი ინსტალაცია
 
 🇬🇪 **ქართული · ka_GE**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 შეცდომის შემთხვევაში `&&` ბრძანებების მიმდევრობას აჩერებს: გაგრძელებამდე გამოასწორეთ შეცდომა. გახსენით http://127.0.0.1:5412/; Ctrl+C აჩერებს ლოკალურ სერვერს. ინიციალიზაცია `.env.local`-ს ქმნის მხოლოდ მაშინ, თუ ფაილი არ არსებობს. აქტიური მონაცემთა ბაზაა `var/populorum.sqlite`. პროფაილერის ქუქიებს HTTPS სჭირდება, ხელით შესრულებული ლოკალური ტესტის დროსაც.
-
-## განახლება
-
-წყაროების შეცვლამდე გააჩერეთ სერვერი და შექმენით მონაცემთა ბაზის, ფაილებისა და გასაღებების სარეზერვო ასლები. შეინარჩუნეთ `.env.local`, `.guardian-shield/` და `var/`. აქტიური მონაცემთა ბაზა არასოდეს ჩაანაცვლოთ `data/populorum-demo.sqlite` ფაილით. `apps/symfony`-დან გაუშვით:
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-ყველა ნაბიჯის წარმატებით დასრულების შემდეგ ხელახლა გაუშვით ლოკალური სერვერი:
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## პრობლემების მოგვარება
 

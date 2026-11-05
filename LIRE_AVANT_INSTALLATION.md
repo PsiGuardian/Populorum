@@ -1,6 +1,6 @@
-# Populorum — installation complète (v0.12.0-clean)
+# Populorum — installation neuve complète (v0.12.1-clean)
 
-**Ce guide est autonome :** téléchargement de l'application, installation Symfony, téléchargement facultatif des bases nationales, contrôles et démarrage. Les commandes se lancent directement dans le terminal ; aucun installateur de distribution ni script ponctuel n'est nécessaire.
+**Installation neuve exclusivement :** partir d'un dossier entièrement vide, sans réutiliser une installation, une base SQLite ou un ancien cache. **Ce guide est autonome :** téléchargement de l'application, installation Symfony, téléchargement facultatif des bases nationales, contrôles et démarrage. Les commandes se lancent directement dans le terminal ; aucun installateur de distribution ni script ponctuel n'est nécessaire.
 
 **Populorum est une simulation fictive.** Les référentiels nationaux servent à présenter des informations publiques sourcées, jamais à inventer des habitants, des votes ou des dépenses.
 
@@ -16,7 +16,7 @@
 | Catalogue des propositions de loi du Sénat | **Facultatif**, CSV officiel importé après installation | `/chemins` et `/consultations` restent sans dossier parlementaire avant import |
 | Rapports et exposés des motifs du Sénat | **Facultatif**, index documentaire construit par lots | Les fiches ne comportent pas encore de bibliothèque documentaire locale |
 
-L'installation de l'application reste possible sans télécharger la volumineuse archive DECP. Les pages de données réelles non alimentées ne doivent **jamais** afficher des résultats inventés.
+L'installation de l'application reste possible sans télécharger les volumineux fichiers JSON DECP. Les pages de données réelles non alimentées ne doivent **jamais** afficher des résultats inventés.
 
 ## 1. Prérequis
 
@@ -33,10 +33,11 @@ Sur une autre distribution, installer les équivalents : **PHP 8.4+**, Composer 
 ## 2. Télécharger l'application et vérifier l'archive
 
 ```bash
-mkdir -p "$HOME/Téléchargements/populorum-clean"
-cd "$HOME/Téléchargements/populorum-clean"
+INSTALL_ROOT="$HOME/Téléchargements/populorum-v0121-neuf"
+mkdir "$INSTALL_ROOT"  # Échoue si ce dossier existe : ne pas fusionner deux installations.
+cd "$INSTALL_ROOT"
 
-VERSION="v0.12.0-clean"
+VERSION="v0.12.1-clean"
 SOURCE="https://github.com/PsiGuardian/Populorum/releases/download/$VERSION"
 curl -fL --retry 3 -O "$SOURCE/Populorum-$VERSION.tar.gz"
 curl -fL --retry 3 -O "$SOURCE/SHA256SUMS.txt"
@@ -45,7 +46,7 @@ tar -xzf "Populorum-$VERSION.tar.gz"
 cd "Populorum-$VERSION/apps/symfony"
 ```
 
-L'archive ne contient ni `vendor/`, ni bases privées, ni clés de production. En cas d'échec du SHA-256, ne pas installer. Cette version devient téléchargeable après publication réussie de la release `v0.12.0-clean`.
+L'archive ne contient ni `vendor/`, ni bases privées, ni clés de production. En cas d'échec du SHA-256, ne pas installer. Cette version devient téléchargeable après publication réussie de la release `v0.12.1-clean`.
 
 ## 3. Installer Symfony (données de démonstration incluses)
 
@@ -64,7 +65,7 @@ php bin/console doctrine:schema:validate --env=demo &&
 python3 tests/http_smoke.py
 ```
 
-Ces commandes ne remplacent pas `.env.local` existant. **Utiliser `composer install`, pas `composer update`.** Le référentiel INSEE est automatiquement restauré à partir de `data/geography/communes-2026.sqlite.gz`, inclus dans la distribution : son téléchargement sur Internet n'est pas nécessaire pour obtenir les communes.
+Dans ce parcours neuf, le fichier `.env.local` n'existe pas avant son initialisation. **Utiliser `composer install` pour respecter `composer.lock`, pas `composer update`.** Le référentiel INSEE est automatiquement restauré à partir de `data/geography/communes-2026.sqlite.gz`, inclus dans la distribution : son téléchargement sur Internet n'est pas nécessaire pour obtenir les communes.
 
 Les deux sections suivantes sont **facultatives** : elles enrichissent les pages publiques sans modifier les scénarios ou les comptes de démonstration.
 
@@ -94,8 +95,8 @@ php bin/console app:geography:install --check --env=demo
 
 Le référentiel DECP v2 est **reconstruit à partir des fichiers JSON officiels**
 publiés par les [Ministères économiques et financiers sur data.gouv.fr](https://www.data.gouv.fr/datasets/donnees-essentielles-de-la-commande-publique-fichiers-consolides).
-Il ne réutilise pas l'archive historique `public-procurement.sqlite.tar.gz`
-de la release `data-national-2026`, qui contient un **schéma v1 incompatible**.
+L'index est créé directement au format `populorum-decp-2` ; aucune migration,
+réutilisation ou import d'une base SQLite préexistante n'est autorisé.
 
 Les données essentielles décrivent des marchés et des concessions notifiés :
 **leur montant déclaré ne prouve ni paiement ni coût final**. Les motifs et
@@ -106,15 +107,14 @@ et les dates de publication sont conservés.
 Depuis `apps/symfony`, en conservant les autres bases locales :
 
 ```bash
-# Contrôler l'espace disponible : sources, index v2, ancienne base et sauvegarde.
+# Contrôler l'espace disponible pour les sources et l'index DECP v2.
 df -h .
 
-# Télécharger ou rafraîchir les ressources officielles.
-# Les fichiers déjà vérifiés sont conservés si leur révision est inchangée.
+# Télécharger les ressources officielles. Un téléchargement interrompu peut être repris.
 python3 tools/decp_pipeline.py download
 
-# Construire l'index v2 dans une base de travail distincte.
-# L'index public existant reste inchangé.
+# Construire l'index v2 dans une base de travail neuve.
+# Aucun index public ne doit préexister.
 python3 tools/decp_pipeline.py import
 
 # Vérifier le schéma, les liens et les déclarations sources.
@@ -129,18 +129,17 @@ python3 tools/decp_pipeline.py publish --site-stopped
 python3 tools/decp_pipeline.py status
 ```
 
-La commande `publish` conserve une sauvegarde de l'ancienne base dans
-`data/research/decp-backups/` puis remplace l'index de façon contrôlée.
-Ne jamais passer `--site-stopped` si le serveur fonctionne encore.
-**Aucune suppression manuelle de la base actuelle n'est nécessaire.**
-Aucun `cache:clear` ni script de migration temporaire n'est requis.
+La commande `publish` crée pour la première fois
+`data/research/public-procurement.sqlite` et **refuse tout fichier déjà
+présent**. Elle ne remplace ni ne migre une ancienne base. Ne jamais passer
+`--site-stopped` si le serveur fonctionne encore. Aucun nettoyage du cache
+ni script de migration temporaire n'est requis.
 
 Le téléchargement peut représenter plusieurs gigaoctets. Il conserve les
 URL **exactes** renvoyées par data.gouv.fr dans `resource-catalog.json`
 et vérifie la révision, la taille et le SHA-256 dans
-`resource-catalog-meta.json`. Si l'URL précise est inconnue pour un
-ancien fichier importé, Populorum l'indique et renvoie au catalogue au
-lieu de prétendre disposer de l'URL directe.
+`resource-catalog-meta.json`. Si l'URL précise n'est pas disponible dans le catalogue, Populorum
+le signale sans prétendre fournir un lien direct.
 
 Le guide technique détaillé se trouve dans
 [PROCUREMENT_EVIDENCE_V2.md](apps/symfony/docs/PROCUREMENT_EVIDENCE_V2.md).
@@ -210,11 +209,6 @@ réellement rattachés au dossier. Les liens vers les répertoires généraux
 Les téléchargements parlementaires sont déclenchés explicitement depuis
 le terminal, jamais à l'ouverture de pages Web.
 
-**En cas de mise à jour d'une installation contenant déjà des votes ou
-délibérations :** ne pas effacer `var/policy-catalog.sqlite`. La release
-propre n'en contient aucune. Sauvegarder l'état existant et procéder à une
-migration séparée si ces données doivent être conservées.
-
 Voir [la documentation du catalogue législatif](apps/symfony/docs/POLICY_CATALOG.md).
 
 ## 8. Démarrer et vérifier le site
@@ -229,9 +223,7 @@ Ouvrir dans le navigateur : **http://127.0.0.1:5412/**, puis `/communes`, `/conv
 
 Le **compte de test facultatif** propose nom, prénom, âge et commune ; noms fictifs autorisés. Il est sans privilège, reconnu par une empreinte HMAC de l'IP (sans cookie propre au compte) et ne garantit pas une identité. Un même réseau public peut partager le profil. Les informations de confidentialité figurent sur `/confidentialite`.
 
-## 9. Mettre à jour sans perte de données
-
-Avant une mise à jour, arrêter le serveur et sauvegarder `.env.local`, `var/`, `.guardian-shield/` et les répertoires de bases `data/geography/` et `data/research/`. Après extraction d'une nouvelle archive, rétablir ces données privées puis relancer **Composer, les migrations et les contrôles** de la section 3. Ne jamais écraser la base de simulation ni les référentiels avec des fichiers de démonstration.
+## 9. Diagnostic d'une installation neuve
 
 Pour un HTTP 500, consulter les erreurs serveur et `var/log/demo.log` ; pour une extension manquante, vérifier `php -m`. Si un index DECP ou SSMSI est absent, la section concernée n'aura pas le contenu national correspondant, mais le reste du simulateur doit rester disponible.
 

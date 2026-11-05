@@ -1,4 +1,4 @@
-# Populorum — स्थापना और अद्यतन
+# Populorum — पहली स्थापना
 
 🇮🇳 **हिन्दी · hi_IN**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 किसी चरण में त्रुटि होने पर `&&` क्रम रोक देता है; आगे बढ़ने से पहले त्रुटि ठीक करें। http://127.0.0.1:5412/ खोलें; Ctrl+C स्थानीय सर्वर रोकता है। प्रारंभिक सेटअप `.env.local` तभी बनाता है जब वह मौजूद नहीं है। सक्रिय डेटाबेस `var/populorum.sqlite` है। प्रोफाइलर की कुकीज़ के लिए HTTPS आवश्यक है, स्थानीय मैनुअल परीक्षण में भी।
-
-## अद्यतन
-
-स्रोत फ़ाइलें बदलने से पहले सर्वर रोकें और डेटाबेस, फ़ाइलों तथा कुंजियों का बैकअप लें। `.env.local`, `.guardian-shield/` और `var/` सुरक्षित रखें। सक्रिय डेटाबेस को कभी `data/populorum-demo.sqlite` से न बदलें। `apps/symfony` से चलाएँ:
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-सभी चरण सफल होने के बाद स्थानीय सर्वर फिर से शुरू करें:
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## समस्या निवारण
 

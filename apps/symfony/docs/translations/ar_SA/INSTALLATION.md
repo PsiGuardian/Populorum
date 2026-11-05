@@ -1,4 +1,4 @@
-# Populorum — التثبيت والتحديث
+# Populorum — التثبيت الأول
 
 🇸🇦 **العربية · ar_SA**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 توقف عوامل `&&` تسلسل الأوامر عند حدوث خطأ؛ أصلحه قبل المتابعة. افتح http://127.0.0.1:5412/؛ ويوقف Ctrl+C الخادم المحلي. تنشئ التهيئة `.env.local` فقط إذا لم يكن موجودًا. قاعدة البيانات النشطة هي `var/populorum.sqlite`. تتطلب ملفات تعريف الارتباط الخاصة بالـ profiler اتصال HTTPS، حتى في اختبار محلي يدوي.
-
-## التحديث
-
-أوقف الخادم واحتفظ بنسخة احتياطية من قاعدة البيانات والملفات والمفاتيح قبل استبدال الملفات المصدرية. حافظ على `.env.local` و`.guardian-shield/` و`var/`. لا تستبدل أبدًا قاعدة بيانات نشطة بالملف `data/populorum-demo.sqlite`. من داخل `apps/symfony`، نفّذ:
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-بعد نجاح جميع الخطوات، أعد تشغيل الخادم المحلي:
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## استكشاف الأخطاء وإصلاحها
 
