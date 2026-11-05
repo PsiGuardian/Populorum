@@ -21,7 +21,6 @@ import time
 from datetime import datetime, timezone
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
-from import_procurement_evidence import import_evidence
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / 'data/research'
@@ -288,6 +287,14 @@ def import_all(folder:Path=SOURCES,staging:Path=STAGING,public:Path=PUBLIC):
     # actually present. Never fabricate associations for absent contracts.
     curated=ROOT/'data/curated-procurement'
     if curated.is_dir():
+        # Tests load this pipeline with importlib by path, so resolve our sibling
+        # maintained tool explicitly instead of depending on sys.path.
+        from importlib.util import spec_from_file_location, module_from_spec
+        spec=spec_from_file_location('populorum_evidence',Path(__file__).with_name('import_procurement_evidence.py'))
+        if spec is None or spec.loader is None:
+            raise ValueError('Importeur de preuves documentaires indisponible.')
+        module=module_from_spec(spec)
+        spec.loader.exec_module(module)
         with closing(sqlite3.connect(staging,timeout=30)) as db:
             for evidence_file in sorted(curated.glob('*.json')):
                 items=json.loads(evidence_file.read_text(encoding='utf-8'))
@@ -301,7 +308,7 @@ def import_all(folder:Path=SOURCES,staging:Path=STAGING,public:Path=PUBLIC):
                         continue
                     matched.append(item)
                 if matched:
-                    added=import_evidence(db,matched)
+                    added=module.import_evidence(db,matched)
                     db.commit()
                     print('DOCUMENTS SOURCÉS :',evidence_file.name,added,'ajoutés.')
     checkpoint_stage(staging)
