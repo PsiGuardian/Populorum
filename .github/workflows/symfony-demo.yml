@@ -145,7 +145,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="v0.11.0-clean"
+          TAG="v0.12.0-clean"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release exists, nothing replaced."
             exit 0
@@ -165,4 +165,4 @@ jobs:
           gh release create "$TAG" "release/$ARCHIVE" release/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
             --title "Populorum v0.11.0 — dossiers du Sénat et délibérations causales" \
-            --notes-file docs/RELEASE_v0.11.0-clean.md
+            --notes-file docs/RELEASE_v0.12.0-clean.md
