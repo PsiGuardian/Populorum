@@ -22,6 +22,8 @@ import shutil
 import sqlite3
 import sys
 import tempfile
+import unicodedata
+import zlib
 from urllib.request import Request, urlopen
 from typing import Mapping, Any
 
@@ -117,6 +119,21 @@ CREATE INDEX IF NOT EXISTS contracts_geo ON contracts(location_type,location_cod
 CREATE INDEX IF NOT EXISTS contracts_kind ON contracts(kind,notice_date);
 CREATE INDEX IF NOT EXISTS participants_lookup ON participants(identifier,role);
 CREATE INDEX IF NOT EXISTS changes_contract ON changes(contract_key,event_date);
+-- Every original declaration is independently retrievable and auditable.
+CREATE TABLE IF NOT EXISTS contract_records(
+ source_sha TEXT NOT NULL,kind TEXT NOT NULL,ordinal INTEGER NOT NULL,
+ contract_key TEXT NOT NULL,record_sha TEXT NOT NULL,record_zlib BLOB NOT NULL,
+ PRIMARY KEY(source_sha,kind,ordinal));
+CREATE INDEX IF NOT EXISTS contract_records_key ON contract_records(contract_key);
+CREATE TABLE IF NOT EXISTS procurement_evidence(
+ evidence_id TEXT PRIMARY KEY,contract_key TEXT NOT NULL,
+ category TEXT NOT NULL,source_type TEXT NOT NULL,source_name TEXT NOT NULL,
+ source_url TEXT NOT NULL,document_title TEXT NOT NULL,
+ statement TEXT NOT NULL,excerpt TEXT NOT NULL,published_at TEXT NOT NULL,
+ recorded_at TEXT NOT NULL,status TEXT NOT NULL,
+ CHECK(category IN ('context','purpose','scope','selection','funding','payment','outcome')),
+ CHECK(status IN ('candidate','documented')));
+CREATE INDEX IF NOT EXISTS procurement_evidence_key ON procurement_evidence(contract_key,category,status);
 '''
 
 
@@ -222,11 +239,28 @@ def identifier(data):
     return txt((data or {}).get('id') if isinstance(data,dict) else '',80)
 
 def contract_key(rec,kind):
+    """DECP v2: avoid collapsing lots where the published procedure ID is reused.
+
+    This is a *record-family* fingerprint, not a claim that two versions of the
+    same procurement have been legally matched. Changed descriptions or holders
+    may create separate families; their reconciliation requires documentary proof.
+    """
     buyer=identifier(rec.get('acheteur') if kind=='market' else rec.get('autoriteConcedante'))
     cid=txt(rec.get('id'),160)
     cpv=txt(rec.get('codeCPV'),20) if kind=='market' else ''
     if not buyer or not cid:return None
-    return hashlib.sha256(('decp-v1\0'+kind+'\0'+buyer+'\0'+cid+'\0'+cpv).encode()).hexdigest()[:40]
+    def norm(value):
+        return ' '.join(unicodedata.normalize('NFKC',str(value or '')).casefold().split())
+    participants=(
+        get_participants(rec,'titulaires','titulaire') if kind=='market'
+        else get_participants(rec,'concessionnaires','concessionnaire')
+    )
+    holders='|'.join(sorted(f'{type_}:{ident}' for type_,ident in participants))
+    # Deliberate conservative split for ambiguous original IDs: avoid false merges.
+    basis=['decp-v2',kind,buyer,cid,cpv,norm(rec.get('objet')),
+           txt(rec.get('dateNotification') or rec.get('dateSignature'),30),holders]
+    return hashlib.sha256('\\0'.join(basis).encode('utf-8')).hexdigest()[:40]
+
 
 def loc(rec):
     obj=rec.get('lieuExecution') or {}
@@ -242,10 +276,16 @@ def import_file(db,path:Path,source_url:str='',min_records:int=1):
     db.execute('BEGIN IMMEDIATE')
     try:
         for group,kind in [('marche','market'),('contrat-concession','concession')]:
-            for item in stream_array(path,group):
+            for ordinal,item in enumerate(stream_array(path,group),start=1):
                 key=contract_key(item,kind)
                 if not key:continue
                 total+=1
+                raw=json.dumps(item,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode('utf-8')
+                record_sha=hashlib.sha256(raw).hexdigest()
+                db.execute('''INSERT INTO contract_records
+                    (source_sha,kind,ordinal,contract_key,record_sha,record_zlib)
+                    VALUES (?,?,?,?,?,?)''',
+                    (digest,kind,ordinal,key,record_sha,sqlite3.Binary(zlib.compress(raw,6))))
                 if total%15000==0:print(f'  {total:,} enregistrements parcourus...',flush=True)
                 buyer=identifier(item.get('acheteur') if kind=='market' else item.get('autoriteConcedante'))
                 location_type,location_code=loc(item)
@@ -328,7 +368,7 @@ def import_file(db,path:Path,source_url:str='',min_records:int=1):
         if total<min_records:raise ValueError(f'Import insuffisant : {total} enregistrements')
         db.execute('INSERT INTO imports VALUES(?,?,?,?,?,?,?,?,?)',(digest,path.name,source_url or DATASET,
             datetime.now(timezone.utc).isoformat(timespec='seconds'),total,added,events,subcontractors,path.stat().st_size))
-        db.execute('INSERT OR REPLACE INTO metadata VALUES(?,?)',('schema','populorum-decp-1'))
+        db.execute('INSERT OR REPLACE INTO metadata VALUES(?,?)',('schema','populorum-decp-2'))
         db.commit()
     except BaseException:
         db.rollback();raise
@@ -367,6 +407,7 @@ def main():
     ap.add_argument('--download-dir',type=Path,default=ROOT/'data/research/decp-sources')
     ap.add_argument('--max-gb',type=float,default=2.0,help='Taille maximum PAR fichier téléchargé (défaut 2 Go)')
     ap.add_argument('--db',type=Path,default=DEFAULT_DB)
+    ap.add_argument('--source-url',default='',help='URL exacte du fichier officiel, si connue')
     ap.add_argument('--stats',action='store_true')
     opt=ap.parse_args()
     if opt.download_all and opt.source:ap.error('Ne mélangez pas --download-all et source')
@@ -375,6 +416,11 @@ def main():
     with sqlite3.connect(opt.db,timeout=45) as db:
         db.execute('PRAGMA busy_timeout=45000')
         db.execute('PRAGMA journal_mode=WAL')
+        prior=db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='metadata'").fetchone()
+        if prior:
+            version=db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()
+            if version and version[0]!='populorum-decp-2':
+                raise ValueError('Schéma DECP antérieur : reconstruire un index v2 neuf, sans migration implicite.')
         db.executescript(SCHEMA)
         ensure_fts(db)
         ensure_history_schema(db)
@@ -386,7 +432,7 @@ def main():
         elif opt.all_files:files=((p,'') for p in sorted(opt.source.glob('decp-????-??.json')))
         elif opt.source:files=[(opt.source,'')]
         else:ap.error('Précisez un fichier, --all-files, --download-all ou --stats')
-        for path,url in files:import_file(db,path,url)
+        for path,url in files:import_file(db,path,opt.source_url or url)
         for table in ('imports','contracts','participants','changes'):
             print(table+':',db.execute('SELECT COUNT(*) FROM '+table).fetchone()[0])
 
