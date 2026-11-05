@@ -17,7 +17,7 @@ import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = "PsiGuardian/Populorum"
-FORMAT = "populorum-decp-archive-v1"
+FORMAT = "populorum-decp-archive-v2"
 PART_BYTES = 256 * 1024 * 1024
 SCHEMA = "populorum-decp-2"
 NAME = re.compile(r"decp-[0-9]{4}-[0-9]{2}\.json\Z")
