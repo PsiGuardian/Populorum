@@ -25,11 +25,11 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / 'data/research'
 PUBLIC = BASE / 'public-procurement.sqlite'
-STAGING = BASE / 'public-procurement-v8-staging.sqlite'
+STAGING = BASE / 'public-procurement-v2-staging.sqlite'
 SOURCES = BASE / 'decp-sources'
 API = 'https://www.data.gouv.fr/api/1/datasets/donnees-essentielles-de-la-commande-publique-fichiers-consolides/'
 NAME = re.compile(r'^decp-[0-9]{4}-[0-9]{2}\.json$', re.I)
-REQUIRED = ('metadata','imports','contracts','participants','changes','contract_sources','concession_finance')
+REQUIRED = ('metadata','imports','contracts','participants','changes','contract_sources','concession_finance','contract_records','procurement_evidence')
 USER_AGENT = 'Populorum-DECP-V8/1.0 (national public open data import)'
 
 
@@ -153,6 +153,11 @@ def download_all(folder:Path=SOURCES) -> list[Path]:
     for n,r in enumerate(items,1):
         print(f'[{n}/{len(items)}] ',end='',flush=True)
         paths.append(one_download(r,folder))
+    # Manifest holds the genuine catalog resource URLs, never guessed links.
+    manifest={str(r['title']):str(r['url']) for r in items}
+    temporary=folder/'resource-catalog.json.part'
+    temporary.write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
+    os.replace(temporary,folder/'resource-catalog.json')
     print(f'{len(paths)} ressources téléchargées dans {folder}')
     return paths
 
@@ -164,7 +169,7 @@ def db_info(path:Path, deep:bool=False) -> dict:
         if not set(REQUIRED).issubset(tables):
             raise ValueError('Schéma DECP invalide : '+','.join(sorted(set(REQUIRED)-tables)))
         ver=db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()
-        if ver is None or ver[0]!='populorum-decp-1':raise ValueError('Version du schéma inconnue')
+        if ver is None or ver[0]!='populorum-decp-2':raise ValueError('Version du schéma inconnue')
         integrity=db.execute('PRAGMA integrity_check' if deep else 'PRAGMA quick_check').fetchone()[0]
         if integrity!='ok':raise ValueError('Intégrité SQLite : '+integrity)
         result={k: db.execute('SELECT COUNT(*) FROM '+k).fetchone()[0] for k in ('imports','contracts','participants','changes')}
@@ -189,14 +194,14 @@ def fast_status(path:Path) -> dict:
         if missing:
             raise ValueError('Schéma DECP incomplet : '+','.join(sorted(missing)))
         version=db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()
-        if version is None or version[0]!='populorum-decp-1':
+        if version is None or version[0]!='populorum-decp-2':
             raise ValueError('Version du schéma DECP incompatible')
         # EXISTS/LIMIT 1 reads at most the first matching leaf of each table.
         has_imports=db.execute('SELECT EXISTS(SELECT 1 FROM imports LIMIT 1)').fetchone()[0]
         has_contracts=db.execute('SELECT EXISTS(SELECT 1 FROM contracts LIMIT 1)').fetchone()[0]
         if not has_imports or not has_contracts:
             raise ValueError('Aucun import ou contrat dans la base nationale')
-    return {'bytes':path.stat().st_size, 'schema':'populorum-decp-1',
+    return {'bytes':path.stat().st_size, 'schema':'populorum-decp-2',
             'imports_present':bool(has_imports), 'contracts_present':bool(has_contracts),
             'integrity_scan':'not_run (optional: verify)'}
 
@@ -226,6 +231,11 @@ def make_staging(staging:Path=STAGING, public:Path=PUBLIC):
         return
     if is_empty_public_placeholder(public):
         print('Index public sans tables DECP : amorçage indépendant du staging V8 ; fichier public conservé.')
+        return
+    with closing(sqlite3.connect(f'file:{public.resolve()}?mode=ro',uri=True)) as db:
+        found=db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()
+    if found and found[0]=='populorum-decp-1':
+        print('Reconstruction alpha v2 : la base publique v1 est conservée; création indépendante du staging v2.')
         return
     db_info(public)
     tmp=staging.with_name(staging.name+'.creating')
@@ -259,11 +269,17 @@ def import_all(folder:Path=SOURCES,staging:Path=STAGING,public:Path=PUBLIC):
     files=sorted(p for p in folder.glob('decp-????-??.json') if p.is_file())
     if not files:raise ValueError('Aucun DECP JSON téléchargé dans '+str(folder))
     make_staging(staging,public)
+    manifest_path=folder/'resource-catalog.json'
+    source_urls=json.loads(manifest_path.read_text(encoding='utf-8')) if manifest_path.exists() else {}
+    if not isinstance(source_urls,dict):
+        raise ValueError('Manifeste des sources DECP invalide')
     importer=ROOT/'tools/import_decp.py'
     if not importer.exists():raise ValueError('Script V7 manquant : '+str(importer))
     for n,p in enumerate(files,1):
         print(f'IMPORT [{n}/{len(files)}] {p.name}',flush=True)
         cmd=[sys.executable,str(importer),str(p),'--db',str(staging)]
+        if str(source_urls.get(p.name,'')).startswith('https://'):
+            cmd+=['--source-url',source_urls[p.name]]
         subprocess.run(cmd,check=True)
     checkpoint_stage(staging)
     print('BASE DE TRAVAIL VÉRIFIÉE :',db_info(staging,deep=True))
@@ -285,15 +301,22 @@ def publish(staging:Path=STAGING, public:Path=PUBLIC, stopped:bool=False):
             if status and status[0]!=0:raise ValueError('Lecteurs encore actifs (WAL occupé) : arrêter le serveur.')
             mode=db.execute('PRAGMA journal_mode=DELETE').fetchone()[0]
             if mode.lower()!='delete':raise ValueError('Base publique encore en WAL : arrêter les lecteurs.')
-        previous=db_info(public)
-        if fresh['contracts']<previous['contracts'] or fresh['imports']<previous['imports']:
-            raise ValueError('La nouvelle base est moins complète que la base publique; publication refusée.')
+        with closing(sqlite3.connect(f'file:{public.resolve()}?mode=ro',uri=True)) as db:
+            old_version=db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()
+        if old_version and old_version[0]=='populorum-decp-2':
+            previous=db_info(public)
+            if fresh['contracts']<previous['contracts'] or fresh['imports']<previous['imports']:
+                raise ValueError('La nouvelle base est moins complète que la base publique; publication refusée.')
+        elif not old_version or old_version[0]!='populorum-decp-1':
+            raise ValueError('Version publique inconnue : publication refusée.')
         backups=public.parent/'decp-backups'
         backups.mkdir(parents=True,exist_ok=True)
         backup=backups/(public.stem+'-'+stamp()+'.sqlite')
         with closing(sqlite3.connect(f'file:{public.resolve()}?mode=ro',uri=True,timeout=30)) as source:
             with closing(sqlite3.connect(backup)) as target:source.backup(target,pages=2000,sleep=.1)
-        db_info(backup)
+        with closing(sqlite3.connect(backup)) as db:
+            if db.execute('PRAGMA quick_check').fetchone()[0]!='ok':
+                raise ValueError('Sauvegarde de la base publique non vérifiable.')
         print('Sauvegarde publique vérifiée :',backup)
     else:
         public.parent.mkdir(parents=True,exist_ok=True)
