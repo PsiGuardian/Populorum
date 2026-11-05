@@ -348,6 +348,8 @@ final class DemoController extends AbstractController
     )]
     public function page(Request $request, string $view = 'home'): Response
     {
+        $plan = 'water';
+        $scenario = null;
         if ($view === 'services') {
             // Plan and scenario are path segments only; reject ambiguous query alternatives.
             if ($request->query->has('plan') || $request->query->has('scenario')) {
