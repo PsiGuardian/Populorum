@@ -86,7 +86,7 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--db',type=Path,default=ROOT/'data/research/public-procurement-v2-staging.sqlite')
     p.add_argument('--limit',type=int,default=10,help='Nombre maximal de contrats interrogés (1 à 100)')
-    p.add_argument('--contract-key',help='Clé SHA-1 de 40 caractères issue de Populorum')
+    p.add_argument('--contract-key',help='Empreinte SHA-256 tronquée à 40 caractères issue de Populorum')
     p.add_argument('--pause',type=float,default=1.0,help='Pause entre requêtes BOAMP (minimum 0,5 s)')
     opts=p.parse_args()
     if not 1 <= opts.limit <= 100 or opts.pause < .5:
