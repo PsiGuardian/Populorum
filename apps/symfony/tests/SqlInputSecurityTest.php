@@ -53,7 +53,7 @@ INSERT INTO metadata VALUES ('schema','populorum-decp-2');
 CREATE TABLE contracts(contract_key TEXT PRIMARY KEY, kind TEXT, buyer_id TEXT,
  original_id TEXT, object TEXT, cpv TEXT, nature TEXT, notice_date TEXT,
  amount_initial_cents INTEGER, amount_amended_cents INTEGER,
- location_type TEXT, location_code TEXT, source_name TEXT);
+ location_type TEXT, location_code TEXT, source_name TEXT, source_sha TEXT);
 CREATE TABLE participants(contract_key TEXT, role TEXT, identifier_type TEXT, identifier TEXT);
 CREATE TABLE changes(contract_key TEXT, event_type TEXT, event_id TEXT,
  event_date TEXT, published_date TEXT, amount_cents INTEGER, identifier TEXT, extra TEXT);
@@ -68,16 +68,16 @@ CREATE TABLE concession_finance(contract_key TEXT, subsidy_cents INTEGER);
 CREATE VIRTUAL TABLE contract_fts USING fts5(
  object, original_id, content='contracts', content_rowid='rowid');
 SQL);
-            $insert = $db->prepare('INSERT INTO contracts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)');
+            $insert = $db->prepare('INSERT INTO contracts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
             $insert->execute([str_repeat('a', 40), 'market', '21660134400013', 'A-2025',
                 'Éclairage de Passa', '12345000', 'Marché', '2025-03-01', 50000, null,
-                'Code commune', '66134', 'fixture']);
+                'Code commune', '66134', 'fixture', 'fixture-sha']);
             $insert->execute([str_repeat('b', 40), 'market', '21750560000013', 'B-2025',
                 'Éclairage de Paris', '12345000', 'Marché', '2025-04-01', 80000, null,
-                'Code commune', '75056', 'fixture']);
+                'Code commune', '75056', 'fixture', 'fixture-sha']);
             $insert->execute([str_repeat('c', 40), 'concession', '21660134400013', 'C-2024',
                 'Transport départemental', '67890000', 'Concession', '2024-03-01', 120000, null,
-                'Code département', '66', 'fixture']);
+                'Code département', '66', 'fixture', 'fixture-sha']);
             $supplier = $db->prepare('INSERT INTO participants VALUES (?, ?, ?, ?)');
             $supplier->execute([str_repeat('a', 40), 'supplier', 'SIRET', '12345678900011']);
             $db->exec("INSERT INTO contract_fts(contract_fts) VALUES('rebuild')");
