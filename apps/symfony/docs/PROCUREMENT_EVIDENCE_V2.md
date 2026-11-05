@@ -77,7 +77,7 @@ Le fichier JSON doit contenir une liste de déclarations, avec les clés :
 ```json
 [
   {
-    "contract_key": "CLE_SHA1_DE_40_CARACTERES_ISSUE_DE_L_INDEX",
+    "contract_key": "CLE_SHA256_TRONQUEE_40_CARACTERES_DU_CONTRAT",
     "category": "purpose",
     "source_type": "deliberation",
     "source_name": "Nom exact de l'organisme publiant",
