@@ -25,6 +25,7 @@ import tempfile
 import unicodedata
 import zlib
 from urllib.request import Request, urlopen
+from urllib.parse import urlsplit
 from typing import Mapping, Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -269,6 +270,11 @@ def loc(rec):
 def import_file(db,path:Path,source_url:str='',min_records:int=1):
     path=path.resolve()
     if not path.is_file():raise ValueError('Fichier non trouvé: '+str(path))
+    if source_url:
+        parts=urlsplit(source_url)
+        if (parts.scheme != 'https' or not parts.hostname or parts.username or parts.password
+                or any(ord(ch)<32 for ch in source_url) or len(source_url)>2048):
+            raise ValueError('URL de ressource source non HTTPS ou non fiable.')
     digest=sha_file(path)
     if db.execute('SELECT 1 FROM imports WHERE sha256=?',(digest,)).fetchone():
         print('DÉJÀ IMPORTÉ :',path.name,'(SHA-256 identique)');return False
