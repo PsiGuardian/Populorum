@@ -260,7 +260,7 @@ def contract_key(rec,kind):
     # Deliberate conservative split for ambiguous original IDs: avoid false merges.
     basis=['decp-v2',kind,buyer,cid,cpv,norm(rec.get('objet')),
            txt(rec.get('dateNotification') or rec.get('dateSignature'),30),holders]
-    return hashlib.sha256('\\0'.join(basis).encode('utf-8')).hexdigest()[:40]
+    return hashlib.sha256('\0'.join(basis).encode('utf-8')).hexdigest()[:40]
 
 
 def loc(rec):
