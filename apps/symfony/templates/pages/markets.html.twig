@@ -24,6 +24,13 @@
 <section class="panel budget-explorer" id="contrat-detail" aria-label="Fiche d'un contrat officiel">
     <p class="budget-eyebrow">FICHE DOCUMENTAIRE · {{ marketDetails.kind == 'market' ? 'MARCHÉ' : 'CONCESSION' }}</p>
     <h2>{{ marketDetails.object }}</h2>
+    <p class="budget-muted"><strong>Provenance :</strong> déclaration DECP d'origine, issue des fichiers consolidés de la commande publique.
+        {% if marketDetails.sources is not empty %}
+            <a href="{{ marketDetails.sources[0].source_url }}" rel="noopener noreferrer" target="_blank">Consulter la source officielle</a>
+            · fichier {{ marketDetails.sources[0].filename }}
+            · SHA-256 <code>{{ marketDetails.sources[0].sha256 }}</code>
+        {% endif %}
+    </p>
     <p><strong>Référence :</strong> {{ marketDetails.original_id }} · <strong>Acheteur :</strong> {{ marketDetails.buyer_id }} · <strong>Notification / signature :</strong> {% if marketDetails.date_quality.valid %}{{ marketDetails.notice_date }}{% else %}<code>{{ marketDetails.notice_date|default('date absente') }}</code> · <strong>À vérifier : {{ marketDetails.date_quality.reason }}</strong>. Motif détecté automatiquement par Populorum ; aucune justification de l'acheteur n'est identifiable dans les champs de date indexés.{% endif %}</p>
     <p><strong>Valeur contractuelle conservée dans l’index :</strong>
         {% if marketDetails.amount_initial_cents is not null %}{{ (marketDetails.amount_initial_cents / 100)|number_format(2, ',', ' ') }} €{% else %}Non communiqué{% endif %}
@@ -63,6 +70,36 @@
       {% else %}<p>Observations non encore disponibles pour ce contrat.</p>{% endif %}
       <p class="budget-muted"><strong>Lecture :</strong> ordre chronologique des fichiers consolidés, et non des dates internes parfois antérieures. L'écart représente seulement une différence entre les montants déclarés dans deux versions, pas une hausse prouvée du coût ni un paiement. Les montants des avenants sont affichés séparément : ils peuvent désigner un montant total ou une variation selon la source.</p>
     </section>
+    <section class="budget-explain" aria-labelledby="market-evidence-title">
+        <h3 id="market-evidence-title">Pourquoi cette commande ? Quels résultats documentés ?</h3>
+        <p class="budget-muted">Seuls des extraits rattachés à une source précise peuvent établir les motifs, les prestations, les décisions, les financements, les paiements ou les résultats. Les liens candidats ne sont jamais présentés comme une preuve.</p>
+        {% set evidenceLabels = {
+            context: 'Contexte', purpose: 'Motivation et besoin',
+            scope: 'Prestations prévues', selection: 'Choix du titulaire',
+            funding: 'Financement', payment: 'Paiement effectivement documenté',
+            outcome: 'Résultat ou évaluation'
+        } %}
+        {% if marketDetails.evidence is not empty %}
+            {% for item in marketDetails.evidence %}
+                <article class="budget-explain">
+                    <h4>{{ evidenceLabels[item.category]|default('Document associé') }} — {{ item.document_title }}</h4>
+                    {% if item.status == 'documented' %}
+                        <p><strong>Information documentée :</strong> {{ item.statement }}</p>
+                        <blockquote><p>{{ item.excerpt }}</p></blockquote>
+                    {% else %}
+                        <p><strong>Correspondance documentaire à confirmer :</strong> ce document pourrait concerner ce marché. Aucune affirmation n'en est déduite.</p>
+                    {% endif %}
+                    <p><strong>Source :</strong> {{ item.source_name }} ({{ item.source_type|upper }})
+                        · <a href="{{ item.source_url }}" rel="noopener noreferrer" target="_blank">{{ item.document_title }}</a>
+                        {% if item.published_at %} · publié le {{ item.published_at }}{% endif %}
+                    </p>
+                </article>
+            {% endfor %}
+        {% else %}
+            <p class="budget-gap"><strong>Justification documentaire non disponible.</strong> Les données DECP indiquent l'objet et les conditions déclarées du contrat, mais ne suffisent pas à expliquer les motivations de la décision, les paiements ou les bénéfices effectivement observés.</p>
+        {% endif %}
+        <p><strong>Déclarations originales conservées :</strong> {{ marketDetails.original_records|length }} occurrence(s) source(s) visibles dans la limite d'affichage. Chaque occurrence est associée à l'empreinte SHA-256 de son enregistrement.</p>
+    </section>
     <h3>Titulaires et participants publiés</h3>
     {% if marketDetails.participants is not empty %}
         <ul>{% for p in marketDetails.participants %}<li>{{ p.role }} — {{ p.identifier_type }} {{ p.identifier }}</li>{% endfor %}</ul>
@@ -78,7 +115,7 @@
     {% else %}<p>Aucun événement documenté dans les fichiers importés.</p>{% endif %}
     <h3>Traçabilité des publications</h3>
     {% for src in marketDetails.sources %}
-        <p><a href="{{ src.source_url }}" rel="noopener noreferrer" target="_blank">{{ src.filename }}</a> · SHA-256 : <code>{{ src.sha256 }}</code> · importé le {{ src.imported_at }}</p>
+        <p>{{ src.filename }} · <a href="{{ src.source_url }}" rel="noopener noreferrer" target="_blank">{% if 'data.gouv.fr/datasets/' in src.source_url %}Catalogue DECP officiel (URL précise du fichier non connue){% else %}Ressource source officielle{% endif %}</a> · SHA-256 : <code>{{ src.sha256 }}</code> · importé le {{ src.imported_at }}</p>
     {% else %}<p>Référence de source absente.</p>{% endfor %}
     <p class="budget-muted"><strong>Limite :</strong> une attribution, une modification de contrat et un paiement sont des événements distincts. Les données DECP ne suffisent pas à suivre les virements jusqu'à leur utilisation finale.</p>
     <a class="button" href="{{ civic_path('site_markets') }}">Retour à la recherche</a>
