@@ -216,7 +216,7 @@ def main() -> None:
                 '/', '/territoires', '/chemins', '/consultations', '/experiences',
                 '/convergence', '/convergence/communes_q/66300',
                 '/memoire', '/transparence', '/infrastructure', '/gouvernance',
-                '/participer', '/charte', '/recits', '/services-et-missions',
+                '/participer', '/charte', '/recits', '/services/water', '/services/water/contamination',
                 '/budget-et-priorites', '/besoins-et-devis', '/communes',
                 '/communes/q/66300', '/marches-publics', '/marches-publics/q/web',
             )
