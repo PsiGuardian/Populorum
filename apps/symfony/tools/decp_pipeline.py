@@ -83,7 +83,7 @@ def check_json_edges(path:Path) -> bool:
     return head.startswith(b'{') and tail.endswith(b'}')
 
 
-def one_download(resource:dict, output:Path, attempts:int=4) -> Path:
+def one_download(resource:dict, output:Path, attempts:int=4, prior:dict|None=None) -> Path:
     url=str(resource.get('url') or '')
     title=str(resource['title'])
     if not NAME.fullmatch(title):
@@ -92,14 +92,23 @@ def one_download(resource:dict, output:Path, attempts:int=4) -> Path:
     part=output/(title+'.part')
     info=output/(title+'.part.info')
     expected = int(resource.get('filesize') or 0)
-    if dest.exists() and check_json_edges(dest) and (not expected or dest.stat().st_size==expected):
-        print(f'DÉJÀ TÉLÉCHARGÉ : {title} ({dest.stat().st_size/1e6:.1f} Mo)')
+    trusted=(isinstance(prior,dict)
+        and prior.get('url')==url
+        and prior.get('last_modified')==str(resource.get('last_modified') or '')
+        and prior.get('filesize')==expected
+        and isinstance(prior.get('sha256'),str))
+    valid=dest.exists() and check_json_edges(dest) and (not expected or dest.stat().st_size==expected)
+    if valid and trusted and sha(dest)==prior['sha256']:
+        print(f'SOURCE À JOUR ET VÉRIFIÉE : {title} ({dest.stat().st_size/1e6:.1f} Mo)')
         return dest
-    if dest.exists():
-        # Never silently trust or overwrite a suspicious file.
+    if dest.exists() and not valid:
+        # Preserve malformed prior files for diagnostics. A valid prior version
+        # stays in place until its replacement is fully transferred and verified.
         old=dest.with_name(dest.name+'.invalid-'+stamp())
         dest.replace(old)
         print(f'Ancien fichier non conforme déplacé : {old.name}')
+    elif dest.exists():
+        print('NOUVELLE RÉVISION OU PROVENANCE NON VÉRIFIÉE :',title)
     if part.exists():
         meta=json.loads(info.read_text()) if info.exists() else {}
         if meta.get('url') != url:
@@ -150,9 +159,25 @@ def download_all(folder:Path=SOURCES) -> list[Path]:
     folder.mkdir(parents=True,exist_ok=True)
     items=catalogue()
     paths=[]
+    meta_path=folder/'resource-catalog-meta.json'
+    previous=json.loads(meta_path.read_text(encoding='utf-8')) if meta_path.exists() else {}
+    if not isinstance(previous,dict):
+        raise ValueError('Manifest de révision des ressources invalide.')
+    revisions={}
     for n,r in enumerate(items,1):
         print(f'[{n}/{len(items)}] ',end='',flush=True)
-        paths.append(one_download(r,folder))
+        dest=one_download(r,folder,prior=previous.get(r['title']))
+        paths.append(dest)
+        revisions[r['title']]={
+            'url':str(r['url']),
+            'last_modified':str(r.get('last_modified') or ''),
+            'filesize':int(r.get('filesize') or 0),
+            'sha256':sha(dest),
+        }
+        # Persist each verified resource to support a safe resume after a failure.
+        meta_temp=folder/'resource-catalog-meta.json.part'
+        meta_temp.write_text(json.dumps(revisions,ensure_ascii=False,indent=2),encoding='utf-8')
+        os.replace(meta_temp,meta_path)
     # Manifest holds the genuine catalog resource URLs, never guessed links.
     manifest={str(r['title']):str(r['url']) for r in items}
     temporary=folder/'resource-catalog.json.part'
