@@ -51,7 +51,12 @@ python3 tools/decp_pipeline.py download
 ```
 
 Le téléchargement crée `resource-catalog.json` avec les URL **réelles**
-fournies par l'API data.gouv.fr. Si le manifeste n'existe pas, l'interface
+fournies par l'API data.gouv.fr et `resource-catalog-meta.json` avec la révision
+catalogue, la taille et le SHA-256 de chaque fichier. À chaque actualisation,
+le téléchargeur ne réutilise une ressource que si sa révision et son empreinte
+concordent ; un fichier republié avec la même taille est rechargé. Les
+publications sources précédentes restent dans l'index jusqu'à reconstruction
+et publication contrôlée. Si le manifeste n'existe pas, l'interface
 indique que l'URL exacte est inconnue et renvoie au catalogue DECP, sans prétendre
 ouvrir le fichier source directement.
 
