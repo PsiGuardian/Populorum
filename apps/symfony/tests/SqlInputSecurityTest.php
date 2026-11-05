@@ -49,7 +49,7 @@ final class SqlInputSecurityTest extends TestCase
             $db = new PDO('sqlite:' . $file, options: [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
             $db->exec(<<<'SQL'
 CREATE TABLE metadata(key TEXT PRIMARY KEY, value TEXT);
-INSERT INTO metadata VALUES ('schema','populorum-decp-1');
+INSERT INTO metadata VALUES ('schema','populorum-decp-2');
 CREATE TABLE contracts(contract_key TEXT PRIMARY KEY, kind TEXT, buyer_id TEXT,
  original_id TEXT, object TEXT, cpv TEXT, nature TEXT, notice_date TEXT,
  amount_initial_cents INTEGER, amount_amended_cents INTEGER,
@@ -59,6 +59,11 @@ CREATE TABLE changes(contract_key TEXT, event_type TEXT, event_id TEXT,
  event_date TEXT, published_date TEXT, amount_cents INTEGER, identifier TEXT, extra TEXT);
 CREATE TABLE imports(sha256 TEXT, filename TEXT, source_url TEXT, imported_at TEXT);
 CREATE TABLE contract_sources(contract_key TEXT, source_sha TEXT);
+CREATE TABLE contract_records(source_sha TEXT,kind TEXT,ordinal INTEGER,
+ contract_key TEXT,record_sha TEXT,record_zlib BLOB);
+CREATE TABLE procurement_evidence(evidence_id TEXT,contract_key TEXT,category TEXT,
+ source_type TEXT,source_name TEXT,source_url TEXT,document_title TEXT,
+ statement TEXT,excerpt TEXT,published_at TEXT,recorded_at TEXT,status TEXT);
 CREATE TABLE concession_finance(contract_key TEXT, subsidy_cents INTEGER);
 CREATE VIRTUAL TABLE contract_fts USING fts5(
  object, original_id, content='contracts', content_rowid='rowid');
