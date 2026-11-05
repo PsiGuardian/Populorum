@@ -10,9 +10,9 @@
 <section class="panel budget-explorer" aria-label="Couverture de l'index national des contrats">
   {% if publicProcurementCoverage.available %}
     <div class="budget-heading"><div>
-        <h2>{{ publicProcurementCoverage.contracts|number_format(0, ',', ' ') }} contrats distincts indexés</h2>
+        <h2>{{ publicProcurementCoverage.contracts|number_format(0, ',', ' ') }} fiches contractuelles indexées</h2>
         <p>{{ publicProcurementCoverage.markets|number_format(0, ',', ' ') }} marchés publics · {{ publicProcurementCoverage.concessions|number_format(0, ',', ' ') }} concessions · {{ publicProcurementCoverage.events|number_format(0, ',', ' ') }} événements de modification ou de sous-traitance.</p>
-        <p class="budget-muted">{{ publicProcurementCoverage.files }} fichier(s) consolidé(s) importé(s) · dernière importation {{ publicProcurementCoverage.lastImport|default('inconnue') }}. L'absence d'une publication ne prouve pas qu'aucun contrat n'existe.</p>
+        <p class="budget-muted">{{ publicProcurementCoverage.files }} fichier(s) consolidé(s) importé(s) · dernière importation {{ publicProcurementCoverage.lastImport|default('inconnue') }}. La déduplication conservatrice privilégie la séparation des lots : deux versions d'un même contrat peuvent produire deux fiches tant que leur identité juridique exacte n'est pas établie. Ces chiffres ne constituent pas un recensement juridique exhaustif ni des paiements. L'absence d'une publication ne prouve pas qu'aucun contrat n'existe.</p>
     </div><a href="{{ civic_path('section', {view:'budget'}) }}#arbre-budget" class="button">Voir l'arbre des dépenses</a></div>
   {% else %}
     <h2>Index national non installé</h2>
