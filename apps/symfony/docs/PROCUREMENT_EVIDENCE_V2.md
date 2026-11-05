@@ -1,7 +1,6 @@
 # Marchés publics — DECP v2 et preuves documentaires
 
-**Statut : alpha, reconstruction obligatoire.** L'ancien index `populorum-decp-1`
-n'est pas réutilisé. Aucun mécanisme de compatibilité applicative n'est maintenu.
+**Statut : alpha, installation neuve uniquement.** L'index national doit être créé au format `populorum-decp-2` dans une installation sans base DECP publique préexistante. Aucune migration, conversion ou compatibilité avec une base antérieure n'est proposée.
 
 ## Principe et sources vérifiables
 
@@ -33,32 +32,22 @@ La table `contract_publications` garde les séries de valeurs déclarées par
 fichier, sans transformer ces valeurs en paiements. Aucun contenu original n'est
 supprimé durant une modification d'un marché.
 
-## Reconstruction sûre
+## Installation neuve à partir des sources officielles
 
-Depuis `apps/symfony`, si les JSON sont déjà dans
-`data/research/decp-sources/` :
+Depuis `apps/symfony` dans une **installation neuve**, télécharger d'abord les fichiers officiels, puis construire la base indépendante :
 
 ```bash
+python3 tools/decp_pipeline.py download
 python3 tools/decp_pipeline.py import
 python3 tools/decp_pipeline.py verify
 ```
 
-Si les sources doivent être (re)téléchargées ou si leurs liens directs sont
-inconnus, exécuter d'abord :
-
-```bash
-python3 tools/decp_pipeline.py download
-```
-
 Le téléchargement crée `resource-catalog.json` avec les URL **réelles**
 fournies par l'API data.gouv.fr et `resource-catalog-meta.json` avec la révision
-catalogue, la taille et le SHA-256 de chaque fichier. À chaque actualisation,
-le téléchargeur ne réutilise une ressource que si sa révision et son empreinte
-concordent ; un fichier republié avec la même taille est rechargé. Les
-publications sources précédentes restent dans l'index jusqu'à reconstruction
-et publication contrôlée. Si le manifeste n'existe pas, l'interface
-indique que l'URL exacte est inconnue et renvoie au catalogue DECP, sans prétendre
-ouvrir le fichier source directement.
+catalogue, la taille et le SHA-256 de chaque fichier. Le téléchargeur peut reprendre un transfert interrompu et vérifie la révision
+ainsi que l'empreinte des fichiers. Le manifeste de provenance relie chaque
+déclaration à son fichier exact ; si aucune URL directe n'est disponible,
+l'interface renvoie au catalogue en indiquant cette limite.
 
 Après vérification et arrêt du serveur Symfony :
 
@@ -66,8 +55,9 @@ Après vérification et arrêt du serveur Symfony :
 python3 tools/decp_pipeline.py publish --site-stopped
 ```
 
-Une sauvegarde de l'ancienne base publique est créée avant remplacement ;
-la base de production n'est jamais modifiée pendant l'importation.
+`publish` refuse une destination déjà existante. La publication initiale est
+atomique et n'écrase aucun fichier : elle installe uniquement l'index v2 validé.
+Ne pas déposer d'index SQLite préexistant dans une nouvelle installation.
 
 ## Ajouter une justification sourcée
 
