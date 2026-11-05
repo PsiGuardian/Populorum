@@ -32,7 +32,7 @@ final class ServiceContinuityPlansTest extends TestCase
         $plan = ServiceContinuityPlans::for('water');
         $scenarios = array_column($plan['scenarios'], null, 'id');
         self::assertEqualsCanonicalizing(
-            ['contamination', 'intrusion', 'leak', 'obstruction', 'outage'],
+            ['contamination', 'intrusion', 'leak', 'obstruction', 'outage', 'conflict'],
             array_keys($scenarios),
         );
         foreach ($scenarios as $scenario) {
