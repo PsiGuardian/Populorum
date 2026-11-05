@@ -1,4 +1,4 @@
-# Populorum — Instalace a aktualizace
+# Populorum — První instalace
 
 🇨🇿 **Čeština · cs_CZ**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 Operátory `&&` při chybě zastaví posloupnost: před pokračováním chybu opravte. Otevřete http://127.0.0.1:5412/; Ctrl+C zastaví místní server. Inicializace vytvoří `.env.local`, pouze pokud neexistuje. Aktivní databáze je `var/populorum.sqlite`. Cookies profileru vyžadují HTTPS i při ručním místním testu.
-
-## Aktualizace
-
-Před nahrazením zdrojů zastavte server a zálohujte databázi, soubory a klíče. Zachovejte `.env.local`, `.guardian-shield/` a `var/`. Aktivní databázi nikdy nenahrazujte souborem `data/populorum-demo.sqlite`. V adresáři `apps/symfony` spusťte:
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-Po úspěšném dokončení všech kroků znovu spusťte místní server:
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## Řešení problémů
 
