@@ -173,6 +173,17 @@ def db_info(path:Path, deep:bool=False) -> dict:
         integrity=db.execute('PRAGMA integrity_check' if deep else 'PRAGMA quick_check').fetchone()[0]
         if integrity!='ok':raise ValueError('Intégrité SQLite : '+integrity)
         result={k: db.execute('SELECT COUNT(*) FROM '+k).fetchone()[0] for k in ('imports','contracts','participants','changes')}
+        if deep:
+            expected=db.execute('SELECT COALESCE(SUM(records),0) FROM imports').fetchone()[0]
+            actual=db.execute('SELECT COUNT(*) FROM contract_records').fetchone()[0]
+            if expected!=actual:
+                raise ValueError(f'Archives sources incomplètes : {actual} déclarations sur {expected} attendues.')
+            missing=db.execute('''SELECT COUNT(*) FROM contract_records r
+                LEFT JOIN contracts c ON c.contract_key=r.contract_key
+                WHERE c.contract_key IS NULL''').fetchone()[0]
+            if missing:
+                raise ValueError(f'Déclarations sans contrat indexé : {missing}.')
+            result['source_records']=actual
     result['bytes']=path.stat().st_size
     return result
 
