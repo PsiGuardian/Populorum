@@ -26,6 +26,16 @@ def main():
     a=record('Lot 2 - Sonde de remplacement pour gastrostomie',27362.5)
     b=record('Lot 3 - Kit de bouton de gastrostomie',10708.0)
     assert contract_key(a,'market') != contract_key(b,'market')
+    real_vimartin = {
+        'id':'20232023014BG000', 'acheteur':{'id':'20009479500016'},
+        'objet':"Construction d'une école communale à Vimartin-sur-Orthe (53) - Relance du lot 6 suite à une 1ère consultation déclarée sans suite",
+        'codeCPV':'45421000-4','dateNotification':'2023-05-04',
+        'titulaires':[{'titulaire':{'typeIdentifiant':'SIRET','id':'82443283500026'}}],
+    }
+    expected='3acc2c757bad05054f37baf5e30ba027ff036f6d'
+    assert contract_key(real_vimartin,'market')==expected, 'Key drift breaks the sourced example'
+    curated=Path(__file__).resolve().parents[1]/'data/curated-procurement/vimartin-2023-lot6.json'
+    assert json.loads(curated.read_text(encoding='utf-8'))[0]['contract_key']==expected
     with tempfile.TemporaryDirectory(prefix='populorum-decp-v2-') as folder:
         root=Path(folder)
         source=root/'decp-2024-04.json'
