@@ -1,4 +1,4 @@
-# Populorum — Kurulum ve güncelleme
+# Populorum — İlk kurulum
 
 🇹🇷 **Türkçe · tr_TR**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 `&&` işleçleri bir hata oluştuğunda sırayı durdurur: devam etmeden önce hatayı giderin. http://127.0.0.1:5412/ adresini açın; Ctrl+C yerel sunucuyu durdurur. Başlatma işlemi `.env.local` dosyasını yalnızca mevcut değilse oluşturur. Etkin veritabanı `var/populorum.sqlite` dosyasıdır. Profiler çerezleri, elle yapılan yerel testlerde bile HTTPS gerektirir.
-
-## Güncelleme
-
-Kaynakları değiştirmeden önce sunucuyu durdurun; veritabanını, dosyaları ve anahtarları yedekleyin. `.env.local`, `.guardian-shield/` ve `var/` öğelerini koruyun. Etkin veritabanını asla `data/populorum-demo.sqlite` ile değiştirmeyin. `apps/symfony` içinde çalıştırın:
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-Tüm adımlar başarıyla tamamlandıktan sonra yerel sunucuyu yeniden başlatın:
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## Sorun giderme
 
