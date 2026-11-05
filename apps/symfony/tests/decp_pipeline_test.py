@@ -45,7 +45,7 @@ def main():
         assert p.db_info(empty_stage)['contracts']==2
         quick = p.fast_status(empty_stage)
         assert quick['contracts_present'] and quick['imports_present']
-        assert quick['schema'] == 'populorum-decp-1'
+        assert quick['schema'] == 'populorum-decp-2'
         assert quick['integrity_scan'].startswith('not_run')
         assert empty_public.stat().st_size==0, 'Import altered an empty public index'
         # CLI verification/status must not reject a valid staging due to an old zero-byte public file.
