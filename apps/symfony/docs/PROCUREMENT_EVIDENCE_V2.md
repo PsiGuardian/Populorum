@@ -102,6 +102,18 @@ Le site présente toutes les preuves avec auteur institutionnel, titre, extrait,
 date et URL du document. Les faits non documentés affichent explicitement
 « Justification documentaire non disponible ».
 
+## Première fiche réelle de validation
+
+Une première pièce sourcée est conservée dans
+`data/curated-procurement/vimartin-2023-lot6.json` : procès-verbal du conseil
+municipal de Vimartin-sur-Orthe du 20 février 2023, republié par Pappers
+Politique à l'URL exacte du document. Le procès-verbal mentionne la relance du
+lot 6 de l'école communale après une consultation infructueuse. Cette
+justification est importée seulement si le contrat DECP correspondant est
+présent dans la reconstruction. Elle ne prouve aucun paiement ni résultat des
+travaux. La provenance secondaire de l'hébergement est affichée sans la
+présenter comme une page officielle de la mairie.
+
 ## Découverte des avis BOAMP, sans automatisation dangereuse
 
 La commande suivante interroge l'API publique BOAMP de façon limitée et ne
