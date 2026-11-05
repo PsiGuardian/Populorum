@@ -57,7 +57,7 @@
 ## Installer le logiciel (version propre)
 
 - **[Installation en commandes terminal (Arch Linux et autres distributions)](LIRE_AVANT_INSTALLATION.md)** — archive vérifiée, commandes directes, données parlementaires facultatives et serveur de démonstration.
-- **[Release v0.11.0-clean](https://github.com/PsiGuardian/Populorum/releases/tag/v0.11.0-clean)** — distribution propre et vérifiée après publication réussie de la CI.
+- **[Release v0.12.0-clean](https://github.com/PsiGuardian/Populorum/releases/tag/v0.12.0-clean)** — distribution propre et vérifiée après publication réussie de la CI.
 - **[Catalogue des propositions de loi et ressources du Sénat](apps/symfony/docs/POLICY_CATALOG.md)** — import d'une base neuve, rapports précis, exposés des motifs, délibération causale avec historique.
 - **[Releases du logiciel et des données](https://github.com/PsiGuardian/Populorum/releases)** — récupérer séparément les jeux de données nationaux facultatifs.
 - **[Archive DECP de 1,9 Go, sources originales et contrôle SHA-256](apps/symfony/docs/ARCHIVES_DECP.md)** — fichiers volontairement exclus du dépôt Git.
