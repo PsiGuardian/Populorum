@@ -78,6 +78,7 @@ SQL);
             $insert->execute([str_repeat('c', 40), 'concession', '21660134400013', 'C-2024',
                 'Transport départemental', '67890000', 'Concession', '2024-03-01', 120000, null,
                 'Code département', '66', 'fixture', 'fixture-sha']);
+            $db->exec("INSERT INTO imports VALUES ('fixture-sha','decp-2024-04.json','https://www.data.gouv.fr/datasets/donnees-essentielles-de-la-commande-publique-fichiers-consolides','2026-11-05')");
             $supplier = $db->prepare('INSERT INTO participants VALUES (?, ?, ?, ?)');
             $supplier->execute([str_repeat('a', 40), 'supplier', 'SIRET', '12345678900011']);
             $db->exec("INSERT INTO contract_fts(contract_fts) VALUES('rebuild')");
@@ -86,6 +87,10 @@ SQL);
             $service = new PublicProcurementData($root);
 
             self::assertSame(3, $service->coverage()['contracts']);
+            $market = $service->search(['kind' => 'market'])['items'][0];
+            self::assertSame('fixture-sha', $market['source_sha']);
+            self::assertSame('decp-2024-04.json', $market['source_filename']);
+            self::assertStringStartsWith('https://www.data.gouv.fr/', $market['source_url']);
             self::assertSame(1, $service->cityCount('66134'));
             self::assertSame(2, $service->search(['kind' => 'market'])['total']);
             self::assertSame(2, $service->search(['year' => '2025'])['total']);
