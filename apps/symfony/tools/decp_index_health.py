@@ -6,9 +6,9 @@ from pathlib import Path
 from contextlib import closing
 import sqlite3
 
-SCHEMA_VERSION = 'populorum-decp-1'
+SCHEMA_VERSION = 'populorum-decp-2'
 REQUIRED_TABLES = ('metadata', 'imports', 'contracts', 'changes', 'participants',
-                   'contract_sources', 'concession_finance', 'contract_fts')
+                   'contract_sources', 'concession_finance', 'contract_fts', 'contract_records', 'procurement_evidence')
 
 class IndexErrorDetail(Exception):
     """Invalid or incompatible DECP database; never an instruction to delete it."""
