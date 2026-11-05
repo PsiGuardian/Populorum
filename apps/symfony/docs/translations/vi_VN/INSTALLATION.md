@@ -1,4 +1,4 @@
-# Populorum — Cài đặt và cập nhật
+# Populorum — Cài đặt lần đầu
 
 🇻🇳 **Tiếng Việt · vi_VN**
 
@@ -34,25 +34,6 @@ php -S 127.0.0.1:5412 -t public
 ```
 
 Toán tử `&&` dừng chuỗi lệnh khi có lỗi: hãy sửa lỗi trước khi tiếp tục. Mở http://127.0.0.1:5412/; Ctrl+C dừng máy chủ cục bộ. Quá trình khởi tạo chỉ tạo `.env.local` nếu tệp chưa tồn tại. Cơ sở dữ liệu đang dùng là `var/populorum.sqlite`. Cookie của profiler yêu cầu HTTPS, kể cả khi kiểm thử thủ công trên máy cục bộ.
-
-## Cập nhật
-
-Dừng máy chủ và sao lưu cơ sở dữ liệu, các tệp và khóa trước khi thay mã nguồn. Giữ nguyên `.env.local`, `.guardian-shield/` và `var/`. Không bao giờ thay cơ sở dữ liệu đang dùng bằng `data/populorum-demo.sqlite`. Từ `apps/symfony`, chạy:
-
-```bash
-composer install --no-interaction --prefer-dist &&
-php -r '$p=".env.local";if(!file_exists($p)){$h=@fopen($p,"x");if(!$h){fwrite(STDERR,"Cannot create .env.local\n");exit(1);}chmod($p,0600);fwrite($h,"APP_SECRET=".bin2hex(random_bytes(32))."\nGUARDIAN_ENCRYPTION_KEY=".bin2hex(random_bytes(32))."\n");fclose($h);}' &&
-php bin/console doctrine:migrations:migrate --no-interaction --env=demo &&
-php bin/console app:geography:install --env=demo &&
-php bin/console app:demo:prepare --env=demo &&
-php bin/console cache:clear --env=demo
-```
-
-Sau khi mọi bước đều thành công, khởi động lại máy chủ cục bộ:
-
-```bash
-php -S 127.0.0.1:5412 -t public
-```
 
 ## Khắc phục sự cố
 
