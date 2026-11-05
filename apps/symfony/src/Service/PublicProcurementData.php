@@ -264,6 +264,26 @@ final class PublicProcurementData
             FROM contract_records WHERE contract_key=? ORDER BY source_sha,kind,ordinal LIMIT 100');
         $stmt->execute([$key]);
         $row['original_records'] = $stmt->fetchAll();
+        // One authentic original declaration is available for full inspection.
+        // The index stores all occurrences; rendering remains bounded.
+        $stmt = $db->prepare('SELECT record_zlib FROM contract_records WHERE contract_key=?
+            ORDER BY source_sha,kind,ordinal LIMIT 1');
+        $stmt->execute([$key]);
+        $compressed = $stmt->fetchColumn();
+        $row['source_declaration'] = null;
+        if (is_string($compressed)) {
+            $json = @gzuncompress($compressed, 2_000_000);
+            if (is_string($json)) {
+                try {
+                    $payload = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+                    if (is_array($payload)) {
+                        $row['source_declaration'] = $payload;
+                    }
+                } catch (\JsonException) {
+                    // An unreadable source declaration must not affect the public page.
+                }
+            }
+        }
         if ($row['kind'] === 'concession') {
             $stmt = $db->prepare('SELECT * FROM concession_finance WHERE contract_key=?');
             $stmt->execute([$key]);
