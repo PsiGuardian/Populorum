@@ -233,6 +233,8 @@ def make_staging(staging:Path=STAGING, public:Path=PUBLIC):
         print('Index public sans tables DECP : amorçage indépendant du staging V8 ; fichier public conservé.')
         return
     with closing(sqlite3.connect(f'file:{public.resolve()}?mode=ro',uri=True)) as db:
+        if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='metadata'").fetchone():
+            raise ValueError('Schéma DECP invalide : table metadata absente.')
         found=db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()
     if found and found[0]=='populorum-decp-1':
         print('Reconstruction alpha v2 : la base publique v1 est conservée; création indépendante du staging v2.')
