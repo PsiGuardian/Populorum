@@ -348,6 +348,23 @@ final class DemoController extends AbstractController
     )]
     public function page(Request $request, string $view = 'home'): Response
     {
+        if ($view === 'services') {
+            // Plan and scenario are path segments only; reject ambiguous query alternatives.
+            if ($request->query->has('plan') || $request->query->has('scenario')) {
+                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException(
+                    'Utilisez /services/{plan}/{scenario} plutôt que des paramètres de requête.',
+                );
+            }
+            $plan = $request->attributes->get('plan', 'water');
+            $scenario = $request->attributes->get('scenario');
+            if (!is_string($plan) || !isset(\App\Service\EssentialServices::CATALOG[$plan])) {
+                throw $this->createNotFoundException('Plan de continuité inconnu.');
+            }
+            if ($scenario !== null && (!is_string($scenario) || $plan !== 'water'
+                || !isset(\App\Service\WaterContinuityGraph::SCENARIOS[$scenario]))) {
+                throw $this->createNotFoundException('Scénario de continuité inconnu.');
+            }
+        }
         // Les propositions et consultations fictives sont conservées uniquement
         // comme archives techniques et ne sont plus présentées comme bulletins.
         if (in_array($view, ['proposals', 'consultations'], true)) {
@@ -536,19 +553,13 @@ final class DemoController extends AbstractController
         if ($view === 'services') {
             $context['serviceCatalog'] =
                 \App\Service\EssentialServices::CATALOG;
-            $context['continuityPlanKey'] = $request->query->getString('plan', 'water');
-            if (!isset($context['serviceCatalog'][$context['continuityPlanKey']])) {
-                throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException('Plan de continuité inconnu.');
-            }
+            $context['continuityPlanKey'] = $plan;
             $context['continuityPlan'] = \App\Service\ServiceContinuityPlans::for(
                 $context['continuityPlanKey'],
             );
             $context['continuityPhases'] = \App\Service\ServiceContinuityPlans::phases();
             if ($context['continuityPlanKey'] === 'water') {
-                $context['waterScenarioKey'] = $request->query->getString('scenario', 'contamination');
-                if (!isset(\App\Service\WaterContinuityGraph::SCENARIOS[$context['waterScenarioKey']])) {
-                    throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException('Scénario Eau inconnu.');
-                }
+                $context['waterScenarioKey'] = $scenario ?? 'contamination';
                 $context['waterGraph'] = \App\Service\WaterContinuityGraph::forScenario($context['waterScenarioKey']);
                 $context['waterNodeLabels'] = array_map(
                     static fn (array $node): string => $node['label'],
