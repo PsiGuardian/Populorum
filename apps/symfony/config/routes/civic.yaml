@@ -110,11 +110,6 @@ site_services:
     controller: App\Controller\DemoController::page
     defaults: { view: services }
     methods: [GET]
-site_services_legacy:
-    path: /services-et-missions
-    controller: App\Controller\DemoController::page
-    defaults: { view: services }
-    methods: [GET]
 site_budget:
     path: /budget-et-priorites
     controller: App\Controller\DemoController::page
