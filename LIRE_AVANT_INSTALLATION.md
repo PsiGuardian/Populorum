@@ -121,13 +121,26 @@ python3 tools/decp_pipeline.py import
 python3 tools/decp_pipeline.py verify
 ```
 
-Pour publier **uniquement après réussite de la vérification**, arrêter
-entièrement le serveur Symfony et tout lecteur SQLite de l'index DECP, puis :
+### Publication DECP — étape indépendante
+
+**Seulement après avoir arrêté Symfony et tous les lecteurs SQLite DECP**,
+et après réussite de `verify`, copier **uniquement cette commande** dans
+le terminal, puis appuyer sur Entrée :
 
 ```bash
 python3 tools/decp_pipeline.py publish --site-stopped
+```
+
+Une fois la commande terminée, vérifier l'état avec **un second copier-coller** :
+
+```bash
 python3 tools/decp_pipeline.py status
 ```
+
+**Arrêter ici si tu n'as pas besoin des statistiques SSMSI.** La section 6
+est une installation facultative et indépendante : **ne jamais coller
+`DATA_URL=...` à la suite de `--site-stopped`**. Les commandes des deux
+sections ne doivent pas être fusionnées dans un même collage.
 
 La commande `publish` crée pour la première fois
 `data/research/public-procurement.sqlite` et **refuse tout fichier déjà
@@ -148,6 +161,11 @@ jamais automatiquement une correspondance textuelle en justification.
 
 ## 6. Facultatif — statistiques communales SSMSI pour la convergence
 
+**Opération totalement distincte de la publication DECP.** Copier ce bloc
+séparément, en commençant par la ligne `DATA_URL=...` uniquement après
+avoir terminé les étapes DECP. Un échec de `publish` n'empêche pas
+l'installation SSMSI : les bases sont indépendantes.
+
 Si vous souhaitez également renseigner les indicateurs officiels 2024–2025 sur `/convergence`, l'index publié est directement disponible, sans reconstruire le CSV :
 
 ```bash
@@ -165,7 +183,6 @@ else
   test "$(sqlite3 -readonly "$TEMP" "SELECT 1 FROM facts LIMIT 1;")" = "1" &&
   ln "$TEMP" "$SSMSI" && rm "$TEMP"
 fi
-php bin/console cache:clear --env=demo --no-debug
 ```
 
 Le téléchargement SSMSI suit lui aussi le mode rapide (SHA-256 et contrôle de quelques lignes), sans relire tout le fichier. L'absence de statistique publiée n'est **jamais** transformée en valeur zéro.
