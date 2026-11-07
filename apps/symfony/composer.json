@@ -53,6 +53,7 @@
   "scripts": {
     "test": [
       "@php tests/integration.php",
+      "@php tests/water_continuity.php",
       "@php tests/corrections.php",
       "@php tests/requirements-audit.php",
       "@php vendor/bin/phpunit"

@@ -130,6 +130,23 @@ def main() -> None:
                 if response != 200:
                     raise AssertionError(f"{path}: PHP did not return HTTP 200 in time")
 
+            # Service identifiers are path-only. No redirects or query fallback.
+            for path, expected_status in (
+                ("/services?plan=water", 400),
+                ("/services/water?scenario=leak", 400),
+                ("/services/invalid", 404),
+                ("/services/energy/leak", 404),
+                ("/services/water/invalid", 404),
+            ):
+                try:
+                    with closing(browser.open(url + path, timeout=28)) as response:
+                        raise AssertionError(
+                            f"{path}: expected HTTP {expected_status}, got {response.status}"
+                        )
+                except urllib.error.HTTPError as error:
+                    assert error.code == expected_status, (path, error.code)
+                    print(f"PASS {path}: HTTP {error.code}", flush=True)
+
             # Canonical public filters use path segments, never query strings.
             from urllib.parse import urlencode
             for old, canonical in (
@@ -216,7 +233,7 @@ def main() -> None:
                 '/', '/territoires', '/chemins', '/consultations', '/experiences',
                 '/convergence', '/convergence/communes_q/66300',
                 '/memoire', '/transparence', '/infrastructure', '/gouvernance',
-                '/participer', '/charte', '/recits', '/services-et-missions',
+                '/participer', '/charte', '/recits', '/services/water', '/services/water/contamination',
                 '/budget-et-priorites', '/besoins-et-devis', '/communes',
                 '/communes/q/66300', '/marches-publics', '/marches-publics/q/web',
             )

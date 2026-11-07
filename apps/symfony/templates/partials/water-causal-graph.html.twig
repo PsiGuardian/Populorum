@@ -1,0 +1,36 @@
+<section id="water-causal-graph" class="panel section" aria-labelledby="water-graph-title">
+    <h2 id="water-graph-title">Graphe cause → effet : continuité de l’eau</h2>
+    <p>
+        Choisir un scénario pour examiner les fonctions susceptibles d’être touchées.
+        Les liens expriment des dépendances possibles, sans prédire une rupture certaine.
+        Aucune installation réelle, localisation sensible ou consigne d’exploitation n’est représentée.
+    </p>
+    <nav class="service-continuity-choices" aria-label="Choisir un scénario pour l’eau">
+        {% for scenario in continuityPlan.scenarios %}
+            <a href="{{ civic_path('site_service_scenario', {plan: 'water', scenario: scenario.id}) }}#water-causal-graph"
+               class="{{ waterScenarioKey == scenario.id ? 'active' : '' }}"
+               {% if waterScenarioKey == scenario.id %}aria-current="page"{% endif %}>
+                {{ scenario.name }}
+            </a>
+        {% endfor %}
+    </nav>
+    <h3>Fonctions et dépendances</h3>
+    <div class="cards-grid">
+        {% for node in waterGraph.nodes %}
+            <article>
+                <h4>{{ node.label }}</h4>
+                <p>{{ node.affected ? 'Potentiellement touchée par ce scénario' : 'Fonction dépendante ou de soutien' }}</p>
+            </article>
+        {% endfor %}
+    </div>
+    <h3>Relations cause → effet possibles</h3>
+    <ol>
+        {% for edge in waterGraph.edges %}
+            <li>
+                <strong>{{ waterNodeLabels[edge.from] }} → {{ waterNodeLabels[edge.to] }}</strong>
+                : {{ edge.effect }}
+            </li>
+        {% endfor %}
+    </ol>
+    <p class="small">{{ waterGraph.notice }}</p>
+</section>
