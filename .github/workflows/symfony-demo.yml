@@ -52,7 +52,7 @@ jobs:
       - run: python3 tests/decp_pipeline_test.py
       - run: python3 tests/decp_history_test.py
       - run: python3 tests/decp_sql_inputs_test.py
-      - run: sudo apt-get update && sudo apt-get install -y zstd
+      - run: command -v zstd >/dev/null || (sudo apt-get update && sudo apt-get install -y zstd)
       - run: python3 tests/decp_archive_test.py
       - run: python3 -m py_compile tools/import_ssmsi_national.py
   arch-install:
