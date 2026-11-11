@@ -742,15 +742,23 @@ final class DemoController extends AbstractController
                 'q' => $request->query->getString('q', ''),
             ];
             $context['marketFilters'] = $filters;
-            $context['publicProcurementCoverage'] = $this->publicProcurement->coverage();
+            $context['publicProcurementCoverage'] = PerformanceTrace::measure(
+                'decp_coverage',
+                fn () => $this->publicProcurement->coverage(),
+            );
             $contractKey = (string) $request->attributes->get('key', '');
-            $context['marketDetails'] = $contractKey !== '' ? $this->publicProcurement->detail($contractKey) : null;
+            $context['marketDetails'] = $contractKey !== ''
+                ? PerformanceTrace::measure('decp_detail', fn () => $this->publicProcurement->detail($contractKey))
+                : null;
             if ($contractKey !== '' && $context['marketDetails'] === null) {
                 throw $this->createNotFoundException('Contrat non retrouvé dans les sources importées.');
             }
-            $context['marketList'] = $this->publicProcurement->search(
-                $filters,
-                max(0, $request->query->getInt('offset', 0)),
+            $context['marketList'] = PerformanceTrace::measure(
+                'decp_search',
+                fn () => $this->publicProcurement->search(
+                    $filters,
+                    max(0, $request->query->getInt('offset', 0)),
+                ),
             );
         }
         if ($view === 'accounts') {

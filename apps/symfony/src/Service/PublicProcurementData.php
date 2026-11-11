@@ -196,9 +196,22 @@ final class PublicProcurementData
             }
         }
         $condition = $where ? (' WHERE ' . implode(' AND ', $where)) : '';
-        $count = $db->prepare('SELECT COUNT(*) FROM contracts c' . $condition);
-        $count->execute($args);
-        $total = (int) $count->fetchColumn();
+        $total = PerformanceTrace::measure('decp_count', function () use ($db, $where, $kind, $condition, $args): int {
+            // The controller already loads public coverage on the markets page.
+            // Unfiltered or kind-only totals come from that cached aggregate;
+            // do not run an additional national COUNT(*) on every page visit.
+            if ($where === [] || $where === ['c.kind=?']) {
+                $coverage = $this->coverage();
+
+                return (int) ($where === []
+                    ? $coverage['contracts']
+                    : ($kind === 'market' ? $coverage['markets'] : $coverage['concessions']));
+            }
+            $count = $db->prepare('SELECT COUNT(*) FROM contracts c' . $condition);
+            $count->execute($args);
+
+            return (int) $count->fetchColumn();
+        });
         // Only known SQL fragments are allowed; dates and amounts remain unaltered.
         $sort = (string) ($filters['sort'] ?? 'date_desc');
         $orderBy = match ($sort) {
@@ -216,14 +229,17 @@ final class PublicProcurementData
             (SELECT i.filename FROM imports i WHERE i.sha256=c.source_sha LIMIT 1) AS source_filename,
             (SELECT COUNT(*) FROM contract_sources cs WHERE cs.contract_key=c.contract_key) AS source_count
             FROM contracts c' . $condition . ' ORDER BY ' . $orderBy . ' LIMIT ? OFFSET ?';
-        $stmt = $db->prepare($sql);
-        foreach ($args as $i => $v) {
-            $stmt->bindValue($i + 1, $v, \PDO::PARAM_STR);
-        }
-        $stmt->bindValue(count($args) + 1, $limit, \PDO::PARAM_INT);
-        $stmt->bindValue(count($args) + 2, $offset, \PDO::PARAM_INT);
-        $stmt->execute();
-        $rows = $stmt->fetchAll();
+        $rows = PerformanceTrace::measure('decp_rows', static function () use ($db, $sql, $args, $limit, $offset): array {
+            $stmt = $db->prepare($sql);
+            foreach ($args as $i => $v) {
+                $stmt->bindValue($i + 1, $v, \PDO::PARAM_STR);
+            }
+            $stmt->bindValue(count($args) + 1, $limit, \PDO::PARAM_INT);
+            $stmt->bindValue(count($args) + 2, $offset, \PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->fetchAll();
+        });
         foreach ($rows as &$row) {
             $row['date_quality'] = self::dateQuality((string) $row['notice_date']);
         }
