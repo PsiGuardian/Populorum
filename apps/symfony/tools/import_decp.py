@@ -117,6 +117,11 @@ CREATE TABLE IF NOT EXISTS concession_finance(
 CREATE INDEX IF NOT EXISTS contracts_buyer ON contracts(buyer_id,kind,notice_date);
 CREATE INDEX IF NOT EXISTS contracts_date ON contracts(notice_date,contract_key);
 CREATE INDEX IF NOT EXISTS contracts_geo ON contracts(location_type,location_code);
+-- The national page sorts by date DESC but contract key ASC. Its pre-v2
+-- ascending index cannot satisfy the mixed-direction ORDER BY.
+CREATE INDEX IF NOT EXISTS contracts_date_desc ON contracts(notice_date DESC,contract_key ASC);
+CREATE INDEX IF NOT EXISTS contracts_geo_date_desc ON contracts(location_type,location_code,notice_date DESC,contract_key ASC);
+CREATE INDEX IF NOT EXISTS contracts_kind_date_desc ON contracts(kind,notice_date DESC,contract_key ASC);
 CREATE INDEX IF NOT EXISTS contracts_kind ON contracts(kind,notice_date);
 CREATE INDEX IF NOT EXISTS participants_lookup ON participants(identifier,role);
 CREATE INDEX IF NOT EXISTS changes_contract ON changes(contract_key,event_date);
