@@ -89,8 +89,24 @@ site_action_object:
         contextKey: 'proposalId|consultationId|experimentId|governanceId|caseId|appealId|alertId|nodeId|accountId|missionId|workerId|tenderId'
         contextId: '[a-zA-Z0-9_-]{1,80}'
     methods: [GET, POST]
+# Canonical service routes: recognized identifiers are checked against the catalog in the controller.
+site_service_scenario:
+    path: /services/{plan}/{scenario}
+    controller: App\Controller\DemoController::page
+    defaults: { view: services }
+    requirements:
+        plan: '[a-z][a-z_]{0,39}'
+        scenario: '[a-z][a-z_]{0,39}'
+    methods: [GET]
+site_service_plan:
+    path: /services/{plan}
+    controller: App\Controller\DemoController::page
+    defaults: { view: services }
+    requirements:
+        plan: '[a-z][a-z_]{0,39}'
+    methods: [GET]
 site_services:
-    path: /services-et-missions
+    path: /services
     controller: App\Controller\DemoController::page
     defaults: { view: services }
     methods: [GET]

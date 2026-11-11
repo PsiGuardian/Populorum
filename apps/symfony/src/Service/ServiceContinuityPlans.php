@@ -294,11 +294,19 @@ final class ServiceContinuityPlans
             ],
             [
                 'id' => 'outage',
-                'name' => 'Coupure électrique, conflit ou désorganisation prolongée',
-                'signal' => 'Indisponibilité durable de l’énergie, des communications, du personnel ou des approvisionnements.',
+                'name' => 'Coupure électrique prolongée',
+                'signal' => 'Indisponibilité durable de l’énergie affectant les capacités de traitement ou de distribution.',
                 'protect' => 'Activer la coordination de crise entre opérateurs, mairie, ARS et préfecture selon les compétences applicables.',
                 'continue' => 'Prévoir des capacités alternatives validées, des annonces multicanal et un accès prioritaire aux besoins vitaux.',
                 'verify' => 'Restaurer progressivement les étapes de production et de distribution sous contrôle sanitaire.',
+            ],
+            [
+                'id' => 'conflict',
+                'name' => 'Conflit civil ou armé : perturbations multiples',
+                'signal' => 'Perturbations combinées des transports, communications, personnels et approvisionnements.',
+                'protect' => 'Coordonner la protection des personnes avec les exploitants et autorités compétentes, sans exposer les installations sensibles.',
+                'continue' => 'Prévoir des ressources alternatives contrôlées, des communications redondantes et une assistance accessible aux personnes isolées.',
+                'verify' => 'Rétablir les fonctions par étapes, avec contrôle sanitaire et vérification des capacités de distribution.',
             ],
         ];
     }
