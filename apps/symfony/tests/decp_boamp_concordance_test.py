@@ -80,6 +80,12 @@ def main():
                                    'procedure':{'reference':'AO25DMISP'}})
     purely_numeric=dict(contract,original_id='202500001234')
     assert classify(purely_numeric,notice) is not None
+    short_numeric=dict(contract,original_id='123456')
+    numeric_notice=dict(notice,DONNEES={'acheteur':{'identifiant':'26380030200014'},
+                                        'rubrique':{'prix':'123456'}})
+    number_guess=classify(short_numeric,numeric_notice)
+    assert number_guess is not None and number_guess['status']=='candidate'
+
 
     assert classify(contract,rejected) is None
     other_buyer=dict(contract,buyer_id='11111111111111')
