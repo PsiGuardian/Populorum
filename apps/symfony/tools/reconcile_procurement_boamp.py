@@ -14,6 +14,7 @@ never run inside an HTTP page request. No external Python dependencies.
 from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
+from decimal import Decimal, InvalidOperation
 import hashlib
 import json
 from pathlib import Path
@@ -43,7 +44,8 @@ CREATE TABLE IF NOT EXISTS reference_matches(
  basis TEXT NOT NULL,
  title TEXT NOT NULL,url TEXT NOT NULL,
  publication_date TEXT NOT NULL, notice_kind TEXT NOT NULL,
- notice_sha256 TEXT NOT NULL, first_seen_at TEXT NOT NULL,last_seen_at TEXT NOT NULL,
+ notice_sha256 TEXT NOT NULL, notice_total_eur TEXT NOT NULL,
+ first_seen_at TEXT NOT NULL,last_seen_at TEXT NOT NULL,
  PRIMARY KEY(contract_key,idweb)
 );
 CREATE INDEX IF NOT EXISTS concordance_contract ON reference_matches(contract_key,status,last_seen_at DESC);
@@ -65,6 +67,31 @@ def exact_token(needle: str, haystack: str) -> bool:
         return False
     return re.search(r'(?<![a-zA-Z0-9])'+re.escape(needle)+r'(?![a-zA-Z0-9])',
                      haystack, flags=re.IGNORECASE) is not None
+
+
+def unique_notice_total(payload: object) -> str:
+    """Conservative whole-notice amount from a uniquely defined EUR TotalAmount.
+
+    This is NEVER an amount certified for one lot or a payment. In
+    ambiguous multi-amount notices return nothing, not a guess.
+    """
+    totals=set()
+    def walk(obj: object, depth: int = 0) -> None:
+        if depth > 32 or len(totals) > 2:
+            return
+        if isinstance(obj,dict):
+            for k,v in obj.items():
+                if k in ('cbc:TotalAmount','TotalAmount') and isinstance(v,dict):
+                    if v.get('@currencyID') == 'EUR':
+                        raw=v.get('#text')
+                        if isinstance(raw,str) and re.fullmatch(r'[0-9]{1,14}(?:\.[0-9]{1,2})?',raw):
+                            try:totals.add(str(Decimal(raw).quantize(Decimal('0.01'))))
+                            except InvalidOperation:pass
+                else:walk(v,depth+1)
+        elif isinstance(obj,list):
+            for v in obj[:300]:walk(v,depth+1)
+    walk(payload)
+    return next(iter(totals)) if len(totals)==1 else ''
 
 
 def classify(contract: dict, notice: dict) -> dict | None:
@@ -120,7 +147,8 @@ def classify(contract: dict, notice: dict) -> dict | None:
     return {'contract_key':contract['contract_key'],'idweb':idweb,'status':status,
             'basis':basis,'title':title or 'Avis BOAMP ' + idweb,'url':url,
             'publication_date':pub,'notice_kind':kind,
-            'notice_sha256':hashlib.sha256(raw.encode('utf-8')).hexdigest()}
+            'notice_sha256':hashlib.sha256(raw.encode('utf-8')).hexdigest(),
+            'notice_total_eur':unique_notice_total(full) if status == 'procedure_ids' else ''}
 
 
 def fetch_candidates(object_title: str, reference: str, timeout: float = 20.0) -> list[dict]:
@@ -158,16 +186,17 @@ def store(sidecar: sqlite3.Connection, contract_key: str, matches: list[dict],
     for match in matches:
         sidecar.execute("""INSERT INTO reference_matches(
           contract_key,idweb,status,basis,title,url,publication_date,notice_kind,
-          notice_sha256,first_seen_at,last_seen_at)
-          VALUES (?,?,?,?,?,?,?,?,?,?,?)
+          notice_sha256,notice_total_eur,first_seen_at,last_seen_at)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
           ON CONFLICT(contract_key,idweb) DO UPDATE SET
           status=excluded.status,basis=excluded.basis,title=excluded.title,
           url=excluded.url,publication_date=excluded.publication_date,
           notice_kind=excluded.notice_kind,notice_sha256=excluded.notice_sha256,
+          notice_total_eur=excluded.notice_total_eur,
           last_seen_at=excluded.last_seen_at""",
           (match['contract_key'],match['idweb'],match['status'],match['basis'],
            match['title'],match['url'],match['publication_date'],match['notice_kind'],
-           match['notice_sha256'],now,now))
+           match['notice_sha256'],match['notice_total_eur'],now,now))
     sidecar.execute("""INSERT INTO checks VALUES(?,?,?,?,?)
       ON CONFLICT(contract_key) DO UPDATE SET
       checked_at=excluded.checked_at,status=excluded.status,
