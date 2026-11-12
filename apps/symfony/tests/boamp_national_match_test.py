@@ -57,6 +57,16 @@ def main():
         process(decp,boamp,side,records)
         assert side.execute('SELECT COUNT(*) FROM local_matches WHERE contract_key=?',('a'*40,)).fetchone()[0]>=2
         assert boamp.execute('SELECT COUNT(*) FROM notice_versions').fetchone()[0]==2
+        # A buyer with more notices than the local cap is never labelled
+        # 'no link'; the audit explicitly records partial coverage.
+        second=dict(row,idweb='24-1573',
+                    url_avis='https://www.boamp.fr/pages/avis/?q=idweb:24-1573')
+        import_jsonl(boamp,io.BytesIO((json.dumps(second)+'\n').encode()),'https://official.example/export')
+        entries,overflow=postings(boamp,'21690264300016',1)
+        assert len(entries)==1 and overflow
+        limited=process(decp,boamp,side,records,max_candidates=1)
+        assert limited['partial']==2
+        assert side.execute("SELECT status FROM local_checks WHERE contract_key=?",('a'*40,)).fetchone()[0]=='partial'
     print('PASS offline BOAMP: DECP read-only, strict source versions, local classification, anomalies, preserved historical matches.')
 
 if __name__=='__main__':
