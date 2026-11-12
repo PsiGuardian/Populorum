@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS local_matches(
  PRIMARY KEY(contract_key,idweb,notice_sha));
 CREATE INDEX IF NOT EXISTS local_matches_contract ON local_matches(contract_key,active,status);
 """
-MAX_LOCAL=20000
+MAX_LOCAL=4000
 
 
 def utc_now()->str:
@@ -47,7 +47,8 @@ def utc_now()->str:
 
 
 def source_ready(db:sqlite3.Connection)->None:
-    if db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()!= (BOAMP_SCHEMA,):
+    schema=db.execute("SELECT value FROM metadata WHERE key='schema'").fetchone()
+    if not schema or schema[0]!=BOAMP_SCHEMA:
         raise ValueError('Index national BOAMP incompatible')
     if db.execute('SELECT COUNT(*) FROM notices').fetchone()[0]==0:
         raise ValueError('Index BOAMP vide ; importer le flux officiel au préalable')
@@ -135,7 +136,7 @@ def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Con
             records:list[dict],max_candidates:int=MAX_LOCAL)->dict:
     count=links=truncated=0
     # A typical buyer has many DECP contracts: read the buyer's BOAMP
-    # postings once for up to 32 recent buyers, rather than 1 SQL query
+    # postings once for up to four recent buyers, rather than 1 SQL query
     # per market. Memory remains capped by a modest LRU cache.
     buyer_cache:OrderedDict[str,tuple[list[dict],bool]]=OrderedDict()
     source_revision=boamp.execute('SELECT COALESCE(MAX(import_id),0) FROM imports').fetchone()[0]
@@ -143,7 +144,7 @@ def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Con
         buyer=str(c.get('buyer_id') or '')
         if buyer not in buyer_cache:
             buyer_cache[buyer]=postings(boamp,buyer,max_candidates)
-            if len(buyer_cache)>32:buyer_cache.popitem(last=False)
+            if len(buyer_cache)>4:buyer_cache.popitem(last=False)
         else:
             buyer_cache.move_to_end(buyer)
         notices,over=buyer_cache[buyer]
@@ -168,7 +169,7 @@ def main()->None:
     p.add_argument('--sidecar',type=Path,default=SIDECAR)
     args=p.parse_args()
     if not 1<=args.limit<=50000 or args.offset<0 or not 1<=args.max_notices_per_buyer<=MAX_LOCAL:
-        p.error('limit 1..50000, offset >= 0, max-notices-per-buyer 1..20000')
+        p.error('limit 1..50000, offset >= 0, max-notices-per-buyer 1..4000')
     if args.contract_key and not re.fullmatch(r'[a-f0-9]{40}',args.contract_key):
         p.error('Clé contrat : 40 chiffres hexadécimaux')
     if args.resume and (args.contract_key or args.offset):
