@@ -54,10 +54,14 @@ jobs:
           python3 - <<'PY'
           import sys
           sys.path.insert(0,'tools')
-          from reconcile_procurement_boamp import fetch_candidates
-          data=fetch_candidates('Fourniture de dispositifs médicaux implantables spécialisés', 'AO25DMISP', '26380030200014')
+          from reconcile_procurement_boamp import fetch_candidates, classify
+          title='Fourniture de dispositifs médicaux implantables et dispositifs médicaux spécialisés 2025'
+          data=fetch_candidates(title, 'AO25DMISP', '26380030200014')
           assert isinstance(data,list)
-          print('BOAMP API ODSQL OK; resultats lus :',len(data))
+          contract={'contract_key':'a'*40,'buyer_id':'26380030200014',
+                    'original_id':'AO25DMISP','object':title,'notice_date':'2025-05-20'}
+          matches=[(x['idweb'],m['status']) for x in data if (m:=classify(contract,x)) is not None]
+          print('BOAMP API ODSQL OK; filtres SIRET+objet :',len(data),'avis, liens candidats/confirmes :',matches)
           PY
       - run: python3 -m py_compile tools/import_decp.py tools/import_procurement_evidence.py tools/enrich_procurement_boamp.py tools/reconcile_procurement_boamp.py
       - run: python3 tests/fresh_install_contract_test.py
