@@ -101,6 +101,53 @@ deviennent jamais la même commune parce que leurs mots normalisés coïncident.
 Voir les [tables historiques INSEE](https://www.insee.fr/fr/information/7671867)
 pour les fusions et changements de nom.
 
+### Correction opérationnelle : noms de communes courts
+
+L'audit du **COG INSEE 2026** a identifié **229 communes** dont le
+nom pris isolément ne produit aucun terme dans le comparateur de titres
+BOAMP (<4 caractères ou mots filtrés), dont **173 avec un libellé officiel
+normalisé unique** dans le millésime. Les 56 autres comprennent des
+homonymes : par exemple neuf communes « Le Pin ». Aucun nom ne
+devient un identifiant administratif par simple comparaison textuelle.
+
+Le moteur **local** dispose désormais d'un appoint géographique
+**strictement limité aux candidats**. Pour qu'une commune courte puisse
+ajouter un seul terme de comparaison, il faut réunir **toutes** les
+conditions suivantes :
+
+1. Le référentiel COG 2026 est installé et chargé **en lecture seule**,
+   sans téléchargement pendant le rapprochement.
+2. Le contrat DECP déclare explicitement un lieu de type
+   **« Code commune »**, avec un **code INSEE correspondant**.
+3. Ce code renvoie à un **nom court unique** au sein du COG 2026.
+   Un homonyme comme « Le Pin » est exclu, même si le code DECP existe.
+4. Le nom officiel figure **mot pour mot et à bornes de mots** dans
+   les intitulés DECP et BOAMP. L'avis BOAMP doit comporter un contexte
+   locatif explicite (par exemple « à Gap » ou « commune de Gap »).
+5. Le SIRET de l'acheteur DECP est cité dans le contenu officiel de
+   l'avis BOAMP, et les intitulés partagent **déjà au moins deux termes
+   substantiels** avant cet appoint géographique.
+6. Le score Jaccard final doit toujours atteindre **35 %** avec au
+   moins **trois termes communs**. Le nom court n'ajoute qu'un terme.
+   Ce signal **n'intervient jamais dans la validation des références**
+   de procédure et ne confirme ni le lot ni aucun paiement.
+
+Si l'un des critères manque, le classement est inchangé.
+Cette tolérance n'est pas une validation géographique du BOAMP :
+le **code INSEE n'y est pas attesté**, il est déclaré côté DECP
+et le nom est simplement lu dans un intitulé.
+
+Le catalogue de noms courts est lu au lancement de
+\`tools/match_boamp_national.py\`, et reste **facultatif**.
+Si la base INSEE n'est pas installée, les rapprochements fonctionnent
+comme auparavant, sans bonification géographique.
+
+Tests hors réseau : Gap (commune unique) avec deux termes d'objet
+partagés, absence du code INSEE, code postal à la place de code
+commune, SIRET erroné, objet différent, absence de contexte géographique,
+et « Le Pin » (homonyme). L'ensemble des précédentes concordances
+sur 25 contrats reste à examiner après activation locale.
+
 ### Correction de l'audit géographique après le premier essai
 
 Le premier contrôle de 34 875 communes (12 novembre 2026) a correctement
