@@ -180,7 +180,7 @@ jobs:
           from pathlib import Path
           allowed = {'.gitignore','bootstrap.php','decp_archive.py','decp_index_health.py','decp_pipeline.py',
             'verify_decp_history.py','backfill_decp_history.py','import_decp.py','import_procurement_evidence.py','import_procurement_financial_evidence.py','enrich_procurement_boamp.py','reconcile_procurement_boamp.py','audit_procurement_concordance.py','import_boamp_national.py','match_boamp_national.py','import_budget_national.py',
-            'import_codes_postaux.py','import_communes_insee.py',
+            'import_codes_postaux.py','import_communes_insee.py','audit_boamp_commune_morphology.py',
             'recount.php','verify-export.php','import_ssmsi_national.py','import_policy_catalog.py','enrich_senate_dossiers.py'}
           present = {p.name for p in Path('tools').iterdir() if p.is_file()}
           assert present == allowed, f'Unexpected/absent tooling: extra={sorted(present-allowed)} missing={sorted(allowed-present)}'
