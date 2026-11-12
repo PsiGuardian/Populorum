@@ -62,6 +62,23 @@ def terms(value: str) -> list[str]:
             if x not in STOP and not x.isdigit()]
 
 
+def title_terms(value: str) -> set[str]:
+    """Light French singular/plural comparison for *titles only*.
+
+    A BOAMP notice may say 'internat' where DECP says 'internats'.
+    The official-API search terms remain untouched. This normalization
+    never supplies documentary proof of a specific procedure or lot.
+    """
+    normalized=set()
+    for word in terms(value):
+        # A deliberately narrow rule: avoid 'plus', 'cours', 'statuts',
+        # etc. and do not attempt semantic synonyms or regional demonyms.
+        if len(word)>=6 and word.endswith('s') and not word.endswith(('ss','us','is')):
+            word=word[:-1]
+        normalized.add(word)
+    return normalized
+
+
 def exact_token(needle: str, haystack: str) -> bool:
     if not needle:
         return False
@@ -131,14 +148,21 @@ def classify(contract: dict, notice: dict) -> dict | None:
     reference_found = exact_token(reference,raw)
     title = str(notice.get('objet') or '')[:400]
     reference_title = str(contract.get('object') or '')
-    name_tokens = set(terms(reference_title))
-    title_tokens = set(terms(title))
+    name_tokens = title_terms(reference_title)
+    title_tokens = title_terms(title)
     overlap = len(name_tokens & title_tokens) / max(1,len(name_tokens | title_tokens))
+    # Keep stricter original-word scoring to establish a distinctive
+    # numerical procedure reference: plural normalization may only help
+    # produce a *candidate*, never upgrade it to verified procedure IDs.
+    raw_name_tokens = set(terms(reference_title))
+    raw_title_tokens = set(terms(title))
+    raw_overlap = len(raw_name_tokens & raw_title_tokens) / max(
+        1,len(raw_name_tokens | raw_title_tokens))
     # A numerical reference may coincide with an amount or date. Do not
     # certify it unless it is long and accompanied by a strong title match.
     distinctive_reference = (
         (any(c.isalpha() for c in reference) and any(c.isdigit() for c in reference))
-        or (reference.isdigit() and len(reference) >= 10 and overlap >= 0.50)
+        or (reference.isdigit() and len(reference) >= 10 and raw_overlap >= 0.50)
     )
     if buyer_found and reference_found and distinctive_reference:
         status = 'procedure_ids'
