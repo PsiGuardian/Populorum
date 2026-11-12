@@ -18,6 +18,113 @@ Conserver l'attribution à la DILA, l'URL et la date de chaque export.
 Les avis peuvent contenir des données personnelles ; la publication
 d'une copie brute doit respecter les conditions de réutilisation.
 
+## Origine des rapprochements : démarche de transparence publique
+
+**Les liens DECP↔BOAMP publiés par Populorum sont des déductions
+algorithmiques susceptibles d'erreurs ou d'omissions.** Ils ne certifient ni
+l'identité juridique d'un marché/lot, ni l'exécution financière, ni un
+paiement. L'absence de candidat n'est jamais une preuve d'absence de lien.
+
+Sources et rôles :
+
+- **DECP** : déclaration de marché par un acheteur public, identifiant DECP,
+  SIRET, objet, nature, CPV, date et montant contractuel déclaré. Une valeur
+  contractuelle n'est pas une dépense effectivement payée.
+- **BOAMP / DILA** : publications et archives officielles ; identifiant
+  `idweb`, date de publication, document source, versions et URL de l'avis.
+  Un avis peut citer plusieurs SIRET et plusieurs lots.
+- **INSEE, COG 2026** : noms officiels de communes et codes INSEE, utilisés
+  comme référence pour contrôler l'ambiguïté des variantes de noms.
+  Aucun code INSEE ne doit être inventé à partir d'un adjectif ou d'un gentilé.
+
+Algorithme vérifiable dans
+[`tools/reconcile_procurement_boamp.py`](../tools/reconcile_procurement_boamp.py) :
+
+1. Validation de la forme du SIRET DECP (14 chiffres), de la référence de
+   marché (au moins 6 caractères), du format `idweb` et d'une URL BOAMP
+   en HTTPS avec hôte autorisé.
+2. Recherche exacte, comme **terme entier**, du SIRET et de la référence
+   DECP dans le champ `donnees` de l'avis BOAMP. Un SIRET simplement
+   *cité* dans un avis n'est pas nécessairement celui de l'acheteur.
+3. Extraction de mots d'au moins 4 caractères des deux intitulés,
+   normalisation des accents/casse, suppression de mots génériques,
+   normalisation limitée des pluriels et calcul de l'indice de Jaccard
+   des ensembles de mots : `|intersection| / |union|`.
+4. **Identifiants concordants** (`procedure_ids`) : référence distinctive
+   entière et SIRET cités ; une référence purement numérique doit compter
+   au moins 10 chiffres et conserver un score Jaccard **brut** d'au moins
+   50 % pour éviter de confondre des dates et des montants.
+5. **Candidat documentaire** (`candidate`) : SIRET cité, score Jaccard
+   morphologique d'au moins **35 %** et **3 termes communs**. Une année
+   DECP plausible et un avis distant de plus de 3 ans excluent la piste ;
+   une année incohérente (ex. 2926 ou 6666) ne l'exclut pas par elle-même.
+6. **Inconnu** : tout autre cas, y compris une source incomplète, un
+   avis manquant ou un résultat tronqué. Les pièces BOAMP ne sont pas
+   des factures, mandats ou justificatifs de règlement.
+
+Les scores servent à **ordonner des hypothèses documentaires**, pas à
+attribuer légalement un marché, déterminer un lot, calculer des paiements
+ou émettre des accusations. Les faux positifs (ex. autre projet à Tiercé)
+et les faux négatifs (ex. Normandie avant normalisation) restent possibles.
+Des modifications successives du moteur impliquent une réévaluation des
+liens stockés, avec préservation de l'historique.
+
+## Contrôle exhaustif des noms de communes (COG 2026)
+
+Le cas `normands` / `Normandie` est celui d'un **gentilé / adjectif
+régional**, pas d'une variation singulier/pluriel d'un nom de commune.
+Le COG INSEE ne fournit pas un dictionnaire exhaustif des gentilés.
+Il serait donc dangereux de fabriquer automatiquement des couples du
+type `nom-de-commune → adjectif` pour les déclarer équivalents.
+
+Un outil **hors réseau, en lecture seule**, vérifie chaque commune
+du référentiel INSEE 2026 déjà installé, sans échantillonnage :
+
+```bash
+php bin/console app:geography:install --env=demo
+python3 tools/audit_boamp_commune_morphology.py
+```
+
+Deux résultats sont produits sous `var/` :
+
+- `boamp-cog-2026-communes.tsv` : **une ligne par commune**, code INSEE,
+  nom officiel, clé lexicale, modifications de pluriel, autres communes
+  partageant la même clé (homonymies exactes ou créées par normalisation) ;
+- `boamp-cog-2026-report.txt` : nombre total de communes vérifiées,
+  nombres de cas sensibles et d'ambiguïtés, exemples à étudier.
+
+Par sécurité, cette analyse **n'invente aucune forme officielle ni gentilé**
+et ne change pas automatiquement la classe d'un avis BOAMP.
+Pour établir une identité territoriale, la référence fiable reste le **code
+INSEE explicitement déclaré**, dans le bon millésime. Deux homonymes ne
+deviennent jamais la même commune parce que leurs mots normalisés coïncident.
+Voir les [tables historiques INSEE](https://www.insee.fr/fr/information/7671867)
+pour les fusions et changements de nom.
+
+## Perspectives Hélios, PES V2 et partenariat DGFiP
+
+Populorum serait enclin à intégrer, **si les autorisations et les exports
+nécessaires étaient obtenus** :
+
+| Source | Contenu envisagé | Accès | Portée du rapprochement |
+|---|---|---|---|
+| **Hélios / PES V2** | Mandats et données de suivi | Organisme habilité ou export légalement obtenu | Potentiellement, avec des références marché exploitables |
+| **États de règlement Hélios** | Paiements comptabilisés | Organisme habilité ou export légalement obtenu | Si les liens mandat–marché–règlement sont vérifiables |
+
+**Ces données ne sont pas intégrées à notre rapprochement BOAMP actuel.**
+Pour une couverture nationale, un **accès institutionnel centralisé** devra
+être étudié auprès de la **DGFiP** (convention, habilitation ou dispositif de
+mise à disposition), en limitant les données collectées aux informations
+nécessaires et légalement communicables.
+
+Les API sensibles ne sont pas ouvertes au public :
+[la DGFiP indique que l'accès est réservé aux partenaires autorisés et
+soumis aux conditions DataPass](https://www.impots.gouv.fr/comment-acceder-aux-api-de-la-dgfip).
+L'existence de PES V2 ne signifie pas qu'une API nationale des règlements
+par marché soit déjà proposée :
+[protocole PES V2](https://www.collectivites-locales.gouv.fr/gerer-les-finances-publiques-locales/dematerialisation-des-comptes-locaux-et-open-data/dematerialisation-comptable-et-budgetaire/le-protocole-dechange-standard-pes),
+[portail Hélios](https://www.collectivites-locales.gouv.fr/le-portail-helios-au-service-des-collectivites).
+
 ## Bases distinctes
 
 | Base | Usage |

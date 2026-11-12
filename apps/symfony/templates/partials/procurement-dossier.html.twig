@@ -87,7 +87,17 @@
           {% set auto = d.automatic_concordance|default({}) %}
           <span class="dossier-state">{{ (auto.confirmed|default([]))|length }} identifiant(s) concordant(s)</span>
         </div>
-        <p>Populorum rapproche les déclarations DECP et les avis publics de la DILA/BOAMP. Une concordance d'identifiants rattache des publications à une <strong>procédure possible</strong> ; elle ne démontre ni l'identité juridique d'un lot, ni son paiement.</p>
+        <p><strong>Rapprochement indicatif calculé par Populorum :</strong> des erreurs de rapprochement ou des omissions restent possibles, même lorsque plusieurs identifiants coïncident. Un avis BOAMP n'établit jamais qu'une somme a été payée.</p>
+        <details class="dossier-disclosure">
+          <summary>Origine des données, algorithme et limites du rapprochement</summary>
+          <div class="dossier-note">
+            <p><strong>Sources distinctes :</strong> données essentielles de la commande publique (DECP), déclarées par les acheteurs ; avis officiels du <a href="https://www.boamp.fr/pages/donnees-ouvertes-et-api/" target="_blank" rel="noopener noreferrer">BOAMP / DILA</a> (identifiants <code>idweb</code>, contenu et dates de publication). Les avis sont indexés localement, parfois à partir d'archives historiques. Le <a href="https://www.insee.fr/fr/information/8740222" target="_blank" rel="noopener noreferrer">Code officiel géographique INSEE 2026</a> sert de référentiel de noms et codes de communes, pas de preuve d'identité entre marchés.</p>
+            <p><strong>Algorithme :</strong> 1. recherche d'un SIRET de 14 chiffres cité dans le contenu BOAMP ; 2. recherche de la référence DECP complète ; 3. comparaison des intitulés après suppression des accents, normalisation limitée des pluriels et retrait de mots génériques. La similarité est le rapport <code>nombre de termes communs / nombre de termes distincts</code> (indice de Jaccard).</p>
+            <p><strong>Statut « candidat » :</strong> SIRET cité et au moins trois termes communs, avec une similarité d'au moins <strong>35 %</strong>. <strong>Statut « identifiants concordants » :</strong> SIRET et référence distinctive cités dans l'avis ; une référence purement numérique exige en plus une forte concordance lexicale, calculée sans assouplissement morphologique. Ces statuts concernent une <em>piste de procédure</em>, jamais l'attribution certaine d'un lot ou un paiement.</p>
+            <p><strong>Précautions :</strong> un SIRET cité peut désigner un autre intervenant que l'acheteur ; une référence peut être réutilisée ou mentionnée dans un autre contexte ; la normalisation linguistique peut confondre des opérations ; les archives peuvent être incomplètes et les dates DECP aberrantes sont conservées mais ne servent pas à exclure automatiquement une piste. Les gentilés (par exemple « normands » / « Normandie ») ne constituent pas des identifiants géographiques officiels. <strong>Une absence de candidat ne signifie pas une absence de lien.</strong></p>
+            <p><strong>Méthode vérifiable :</strong> <a href="https://github.com/PsiGuardian/Populorum/blob/main/apps/symfony/tools/reconcile_procurement_boamp.py" target="_blank" rel="noopener noreferrer">code du classement</a> · <a href="https://github.com/PsiGuardian/Populorum/blob/main/apps/symfony/docs/BOAMP_NATIONAL_LOCAL.md" target="_blank" rel="noopener noreferrer">protocole, limites et importations</a>.</p>
+          </div>
+        </details>
         {% if auto.source|default('') == 'index_national_local' %}
           <p class="dossier-note"><strong>Référentiel BOAMP national local :</strong> {{ auto.scanned_notices }} avis examinés pour ce SIRET ; vérification du {{ auto.checked_at }}. Les anciennes pistes de la recherche individuelle sont conservées.</p>
           {% if auto.truncated|default(false) %}
@@ -140,6 +150,14 @@
           <span class="dossier-state">{{ (d.financial_evidence|default([]))|length }} pièce(s) chiffrée(s)</span>
         </div>
         <p>Les pièces sont affichées individuellement, sans les additionner. Un plafond, une commande, une facture et un règlement sont des événements différents.</p>
+        <details class="dossier-disclosure">
+          <summary>Évolution envisagée : Hélios / PES V2 et preuves comptables</summary>
+          <div class="dossier-note">
+            <p>Populorum serait disposé à intégrer, avec autorisation et dans la limite des données communicables, des flux <strong>Hélios / PES V2</strong> (mandats et données de suivi), ainsi que des <strong>états de règlement Hélios</strong> (paiements comptabilisés). Les rapprochements précis mandat–marché–règlement nécessiteraient des identifiants exploitables, des contrôles et des autorisations appropriées.</p>
+            <p><strong>Accès non acquis :</strong> ces données ne sont pas actuellement utilisées pour produire le résultat BOAMP affiché. Un accès institutionnel centralisé supposerait d'étudier avec la <strong>DGFiP</strong> une habilitation, une convention ou un dispositif de mise à disposition portant sur des données minimisées et communicables. Les API sensibles sont réservées aux organismes autorisés : aucune API publique nationale des règlements par marché n'est présumée disponible.</p>
+            <p>Références officielles : <a href="https://www.collectivites-locales.gouv.fr/gerer-les-finances-publiques-locales/dematerialisation-des-comptes-locaux-et-open-data/dematerialisation-comptable-et-budgetaire/le-protocole-dechange-standard-pes" target="_blank" rel="noopener noreferrer">PES V2 — DGFiP</a> · <a href="https://www.collectivites-locales.gouv.fr/le-portail-helios-au-service-des-collectivites" target="_blank" rel="noopener noreferrer">Portail Hélios</a> · <a href="https://www.impots.gouv.fr/comment-acceder-aux-api-de-la-dgfip" target="_blank" rel="noopener noreferrer">conditions d'accès aux API DGFiP</a>.</p>
+          </div>
+        </details>
         {% set stages = [
           {key:'ceiling',label:'Contrat signé / plafond'},
           {key:'committed',label:'Engagement'},
