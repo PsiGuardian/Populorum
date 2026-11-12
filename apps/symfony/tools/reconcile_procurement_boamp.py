@@ -242,7 +242,23 @@ def classify(contract: dict, notice: dict, short_communes: dict[str,str] | None 
         return None
     pub = str(notice.get('dateparution') or '')[:40]
     kind = str(notice.get('nature_categorise_libelle') or notice.get('type_avis') or '')[:90]
-    return {'contract_key':contract['contract_key'],'idweb':idweb,'status':status,
+    evidence = {
+        'buyer_siret_cited': bool(buyer_found),
+        'decp_reference_cited': bool(reference_found),
+        'reference_distinctive': bool(distinctive_reference),
+        'title_jaccard': round(overlap,6),
+        'raw_title_jaccard': round(raw_overlap,6),
+        'shared_title_terms': len(name_tokens & title_tokens),
+        'candidate_min_jaccard': 0.35,
+        'candidate_min_terms': 3,
+        'geography_insee_decp_code_hint': geo_code or None,
+        'method': 'jaccard_terms_normalized_plural',
+        'date_decp_usable_for_filter': bool(
+            str(contract.get('notice_date') or '')[:4].isdigit()
+            and 2010 <= int(str(contract.get('notice_date') or '')[:4]) <=
+            datetime.now(timezone.utc).year+1),
+    }
+    return {'contract_key':contract['contract_key'],'idweb':idweb,'status':status,'rule_evidence':evidence,
             'basis':basis,'title':title or 'Avis BOAMP ' + idweb,'url':url,
             'publication_date':pub,'notice_kind':kind,
             'notice_sha256':hashlib.sha256(raw.encode('utf-8')).hexdigest(),
