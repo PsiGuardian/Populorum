@@ -53,6 +53,24 @@ CREATE INDEX IF NOT EXISTS local_history_contract
  ON local_decision_history(contract_key,event_id DESC);
 CREATE INDEX IF NOT EXISTS local_history_notice
  ON local_decision_history(contract_key,idweb,event_id DESC);
+-- Scan snapshots also cover contracts with zero documentary candidates.
+-- Previous local_checks entries are NOT retroactively given an algorithm version.
+CREATE TABLE IF NOT EXISTS local_scan_history(
+ scan_id INTEGER PRIMARY KEY AUTOINCREMENT,
+ contract_key TEXT NOT NULL,
+ algorithm_version TEXT NOT NULL,
+ algorithm_sha256 TEXT NOT NULL,
+ contract_sha256 TEXT NOT NULL,
+ source_revision TEXT NOT NULL,
+ corpus_status TEXT NOT NULL,
+ scanned_notices INTEGER NOT NULL,
+ matched_notices INTEGER NOT NULL,
+ truncated INTEGER NOT NULL,
+ match_signature TEXT NOT NULL,
+ result TEXT NOT NULL,
+ recorded_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS local_scan_history_contract
+ ON local_scan_history(contract_key,scan_id DESC);
 """
 ALGORITHM_VERSION='boamp-local-v1.1-decision-history'
 MAX_LOCAL=4000
@@ -115,6 +133,40 @@ def append_history(sidecar:sqlite3.Connection,contract_key:str,
      (contract_key,notice_id,notice_sha,version,algorithm_hash,contract_hash,
       event_type,classification,basis,json.dumps(factors,ensure_ascii=False,
       sort_keys=True,separators=(',',':')),source_revision,coverage,now))
+
+
+def append_scan_snapshot(sidecar:sqlite3.Connection,contract_key:str,
+                         matches:list[dict],inspected:int,truncated:bool,
+                         revision:str,coverage:str,version:str,
+                         rule_hash:str,contract_hash:str,when:str)->None:
+    """Record what was actually examined, even if there were no candidates.
+
+    Deduplicate identical checks by rule, contract, imported corpus revision,
+    scan coverage and match content. No claim of absence is ever inferred.
+    """
+    selected=[{
+        'idweb':m['idweb'],'notice_sha':m['notice_sha'],
+        'status':m['status'],'basis':m['basis'],
+        'factors':m.get('rule_evidence') or {},
+    } for m in matches]
+    selected.sort(key=lambda x:(x['idweb'],x['notice_sha'],x['status']))
+    match_digest=hashlib.sha256(json.dumps(selected,ensure_ascii=False,
+        sort_keys=True,separators=(',',':')).encode('utf-8')).hexdigest()
+    result='pistes_observees' if matches else 'indetermine'
+    fields=(version,rule_hash,contract_hash,revision,coverage,
+            inspected,len(matches),int(truncated),match_digest,result)
+    prior=sidecar.execute("""SELECT algorithm_version,algorithm_sha256,
+        contract_sha256,source_revision,corpus_status,scanned_notices,
+        matched_notices,truncated,match_signature,result
+        FROM local_scan_history WHERE contract_key=?
+        ORDER BY scan_id DESC LIMIT 1""",(contract_key,)).fetchone()
+    if prior is not None and tuple(prior)==fields:
+        return
+    sidecar.execute("""INSERT INTO local_scan_history
+        (contract_key,algorithm_version,algorithm_sha256,contract_sha256,
+         source_revision,corpus_status,scanned_notices,matched_notices,
+         truncated,match_signature,result,recorded_at)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""",(contract_key,*fields,when))
 
 
 def utc_now()->str:
@@ -285,6 +337,11 @@ def save(sidecar:sqlite3.Connection,contract_key:str,matches:list[dict],
       status=excluded.status""",
       (contract_key,now,inspected,len(matches),int(truncated),source_revision,
        coverage))
+    # History of the SCAN itself is separate from individual matching
+    # decisions. It records 0-match searches without inventing a BOAMP ID.
+    append_scan_snapshot(sidecar,contract_key,matches,inspected,truncated,
+                         source_revision,coverage,version,fingerprint,
+                         contract_hash,now)
 
 def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Connection,
             records:list[dict],max_candidates:int=MAX_LOCAL,
@@ -376,7 +433,7 @@ def main()->None:
           '| Recherches incomplètes (trop d’avis):',outcome['partial'],
           '| Source BOAMP partielle:',outcome['partial_source'])
     print('Algorithme :',ALGORITHM_VERSION,'| SHA-256 règles :',algorithm_sha256())
-    print('Journal historique append-only : local_decision_history.')
+    print('Journaux append-only : local_decision_history et local_scan_history.')
     print('Aucune requête HTTP. Aucune modification DECP/BOAMP. Aucun paiement supposé.')
 
 
