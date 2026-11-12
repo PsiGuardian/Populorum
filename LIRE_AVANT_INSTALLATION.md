@@ -137,10 +137,7 @@ Une fois la commande terminée, vérifier l'état avec **un second copier-coller
 python3 tools/decp_pipeline.py status
 ```
 
-**Arrêter ici si tu n'as pas besoin des statistiques SSMSI.** La section 6
-est une installation facultative et indépendante : **ne jamais coller
-`DATA_URL=...` à la suite de `--site-stopped`**. Les commandes des deux
-sections ne doivent pas être fusionnées dans un même collage.
+L'installation des statistiques SSMSI présentée dans la section suivante est facultative.
 
 La commande `publish` crée pour la première fois
 `data/research/public-procurement.sqlite` et **refuse tout fichier déjà
@@ -161,10 +158,7 @@ jamais automatiquement une correspondance textuelle en justification.
 
 ## 6. Facultatif — statistiques communales SSMSI pour la convergence
 
-**Opération totalement distincte de la publication DECP.** Copier ce bloc
-séparément, en commençant par la ligne `DATA_URL=...` uniquement après
-avoir terminé les étapes DECP. Un échec de `publish` n'empêche pas
-l'installation SSMSI : les bases sont indépendantes.
+Ces données sont facultatives et indépendantes de l'index DECP.
 
 Si vous souhaitez également renseigner les indicateurs officiels 2024–2025 sur `/convergence`, l'index publié est directement disponible, sans reconstruire le CSV :
 
