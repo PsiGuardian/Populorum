@@ -101,6 +101,42 @@ deviennent jamais la même commune parce que leurs mots normalisés coïncident.
 Voir les [tables historiques INSEE](https://www.insee.fr/fr/information/7671867)
 pour les fusions et changements de nom.
 
+### Correction de l'audit géographique après le premier essai
+
+Le premier contrôle de 34 875 communes (12 novembre 2026) a correctement
+dénombré les codes INSEE, mais la première version du rapport annonçait
+**5 242 ambiguïtés lexicales** alors qu'elle appliquait aux *noms de communes*
+le filtre de mots du titre des marchés : ce filtre ignore les termes de moins
+de quatre lettres. Des communes sans rapport, telles que **Bey**, **Boz**,
+**Gap** et **Le Pin**, aboutissaient ainsi à la même clé **vide**.
+
+**Ne jamais employer ce premier chiffre pour évaluer les homonymies.**
+La version corrigée utilise deux calculs indépendants :
+
+1. **Clé géographique stricte** : tous les mots du nom INSEE sont conservés,
+   y compris les mots courts, les articles et les particules. Ils sont
+   normalisés (casse, accents et ponctuation), puis triés pour révéler les
+   ressemblances, **sans constituer une preuve d'identité**.
+2. **Clé de pluriels possible** : cette même clé avec la règle limitée
+   de suppression du « s » final, à titre **exploratoire**. Ce traitement
+   peut modifier à tort un nom propre (par exemple « Thiers ») et ne
+   devient donc **jamais automatiquement un alias de commune**.
+
+Le rapport sépare les homonymes de nom normalisé, les collisions lexicales
+*préexistantes*, les ambiguïtés *supplémentaires* introduites par la règle
+des pluriels et le nombre de clés géographiques vides (attendu : **zéro**).
+
+Il indique également combien de noms **pris isolément** sont privés de
+tous leurs mots distinctifs par le moteur BOAMP actuel, afin de mesurer
+la perte d'information de ses filtres. Cela ne signifie pas que l'objet
+complet du marché ne contient aucun mot.
+
+Ce contrôle garde **34 875 lignes** si le référentiel INSEE 2026 est complet
+et conserve les identifiants officiels. Les données BOAMP/DECP et la méthode
+de classement des contrats restent inchangées. Un nouvel audit doit être
+lancé pour établir les chiffres corrigés ; ceux-ci ne sont pas inférés du
+rapport initial.
+
 ## Perspectives Hélios, PES V2 et partenariat DGFiP
 
 Populorum serait enclin à intégrer, **si les autorisations et les exports
