@@ -23,6 +23,7 @@ import io
 import json
 from pathlib import Path
 import re
+import shutil
 import sqlite3
 import sys
 from urllib.parse import urlencode,urlsplit
@@ -207,7 +208,8 @@ def iter_jsonl(stream:io.BufferedIOBase,max_record_bytes:int=16_000_000):
 
 
 def import_jsonl(db:sqlite3.Connection,stream,source_url:str,
-                 batch_size:int=250,max_records:int|None=None)->tuple[int,int,str]:
+                 batch_size:int=250,max_records:int|None=None,
+                 db_file:Path|None=None,min_free_gb:int=2)->tuple[int,int,str]:
     if batch_size<1 or batch_size>2000:raise ValueError('batch size 1..2000')
     started=utc_now()
     stream_hash=hashlib.sha256()
@@ -224,7 +226,16 @@ def import_jsonl(db:sqlite3.Connection,stream,source_url:str,
             if upsert_notice(db,notice,source_url,utc_now()):
                 added+=1
         seen+=1
-        if seen%batch_size==0:db.commit()
+        if seen%batch_size==0:
+            db.commit()
+            if seen%5000==0:
+                free = shutil.disk_usage(db_file.parent).free if db_file else -1
+                print('BOAMP importé:',seen,'avis ;',added,'versions nouvelles ;',
+                      'libre:',f'{free/1024**3:.1f} GiB' if free>=0 else 'non mesuré',
+                      flush=True)
+                if db_file and free < min_free_gb*1024**3:
+                    raise OSError('Espace disque insuffisant pour poursuivre ; '
+                                  'les lots précédents sont sauvegardés.')
         if max_records is not None and seen>=max_records:break
     db.execute("""INSERT INTO imports(source_url,started_at,finished_at,
       records,versions_added,stream_sha256,status)
@@ -268,7 +279,10 @@ def main():
     p.add_argument('--since',help='Inclure tous les avis depuis cette date (AAAA-MM-JJ)')
     p.add_argument('--probe',action='store_true',help='Test de lecture d’un avis officiel')
     p.add_argument('--db',type=Path,default=DEFAULT_DB)
+    p.add_argument('--min-free-gb',type=int,default=2,help='Arrêter l’import avant de saturer le disque')
     args=p.parse_args()
+    if not 1<=args.min_free_gb<=100:
+        p.error('--min-free-gb doit être entre 1 et 100')
     if args.download and sum([bool(args.full),bool(args.since),bool(args.probe)])!=1:
         p.error('Avec --download, indiquer exactement --full, --since ou --probe')
     if (args.full or args.since or args.probe) and not args.download:
@@ -287,16 +301,20 @@ def main():
                                ('imports','SELECT COUNT(*) FROM imports')]:
                 print(label+':',db.execute(sql).fetchone()[0])
         return
+    args.db.parent.mkdir(parents=True,exist_ok=True)
+    if shutil.disk_usage(args.db.parent).free < args.min_free_gb*1024**3:
+        p.error('Espace disque insuffisant pour l’import (voir --min-free-gb)')
     with open_db(args.db) as db:
         if args.file:
             if not args.file.is_file():p.error('Fichier JSONL introuvable')
             open_fn=gzip.open if args.file.suffix=='.gz' else open
             with open_fn(args.file,'rb') as f:
-                seen,added,sha=import_jsonl(db,f,args.file.resolve().as_uri())
+                seen,added,sha=import_jsonl(db,f,args.file.resolve().as_uri(),
+                                                 db_file=args.db,min_free_gb=args.min_free_gb)
         else:
             url=export_url(args.since,args.probe)
             with stream_from_url(url) as f:
-                seen,added,sha=import_jsonl(db,f,url)
+                seen,added,sha=import_jsonl(db,f,url,db_file=args.db,min_free_gb=args.min_free_gb)
     print('Avis lus:',seen,'| Nouvelles versions:',added,'| SHA-256 de l’import:',sha)
     print('Index national BOAMP indépendant:',args.db)
     print('Aucun paiement déduit; base nationale DECP intacte.')
