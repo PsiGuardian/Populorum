@@ -154,6 +154,34 @@ SQL);
         self::assertSame('ok', $detail['automatic_concordance']['status']);
         self::assertCount(1, $detail['automatic_concordance']['confirmed']);
         self::assertSame('335600.00', $detail['automatic_concordance']['confirmed'][0]['notice_total_eur']);
+        // Once the national BOAMP index has been matched locally, the
+        // dossier must display its candidate without losing legacy
+        // individually fetched documentary links.
+        $localDb = new PDO('sqlite:' . $this->automatic, options: [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $localDb->exec(<<<'SQL'
+CREATE TABLE local_checks(contract_key TEXT,checked_at TEXT,
+ scanned_notices INTEGER,matched_notices INTEGER,truncated INTEGER,
+ source_revision TEXT,status TEXT);
+CREATE TABLE local_matches(contract_key TEXT,idweb TEXT,notice_sha TEXT,status TEXT,
+ basis TEXT,title TEXT,url TEXT,publication_date TEXT,notice_kind TEXT,
+ first_seen_at TEXT,last_seen_at TEXT,active INTEGER);
+SQL);
+        $localDb->prepare('INSERT INTO local_checks VALUES (?,?,?,?,?,?,?)')
+            ->execute([$a, '2026-11-12', 20, 1, 0, '2', 'checked']);
+        $localDb->prepare('INSERT INTO local_matches VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
+            ->execute([$a, '25-92465', str_repeat('b', 64), 'candidate',
+                'SIRET cité, intitulé proche ; lot à vérifier',
+                'Avis distinct', 'https://www.boamp.fr/pages/avis/?q=idweb:25-92465',
+                '2025-08-14', 'Résultat', '2026-11-12', '2026-11-12', 1]);
+        $localDb = null;
+        $localDetail = $reader->detail($a);
+        self::assertSame('checked', $localDetail['automatic_concordance']['status']);
+        self::assertSame('index_national_local', $localDetail['automatic_concordance']['source']);
+        self::assertSame(20, $localDetail['automatic_concordance']['scanned_notices']);
+        self::assertCount(1, $localDetail['automatic_concordance']['candidates']);
+        self::assertCount(1, $localDetail['automatic_concordance']['confirmed']);
+        self::assertSame('26-123456', $localDetail['automatic_concordance']['confirmed'][0]['idweb']);
+
         self::assertSame([], $detail['automatic_concordance']['candidates']);
         self::assertCount(1, $detail['financial_evidence']);
         self::assertSame('paid', $detail['financial_evidence'][0]['stage']);
