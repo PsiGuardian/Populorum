@@ -43,6 +43,10 @@ def main():
             'nature':('''SELECT c.contract_key,c.object,c.notice_date FROM contracts c
                 WHERE c.kind=? ORDER BY c.notice_date DESC,c.contract_key ASC LIMIT 30''',
                 ('market',),'contracts_kind_date_desc'),
+            'related_references':('''SELECT contract_key,object,notice_date FROM contracts
+                WHERE buyer_id=? AND kind=? AND original_id=? AND contract_key<>?
+                ORDER BY notice_date DESC,contract_key ASC LIMIT 31''',
+                ('98765432100013','market','DECP-123','0'*40),'contracts_buyer_reference'),
         }
         for name,(sql,params,expected_index) in cases.items():
             lines=plan(db,sql,params)
