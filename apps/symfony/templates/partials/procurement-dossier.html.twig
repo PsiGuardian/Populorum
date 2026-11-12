@@ -87,7 +87,13 @@
           {% set auto = d.automatic_concordance|default({}) %}
           <span class="dossier-state">{{ (auto.confirmed|default([]))|length }} identifiant(s) concordant(s)</span>
         </div>
-        <p>Populorum peut rapprocher hors ligne les déclarations DECP des avis de la DILA/BOAMP. Une concordance de référence et de SIRET rattache un avis à une <strong>procédure</strong> ; elle ne démontre ni l'identité d'un lot, ni le montant payé.</p>
+        <p>Populorum rapproche les déclarations DECP et les avis publics de la DILA/BOAMP. Une concordance d'identifiants rattache des publications à une <strong>procédure possible</strong> ; elle ne démontre ni l'identité juridique d'un lot, ni son paiement.</p>
+        {% if auto.source|default('') == 'index_national_local' %}
+          <p class="dossier-note"><strong>Référentiel BOAMP national local :</strong> {{ auto.scanned_notices }} avis examinés pour ce SIRET ; vérification du {{ auto.checked_at }}. Les anciennes pistes de la recherche individuelle sont conservées.</p>
+          {% if auto.truncated|default(false) %}
+            <p class="dossier-attention"><strong>Recherche partielle :</strong> cet acheteur apparaît dans davantage d'avis que la limite de traitement actuelle. Aucune absence de relation ne peut en être déduite.</p>
+          {% endif %}
+        {% endif %}
         {% if (auto.confirmed|default([])) is not empty %}
           {% for n in auto.confirmed %}
             <article class="dossier-source dossier-source--matched">
@@ -117,6 +123,8 @@
         {% if (auto.confirmed|default([])) is empty and (auto.candidates|default([])) is empty %}
           {% if auto.status|default('not_run') == 'ok' %}
             <p class="dossier-empty">Recherche effectuée le {{ auto.checked_at }} : aucun avis suffisamment concordant dans les résultats consultés. Cela ne prouve pas l'absence d'avis.</p>
+          {% elseif auto.status|default('not_run') in ['checked','partial'] %}
+            <p class="dossier-empty">Rapprochement local effectué le {{ auto.checked_at }} : aucun avis n'a satisfait les règles automatiques de cette fiche. Cela ne prouve pas l'absence de publications BOAMP liées.</p>
           {% elseif auto.status|default('not_run') == 'failed' %}
             <p class="dossier-empty">La dernière recherche BOAMP n'a pas abouti. Les données DECP restent accessibles.</p>
           {% else %}
