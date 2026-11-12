@@ -46,6 +46,17 @@ final class ProcurementDossierTest extends TestCase
         self::assertStringContainsString('https://www.impots.gouv.fr/comment-acceder-aux-api-de-la-dgfip', $template);
     }
 
+    public function testBoampDecisionHistoryIsExplainedOnPublicDossier(): void
+    {
+        $template = file_get_contents(__DIR__ . '/../templates/partials/procurement-dossier.html.twig');
+        self::assertIsString($template);
+        self::assertStringContainsString('Historique des décisions algorithmiques', $template);
+        self::assertStringContainsString('algorithm_version', $template);
+        self::assertStringContainsString('factors_json', $template);
+        self::assertStringContainsString('legacy_snapshot', $template);
+        self::assertStringContainsString('les archives peuvent être incomplètes', $template);
+    }
+
     public function testNoFloatingPointLossOnExtremeDeclaredAmounts(): void
     {
         self::assertSame('99 999 999 999 999,99 €', ProcurementMoneyExtension::formatCents('9999999999999999'));
