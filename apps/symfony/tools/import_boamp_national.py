@@ -175,7 +175,10 @@ def upsert_notice(db:sqlite3.Connection,notice:dict,source_url:str,now:str)->boo
           (key,sha,notice['title'],notice['buyer_name'],notice['holder_name'],
            notice['publication_date'],notice['notice_kind'],notice['folder_id'],
            notice['url'],now,now))
-    elif current[0]!=sha and new_version:
+    elif current[0]!=sha:
+        # A corrected notice can legitimately revert to an earlier content
+        # version. Keep that source version and make the latest received
+        # official export authoritative for the current display snapshot.
         db.execute("""UPDATE notices SET source_sha=?,title=?,buyer_name=?,
           holder_name=?,publication_date=?,notice_kind=?,folder_id=?,url=?,
           last_imported_at=? WHERE idweb=?""",
@@ -184,7 +187,7 @@ def upsert_notice(db:sqlite3.Connection,notice:dict,source_url:str,now:str)->boo
            notice['url'],now,key))
     # When source changes, postings for this ID also change. Reinsert the
     # current snapshot's SIRETs; do not accumulate IDs removed by corrections.
-    if current is None or (current[0]!=sha and new_version):
+    if current is None or current[0]!=sha:
         db.execute('DELETE FROM notice_sirets WHERE idweb=?',(key,))
         db.executemany('INSERT OR IGNORE INTO notice_sirets VALUES(?,?)',
             [(s,key) for s in notice['sirets']])
