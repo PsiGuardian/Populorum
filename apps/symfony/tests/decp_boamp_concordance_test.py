@@ -9,6 +9,7 @@ from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression
+from audit_procurement_concordance import contracts as audit_contracts, run as audit_report, official_query as audit_official_query
 
 
 def fixture():
@@ -58,10 +59,59 @@ def test_http_request_contract():
 
 
 
+def test_audit_read_only():
+    with sqlite3.connect(':memory:') as national, sqlite3.connect(':memory:') as sidecar:
+        national.row_factory=sidecar.row_factory=sqlite3.Row
+        national.executescript("""CREATE TABLE contracts(
+          contract_key TEXT PRIMARY KEY, buyer_id TEXT, original_id TEXT,
+          object TEXT,notice_date TEXT,cpv TEXT,amount_initial_cents INTEGER,kind TEXT);
+        INSERT INTO contracts VALUES ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','26380030200014',
+          'AO25DMISP','Fourniture de dispositifs médicaux implantables',
+          '2025-05-20','33140000',9999999999900,'market');
+        INSERT INTO contracts VALUES ('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb','12345678901234',
+          '20251111','Fourniture de matériels hospitaliers',
+          '2025-01-02','33140000',10000,'market');""")
+        sidecar.executescript(SCHEMA)
+        selected=audit_contracts(national,None,25,0)
+        assert len(selected)==2
+        summary=audit_report(national,sidecar,selected,False)
+        assert 'INDETERMINE' in summary
+        assert '99 999 999 999,00 EUR' in summary
+        assert '0 concordances procedures' in summary
+        good_contract,notice=fixture()
+        sidecar.execute("""INSERT INTO checks VALUES(?,?,?,?,?)""",
+                        (good_contract['contract_key'],'2026-11-12','ok',1,''))
+        good=classify(good_contract,notice)
+        store(sidecar,good_contract['contract_key'],[good])
+        result=audit_report(national,sidecar,selected,False)
+        assert 'PROCEDURE_IDS BOAMP 26-123456' in result
+        assert '1 concordances procedures' in result
+        assert sidecar.execute('SELECT COUNT(*) FROM checks').fetchone()[0]==1
+        assert national.execute('SELECT COUNT(*) FROM contracts').fetchone()[0]==2
+
+
+def test_audit_official_query_params():
+    class Response:
+        url='https://boamp-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/boamp/records'
+        def __enter__(self):return self
+        def __exit__(self,*args):return False
+        def read(self,size):return json.dumps({'total_count':30,'results':[]}).encode()
+    def fake_open(request,timeout):
+        params=parse_qs(urlsplit(request.full_url).query)
+        assert params['where'] == ["search(donnees, '26380030200014') AND search(objet, 'implantables')"]
+        assert params['limit']==['25']
+        return Response()
+    with patch('audit_procurement_concordance.urlopen',fake_open):
+        count,items=audit_official_query('26380030200014','objet','implantables')
+        assert count==30 and items==[]
+
+
 def main():
     assert following_offset(40,10,10)==50
     assert following_offset(50,7,10)==0
     test_http_request_contract()
+    test_audit_read_only()
+    test_audit_official_query_params()
     contract,notice=fixture()
     good=classify(contract,notice)
     assert good is not None and good['status']=='procedure_ids',good

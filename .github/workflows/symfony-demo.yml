@@ -63,7 +63,7 @@ jobs:
           matches=[(x['idweb'],m['status']) for x in data if (m:=classify(contract,x)) is not None]
           print('BOAMP API ODSQL OK; filtres SIRET+objet :',len(data),'avis, liens candidats/confirmes :',matches)
           PY
-      - run: python3 -m py_compile tools/import_decp.py tools/import_procurement_evidence.py tools/enrich_procurement_boamp.py tools/reconcile_procurement_boamp.py
+      - run: python3 -m py_compile tools/import_decp.py tools/import_procurement_evidence.py tools/enrich_procurement_boamp.py tools/reconcile_procurement_boamp.py tools/audit_procurement_concordance.py
       - run: python3 tests/fresh_install_contract_test.py
       - run: python3 tests/decp_pipeline_test.py
       - run: python3 tests/decp_history_test.py
@@ -140,7 +140,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           allowed = {'.gitignore','bootstrap.php','decp_archive.py','decp_index_health.py','decp_pipeline.py',
-            'verify_decp_history.py','backfill_decp_history.py','import_decp.py','import_procurement_evidence.py','import_procurement_financial_evidence.py','enrich_procurement_boamp.py','reconcile_procurement_boamp.py','import_budget_national.py',
+            'verify_decp_history.py','backfill_decp_history.py','import_decp.py','import_procurement_evidence.py','import_procurement_financial_evidence.py','enrich_procurement_boamp.py','reconcile_procurement_boamp.py','audit_procurement_concordance.py','import_budget_national.py',
             'import_codes_postaux.py','import_communes_insee.py',
             'recount.php','verify-export.php','import_ssmsi_national.py','import_policy_catalog.py','enrich_senate_dossiers.py'}
           present = {p.name for p in Path('tools').iterdir() if p.is_file()}
@@ -163,7 +163,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="v0.13.3-clean"
+          TAG="v0.13.4-clean"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release exists, nothing replaced."
             exit 0
@@ -182,5 +182,5 @@ jobs:
           fi
           gh release create "$TAG" "release/$ARCHIVE" release/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
-            --title "Populorum v0.13.3 — amélioration du rapprochement BOAMP" \
-            --notes-file docs/RELEASE_v0.13.3-clean.md
+            --title "Populorum v0.13.4 — audit contradictoire BOAMP" \
+            --notes-file docs/RELEASE_v0.13.4-clean.md

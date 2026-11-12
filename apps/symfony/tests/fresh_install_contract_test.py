@@ -6,7 +6,7 @@ import re
 ROOT=Path(__file__).resolve().parents[1]
 REPO=ROOT.parents[1]
 master=(REPO/'LIRE_AVANT_INSTALLATION.md').read_text(encoding='utf-8')
-assert 'v0.13.3-clean' in master
+assert 'v0.13.4-clean' in master
 assert 'installation neuve' in master.lower()
 assert '## 9. Diagnostic d\'une installation neuve' in master
 assert '## 9. Mettre à jour' not in master

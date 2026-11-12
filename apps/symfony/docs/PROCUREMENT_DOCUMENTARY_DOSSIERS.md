@@ -285,6 +285,54 @@ sans modifier les DECP ni le curseur de reprise :
 python3 tools/reconcile_procurement_boamp.py --limit 25 --offset 0 --pause 1.5
 ```
 
+## Audit contradictoire des rapprochements BOAMP
+
+Pour vérifier que les **zéros** signalés par l'enrichissement ne masquent
+pas des avis pertinents, le programme maintenu
+`tools/audit_procurement_concordance.py` confronte la base DECP nationale
+et la base auxiliaire de concordance, toutes deux **en lecture seule**.
+
+Il détaille les références DECP, SIRET, dates, objets, montants,
+les avis BOAMP liés et leurs URL, puis distingue systématiquement :
+- les identifiants rapprochés (procédure, sans preuve du lot) ;
+- les simples pistes ;
+- les recherches sans avis retenu : **lien inconnu**, jamais
+  « aucun lien » ou « aucun marché ».
+
+Pour examiner le premier lot de 25 sans requête réseau :
+
+```bash
+python3 tools/audit_procurement_concordance.py --offset 0 --limit 25 \
+  --output var/boamp-audit-25.txt
+```
+
+Pour effectuer une **contre-recherche** des 25 contrats sur l'API
+officielle, avec au maximum trois requêtes supplémentaires par fiche :
+
+```bash
+python3 tools/audit_procurement_concordance.py --offset 0 --limit 25 \
+  --online --output var/boamp-audit-25-online.txt
+```
+
+Pour examiner un seul dossier :
+
+```bash
+python3 tools/audit_procurement_concordance.py \
+  --contract-key c8d232d9ea3928881d2e03c0e31afc3b7f952479 --online
+```
+
+Les requêtes alternatives associent le SIRET à la référence originale,
+ou à d'autres mots distinctifs de l'intitulé. **Elles aussi sont
+bornées à 25 réponses par filtre.** Si l'API indique davantage de
+résultats, le rapport l'explicite et ne conclut jamais à l'absence
+de relation. Des cas inconclus doivent être examinés avec les actes,
+les lots, les titulaires et les dates.
+
+Cet audit ne modifie ni `public-procurement.sqlite`,
+ni `procurement-auto-concordance.sqlite`, ni le curseur de reprise.
+Il ne contacte aucun service privé et n'affirme jamais que la
+correspondance constitue un règlement effectif.
+
 ## Validation
 
 - `phpunit` : formatage sans flottants, liens de même référence sans
