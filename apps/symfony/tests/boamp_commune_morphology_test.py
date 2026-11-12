@@ -46,6 +46,7 @@ def main():
         assert summary['communes']==10
         assert summary['codes_uniques']==10
         assert summary['cles_vides']==0
+        assert summary['communes_sans_mot_distinctif_dans_moteur_titres']>=4
         assert summary['cles_lexicales_ambigues']==2
         assert summary['communes_ambigues_supplementaires_apres_pluriels']==2
         assert summary['libelles_affectes_par_normalisation']>=2
@@ -57,6 +58,7 @@ def main():
             assert index[code]['homonymes_cle_lexicale']==1
             assert index[code]['cle_lexicale']
             assert index[code]['cle_pluriel']
+            assert index[code]['cle_moteur_titres']==''
         assert index['01005']['homonymes_nom_officiel']==2
         assert index['01003']['termes_modifies']==''
         assert 'thiers' in index['01004']['termes_modifies']
