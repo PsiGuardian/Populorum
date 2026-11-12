@@ -47,6 +47,12 @@ def main():
         # The versioned archive is documentary history, not repeated new
         # contract rows or a summable monetary ledger.
         assert db.execute('SELECT COUNT(*) FROM notice_versions').fetchone()[0]==2
+        # Revert to a previously imported source version: still only two
+        # archived versions, but the current notice reflects the last export.
+        older=(json.dumps(row,ensure_ascii=False)+'\n').encode()
+        import_jsonl(db,io.BytesIO(older),'https://boamp-datadila.opendatasoft.com/export')
+        assert db.execute('SELECT source_sha FROM notices').fetchone()[0]==normalize(row)['source_sha']
+        assert db.execute('SELECT COUNT(*) FROM notice_versions').fetchone()[0]==2
         d={'contract_key':'a'*40,'buyer_id':'21770111900018',
            'original_id':'2025300000000000','notice_date':'2505-11-27',
            'object':"Pièce d'eau et aménagements écologiques - Aménagement paysager du parc du château de Chessy"}
