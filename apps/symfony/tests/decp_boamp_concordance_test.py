@@ -5,7 +5,7 @@ from pathlib import Path
 import sqlite3
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token
+from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total
 
 
 def fixture():
@@ -29,6 +29,11 @@ def main():
     good=classify(contract,notice)
     assert good is not None and good['status']=='procedure_ids',good
     assert good['notice_sha256'] and len(good['notice_sha256'])==64
+    assert unique_notice_total({'cbc:TotalAmount':{'@currencyID':'EUR','#text':'335600'}})=='335600.00'
+    assert unique_notice_total([{'cbc:TotalAmount':{'@currencyID':'EUR','#text':'100'}},
+                                {'cbc:TotalAmount':{'@currencyID':'EUR','#text':'200'}}])==''
+    assert unique_notice_total({'cbc:TotalAmount':{'@currencyID':'USD','#text':'100'}})==''
+    assert good['notice_total_eur']==''
     assert exact_token('AO25DMISP','ref AO25DMISP, lot n°2')
     assert not exact_token('AO25DMISP','AO25DMISPXX')
     candidate=dict(notice,DONNEES={'acheteur':{'identifiant':'26380030200014'}})
