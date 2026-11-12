@@ -142,6 +142,22 @@
             <p class="dossier-empty">Le rapprochement automatique n'a pas encore été exécuté pour cette fiche. Les preuves originales restent accessibles ci-dessous.</p>
           {% endif %}
         {% endif %}
+        {% if (auto.scan_history|default([])) is not empty %}
+          <details class="dossier-disclosure">
+            <summary>Historique des contrôles BOAMP ({{ auto.scan_history|length }} vérifications distinctes)</summary>
+            <p class="dossier-note">Ces contrôles décrivent le corpus effectivement inspecté, même quand aucun avis n'est retenu. Un résultat « indéterminé » signifie seulement qu'aucun candidat n'a satisfait les règles dans ce corpus ; il ne prouve jamais l'absence de lien.</p>
+            {% for check in auto.scan_history %}
+              <article class="dossier-source">
+                <p class="dossier-source-label">Contrôle #{{ check.scan_id }} · {{ check.result }}</p>
+                <p>{{ check.scanned_notices }} avis inspectés · {{ check.matched_notices }} avis retenus · corpus {{ check.corpus_status }} · import {{ check.source_revision }}</p>
+                <small>{{ check.recorded_at }} · algorithme {{ check.algorithm_version }} · empreinte règles <code>{{ check.algorithm_sha256|slice(0,16) }}</code></small>
+                {% if check.matched_notices == 0 %}
+                  <p class="dossier-note"><strong>Indéterminé :</strong> aucun avis retenu ; cela ne prouve pas l'absence de lien.</p>
+                {% endif %}
+              </article>
+            {% endfor %}
+          </details>
+        {% endif %}
         {% if (auto.history|default([])) is not empty %}
           <details class="dossier-disclosure">
             <summary>Historique des décisions algorithmiques ({{ auto.history|length }} événements récents)</summary>
