@@ -204,11 +204,17 @@ def store(sidecar: sqlite3.Connection, contract_key: str, matches: list[dict],
       (contract_key,now,status,len(matches),message[:500]))
 
 
+def following_offset(start: int, processed: int, requested: int) -> int:
+    """Progress bounded batches; start a new cycle at the end of the catalog."""
+    return 0 if processed < requested else start + processed
+
+
 def main() -> None:
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--contract-key',help='Clé d’une fiche DECP à contrôler')
     p.add_argument('--limit',type=int,default=10,help='Nombre de contrats interrogés (1 à 50)')
     p.add_argument('--offset',type=int,default=0,help='Position de reprise dans la liste chronologique des contrats')
+    p.add_argument('--resume',action='store_true',help='Mémoriser automatiquement le prochain lot dans la base auxiliaire')
     p.add_argument('--pause',type=float,default=1.0,help='Délai entre requêtes (>=1 seconde)')
     p.add_argument('--decp',type=Path,default=NATIONAL)
     p.add_argument('--db',type=Path,default=SIDECAR)
@@ -217,6 +223,8 @@ def main() -> None:
         p.error('limit entre 1 et 50 ; pause >=1 seconde')
     if opts.contract_key is not None and not re.fullmatch(r'[a-f0-9]{40}',opts.contract_key):
         p.error('contract-key : 40 caractères hexadécimaux')
+    if opts.resume and (opts.contract_key is not None or opts.offset != 0):
+        p.error('--resume n’est pas compatible avec --contract-key ni --offset')
     if not opts.decp.is_file() or opts.db.resolve() == opts.decp.resolve():
         p.error('Index DECP obligatoire et base auxiliaire distincte')
     opts.db.parent.mkdir(parents=True,exist_ok=True)
@@ -229,6 +237,9 @@ def main() -> None:
             if sidecar.execute("SELECT value FROM metadata WHERE key='schema'").fetchone() not in (None,(SCHEMA_VERSION,)):
                 p.error('Schéma du registre auxiliaire incompatible')
             sidecar.execute("INSERT OR IGNORE INTO metadata VALUES('schema',?)",(SCHEMA_VERSION,))
+            saved=sidecar.execute("SELECT value FROM metadata WHERE key='next_offset'").fetchone()
+            next_offset=int(saved[0]) if saved and saved[0].isdigit() else 0
+            start_offset=next_offset if opts.resume else opts.offset
             if opts.contract_key:
                 records=decp.execute("""SELECT contract_key,buyer_id,original_id,object FROM contracts
                                      WHERE contract_key=?""",(opts.contract_key,)).fetchall()
@@ -240,7 +251,7 @@ def main() -> None:
                   FROM contracts c WHERE c.kind='market' AND LENGTH(c.original_id)>=6
                     AND c.buyer_id GLOB '[0-9]*' AND LENGTH(c.buyer_id)=14
                   ORDER BY c.notice_date DESC,c.contract_key ASC LIMIT ? OFFSET ?""",
-                  (opts.limit,opts.offset)).fetchall()
+                  (opts.limit,start_offset)).fetchall()
             successes=0
             for index, record in enumerate(records):
                 contract=dict(record)
@@ -257,6 +268,15 @@ def main() -> None:
                     with sidecar:store(sidecar,contract['contract_key'],[],status='failed',message=str(exc))
                     print(f"{contract['contract_key']}: recherche indisponible ({exc})",flush=True)
                 if index+1 < len(records):time.sleep(opts.pause)
+            if opts.resume:
+                # Progress even when a source API request fails; its failure
+                # remains stored in checks and can be retried explicitly.
+                new_offset = following_offset(start_offset,len(records),opts.limit)
+                with sidecar:
+                    sidecar.execute("""INSERT INTO metadata(key,value) VALUES('next_offset',?)
+                      ON CONFLICT(key) DO UPDATE SET value=excluded.value""",
+                      (str(new_offset),))
+                print(f"Position de reprise automatique : {new_offset}",flush=True)
             print(f"{successes}/{len(records)} rapprochements API effectués. "
                   "Aucun montant payé déduit ; registre DECP intact.")
 

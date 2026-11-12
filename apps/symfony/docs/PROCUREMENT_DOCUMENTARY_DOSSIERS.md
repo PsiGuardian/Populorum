@@ -206,6 +206,8 @@ python3 tools/reconcile_procurement_boamp.py \
 # Petit lot, limité et ré-exécutable ; pause respectueuse de l'API officielle
 python3 tools/reconcile_procurement_boamp.py --limit 10 --offset 0 --pause 1.2
 python3 tools/reconcile_procurement_boamp.py --limit 10 --offset 10 --pause 1.2
+# Mode récurrent : mémorise automatiquement la prochaine position
+python3 tools/reconcile_procurement_boamp.py --resume --limit 25 --pause 1.2
 
 # Derniers contrôles sans exposer les données privées
 sqlite3 -readonly data/research/procurement-auto-concordance.sqlite \
@@ -223,6 +225,21 @@ Le programme ne balaie pas les ~790 000 marchés à chaque exécution.
 Les lots automatiques ont une taille bornée \`--limit 1..50\` et une
 position explicite \`--offset\`; une exécution planifiée ou manuelle
 peut progresser par tranches sur le serveur ou la machine locale.
+Les tâches planifiées peuvent utiliser `--resume` pour mémoriser
+automatiquement le prochain lot dans la base auxiliaire, sans retraiter
+à chaque passage les premiers contrats de la liste.
+
+Exemple cron (à adapter au chemin réel et aux droits du serveur) :
+
+```cron
+15 3 * * * cd /chemin/vers/apps/symfony && /usr/bin/flock -n /tmp/populorum-boamp.lock /usr/bin/python3 tools/reconcile_procurement_boamp.py --resume --limit 25 --pause 1.2 >> var/log/boamp-concordance.log 2>&1
+```
+
+Le dossier `var/log` doit être accessible en écriture. Un verrou évite
+les exécutions simultanées ; un échec réseau est enregistré, sans
+supprimer les références déjà trouvées. Les données ne sont jamais
+cherchées au chargement d'une page.
+
 Seules les fiches traitées affichent un historique du contrôle
 automatique. Le registre auxiliaire n'est pas inclus dans Git.
 

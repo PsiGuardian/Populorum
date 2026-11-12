@@ -5,7 +5,7 @@ from pathlib import Path
 import sqlite3
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total
+from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset
 
 
 def fixture():
@@ -25,6 +25,8 @@ def fixture():
 
 
 def main():
+    assert following_offset(40,10,10)==50
+    assert following_offset(50,7,10)==0
     contract,notice=fixture()
     good=classify(contract,notice)
     assert good is not None and good['status']=='procedure_ids',good
