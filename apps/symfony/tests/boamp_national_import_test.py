@@ -8,7 +8,7 @@ import sqlite3
 import sys
 from urllib.parse import parse_qs,urlsplit
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from import_boamp_national import (SCHEMA,normalize,notice_sirets,import_jsonl,
+from import_boamp_national import (SCHEMA,normalize,notice_sirets,import_jsonl,iter_jsonl,
     export_url,json_object,SCHEMA_VERSION)
 from reconcile_procurement_boamp import classify
 
@@ -24,6 +24,14 @@ def notice(kind='a'):
                    'Reference':{'ID':'2025300000000000'},'variation':kind}}
 
 def main():
+    # A single pathological JSONL line must be refused before an unlimited
+    # allocation; every consumer exposes readline(size).
+    try:
+        list(iter_jsonl(io.BytesIO(b'x'*1025),max_record_bytes=1024))
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('Unbounded JSONL line was accepted')
     row=notice()
     assert normalize(row)['idweb']=='25-92465'
     assert normalize(row)['source_sha'] != normalize(notice('b'))['source_sha']
@@ -40,6 +48,9 @@ def main():
         assert import_jsonl(db,io.BytesIO(records),'https://boamp-datadila.opendatasoft.com/export')[0:2]==(3,2)
         assert db.execute('SELECT COUNT(*) FROM notices').fetchone()[0]==1
         assert db.execute('SELECT COUNT(*) FROM notice_versions').fetchone()[0]==2
+        unsafe={**row,'idweb':'25-92466','url_avis':'https://invalid.example/notice'}
+        import_jsonl(db,io.BytesIO((json.dumps(unsafe)+'\n').encode()),'https://official.example/incomplete')
+        assert db.execute("SELECT status FROM imports ORDER BY import_id DESC LIMIT 1").fetchone()[0]=='partial'
         assert db.execute('SELECT COUNT(*) FROM notice_sirets').fetchone()[0]==1
         assert db.execute('SELECT COUNT(*) FROM notice_relations').fetchone()[0]==1
         assert db.execute('SELECT source_sha FROM notices').fetchone()[0]==normalize(notice('b'))['source_sha']
