@@ -24,6 +24,14 @@
 <section class="panel budget-explorer" id="contrat-detail" aria-label="Fiche d'un contrat officiel">
     <p class="budget-eyebrow">FICHE DOCUMENTAIRE · {{ marketDetails.kind == 'market' ? 'MARCHÉ' : 'CONCESSION' }}</p>
     <h2>{{ marketDetails.object }}</h2>
+    <nav aria-label="Sommaire de la fiche documentaire" class="geo-actions">
+      <a href="#identite-contrat">Identité</a>
+      <a href="#preuves-financieres">Engagements et paiements</a>
+      <a href="#publications-contrat">Publications successives</a>
+      <a href="#references-liees">Références apparentées</a>
+      <a href="#market-evidence-title">Documents et justifications</a>
+      <a href="#origine-contrat">Déclaration originale</a>
+    </nav>
     <p class="budget-muted"><strong>Provenance :</strong> déclaration DECP d'origine, issue des fichiers consolidés de la commande publique.
         {% if marketDetails.sources is not empty %}
             <a href="{{ marketDetails.sources[0].source_url }}" rel="noopener noreferrer" target="_blank">Consulter la source officielle</a>
@@ -31,19 +39,76 @@
             · SHA-256 <code>{{ marketDetails.sources[0].sha256 }}</code>
         {% endif %}
     </p>
+    <div id="identite-contrat"></div>
     <p><strong>Référence :</strong> {{ marketDetails.original_id }} · <strong>Acheteur :</strong> {{ marketDetails.buyer_id }} · <strong>Notification / signature :</strong> {% if marketDetails.date_quality.valid %}{{ marketDetails.notice_date }}{% else %}<code>{{ marketDetails.notice_date|default('date absente') }}</code> · <strong>À vérifier : {{ marketDetails.date_quality.reason }}</strong>. Motif détecté automatiquement par Populorum ; aucune justification de l'acheteur n'est identifiable dans les champs de date indexés.{% endif %}</p>
     <p><strong>Valeur contractuelle conservée dans l’index :</strong>
         {% if marketDetails.amount_initial_cents is not null %}{{ (marketDetails.amount_initial_cents / 100)|number_format(2, ',', ' ') }} €{% else %}Non communiqué{% endif %}
         {% if marketDetails.amount_amended_cents is not null %} · <strong>Montant renseigné dans une modification (non additionnable) :</strong> {{ (marketDetails.amount_amended_cents / 100)|number_format(2, ',', ' ') }} €{% endif %}
     </p>
     <p><strong>Lieu d'exécution :</strong> {{ marketDetails.location_type|default('non renseigné') }} : {{ marketDetails.location_code|default('non renseigné') }} · <strong>CPV :</strong> {{ marketDetails.cpv|default('non renseigné') }} · <strong>Procédure :</strong> {{ marketDetails.procedure|default('non renseignée') }}</p>
+    {% if marketDetails.amount_warnings is not empty %}
+      <section class="budget-explain" aria-label="Contrôles documentaires suggérés">
+        <h3>Points à contrôler — valeurs originales conservées</h3>
+        {% for warning in marketDetails.amount_warnings %}
+          <p class="budget-gap">{{ warning }}</p>
+        {% endfor %}
+        <p class="budget-muted">Ces contrôles automatiques ne démontrent ni une erreur, ni une fraude. Aucun montant n'est modifié, masqué ou exclu des résultats.</p>
+      </section>
+    {% endif %}
+
+    <section class="budget-explain" id="preuves-financieres">
+      <h3>Concordance financière documentaire</h3>
+      <p>Le montant DECP est une déclaration contractuelle : il ne démontre ni la valeur du contrat signé ni la somme facturée ou payée.
+        Chaque pièce chiffrée est affichée séparément avec sa source, sa date et son périmètre. Les périodes peuvent se chevaucher :
+        <strong>aucun montant n'est automatiquement additionné.</strong></p>
+      <p><strong>Montant déclaré dans les DECP :</strong>
+        {% if marketDetails.amount_initial_cents is not null %}{{ (marketDetails.amount_initial_cents / 100)|number_format(2, ',', ' ') }} €
+        {% else %}Non communiqué{% endif %}
+        <small>· sans preuve de règlement</small></p>
+      {% set financialLabels = {
+        ceiling: 'Plafond / contrat signé', committed: 'Montant engagé',
+        ordered: 'Montant commandé', invoiced: 'Montant facturé', paid: 'Montant réglé'
+      } %}
+      {% if marketDetails.financial_evidence is empty %}
+        <p class="budget-gap"><strong>Pièces chiffrées non encore référencées.</strong>
+          Aucun total engagé, commandé, facturé ou payé ne peut être déduit des déclarations DECP.
+          L'absence de pièce ici n'atteste pas de l'absence de règlement.</p>
+      {% else %}
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Étape</th><th>Montant mentionné</th><th>Périmètre / date</th><th>Pièce précise</th></tr></thead>
+            <tbody>
+              {% for proof in marketDetails.financial_evidence %}
+                <tr>
+                  <td>{{ financialLabels[proof.stage]|default('Autre') }}</td>
+                  <td><strong>{{ (proof.amount_cents / 100)|number_format(2, ',', ' ') }} €</strong></td>
+                  <td>
+                    {{ proof.accounting_scope == 'cumulative' ? 'Cumul déclaré' : (proof.accounting_scope == 'period' ? 'Période' : 'Opération individuelle') }}
+                    · arrêté au {{ proof.as_of_date }}
+                    {% if proof.period_start %} · du {{ proof.period_start }} au {{ proof.period_end }}{% endif %}
+                  </td>
+                  <td><a href="{{ proof.source_url }}" target="_blank" rel="noopener noreferrer">{{ proof.document_title }}</a>
+                    <small>· {{ proof.source_issuer }} · document du {{ proof.document_date }}</small>
+                    <blockquote>{{ proof.source_excerpt }}</blockquote>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p class="budget-muted">Les chiffres ci-dessus proviennent de documents ajoutés au registre de concordance :
+          ils ne sont pas certifiés automatiquement par Populorum. Consultez les pièces exactes avant de conclure.</p>
+      {% endif %}
+      <p class="budget-muted">Pour établir un paiement, il faut une pièce d'exécution ou une attestation comptable propre au contrat et à son périmètre.
+        Une facture émise ou un plafond d'accord-cadre ne prouve pas un paiement.</p>
+    </section>
     {% if marketDetails.concession_finance is defined and marketDetails.concession_finance %}
         <h3>Informations de concession</h3>
         <p>Subvention publique déclarée : {% if marketDetails.concession_finance.subsidy_cents is not null %}{{ (marketDetails.concession_finance.subsidy_cents / 100)|number_format(2, ',', ' ') }} €{% else %}non disponible{% endif %}.
             Investissements d'exécution déclarés : {% if marketDetails.concession_finance.investment_cents is not null %}{{ (marketDetails.concession_finance.investment_cents / 100)|number_format(2, ',', ' ') }} €{% else %}non disponibles{% endif %}.</p>
         <p class="budget-muted">Les données annuelles et les modifications peuvent se chevaucher ; ne pas additionner à la valeur globale du contrat.</p>
     {% endif %}
-    <section class="budget-explain" aria-label="Évolution des valeurs déclarées dans les fichiers DECP">
+    <section class="budget-explain" id="publications-contrat" aria-label="Évolution des valeurs déclarées dans les fichiers DECP">
       <h3>Historique des publications consolidées</h3>
       <p><strong>{{ marketDetails.history.references }} fichier(s) contenant ce contrat</strong> ·
          {{ marketDetails.history.observed }} historique(s) de montant reconstitué(s).
@@ -69,6 +134,27 @@
       </tbody></table></div>
       {% else %}<p>Observations non encore disponibles pour ce contrat.</p>{% endif %}
       <p class="budget-muted"><strong>Lecture :</strong> ordre chronologique des fichiers consolidés, et non des dates internes parfois antérieures. L'écart représente seulement une différence entre les montants déclarés dans deux versions, pas une hausse prouvée du coût ni un paiement. Les montants des avenants sont affichés séparément : ils peuvent désigner un montant total ou une variation selon la source.</p>
+    </section>
+    <section class="budget-explain" id="references-liees">
+      <h3>Autres fiches portant la même référence d'acheteur</h3>
+      <p class="budget-muted">Même acheteur, même catégorie et même identifiant de marché déclaré.
+        Une référence peut être réutilisée pour plusieurs lots ; <strong>ces fiches ne sont pas fusionnées sans preuve de leur identité juridique.</strong></p>
+      {% if marketDetails.reference_relations.items is empty %}
+        <p>Aucune autre fiche portant cette référence n'est présente dans l'index.</p>
+      {% else %}
+        <ul>
+          {% for related in marketDetails.reference_relations.items %}
+            <li>
+              <a href="{{ civic_path('site_market_detail', {key:related.contract_key}) }}#contrat-detail">{{ related.object }}</a>
+              · {{ related.notice_date }} · CPV {{ related.cpv }}
+              {% if related.amount_initial_cents is not null %} · valeur déclarée {{ (related.amount_initial_cents / 100)|number_format(2, ',', ' ') }} €{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+        {% if marketDetails.reference_relations.more %}
+          <p class="budget-muted">Liste limitée aux 30 premières références apparentées ; d'autres peuvent exister.</p>
+        {% endif %}
+      {% endif %}
     </section>
     <section class="budget-explain" aria-labelledby="market-evidence-title">
         <h3 id="market-evidence-title">Pourquoi cette commande ? Quels résultats documentés ?</h3>
@@ -114,7 +200,7 @@
         </tr>{% endfor %}</tbody></table></div>
     {% else %}<p>Aucun événement documenté dans les fichiers importés.</p>{% endif %}
     {% if marketDetails.source_declaration is not null %}
-    <details class="budget-explain">
+    <details class="budget-explain" id="origine-contrat">
         <summary><strong>Voir la déclaration DECP originale complète</strong></summary>
         <p class="budget-muted">Les champs déclarés dans le fichier consolidé sont restitués sans interprétation. La structure JSON a été canonisée pour vérification ; ce n'est pas une preuve de paiement.</p>
         {% if marketDetails.original_declaration_source is not null %}
@@ -172,6 +258,14 @@
             <h3><a href="{{ civic_path('site_market_detail', {key:contract.contract_key}) }}#contrat-detail">{{ contract.object }}</a></h3>
             <p><strong>{% if contract.amount_initial_cents is not null %}{{ (contract.amount_initial_cents / 100)|number_format(2, ',', ' ') }} € (valeur contractuelle déclarée){% else %}Montant non communiqué{% endif %}</strong>
               · <strong>{{ contract.source_count }} fichier(s) indexé(s)</strong> · Acheteur {{ contract.buyer_id }} · Lieu : {{ contract.location_type }} {{ contract.location_code }} · CPV {{ contract.cpv }}.</p>
+            {% if contract.amount_warnings is not empty %}
+              <p class="budget-gap"><strong>Contrôle documentaire suggéré :</strong>
+                {{ contract.amount_warnings|join(' ') }} Les valeurs publiées sont conservées sans correction.</p>
+            {% endif %}
+            {% if contract.source_count > 1 %}
+              <p class="budget-muted">{{ contract.source_count }} publications rattachées à cette fiche unique :
+                ouvrir la fiche pour consulter leurs dates et leurs sources. Elles ne constituent pas autant de marchés distincts.</p>
+            {% endif %}
             <p class="budget-muted"><strong>Source :</strong> Ministères économiques et financiers — DECP consolidées
               {% if contract.source_url %}
                 · <a href="{{ contract.source_url }}" rel="noopener noreferrer" target="_blank">{% if 'data.gouv.fr/datasets/' in contract.source_url %}Catalogue officiel (URL exacte non disponible){% else %}Fichier source officiel{% endif %}</a>
