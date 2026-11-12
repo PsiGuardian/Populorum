@@ -49,52 +49,13 @@ jobs:
       - run: python3 tests/decp_query_plan_test.py
       - run: python3 tests/decp_financial_evidence_test.py
       - run: python3 tests/decp_boamp_concordance_test.py
-      - name: Compare BOAMP search strategies (diagnostic, read-only)
-        run: |
-          python3 - <<'PY'
-          from urllib.request import Request,urlopen
-          from urllib.error import HTTPError,URLError
-          from urllib.parse import urlencode
-          import json
-          root='https://boamp-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/boamp/records'
-          requests=[
-             ('title', "search(objet, 'fourniture dispositifs medicaux')"),
-             ('buyer_name', "search(nomacheteur, 'Grenoble Alpes')"),
-             ('reference_content', "search(donnees, 'AO25DMISP')"),
-             ('buyer_content', "search(donnees, '26380030200014')"),
-             ('title_implant', "search(objet, 'implantables')"),
-             ('buyer_and_title', "search(nomacheteur, 'Grenoble') AND search(objet, 'dispositifs')"),
-             ('siret_and_implants', "search(donnees, '26380030200014') AND search(objet, 'implantables')"),
-             ('siret_and_medical', "search(donnees, '26380030200014') AND search(objet, 'medicaux')"),
-             ('siret_and_dispositifs', "search(donnees, '26380030200014') AND search(objet, 'dispositifs')"),
-             ('siret_and_2025', "search(donnees, '26380030200014') AND search(objet, '2025')"),
-          ]
-          for name,where in requests:
-              u=root+'?'+urlencode({'where':where,'limit':12,
-                 'select':'idweb,objet,nomacheteur,dateparution,url_avis,donnees'})
-              try:
-                  with urlopen(Request(u,headers={'Accept':'application/json','User-Agent':'Populorum BOAMP evidence research'}),timeout=22) as response:
-                      o=json.loads(response.read(3_000_000))
-                  rows=o.get('results',[])
-                  print('QUERY',name,'count',o.get('total_count'),'pagesize',len(rows),flush=True)
-                  for row in rows[:5]:
-                      raw=str(row.get('donnees') or '')
-                      print('  HIT',row.get('idweb'),str(row.get('nomacheteur'))[:55],
-                        'ref=', 'AO25DMISP' in raw,
-                        'siret=', '26380030200014' in raw,
-                        'title=',str(row.get('objet'))[:85],flush=True)
-              except HTTPError as e:
-                  print('QUERY',name,'HTTP',e.code,e.read(500).decode(errors='replace'),flush=True)
-              except Exception as e:
-                  print('QUERY',name,type(e).__name__,str(e)[:150],flush=True)
-          PY
       - name: Verify BOAMP API v2.1 schema with a real bounded query
         run: |
           python3 - <<'PY'
           import sys
           sys.path.insert(0,'tools')
           from reconcile_procurement_boamp import fetch_candidates
-          data=fetch_candidates('Fourniture de dispositifs médicaux spécialisés', 'AO25DMISP')
+          data=fetch_candidates('Fourniture de dispositifs médicaux implantables spécialisés', 'AO25DMISP', '26380030200014')
           assert isinstance(data,list)
           print('BOAMP API ODSQL OK; resultats lus :',len(data))
           PY
