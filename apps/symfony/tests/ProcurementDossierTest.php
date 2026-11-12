@@ -81,22 +81,22 @@ SQL);
             (contract_key,kind,buyer_id,original_id,object,cpv,nature,notice_date,
              amount_initial_cents,location_type,location_code,source_sha)
              VALUES(?,?,?,?,?,?,?,?,?,?,?,?)');
-        $stmt->execute([$a,'market','26380030200014','AO25DMISP','Lot 1 implant',
-            '33140000','Marché','2025-05-20',9999999999900,'Code postal','38','first']);
-        $stmt->execute([$b,'market','26380030200014','AO25DMISP','Lot 2 implant',
-            '33140000','Marché','2025-05-20',50000000,'Code département','38','first']);
-        $stmt->execute([$c,'market','other-buyer','AO25DMISP','Autre acheteur',
-            '33140000','Marché','2025-05-20',30000000,'Code département','38','first']);
+        $stmt->execute([$a, 'market', '26380030200014', 'AO25DMISP', 'Lot 1 implant',
+            '33140000', 'Marché', '2025-05-20', 9999999999900, 'Code postal', '38', 'first']);
+        $stmt->execute([$b, 'market', '26380030200014', 'AO25DMISP', 'Lot 2 implant',
+            '33140000', 'Marché', '2025-05-20', 50000000, 'Code département', '38', 'first']);
+        $stmt->execute([$c, 'market', 'other-buyer', 'AO25DMISP', 'Autre acheteur',
+            '33140000', 'Marché', '2025-05-20', 30000000, 'Code département', '38', 'first']);
         $db->exec(<<<'SQL'
 INSERT INTO imports VALUES('first','decp-2025-06.json','https://example.org/first','2025-06-20');
 INSERT INTO imports VALUES('second','decp-2026-01.json','https://example.org/second','2026-02-01');
 SQL);
-        $db->prepare('INSERT INTO contract_sources VALUES (?,?)')->execute([$a,'first']);
-        $db->prepare('INSERT INTO contract_sources VALUES (?,?)')->execute([$a,'second']);
+        $db->prepare('INSERT INTO contract_sources VALUES (?,?)')->execute([$a, 'first']);
+        $db->prepare('INSERT INTO contract_sources VALUES (?,?)')->execute([$a, 'second']);
         $db->prepare('INSERT INTO contract_publications VALUES (?,?,?,?,?,?,?)')
-            ->execute([$a,'first','2025-06-01','2025-05-20',9999999999900,null,1]);
+            ->execute([$a, 'first', '2025-06-01', '2025-05-20', 9999999999900, null, 1]);
         $db->prepare('INSERT INTO contract_publications VALUES (?,?,?,?,?,?,?)')
-            ->execute([$a,'second','2026-01-01','2025-05-20',9999999999900,null,1]);
+            ->execute([$a, 'second', '2026-01-01', '2025-05-20', 9999999999900, null, 1]);
         $db = null;
 
         $financial = new PDO('sqlite:' . $this->sidecar, options: [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
@@ -110,8 +110,8 @@ CREATE TABLE financial_evidence(
 );
 SQL);
         $financial->prepare('INSERT INTO financial_evidence VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)')
-            ->execute([$a,'paid',150000,'cumulative','2026-11-01','','','2026-11-02',
-                'Source test','Document test','https://example.org/source','Extrait test','2026-11-02']);
+            ->execute([$a, 'paid', 150000, 'cumulative', '2026-11-01', '', '', '2026-11-02',
+                'Source test', 'Document test', 'https://example.org/source', 'Extrait test', '2026-11-02']);
         $financial = null;
 
         $reader = new PublicProcurementData($this->root);
