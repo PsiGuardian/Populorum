@@ -173,7 +173,11 @@ def classify(contract: dict, notice: dict) -> dict | None:
         # several near-identical lots.
         notice_years = re.findall(r'(?:19|20)[0-9]{2}', str(notice.get('dateparution') or ''))
         contract_year = str(contract.get('notice_date') or '')[:4]
-        if notice_years and contract_year.isdigit() and abs(int(notice_years[-1]) - int(contract_year)) > 3:
+        # Malformed DECP years (2926, 3036, 6666) do not establish
+        # chronological incompatibility. Do not alter the source date.
+        if (notice_years and contract_year.isdigit()
+                and 2010<=int(contract_year)<=datetime.now(timezone.utc).year+1
+                and abs(int(notice_years[-1])-int(contract_year))>3):
             return None
         status = 'candidate'
         basis = 'SIRET cité dans l’avis et intitulé proche ; marché, année et lot à confirmer'
