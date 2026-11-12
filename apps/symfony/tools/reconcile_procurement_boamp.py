@@ -110,9 +110,6 @@ def classify(contract: dict, notice: dict) -> dict | None:
     if buyer_found and reference_found:
         status = 'procedure_ids'
         basis = 'Référence déclarée et SIRET acheteur présents dans le contenu de l’avis BOAMP'
-    elif reference_found and overlap >= 0.45:
-        status = 'candidate'
-        basis = 'Référence présente et objets proches ; identification acheteur non confirmée dans l’avis'
     elif buyer_found and overlap >= 0.72 and len(name_tokens & title_tokens) >= 3:
         status = 'candidate'
         basis = 'SIRET acheteur présent et objets proches ; référence du contrat non retrouvée'
