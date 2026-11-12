@@ -53,6 +53,20 @@ def known(sidecar: sqlite3.Connection,key: str) -> tuple[dict | None,list[dict]]
     return (dict(check) if check else None,[dict(row) for row in refs])
 
 
+def known_local(sidecar:sqlite3.Connection,key:str)->tuple[dict|None,list[dict],bool]:
+    """Separate national-BOAMP local evidence from prior online API checks."""
+    tables={r[0] for r in sidecar.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('local_checks','local_matches')")}
+    if 'local_checks' not in tables or 'local_matches' not in tables:
+        return None,[],False
+    check=sidecar.execute("""SELECT status,scanned_notices,matched_notices,
+        truncated,source_revision FROM local_checks WHERE contract_key=?""",(key,)).fetchone()
+    refs=sidecar.execute("""SELECT idweb,status,basis,title,url,publication_date,notice_kind
+        FROM local_matches WHERE contract_key=? AND active=1
+        ORDER BY status,idweb""",(key,)).fetchall()
+    return (dict(check) if check else None,[dict(row) for row in refs],True)
+
+
 def official_query(buyer: str,field: str,word: str) -> tuple[int,list[dict]]:
     if not re.fullmatch(r'[0-9]{14}',buyer):
         raise ValueError('SIRET invalide')
@@ -103,9 +117,10 @@ def second_look(contract: dict) -> list[str]:
     return output
 
 
-def run(db: sqlite3.Connection,sidecar: sqlite3.Connection,rows: list[dict],online: bool) -> str:
+def run(db: sqlite3.Connection,sidecar: sqlite3.Connection,rows: list[dict],online: bool,local: bool=False) -> str:
     output=['AUDIT DOCUMENTAIRE BOAMP - DECP','Toute absence de correspondance signifie INDETERMINE, jamais aucun lien.','']
     checks=potential=confirmed=0
+    local_checks=local_potential=local_confirmed=0
     for i,row in enumerate(rows,1):
         check,refs=known(sidecar,row['contract_key'])
         checks+=bool(check)
@@ -126,6 +141,29 @@ def run(db: sqlite3.Connection,sidecar: sqlite3.Connection,rows: list[dict],onli
             output.append('    Motif : '+single_line(r['basis']))
         if not refs:
             output.append('  INDETERMINE : aucune preuve de NON-correspondance.')
+        if local:
+            local_check,local_refs,available=known_local(sidecar,row['contract_key'])
+            output.append('  Référentiel BOAMP local (indépendant des recherches API):')
+            if not available:
+                output.append('    Index local NON INSTALLE ; couverture INDETERMINEE.')
+            elif not local_check:
+                output.append('    Contrat NON EXAMINE localement ; couverture INDETERMINEE.')
+            else:
+                local_checks+=1
+                local_potential+=sum(x['status']=='candidate' for x in local_refs)
+                local_confirmed+=sum(x['status']=='procedure_ids' for x in local_refs)
+                output.append('    Couverture '+single_line(local_check['status'])+
+                    ' | avis inspectés '+str(local_check['scanned_notices'])+
+                    ' | plafond atteint '+str(bool(local_check['truncated']))+
+                    ' | import '+single_line(local_check['source_revision']))
+                for r in local_refs:
+                    output.append('    '+r['status'].upper()+' BOAMP '+single_line(r['idweb'])+
+                        ' | '+single_line(r['title'])+' | '+single_line(r['url']))
+                    output.append('      Motif : '+single_line(r['basis']))
+                if not local_refs:
+                    output.append('    INDETERMINE : aucun avis lié dans la couverture disponible.')
+                if local_check['status']=='partial':
+                    output.append('    ATTENTION : corpus partiel ; aucune absence de lien prouvée.')
         if online:
             output.append('  Contre-recherches officielles, NON exhaustives:')
             output.extend(second_look(row))
@@ -133,6 +171,10 @@ def run(db: sqlite3.Connection,sidecar: sqlite3.Connection,rows: list[dict],onli
     output.extend(['BILAN : '+str(len(rows))+' contrats ; '+str(checks)+' controles disponibles ; '+
                    str(confirmed)+' concordances procedures ; '+str(potential)+' candidats.',
                    'Aucun montant BOAMP ne prouve un paiement ni ne valide automatiquement un lot.'])
+    if local:
+        output.append('LOCAL : '+str(local_checks)+' contrats examinés ; '+
+             str(local_confirmed)+' concordances de procédure ; '+
+             str(local_potential)+' candidats ; couverture partielle possible.')
     return '\n'.join(output)+'\n'
 
 
@@ -144,6 +186,7 @@ def main() -> None:
     p.add_argument('--decp',type=Path,default=NATIONAL)
     p.add_argument('--sidecar',type=Path,default=SIDECAR)
     p.add_argument('--online',action='store_true',help='Contre-recherches DILA bornées, sans écriture')
+    p.add_argument('--local',action='store_true',help='Inclure les concordances BOAMP locales et leur couverture')
     p.add_argument('--output',type=Path,help='Fichier de rapport local UTF-8')
     args=p.parse_args()
     if args.offset<0 or not 1<=args.limit<=50:p.error('offset >= 0 et limite de 1 à 50')
@@ -152,7 +195,7 @@ def main() -> None:
     with sqlite3.connect('file:'+str(args.decp.resolve())+'?mode=ro',uri=True) as db, \
          sqlite3.connect('file:'+str(args.sidecar.resolve())+'?mode=ro',uri=True) as evidence:
         db.row_factory=evidence.row_factory=sqlite3.Row
-        report=run(db,evidence,contracts(db,args.contract_key,args.limit,args.offset),args.online)
+        report=run(db,evidence,contracts(db,args.contract_key,args.limit,args.offset),args.online,args.local)
     if args.output:
         args.output.parent.mkdir(parents=True,exist_ok=True)
         args.output.write_text(report,encoding='utf-8')

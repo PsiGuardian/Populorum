@@ -87,6 +87,26 @@ def test_audit_read_only():
         assert 'PROCEDURE_IDS BOAMP 26-123456' in result
         assert '1 concordances procedures' in result
         assert sidecar.execute('SELECT COUNT(*) FROM checks').fetchone()[0]==1
+        without_local=audit_report(national,sidecar,selected,False,True)
+        assert 'NON INSTALLE' in without_local
+        sidecar.executescript("""CREATE TABLE local_checks (
+            contract_key TEXT PRIMARY KEY,status TEXT,scanned_notices INTEGER,
+            matched_notices INTEGER,truncated INTEGER,source_revision TEXT);
+        CREATE TABLE local_matches (
+            contract_key TEXT,idweb TEXT,status TEXT,basis TEXT,title TEXT,
+            url TEXT,publication_date TEXT,notice_kind TEXT,active INTEGER);
+        INSERT INTO local_checks VALUES (
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','partial',22,1,0,'2');
+        INSERT INTO local_matches VALUES (
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','26-123456','candidate',
+            'SIRET et titre seulement','Dispositifs médicaux',
+            'https://www.boamp.fr/pages/avis/?q=idweb:26-123456',
+            '2026-04-01','Avis',1);
+        """)
+        with_local=audit_report(national,sidecar,selected,False,True)
+        assert '22' in with_local and 'couverture partielle' in with_local
+        assert 'CANDIDATE BOAMP 26-123456' in with_local
+        assert 'LOCAL : 1 contrats examinés' in with_local
         assert national.execute('SELECT COUNT(*) FROM contracts').fetchone()[0]==2
 
 
