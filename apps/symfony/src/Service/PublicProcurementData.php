@@ -495,11 +495,11 @@ final class PublicProcurementData
                     $hasHistory = $db->query("SELECT 1 FROM sqlite_master
                         WHERE type='table' AND name='local_decision_history'")->fetchColumn();
                     if ($hasHistory) {
-                        $timeline = $db->prepare("SELECT idweb,event_type,classification,
+                        $timeline = $db->prepare('SELECT idweb,event_type,classification,
                             algorithm_version,algorithm_sha256,notice_sha,source_revision,
                             corpus_status,basis,factors_json,recorded_at
                             FROM local_decision_history WHERE contract_key=?
-                            ORDER BY event_id DESC LIMIT 25");
+                            ORDER BY event_id DESC LIMIT 25');
                         $timeline->execute([$key]);
                         $history = $timeline->fetchAll();
                     }
