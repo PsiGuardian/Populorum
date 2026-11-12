@@ -181,11 +181,9 @@ final class DemoController extends AbstractController
             }
         }
 
-        // A single session-backed geographical selector, independent from pilot fixtures.
+        // The navigation territory is independent of the beta participant's home commune.
+        // In particular, choosing FR must not immediately reselect their residence.
         $selectedCommune = $this->territorySelection->current($request, $view);
-        if ($selectedCommune === null && $betaProfile !== null) {
-            $selectedCommune = $this->geography->find($betaProfile['communeCode']);
-        }
         $selectedPilotId = \App\Service\TerritorySelection::pilotId(
             $selectedCommune, $state['territories'],
         );
