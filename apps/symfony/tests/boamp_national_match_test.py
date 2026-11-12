@@ -9,7 +9,7 @@ import sys
 from tempfile import TemporaryDirectory
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 from import_boamp_national import SCHEMA as BOAMP_SCHEMA,SCHEMA_VERSION,import_jsonl,EXPORT
-from match_boamp_national import (LOCAL_SCHEMA,process,source_ready,evaluate,postings,save,complete_official_export,short_unique_communes)
+from match_boamp_national import (LOCAL_SCHEMA,process,source_ready,evaluate,postings,save,complete_official_export,short_unique_communes,ALGORITHM_VERSION)
 
 def sample_notice(ref='24VRA0101',obj='Fourniture De Panneaux De Signalisation Verticale Et Accessoires'):
     return {'idweb':'24-30283','objet':obj,'nomacheteur':'Commune de test',
@@ -153,7 +153,7 @@ def test_append_only_decision_versioning():
                  local_decision_history ORDER BY event_id""").fetchall()
             assert [(r['event_type'],r['algorithm_version']) for r in captured]==[
                 ('legacy_snapshot','legacy-unversioned'),
-                ('observed','boamp-local-v1.1-decision-history')]
+                ('observed',ALGORITHM_VERSION)]
 
 
 def test_scan_history_including_zero_candidates():
