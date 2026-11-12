@@ -1,4 +1,4 @@
-# Populorum — installation neuve complète (v0.12.2-clean)
+# Populorum — installation neuve complète (v0.12.3-clean)
 
 **Installation neuve exclusivement :** partir d'un dossier entièrement vide, sans réutiliser une installation, une base SQLite ou un ancien cache. **Ce guide est autonome :** téléchargement de l'application, installation Symfony, téléchargement facultatif des bases nationales, contrôles et démarrage. Les commandes se lancent directement dans le terminal ; aucun installateur de distribution ni script ponctuel n'est nécessaire.
 
@@ -37,7 +37,7 @@ INSTALL_ROOT="$HOME/Téléchargements/populorum-v0121-neuf"
 mkdir "$INSTALL_ROOT"  # Échoue si ce dossier existe : ne pas fusionner deux installations.
 cd "$INSTALL_ROOT"
 
-VERSION="v0.12.2-clean"
+VERSION="v0.12.3-clean"
 SOURCE="https://github.com/PsiGuardian/Populorum/releases/download/$VERSION"
 curl -fL --retry 3 -O "$SOURCE/Populorum-$VERSION.tar.gz"
 curl -fL --retry 3 -O "$SOURCE/SHA256SUMS.txt"
@@ -46,7 +46,7 @@ tar -xzf "Populorum-$VERSION.tar.gz"
 cd "Populorum-$VERSION/apps/symfony"
 ```
 
-L'archive ne contient ni `vendor/`, ni bases privées, ni clés de production. En cas d'échec du SHA-256, ne pas installer. Cette version devient téléchargeable après publication réussie de la release `v0.12.2-clean`.
+L'archive ne contient ni `vendor/`, ni bases privées, ni clés de production. En cas d'échec du SHA-256, ne pas installer. Cette version devient téléchargeable après publication réussie de la release `v0.12.3-clean`.
 
 ## 3. Installer Symfony (données de démonstration incluses)
 
@@ -137,10 +137,7 @@ Une fois la commande terminée, vérifier l'état avec **un second copier-coller
 python3 tools/decp_pipeline.py status
 ```
 
-**Arrêter ici si tu n'as pas besoin des statistiques SSMSI.** La section 6
-est une installation facultative et indépendante : **ne jamais coller
-`DATA_URL=...` à la suite de `--site-stopped`**. Les commandes des deux
-sections ne doivent pas être fusionnées dans un même collage.
+L'installation des statistiques SSMSI présentée dans la section suivante est facultative.
 
 La commande `publish` crée pour la première fois
 `data/research/public-procurement.sqlite` et **refuse tout fichier déjà
@@ -161,10 +158,7 @@ jamais automatiquement une correspondance textuelle en justification.
 
 ## 6. Facultatif — statistiques communales SSMSI pour la convergence
 
-**Opération totalement distincte de la publication DECP.** Copier ce bloc
-séparément, en commençant par la ligne `DATA_URL=...` uniquement après
-avoir terminé les étapes DECP. Un échec de `publish` n'empêche pas
-l'installation SSMSI : les bases sont indépendantes.
+Ces données sont facultatives et indépendantes de l'index DECP.
 
 Si vous souhaitez également renseigner les indicateurs officiels 2024–2025 sur `/convergence`, l'index publié est directement disponible, sans reconstruire le CSV :
 
