@@ -306,6 +306,7 @@ final class PublicProcurementData
         // silently merged: different lots can reuse an identical original ID.
         $row['reference_relations'] = PerformanceTrace::measure('decp_related_references', fn () => $this->relatedReferences($db, $row));
         $row['financial_evidence'] = $this->financialEvidence($key);
+        $row['automatic_concordance'] = $this->automaticConcordance($key);
         // Statements are curated and source-linked, never inferred from the DECP
         // contract amount. Candidate BOAMP matches cannot assert any factual claim.
         $stmt = $db->prepare('SELECT category,source_type,source_name,source_url,document_title,
@@ -417,6 +418,56 @@ final class PublicProcurementData
         } catch (\PDOException) {
             // A missing or incompatible optional sidecar must never hide DECP.
             return [];
+        }
+    }
+
+    /** Read-only match results from an offline official BOAMP enrichment job.
+     * A matching notice establishes only a documentary link to a procedure,
+     * never the executed cost of a lot, an invoice, or a payment.
+     */
+    private function automaticConcordance(string $key): array
+    {
+        $empty = ['status' => 'not_run', 'checked_at' => null, 'confirmed' => [], 'candidates' => []];
+        $file = $this->projectDir . '/data/research/procurement-auto-concordance.sqlite';
+        if (!is_file($file)) {
+            return $empty;
+        }
+        try {
+            $db = new \PDO('sqlite:file:' . $file . '?mode=ro', null, null, [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_TIMEOUT => 2,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+            ]);
+            $db->exec('PRAGMA query_only=ON');
+            if ($db->query("SELECT value FROM metadata WHERE key='schema'")->fetchColumn() !== 'populorum-boamp-concordance-1') {
+                return $empty;
+            }
+            $query = $db->prepare('SELECT checked_at,status FROM checks WHERE contract_key=?');
+            $query->execute([$key]);
+            $check = $query->fetch();
+            if (!$check) {
+                return $empty;
+            }
+            $query = $db->prepare('SELECT idweb,status,basis,title,url,publication_date,notice_kind,
+                       notice_sha256,first_seen_at,last_seen_at
+                       FROM reference_matches WHERE contract_key=?
+                       ORDER BY status, last_seen_at DESC,idweb LIMIT 40');
+            $query->execute([$key]);
+            $confirmed = [];
+            $candidates = [];
+            foreach ($query->fetchAll() as $notice) {
+                if ($notice['status'] === 'procedure_ids') {
+                    $confirmed[] = $notice;
+                } else {
+                    $candidates[] = $notice;
+                }
+            }
+
+            return ['status' => $check['status'], 'checked_at' => $check['checked_at'],
+                'confirmed' => $confirmed, 'candidates' => $candidates];
+        } catch (\PDOException) {
+            // Auxiliary enrichment failure must never break the national register.
+            return $empty;
         }
     }
 
