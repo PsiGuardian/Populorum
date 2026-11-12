@@ -49,6 +49,16 @@ jobs:
       - run: python3 tests/decp_query_plan_test.py
       - run: python3 tests/decp_financial_evidence_test.py
       - run: python3 tests/decp_boamp_concordance_test.py
+      - name: Verify BOAMP API v2.1 schema with a real bounded query
+        run: |
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0,'tools')
+          from reconcile_procurement_boamp import fetch_candidates
+          data=fetch_candidates('Fourniture de dispositifs médicaux spécialisés', 'AO25DMISP')
+          assert isinstance(data,list)
+          print('BOAMP API ODSQL OK; resultats lus :',len(data))
+          PY
       - run: python3 -m py_compile tools/import_decp.py tools/import_procurement_evidence.py tools/enrich_procurement_boamp.py tools/reconcile_procurement_boamp.py
       - run: python3 tests/fresh_install_contract_test.py
       - run: python3 tests/decp_pipeline_test.py
@@ -149,7 +159,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="v0.13.1-clean"
+          TAG="v0.13.2-clean"
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release exists, nothing replaced."
             exit 0
@@ -168,5 +178,5 @@ jobs:
           fi
           gh release create "$TAG" "release/$ARCHIVE" release/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
-            --title "Populorum v0.13.1 — reprise automatique de concordance BOAMP" \
-            --notes-file docs/RELEASE_v0.13.1-clean.md
+            --title "Populorum v0.13.2 — correctif du sélecteur de l’API BOAMP" \
+            --notes-file docs/RELEASE_v0.13.2-clean.md
