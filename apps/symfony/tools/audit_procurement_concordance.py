@@ -81,6 +81,20 @@ def decision_timeline(sidecar:sqlite3.Connection,key:str,limit:int=40)->list[dic
         ORDER BY event_id DESC LIMIT ?""",(key,limit))]
 
 
+def scan_timeline(sidecar:sqlite3.Connection,key:str,limit:int=12)->list[dict]:
+    """Scan history includes indeterminate/zero-candidate observations."""
+    exists=sidecar.execute("""SELECT 1 FROM sqlite_master
+        WHERE type='table' AND name='local_scan_history'""").fetchone()
+    if exists is None:
+        return []
+    return [dict(row) for row in sidecar.execute("""
+        SELECT scan_id,result,algorithm_version,algorithm_sha256,
+               contract_sha256,source_revision,corpus_status,scanned_notices,
+               matched_notices,truncated,match_signature,recorded_at
+        FROM local_scan_history WHERE contract_key=?
+        ORDER BY scan_id DESC LIMIT ?""",(key,limit))]
+
+
 def official_query(buyer: str,field: str,word: str) -> tuple[int,list[dict]]:
     if not re.fullmatch(r'[0-9]{14}',buyer):
         raise ValueError('SIRET invalide')
@@ -179,6 +193,22 @@ def run(db: sqlite3.Connection,sidecar: sqlite3.Connection,rows: list[dict],onli
                 if local_check['status']=='partial':
                     output.append('    ATTENTION : corpus partiel ; aucune absence de lien prouvée.')
         if history:
+            output.append('  HISTORIQUE DES CONTROLES LOCAUX (même sans candidat):')
+            scans=scan_timeline(sidecar,row['contract_key'])
+            if not scans:
+                output.append('    Aucun contrôle versionné ; anciens contrôles non datables par version.')
+            for check_event in scans:
+                output.append('    CONTROLE #'+str(check_event['scan_id'])+
+                    ' | '+single_line(check_event['result'])+
+                    ' | '+str(check_event['scanned_notices'])+' avis inspectés'+
+                    ' | '+str(check_event['matched_notices'])+' pistes'+
+                    ' | corpus '+single_line(check_event['corpus_status'])+
+                    ' | révision '+single_line(check_event['source_revision'])+
+                    ' | règles '+single_line(check_event['algorithm_version'])+
+                    ' | empreinte '+check_event['algorithm_sha256'][:12]+
+                    ' | observé le '+single_line(check_event['recorded_at']))
+                if not check_event['matched_notices']:
+                    output.append('      INDETERMINE : 0 candidat observé ne prouve PAS une absence de lien.')
             output.append('  HISTORIQUE DES DECISIONS DE L’ALGORITHME (événements les plus récents):')
             timeline=decision_timeline(sidecar,row['contract_key'])
             if not timeline:
