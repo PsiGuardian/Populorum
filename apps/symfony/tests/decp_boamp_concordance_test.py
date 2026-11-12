@@ -2,10 +2,13 @@
 """Unit tests for offline BOAMP procedural concordance, without network."""
 from __future__ import annotations
 from pathlib import Path
+import json
 import sqlite3
 import sys
+from unittest.mock import patch
+from urllib.parse import parse_qs, urlsplit
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset
+from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates
 
 
 def fixture():
@@ -24,9 +27,34 @@ def fixture():
     return contract,notice
 
 
+def test_http_request_contract():
+    # The live Opendatasoft BOAMP field is lowercase "donnees" (uppercase
+    # "DONNEES" is a UI label and causes an ODSQL HTTP 400).
+    class FakeResponse:
+        url = 'https://boamp-datadila.opendatasoft.com/api/explore/v2.1/catalog/datasets/boamp/records'
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            return False
+        def read(self, size):
+            return json.dumps({'results':[{'idweb':'26-123456','donnees':'{}'}]}).encode()
+
+    def fake_open(request, timeout):
+        args = parse_qs(urlsplit(request.full_url).query)
+        assert args['select'] == ['idweb,objet,nomacheteur,dateparution,url_avis,nature_categorise_libelle,donnees']
+        assert args['where'][0].startswith('search(objet, ')
+        assert timeout <= 30
+        return FakeResponse()
+
+    with patch('reconcile_procurement_boamp.urlopen', fake_open):
+        result = fetch_candidates('Fourniture de dispositifs médicaux spécialisés', 'AO25DMISP')
+    assert len(result) == 1 and result[0]['idweb'] == '26-123456'
+
+
 def main():
     assert following_offset(40,10,10)==50
     assert following_offset(50,7,10)==0
+    test_http_request_contract()
     contract,notice=fixture()
     good=classify(contract,notice)
     assert good is not None and good['status']=='procedure_ids',good
