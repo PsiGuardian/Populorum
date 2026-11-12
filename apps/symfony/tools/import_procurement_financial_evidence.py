@@ -67,7 +67,7 @@ def official_date(value: object, name: str, optional: bool = False) -> str:
 
 def money(value: object) -> int:
     # JSON numeric float is refused: it loses the exact decimal cent value.
-    if not isinstance(value, str) or re.fullmatch(r'(?:0|[1-9][0-9]{0,13})(?:\\.[0-9]{1,2})?', value) is None:
+    if not isinstance(value, str) or re.fullmatch(r'(?:0|[1-9][0-9]{0,13})(?:\.[0-9]{1,2})?', value) is None:
         raise ValueError('amount_eur : décimal positif en chaîne de caractères, au plus deux décimales')
     try:
         d = Decimal(value) * 100
