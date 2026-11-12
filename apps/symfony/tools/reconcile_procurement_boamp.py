@@ -134,9 +134,15 @@ def classify(contract: dict, notice: dict) -> dict | None:
     name_tokens = set(terms(reference_title))
     title_tokens = set(terms(title))
     overlap = len(name_tokens & title_tokens) / max(1,len(name_tokens | title_tokens))
-    if buyer_found and reference_found:
+    # A numerical reference may coincide with an amount or date. Do not
+    # certify it unless it is long and accompanied by a strong title match.
+    distinctive_reference = (
+        (any(c.isalpha() for c in reference) and any(c.isdigit() for c in reference))
+        or (reference.isdigit() and len(reference) >= 10 and overlap >= 0.50)
+    )
+    if buyer_found and reference_found and distinctive_reference:
         status = 'procedure_ids'
-        basis = 'Référence déclarée et SIRET acheteur présents dans le contenu de l’avis BOAMP'
+        basis = 'Référence distinctive et SIRET cités dans le contenu de l’avis BOAMP'
     elif buyer_found and overlap >= 0.35 and len(name_tokens & title_tokens) >= 3:
         # Similar wording is ONLY a lead. BOAMP's public procedure reference
         # often differs from the DECP identifier, and one buyer may publish
