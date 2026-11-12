@@ -12,7 +12,7 @@ Stores versions of match evidence, never financial payments or merged lots.
 """
 from __future__ import annotations
 import argparse
-from collections import OrderedDict
+from collections import Counter,OrderedDict
 from datetime import datetime,timezone
 import json
 from pathlib import Path
@@ -22,7 +22,7 @@ import zlib
 from import_boamp_national import DEFAULT_DB as BOAMP,SCHEMA_VERSION as BOAMP_SCHEMA,EXPORT
 from reconcile_procurement_boamp import (NATIONAL, SIDECAR, SCHEMA as OLD_SCHEMA,
                                         SCHEMA_VERSION as OLD_VERSION,
-                                        classify,terms)
+                                        classify,terms,title_terms,geographic_text,ROOT)
 
 LOCAL_SCHEMA="""
 CREATE TABLE IF NOT EXISTS local_checks(
@@ -40,6 +40,32 @@ CREATE TABLE IF NOT EXISTS local_matches(
 CREATE INDEX IF NOT EXISTS local_matches_contract ON local_matches(contract_key,active,status);
 """
 MAX_LOCAL=4000
+GEOGRAPHY=ROOT / 'data/geography/communes-2026.sqlite'
+
+
+def short_unique_communes(path:Path)->dict[str,str]:
+    """Only exact, unique official names lost by generic title tokenization.
+
+    This is a conservative candidate-signal catalog, NEVER a set of
+    verified geographic identifiers from BOAMP. The COG is read only.
+    """
+    if not path.is_file():
+        return {}
+    with sqlite3.connect('file:'+str(path.resolve())+'?mode=ro',uri=True) as db:
+        vintage=db.execute(
+            "SELECT value FROM metadata WHERE key='vintage'").fetchone()
+        if not vintage or vintage[0]!='2026':
+            raise ValueError('Référentiel INSEE attendu : COG 2026')
+        rows=db.execute('SELECT code,name FROM communes').fetchall()
+    if not rows:
+        raise ValueError('COG 2026 vide')
+    labels=Counter(geographic_text(str(name)) for _,name in rows)
+    return {
+        str(code).upper():str(name) for code,name in rows
+        if labels[geographic_text(str(name))]==1
+        and not title_terms(str(name))
+        and re.fullmatch(r'(?:[0-9]{5}|2[AB][0-9]{3})',str(code).upper())
+    }
 
 
 def utc_now()->str:
@@ -62,7 +88,7 @@ def complete_official_export(db:sqlite3.Connection)->bool:
 
 
 def get_contracts(db:sqlite3.Connection,limit:int,offset:int,key:str|None)->list[dict]:
-    base='SELECT contract_key,buyer_id,original_id,object,notice_date,cpv,kind FROM contracts '
+    base='SELECT contract_key,buyer_id,original_id,object,notice_date,cpv,kind,location_type,location_code FROM contracts '
     if key:
         query=db.execute(base+'WHERE contract_key=?',(key,))
     else:
@@ -94,7 +120,8 @@ def valid_date(year:object)->bool:
 
 
 def evaluate(contract:dict,notices:list[dict],truncated:bool,
-             boamp:sqlite3.Connection)->list[dict]:
+             boamp:sqlite3.Connection,
+             short_communes:dict[str,str]|None=None)->list[dict]:
     """Classify all local notice candidates, keep only non-fraudulent claims."""
     # A malformed or futuristic DECP date cannot exclude an otherwise
     # similar official notice. Preserve it in DECP and do not 'repair' it.
@@ -115,7 +142,7 @@ def evaluate(contract:dict,notices:list[dict],truncated:bool,
             continue
         if not isinstance(source,dict):
             continue
-        document=classify(candidate,source)
+        document=classify(candidate,source,short_communes=short_communes)
         if document is None:
             continue
         document['notice_sha']=row['source_sha']
@@ -152,7 +179,8 @@ def save(sidecar:sqlite3.Connection,contract_key:str,matches:list[dict],
 
 
 def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Connection,
-            records:list[dict],max_candidates:int=MAX_LOCAL)->dict:
+            records:list[dict],max_candidates:int=MAX_LOCAL,
+            short_communes:dict[str,str]|None=None)->dict:
     count=links=truncated=0
     # A typical buyer has many DECP contracts: read the buyer's BOAMP
     # postings once for up to four recent buyers, rather than 1 SQL query
@@ -168,7 +196,7 @@ def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Con
         else:
             buyer_cache.move_to_end(buyer)
         notices,over=buyer_cache[buyer]
-        matched=evaluate(c,notices,over,boamp)
+        matched=evaluate(c,notices,over,boamp,short_communes=short_communes)
         save(sidecar,str(c['contract_key']),matched,len(notices),over,
              str(source_revision),source_complete=source_complete)
         count+=1
@@ -194,6 +222,8 @@ def main()->None:
     p.add_argument('--max-notices-per-buyer',type=int,default=MAX_LOCAL)
     p.add_argument('--decp',type=Path,default=NATIONAL)
     p.add_argument('--boamp',type=Path,default=BOAMP)
+    p.add_argument('--geography',type=Path,default=GEOGRAPHY,
+                   help='COG INSEE 2026 optionnel, en lecture seule (noms de communes courts)')
     p.add_argument('--sidecar',type=Path,default=SIDECAR)
     args=p.parse_args()
     if not 1<=args.limit<=50000 or args.offset<0 or not 0<=args.max_notices_per_buyer<=MAX_LOCAL:
@@ -221,7 +251,11 @@ def main()->None:
         cursor=side.execute("SELECT value FROM metadata WHERE key='local_next_offset'").fetchone()
         offset=int(cursor[0]) if args.resume and cursor and cursor[0].isdigit() else args.offset
         records=get_contracts(decp,args.limit,offset,args.contract_key)
-        outcome=process(decp,boamp,side,records,args.max_notices_per_buyer)
+        short_places=short_unique_communes(args.geography)
+        print('Noms courts INSEE uniques disponibles :',len(short_places),
+              '| aucune fusion géographique automatique.')
+        outcome=process(decp,boamp,side,records,args.max_notices_per_buyer,
+                        short_communes=short_places)
         if args.resume:
             new_offset=0 if len(records)<args.limit else offset+len(records)
             side.execute("""INSERT INTO metadata VALUES('local_next_offset',?)
