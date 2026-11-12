@@ -94,6 +94,10 @@
               <p class="dossier-source-label">Identifiants concordants · Avis de procédure</p>
               <h4><a href="{{ n.url }}" target="_blank" rel="noopener noreferrer">{{ n.title }}</a></h4>
               <p>{{ n.basis }}</p>
+              {% if n.notice_total_eur|default('') %}
+                <p><strong>Montant global mentionné dans cet avis :</strong> {{ n.notice_total_eur }} EUR.
+                  <small>Périmètre de la procédure ; montant par lot et paiements non établis.</small></p>
+              {% endif %}
               <small>BOAMP {{ n.idweb }} · {{ n.publication_date }} · vérifié dans le jeu publié le {{ n.last_seen_at }}</small>
             </article>
           {% endfor %}
