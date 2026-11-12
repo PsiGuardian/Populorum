@@ -155,7 +155,7 @@ final class PublicProcurementData
                 $warnings[] = 'Montant supérieur à dix milliards d’euros : vérifier son périmètre et la pièce contractuelle.';
             }
         }
-        if ($locationType === 'Code postal' && preg_match('/\\A[0-9]{5}\\z/D', $locationCode) !== 1) {
+        if ($locationType === 'Code postal' && preg_match('/\A[0-9]{5}\z/D', $locationCode) !== 1) {
             $warnings[] = 'Le lieu est déclaré comme code postal, mais son format n’est pas celui d’un code postal français à cinq chiffres.';
         }
 
