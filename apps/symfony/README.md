@@ -1,3 +1,5 @@
+> **BOAMP national et rapprochement local DECP, sans 745 076 requêtes HTTP :** [Guide d'export BOAMP et concordance](docs/BOAMP_NATIONAL_LOCAL.md). Cette opération est facultative et ne modifie ni les bases DECP ni les votes.
+
 > **Installation rapide des bases nationales (sans analyse SQLite intégrale obligatoire) :** [LIRE_AVANT_INSTALLATION.md](https://github.com/PsiGuardian/Populorum/blob/main/LIRE_AVANT_INSTALLATION.md). Cette page inclut les commandes facultatives pour télécharger les bases INSEE, DECP (marchés publics) et SSMSI ; l'index DECP v2 se reconstruit depuis data.gouv.fr (l'archive DECP v1 historique n'est plus compatible). La release [v0.14.0-clean](https://github.com/PsiGuardian/Populorum/releases/tag/v0.14.0-clean) présente également les propositions de loi réelles et leurs documents sénatoriaux. L'import parlementaire s'effectue sur une base propre après installation, sans commande de nettoyage d'ancien cache.
 
 # Démos Kratos — Symfony 8.1 et SQLite
