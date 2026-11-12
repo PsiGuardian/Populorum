@@ -55,6 +55,37 @@ jobs:
         run: |
           python3 tools/import_boamp_national.py --download --probe --db /tmp/populorum-ci-boamp-probe.sqlite
           python3 tools/import_boamp_national.py --stats --db /tmp/populorum-ci-boamp-probe.sqlite
+          python3 - <<'PY'
+          import json,sys
+          sys.path.insert(0,'tools')
+          from import_boamp_national import export_url,stream_from_url
+          with stream_from_url(export_url('2026-11-12')) as response:
+              data=response.readline()
+          assert isinstance(json.loads(data),dict)
+          print('BOAMP increment dateparution depuis 2026-11-12: JSONL accessible')
+          PY
+          python3 - <<'PY'
+          import sqlite3,sys
+          sys.path.insert(0,'tools')
+          from match_boamp_national import process,source_ready,LOCAL_SCHEMA
+          from reconcile_procurement_boamp import SCHEMA as LINK_SCHEMA
+          with sqlite3.connect(':memory:') as decp, \
+               sqlite3.connect('/tmp/populorum-ci-boamp-probe.sqlite') as boamp, \
+               sqlite3.connect(':memory:') as side:
+              for db in (decp,boamp,side):db.row_factory=sqlite3.Row
+              decp.execute('CREATE TABLE contracts (contract_key TEXT, buyer_id TEXT, original_id TEXT, object TEXT, notice_date TEXT,cpv TEXT,kind TEXT)')
+              decp.execute("INSERT INTO contracts VALUES(?,?,?,?,?,?,?)",
+                ('a'*40,'21690264300016','24VRA0101',
+                 'FOURNITURE DE PANNEAUX DE SIGNALISATION VERTICALE ET ACCESSOIRES',
+                 '2089-03-13','34992200','market'))
+              side.executescript(LINK_SCHEMA)
+              side.executescript(LOCAL_SCHEMA)
+              source_ready(boamp)
+              result=process(decp,boamp,side,[dict(decp.execute('SELECT * FROM contracts').fetchone())])
+              print('BOAMP official notice 24-30283 / test DECP synthetic link:',result)
+              assert result['contracts']==1
+              assert side.execute('SELECT COUNT(*) FROM local_checks').fetchone()[0]==1
+          PY
 
       - name: Verify BOAMP API v2.1 schema with a real bounded query
         run: |
