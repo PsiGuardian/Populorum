@@ -22,6 +22,46 @@ partager un identifiant initial. Une future consolidation de ces lignes doit
 être justifiée par une pièce de lot, un acte signé ou un lien officiel
 non ambigu. Ne pas agréger ces variantes en un total.
 
+## Performance : index facultatif de rapprochement pour bases existantes
+
+Depuis v0.12.5-clean, la recherche des autres fiches de même référence
+nécessite l'index SQLite `contracts_buyer_reference` sur les colonnes
+`(buyer_id, kind, original_id, notice_date DESC, contract_key ASC)`.
+
+- Une **nouvelle installation** le construit automatiquement pendant l'import
+  DECP, au même titre que les autres index de recherche.
+- Une **base DECP v2 antérieure** reste intégralement consultable sans cet
+  index : la liste des références apparentées est seulement suspendue,
+  plutôt que de déclencher une recherche lente sur toute la base.
+- La chronologie du contrat, les sources et la recherche générale
+  continuent de fonctionner.
+
+Pour activer les références apparentées sur une base déjà publiée, il suffit
+de construire l'index **une seule fois**, sans aucun réimport ni modification
+des montants. Fermer les serveurs PHP qui consultent la base et disposer
+d'espace libre avant cette opération SQL :
+
+```bash
+cd apps/symfony
+sqlite3 data/research/public-procurement.sqlite \
+  "PRAGMA busy_timeout=30000;
+   CREATE INDEX IF NOT EXISTS contracts_buyer_reference
+   ON contracts(buyer_id,kind,original_id,notice_date DESC,contract_key ASC);"
+sqlite3 -readonly data/research/public-procurement.sqlite \
+  "PRAGMA index_list('contracts');"
+```
+
+**Attention :** la création de cet index est une opération ponctuelle
+de lecture/écriture sur un gros fichier SQLite. Selon les ressources du
+disque et le nombre de contrats, elle peut prendre du temps et nécessite
+de l'espace libre. Aucun autre index ni aucune table de données ne doit
+être supprimé. Ne pas lancer cette commande si un import ou une publication
+DECP est en cours. Ne pas lancer `VACUUM`.
+
+Pour identifier le coût précis en environnement de test, le traceur
+`POPULORUM_TIMING=1` rapporte maintenant `decp_related_references`
+en plus de `decp_detail` et `decp_search`.
+
 ## Fiche documentaire
 
 `/marches-publics/{contract_key}` comprend :
