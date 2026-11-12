@@ -1,5 +1,10 @@
 # Populorum — installation neuve complète (v0.14.0-clean)
 
+**Référentiel BOAMP national (facultatif, séparé des DECP) :**
+le guide [BOAMP_NATIONAL_LOCAL.md](apps/symfony/docs/BOAMP_NATIONAL_LOCAL.md)
+décrit l'import officiel JSONL et la concordance locale sans une requête
+HTTP par contrat. L'import BOAMP n'est pas obligatoire pour lancer Populorum.
+
 **Installation neuve exclusivement :** partir d'un dossier entièrement vide, sans réutiliser une installation, une base SQLite ou un ancien cache. **Ce guide est autonome :** téléchargement de l'application, installation Symfony, téléchargement facultatif des bases nationales, contrôles et démarrage. Les commandes se lancent directement dans le terminal ; aucun installateur de distribution ni script ponctuel n'est nécessaire.
 
 **Populorum est une simulation fictive.** Les référentiels nationaux servent à présenter des informations publiques sourcées, jamais à inventer des habitants, des votes ou des dépenses.
