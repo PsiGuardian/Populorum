@@ -47,10 +47,10 @@
         {% if marketDetails.amount_amended_cents is not null %} · <strong>Montant renseigné dans une modification (non additionnable) :</strong> {{ marketDetails.amount_amended_cents|decp_euros }}{% endif %}
     </p>
     <p><strong>Lieu d'exécution :</strong> {{ marketDetails.location_type|default('non renseigné') }} : {{ marketDetails.location_code|default('non renseigné') }} · <strong>CPV :</strong> {{ marketDetails.cpv|default('non renseigné') }} · <strong>Procédure :</strong> {{ marketDetails.procedure|default('non renseignée') }}</p>
-    {% if marketDetails.amount_warnings is not empty %}
+    {% if (marketDetails.amount_warnings|default([])) is not empty %}
       <section class="budget-explain" aria-label="Contrôles documentaires suggérés">
         <h3>Points à contrôler — valeurs originales conservées</h3>
-        {% for warning in marketDetails.amount_warnings %}
+        {% for warning in marketDetails.amount_warnings|default([]) %}
           <p class="budget-gap">{{ warning }}</p>
         {% endfor %}
         <p class="budget-muted">Ces contrôles automatiques ne démontrent ni une erreur, ni une fraude. Aucun montant n'est modifié, masqué ou exclu des résultats.</p>
@@ -140,7 +140,7 @@
       <h3>Autres fiches portant la même référence d'acheteur</h3>
       <p class="budget-muted">Même acheteur, même catégorie et même identifiant de marché déclaré.
         Une référence peut être réutilisée pour plusieurs lots ; <strong>ces fiches ne sont pas fusionnées sans preuve de leur identité juridique.</strong></p>
-      {% if not marketDetails.reference_relations.indexed %}
+      {% if marketDetails.reference_relations.indexed is defined and marketDetails.reference_relations.indexed == false %}
         <p class="budget-gap"><strong>Recherche de références apparentées momentanément désactivée.</strong>
           Cette base nationale a été créée avant l'ajout de l'index de rapprochement.
           Les marchés, leurs publications et leurs pièces restent entièrement consultables.
@@ -264,9 +264,9 @@
             <h3><a href="{{ civic_path('site_market_detail', {key:contract.contract_key}) }}#contrat-detail">{{ contract.object }}</a></h3>
             <p><strong>{% if contract.amount_initial_cents is not null %}{{ contract.amount_initial_cents|decp_euros }} (valeur contractuelle déclarée){% else %}Montant non communiqué{% endif %}</strong>
               · <strong>{{ contract.source_count }} fichier(s) indexé(s)</strong> · Acheteur {{ contract.buyer_id }} · Lieu : {{ contract.location_type }} {{ contract.location_code }} · CPV {{ contract.cpv }}.</p>
-            {% if contract.amount_warnings is not empty %}
+            {% if (contract.amount_warnings|default([])) is not empty %}
               <p class="budget-gap"><strong>Contrôle documentaire suggéré :</strong>
-                {{ contract.amount_warnings|join(' ') }} Les valeurs publiées sont conservées sans correction.</p>
+                {{ (contract.amount_warnings|default([]))|join(' ') }} Les valeurs publiées sont conservées sans correction.</p>
             {% endif %}
             {% if contract.source_count > 1 %}
               <p class="budget-muted">{{ contract.source_count }} publications rattachées à cette fiche unique :
