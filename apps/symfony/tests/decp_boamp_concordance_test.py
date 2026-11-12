@@ -31,10 +31,11 @@ def main():
     assert good['notice_sha256'] and len(good['notice_sha256'])==64
     assert exact_token('AO25DMISP','ref AO25DMISP, lot n°2')
     assert not exact_token('AO25DMISP','AO25DMISPXX')
-    candidate=dict(notice,DONNEES={'procedure':{'reference':'AO25DMISP'}})
+    candidate=dict(notice,DONNEES={'acheteur':{'identifiant':'26380030200014'}})
     mid=classify(contract,candidate)
     assert mid is not None and mid['status']=='candidate',mid
-    rejected=dict(notice,DONNEES={'acheteur':{'identifiant':'11111111111111'}})
+    rejected=dict(notice,DONNEES={'acheteur':{'identifiant':'11111111111111'},
+                                   'procedure':{'reference':'AO25DMISP'}})
     assert classify(contract,rejected) is None
     other_buyer=dict(contract,buyer_id='11111111111111')
     assert classify(other_buyer,notice) is None
