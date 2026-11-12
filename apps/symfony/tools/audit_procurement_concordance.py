@@ -67,6 +67,20 @@ def known_local(sidecar:sqlite3.Connection,key:str)->tuple[dict|None,list[dict],
     return (dict(check) if check else None,[dict(row) for row in refs],True)
 
 
+def decision_timeline(sidecar:sqlite3.Connection,key:str,limit:int=40)->list[dict]:
+    """Read-only audit of versioned matching decisions, no historical guess."""
+    table=sidecar.execute("""SELECT 1 FROM sqlite_master
+        WHERE type='table' AND name='local_decision_history'""").fetchone()
+    if table is None:
+        return []
+    return [dict(row) for row in sidecar.execute("""
+        SELECT event_id,idweb,event_type,classification,algorithm_version,
+               algorithm_sha256,contract_sha256,notice_sha,factors_json,
+               source_revision,corpus_status,basis,recorded_at
+        FROM local_decision_history WHERE contract_key=?
+        ORDER BY event_id DESC LIMIT ?""",(key,limit))]
+
+
 def official_query(buyer: str,field: str,word: str) -> tuple[int,list[dict]]:
     if not re.fullmatch(r'[0-9]{14}',buyer):
         raise ValueError('SIRET invalide')
@@ -117,7 +131,7 @@ def second_look(contract: dict) -> list[str]:
     return output
 
 
-def run(db: sqlite3.Connection,sidecar: sqlite3.Connection,rows: list[dict],online: bool,local: bool=False) -> str:
+def run(db: sqlite3.Connection,sidecar: sqlite3.Connection,rows: list[dict],online: bool,local: bool=False,history: bool=False) -> str:
     output=['AUDIT DOCUMENTAIRE BOAMP - DECP','Toute absence de correspondance signifie INDETERMINE, jamais aucun lien.','']
     checks=potential=confirmed=0
     local_checks=local_potential=local_confirmed=0
@@ -164,6 +178,25 @@ def run(db: sqlite3.Connection,sidecar: sqlite3.Connection,rows: list[dict],onli
                     output.append('    INDETERMINE : aucun avis lié dans la couverture disponible.')
                 if local_check['status']=='partial':
                     output.append('    ATTENTION : corpus partiel ; aucune absence de lien prouvée.')
+        if history:
+            output.append('  HISTORIQUE DES DECISIONS DE L’ALGORITHME (événements les plus récents):')
+            timeline=decision_timeline(sidecar,row['contract_key'])
+            if not timeline:
+                output.append('    Aucun événement versionné disponible (anciens résultats non réinterprétés).')
+            for event in timeline:
+                output.append('    #'+str(event['event_id'])+' | BOAMP '+event['idweb']+
+                    ' | '+event['event_type']+' | '+event['classification']+
+                    ' | algorithme '+single_line(event['algorithm_version'])+
+                    ' | empreinte règles '+single_line(event['algorithm_sha256'][:12])+
+                    ' | source '+single_line(event['notice_sha'][:12])+
+                    ' | couverture '+single_line(event['corpus_status'])+
+                    ' | date de journalisation '+single_line(event['recorded_at']))
+                if event['event_type']=='legacy_snapshot':
+                    output.append('      Historique antérieur NON RECONSTITUABLE : statut récupéré, '
+                                  'version et calcul inconnus.')
+                else:
+                    output.append('      Facteurs : '+single_line(event['factors_json'],600))
+                output.append('      Justification : '+single_line(event['basis'],300))
         if online:
             output.append('  Contre-recherches officielles, NON exhaustives:')
             output.extend(second_look(row))
@@ -187,15 +220,17 @@ def main() -> None:
     p.add_argument('--sidecar',type=Path,default=SIDECAR)
     p.add_argument('--online',action='store_true',help='Contre-recherches DILA bornées, sans écriture')
     p.add_argument('--local',action='store_true',help='Inclure les concordances BOAMP locales et leur couverture')
+    p.add_argument('--history',action='store_true',help='Afficher le journal des décisions versionnées (avec --local)')
     p.add_argument('--output',type=Path,help='Fichier de rapport local UTF-8')
     args=p.parse_args()
     if args.offset<0 or not 1<=args.limit<=50:p.error('offset >= 0 et limite de 1 à 50')
+    if args.history and not args.local:p.error('--history nécessite --local')
     if args.contract_key and not re.fullmatch(r'[a-f0-9]{40}',args.contract_key):p.error('contract-key invalide')
     if not args.decp.is_file() or not args.sidecar.is_file():p.error('Fichiers DECP et concordance absents')
     with sqlite3.connect('file:'+str(args.decp.resolve())+'?mode=ro',uri=True) as db, \
          sqlite3.connect('file:'+str(args.sidecar.resolve())+'?mode=ro',uri=True) as evidence:
         db.row_factory=evidence.row_factory=sqlite3.Row
-        report=run(db,evidence,contracts(db,args.contract_key,args.limit,args.offset),args.online,args.local)
+        report=run(db,evidence,contracts(db,args.contract_key,args.limit,args.offset),args.online,args.local,args.history)
     if args.output:
         args.output.parent.mkdir(parents=True,exist_ok=True)
         args.output.write_text(report,encoding='utf-8')
