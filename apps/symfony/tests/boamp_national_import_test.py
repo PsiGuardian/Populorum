@@ -6,10 +6,11 @@ import json
 from pathlib import Path
 import sqlite3
 import sys
+from unittest.mock import patch
 from urllib.parse import parse_qs,urlsplit
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 from import_boamp_national import (SCHEMA,normalize,notice_sirets,import_jsonl,iter_jsonl,
-    export_url,json_object,SCHEMA_VERSION)
+    export_url,json_object,SCHEMA_VERSION,notice_by_id,RECORDS)
 from reconcile_procurement_boamp import classify
 
 def notice(kind='a'):
@@ -23,7 +24,48 @@ def notice(kind='a'):
         'donnees':{'Organization':{'SIRET':'21770111900018'},
                    'Reference':{'ID':'2025300000000000'},'variation':kind}}
 
+def test_historical_id_backfill():
+    # Mock the BOAMP endpoint: the regression must never depend on the
+    # public API being online during CI.
+    class FakeResponse:
+        def __init__(self,url:str,results:list[dict]):
+            self.url=url
+            self.body=json.dumps({'total_count':len(results),'results':results},
+                                 ensure_ascii=False).encode()
+        def __enter__(self):return self
+        def __exit__(self,*args):return False
+        def read(self,size:int)->bytes:
+            return self.body[:size]
+
+    called=[]
+    def good(req,timeout):
+        called.append(req.full_url)
+        return FakeResponse(req.full_url,[notice()])
+    with patch('import_boamp_national.urlopen',side_effect=good):
+        url,row=notice_by_id('25-92465')
+        assert row['idweb']=='25-92465'
+        assert url.startswith(RECORDS+'?')
+        assert parse_qs(urlsplit(url).query)['where']==["idweb = '25-92465'"]
+        assert len(called)==1
+
+    with patch('import_boamp_national.urlopen',
+               return_value=FakeResponse(RECORDS,[])):
+        _,row=notice_by_id('25-92465')
+        assert row is None
+
+    with patch('import_boamp_national.urlopen',
+               return_value=FakeResponse('https://evil.example', [notice()])):
+        try:notice_by_id('25-92465')
+        except ValueError:pass
+        else:raise AssertionError('Invalid BOAMP API redirect accepted')
+
+    try:notice_by_id('https://invalid.example/')
+    except ValueError:pass
+    else:raise AssertionError('Invalid notice ID was accepted')
+
+
 def main():
+    test_historical_id_backfill()
     # A single pathological JSONL line must be refused before an unlimited
     # allocation; every consumer exposes readline(size).
     try:
@@ -69,7 +111,7 @@ def main():
            'object':"Pièce d'eau et aménagements écologiques - Aménagement paysager du parc du château de Chessy"}
         candidate=classify(d,notice('b'))
         assert candidate is not None
-    print('PASS: BOAMP JSONL streaming, source revisions, idempotency, provenance and DECP untouched.')
+    print('PASS: BOAMP JSONL, source revisions, targeted historic ID backfill, provenance and DECP untouched.')
 
 if __name__=='__main__':
     main()
