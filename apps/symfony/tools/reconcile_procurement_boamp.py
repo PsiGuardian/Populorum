@@ -119,6 +119,52 @@ def corroborated_short_commune(contract: dict, notice_title: str,
     return code
 
 
+def project_object_conflict(decp_title: str, boamp_title: str) -> dict | None:
+    """Conservative contradiction signal for two different *creation* projects.
+
+    Detect distinct central objects inside the same syntactic construction,
+    such as 'création d'un pôle enfance' vs 'création d'une maison de
+    l'économie'. This is a flag for documentary review, never proof that
+    the underlying procedures are unrelated.
+
+    Do not infer negation from ordinary word absence, synonyms, individual
+    nouns, generic work phases, lots or geographic names.
+    """
+    # Use exact phrase boundaries independently of the Jaccard title filter.
+    pattern = (r'\bcreation\s+(?:d\s+(?:un|une|l)|'
+               r'de\s+(?:la|l)|du|des|de)\s+(.+?)'
+               r'(?=\s+(?:a|au|aux|sur|dans|situe|situee|phase)\s+|$)')
+    targets = []
+    for raw_title in (decp_title, boamp_title):
+        normalized = geographic_text(raw_title)
+        if len(normalized) > 500 or normalized.count(' creation ') > 1:
+            return None
+        match = re.search(pattern, normalized)
+        if match is None:
+            return None
+        raw_target = match.group(1).strip()
+        # Multi-object projects are too complex for a simple exclusion.
+        if re.search(r'\b(et|ou|ainsi|comprenant)\b', raw_target):
+            return None
+        distinctive = title_terms(raw_target)
+        if len(distinctive) < 2:
+            return None
+        targets.append((raw_target, distinctive))
+    if targets[0][1] & targets[1][1]:
+        return None
+    # A contradiction of targets is a *review signal*, never confirmed
+    # evidence of a different legal procedure. Preserve both source texts.
+    return {
+        'reason_code': 'creation_targets_disjoint',
+        'decp_target': targets[0][0],
+        'boamp_target': targets[1][0],
+        'decp_target_terms': sorted(targets[0][1]),
+        'boamp_target_terms': sorted(targets[1][1]),
+        'shared_target_terms': [],
+        'method': 'explicit_creation_object_comparison',
+    }
+
+
 def exact_token(needle: str, haystack: str) -> bool:
     if not needle:
         return False

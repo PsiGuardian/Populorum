@@ -53,6 +53,8 @@ final class ProcurementDossierTest extends TestCase
         self::assertStringContainsString('Historique des décisions algorithmiques', $template);
         self::assertStringContainsString('algorithm_version', $template);
         self::assertStringContainsString('auto.scan_history', $template);
+        self::assertStringContainsString('auto.conflicts', $template);
+        self::assertStringContainsString('Contradictions de projets', $template);
         self::assertStringContainsString('aucun avis retenu', $template);
         self::assertStringContainsString('factors_json', $template);
         self::assertStringContainsString('legacy_snapshot', $template);
@@ -200,12 +202,29 @@ SQL);
                 'SIRET cité, intitulé proche ; lot à vérifier',
                 'Avis distinct', 'https://www.boamp.fr/pages/avis/?q=idweb:25-92465',
                 '2025-08-14', 'Résultat', '2026-11-12', '2026-11-12', 1]);
+        // A rejected-looking project remains visible as a conflict, not
+        // resurrected as a candidate from an older individual API search.
+        $localDb->prepare('INSERT INTO reference_matches VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
+            ->execute([$a, '25-14275', 'candidate',
+                'Ancien score de similarité, avant contrôle des objets',
+                'Concours pour la création d’une maison de l’économie à Tiercé',
+                'https://www.boamp.fr/pages/avis/?q=idweb:25-14275',
+                '2025-02-07', 'Avis', str_repeat('c', 64), '',
+                '2026-11-12', '2026-11-12']);
+        $localDb->prepare('INSERT INTO local_matches VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
+            ->execute([$a, '25-14275', str_repeat('c', 64), 'object_conflict',
+                'Objet central distinct de celui de la fiche DECP ; à vérifier',
+                'Concours pour la création d’une maison de l’économie à Tiercé',
+                'https://www.boamp.fr/pages/avis/?q=idweb:25-14275',
+                '2025-02-07', 'Avis', '2026-11-12', '2026-11-12', 1]);
         $localDb = null;
         $localDetail = $reader->detail($a);
         self::assertSame('checked', $localDetail['automatic_concordance']['status']);
         self::assertSame('index_national_local', $localDetail['automatic_concordance']['source']);
         self::assertSame(20, $localDetail['automatic_concordance']['scanned_notices']);
         self::assertCount(1, $localDetail['automatic_concordance']['candidates']);
+        self::assertCount(1, $localDetail['automatic_concordance']['conflicts']);
+        self::assertSame('25-14275', $localDetail['automatic_concordance']['conflicts'][0]['idweb']);
         self::assertCount(1, $localDetail['automatic_concordance']['confirmed']);
         self::assertSame('26-123456', $localDetail['automatic_concordance']['confirmed'][0]['idweb']);
 

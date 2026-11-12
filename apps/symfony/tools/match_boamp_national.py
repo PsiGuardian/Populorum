@@ -23,7 +23,7 @@ import zlib
 from import_boamp_national import DEFAULT_DB as BOAMP,SCHEMA_VERSION as BOAMP_SCHEMA,EXPORT
 from reconcile_procurement_boamp import (NATIONAL, SIDECAR, SCHEMA as OLD_SCHEMA,
                                         SCHEMA_VERSION as OLD_VERSION,
-                                        classify,terms,title_terms,geographic_text,ROOT)
+                                        classify,terms,title_terms,geographic_text,project_object_conflict,ROOT)
 
 LOCAL_SCHEMA="""
 CREATE TABLE IF NOT EXISTS local_checks(
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS local_scan_history(
 CREATE INDEX IF NOT EXISTS local_scan_history_contract
  ON local_scan_history(contract_key,scan_id DESC);
 """
-ALGORITHM_VERSION='boamp-local-v1.1-decision-history'
+ALGORITHM_VERSION='boamp-local-v1.2-object-conflict-review'
 MAX_LOCAL=4000
 GEOGRAPHY=ROOT / 'data/geography/communes-2026.sqlite'
 
@@ -152,9 +152,10 @@ def append_scan_snapshot(sidecar:sqlite3.Connection,contract_key:str,
     selected.sort(key=lambda x:(x['idweb'],x['notice_sha'],x['status']))
     match_digest=hashlib.sha256(json.dumps(selected,ensure_ascii=False,
         sort_keys=True,separators=(',',':')).encode('utf-8')).hexdigest()
-    result='pistes_observees' if matches else 'indetermine'
+    accepted=sum(m['status'] in ('candidate','procedure_ids') for m in matches)
+    result='pistes_observees' if accepted else 'indetermine'
     fields=(version,rule_hash,contract_hash,revision,coverage,
-            inspected,len(matches),int(truncated),match_digest,result)
+            inspected,accepted,int(truncated),match_digest,result)
     prior=sidecar.execute("""SELECT algorithm_version,algorithm_sha256,
         contract_sha256,source_revision,corpus_status,scanned_notices,
         matched_notices,truncated,match_signature,result
@@ -246,10 +247,26 @@ def evaluate(contract:dict,notices:list[dict],truncated:bool,
         document=classify(candidate,source,short_communes=short_communes)
         if document is None:
             continue
+        # Preserve the Jaccard finding, but distinguish an explicit
+        # contradiction in the central project object from a useful lead.
+        # Such a warning can NEVER override an exact procedure reference.
+        if (document['status']=='candidate'
+                and not document['rule_evidence'].get('decp_reference_cited')):
+            flag=project_object_conflict(
+                str(candidate.get('object') or ''),str(document['title']))
+            if flag is not None:
+                document['status']='object_conflict'
+                document['basis']=(
+                    "Objets de création distincts à contrôler : DECP «"+
+                    flag['decp_target']+" » ; BOAMP «"+
+                    flag['boamp_target']+
+                    " ». Indice contradictoire, pas preuve d'absence de lien.")
+                document['rule_evidence']['project_conflict']=flag
         document['notice_sha']=row['source_sha']
         matches.append(document)
     # Source exactness outranks title similarity; never merge distinct lots.
-    matches.sort(key=lambda m:(0 if m['status']=='procedure_ids' else 1,m['idweb']))
+    matches.sort(key=lambda m:(0 if m['status']=='procedure_ids' else
+                            1 if m['status']=='candidate' else 2,m['idweb']))
     return matches
 
 
@@ -335,8 +352,9 @@ def save(sidecar:sqlite3.Connection,contract_key:str,matches:list[dict],
       scanned_notices=excluded.scanned_notices,matched_notices=excluded.matched_notices,
       truncated=excluded.truncated,source_revision=excluded.source_revision,
       status=excluded.status""",
-      (contract_key,now,inspected,len(matches),int(truncated),source_revision,
-       coverage))
+      (contract_key,now,inspected,
+       sum(m['status'] in ('candidate','procedure_ids') for m in matches),
+       int(truncated),source_revision,coverage))
     # History of the SCAN itself is separate from individual matching
     # decisions. It records 0-match searches without inventing a BOAMP ID.
     append_scan_snapshot(sidecar,contract_key,matches,inspected,truncated,
@@ -367,7 +385,7 @@ def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Con
              str(source_revision),source_complete=source_complete,
              contract=c,rule_hash=rule_hash)
         count+=1
-        links+=len(matched)
+        links+=sum(m['status'] in ('candidate','procedure_ids') for m in matched)
         truncated+=over
         if count%250==0:
             # Batched commits avoid hundreds of thousands of fsyncs on HDDs.

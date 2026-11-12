@@ -8,7 +8,7 @@ import sys
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression, title_terms, terms, geographic_text, corroborated_short_commune
+from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression, title_terms, terms, geographic_text, corroborated_short_commune, project_object_conflict
 from audit_procurement_concordance import contracts as audit_contracts, run as audit_report, official_query as audit_official_query, decision_timeline, scan_timeline
 
 
@@ -209,6 +209,35 @@ def test_short_communes_need_explicit_context_and_decp_code():
     another={**notice,'objet':'Réfection toiture médiathèque dans la commune de Le Pin'}
     assert classify(ambiguous,another,geo) is None, (
         'Ambiguous Le Pin must never acquire an INSEE code from text')
+
+
+def test_tierce_project_conflict_is_narrow():
+    same=("Concours de maitrise d'œuvre restreint pour la création "
+          "d'un pôle enfance à Tiercé - Phase offre")
+    right=("Concours de maitrise d'œuvre restreint pour la création "
+           "d'un pôle enfance à Tiercé.")
+    wrong=("Concours de maitrise d'œuvre restreint pour la création "
+           "d'une maison de l'économie à Tiercé.")
+    flag=project_object_conflict(same,wrong)
+    assert flag is not None and flag['reason_code']=='creation_targets_disjoint'
+    assert flag['decp_target']=='pole enfance'
+    assert flag['boamp_target']=='maison de l economie'
+    assert project_object_conflict(same,right) is None
+    # Shared distinctive project object prevents unjustified rejection.
+    assert project_object_conflict(
+        same,"Concours pour la création d'un centre enfance à Tiercé") is None
+    # Missing creation phrase or single-word targets are not actionable.
+    assert project_object_conflict(
+        same,"Fourniture de panneaux de signalisation à Tiercé") is None
+    assert project_object_conflict(
+        same,"Concours pour la création d'une école à Tiercé") is None
+    # Multicomponent operations are too ambiguous for this heuristic.
+    assert project_object_conflict(
+        same,"Concours pour la création d'une maison de l'économie "
+             "et d'un pôle enfance à Tiercé") is None
+    # A title in a different construction phase may refer to the same project.
+    assert project_object_conflict(
+        same,"Travaux de construction d'un pôle enfance à Tiercé") is None
 
 
 def main():

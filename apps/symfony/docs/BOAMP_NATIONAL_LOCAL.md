@@ -7,6 +7,56 @@ liens DECP↔BOAMP sont calculés localement, hors des requêtes du site.
 **Ce système ne prouve aucun paiement.** Les montants déclarés, les
 annonces d'attribution et les pièces comptables sont distincts.
 
+## Réduction des faux positifs : conflit entre objets centraux de projet
+
+L'audit des 25 contrats a identifié un cas concret à **Tiercé**.
+Le DECP concerne un concours pour la création d'un **pôle enfance**.
+Le BOAMP \`24-48133\` porte sur le pôle enfance, tandis que l'avis
+\`25-14275\` porte sur la création d'une **maison de l'économie**.
+Le SIRET et plusieurs mots génériques concordent ; le second avis
+recevait 50 % de similarité Jaccard, bien qu'il décrive un projet distinct.
+
+La règle **\`boamp-local-v1.2-object-conflict-review\`** ne modifie
+ni les 35 % de seuil Jaccard, ni la preuve \`procedure_ids\`.
+Après avoir déterminé les candidats, le moteur local compare une seule
+construction linguistique suffisamment explicite :
+
+- Les deux titres désignent une opération de **création de...**.
+- Chacun comporte un objet central composé d'au moins deux termes
+  substantiels ; les deux ensembles sont disjoints.
+- Les opérations à plusieurs objets, les titres sans ce schéma ou
+  comportant des termes centraux communs ne sont pas disqualifiés.
+- Une référence contractuelle DECP **explicitement trouvée** dans
+  l'avis n'est jamais invalidée par ce contrôle lexical.
+
+La discordance fait passer la publication de \`candidate\` à
+**\`object_conflict\`**. Le lien n'est **plus compté parmi les
+candidats automatiques**, mais l'avis BOAMP, son URL et la
+justification sont **conservés et affichés** dans un groupe dédié.
+Le journal \`local_decision_history\` garde la transition
+\`candidate → object_conflict\`, sans inventer d'identité juridique.
+
+Les anciennes recherches individuelles \`reference_matches\` restent
+dans SQLite ; lorsqu'une publication figure aussi dans
+\`local_matches\` avec le statut \`object_conflict\`, sa vieille
+classification de candidat n'est pas réintroduite dans la fiche
+publique. L'audit des recherches historiques conserve néanmoins
+l'information de son classement antérieur.
+
+**Important :** ce signal est un **conflit lexical à vérifier**,
+non une démonstration certaine que les deux avis ne participent à
+aucun même programme ou à aucune procédure commune. Les termes
+« maison de l'économie » et « pôle enfance » restent consultables
+dans leur version originale. Cette règle peut produire des erreurs
+et ne valide ni un lot, ni un montant réellement payé.
+
+Tests de non-régression hors ligne : vrai avis pôle enfance,
+faux candidat maison de l'économie, conservation de l'historique,
+idempotence des deux journaux, variantes de synonymes, projets
+multi-objets, titres de phases différentes, Normandie et référence
+officielle de procédure. Un contrôle réel sur les **mêmes 25 DECP**
+est requis avant toute généralisation.
+
 ## Sources
 
 DILA : https://www.boamp.fr/pages/donnees-ouvertes-et-api/
