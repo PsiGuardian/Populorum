@@ -49,6 +49,13 @@ jobs:
       - run: python3 tests/decp_query_plan_test.py
       - run: python3 tests/decp_financial_evidence_test.py
       - run: python3 tests/decp_boamp_concordance_test.py
+      - run: python3 tests/boamp_national_import_test.py
+      - run: python3 tests/boamp_national_match_test.py
+      - name: Verify official BOAMP JSONL export format with 1 bounded notice
+        run: |
+          python3 tools/import_boamp_national.py --download --probe --db /tmp/populorum-ci-boamp-probe.sqlite
+          python3 tools/import_boamp_national.py --stats --db /tmp/populorum-ci-boamp-probe.sqlite
+
       - name: Verify BOAMP API v2.1 schema with a real bounded query
         run: |
           python3 - <<'PY'
@@ -63,7 +70,7 @@ jobs:
           matches=[(x['idweb'],m['status']) for x in data if (m:=classify(contract,x)) is not None]
           print('BOAMP API ODSQL OK; filtres SIRET+objet :',len(data),'avis, liens candidats/confirmes :',matches)
           PY
-      - run: python3 -m py_compile tools/import_decp.py tools/import_procurement_evidence.py tools/enrich_procurement_boamp.py tools/reconcile_procurement_boamp.py tools/audit_procurement_concordance.py
+      - run: python3 -m py_compile tools/import_decp.py tools/import_procurement_evidence.py tools/enrich_procurement_boamp.py tools/reconcile_procurement_boamp.py tools/audit_procurement_concordance.py tools/import_boamp_national.py tools/match_boamp_national.py
       - run: python3 tests/fresh_install_contract_test.py
       - run: python3 tests/decp_pipeline_test.py
       - run: python3 tests/decp_history_test.py
@@ -140,7 +147,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           allowed = {'.gitignore','bootstrap.php','decp_archive.py','decp_index_health.py','decp_pipeline.py',
-            'verify_decp_history.py','backfill_decp_history.py','import_decp.py','import_procurement_evidence.py','import_procurement_financial_evidence.py','enrich_procurement_boamp.py','reconcile_procurement_boamp.py','audit_procurement_concordance.py','import_budget_national.py',
+            'verify_decp_history.py','backfill_decp_history.py','import_decp.py','import_procurement_evidence.py','import_procurement_financial_evidence.py','enrich_procurement_boamp.py','reconcile_procurement_boamp.py','audit_procurement_concordance.py','import_boamp_national.py','match_boamp_national.py','import_budget_national.py',
             'import_codes_postaux.py','import_communes_insee.py',
             'recount.php','verify-export.php','import_ssmsi_national.py','import_policy_catalog.py','enrich_senate_dossiers.py'}
           present = {p.name for p in Path('tools').iterdir() if p.is_file()}
