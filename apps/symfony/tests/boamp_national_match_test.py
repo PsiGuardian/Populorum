@@ -70,7 +70,7 @@ def main():
                     url_avis='https://www.boamp.fr/pages/avis/?q=idweb:24-1573')
         import_jsonl(boamp,io.BytesIO((json.dumps(second)+'\n').encode()),'https://official.example/export')
         entries_all,no_cap=postings(boamp,'21690264300016',0)
-        assert len(entries_all)==1 and not no_cap
+        assert len(entries_all)==2 and not no_cap
         entries,overflow=postings(boamp,'21690264300016',1)
         assert len(entries)==1 and overflow
         limited=process(decp,boamp,side,records,max_candidates=1)
