@@ -47,6 +47,7 @@ jobs:
       - run: composer test
       - run: python3 tests/decp_v2_evidence_test.py
       - run: python3 tests/decp_query_plan_test.py
+      - run: python3 tests/decp_financial_evidence_test.py
       - run: python3 -m py_compile tools/import_decp.py tools/import_procurement_evidence.py tools/enrich_procurement_boamp.py
       - run: python3 tests/fresh_install_contract_test.py
       - run: python3 tests/decp_pipeline_test.py
