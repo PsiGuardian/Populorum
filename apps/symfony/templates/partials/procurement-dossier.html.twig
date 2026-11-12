@@ -1,0 +1,274 @@
+{# A contract's evidence dossier. No empty-anchor navigation and no inferred payments. #}
+{% set d = marketDetails %}
+<section class="panel budget-explorer procurement-dossier" id="contrat-detail" aria-label="Dossier documentaire d'un contrat">
+  <p class="dossier-back"><a href="{{ civic_path('site_markets') }}">← Retour à l'observatoire des marchés</a></p>
+  <header class="dossier-hero">
+    <div>
+      <p class="budget-eyebrow">DOSSIER DOCUMENTAIRE · {{ d.kind == 'market' ? 'MARCHÉ PUBLIC' : 'CONCESSION' }}</p>
+      <h2>{{ d.object }}</h2>
+      <p class="dossier-reference">
+        Référence publiée <code>{{ d.original_id }}</code>
+        · Acheteur <code>{{ d.buyer_id }}</code>
+        · {{ d.notice_date }}
+      </p>
+    </div>
+    <p class="dossier-key">Identifiant Populorum<br><code>{{ d.contract_key }}</code></p>
+  </header>
+
+  <div class="dossier-summary" aria-label="Nature et niveau des informations financières">
+    <article class="dossier-stat">
+      <small>Montant figurant dans les DECP</small>
+      <strong>{% if d.amount_initial_cents is not null %}{{ d.amount_initial_cents|decp_euros }}{% else %}Non communiqué{% endif %}</strong>
+      <span>Déclaration de l'acheteur · pas un règlement</span>
+    </article>
+    <article class="dossier-stat">
+      <small>Marché signé / plafond</small>
+      {% set signed = (d.financial_evidence|default([]))|filter(e => e.stage == 'ceiling') %}
+      {% if signed is not empty %}
+        <strong>{{ signed|length }} pièce(s)</strong>
+        <span>Voir les justificatifs cités ci-dessous</span>
+      {% else %}
+        <strong>À documenter</strong>
+        <span>Le plafond signé n'est pas établi par la seule DECP</span>
+      {% endif %}
+    </article>
+    <article class="dossier-stat">
+      <small>Sommes effectivement réglées</small>
+      {% set paid = (d.financial_evidence|default([]))|filter(e => e.stage == 'paid') %}
+      {% if paid is not empty %}
+        <strong>{{ paid|length }} pièce(s)</strong>
+        <span>Périmètres et dates propres à chaque justificatif</span>
+      {% else %}
+        <strong>Inconnu</strong>
+        <span>Absence de preuve accessible ≠ absence de paiement</span>
+      {% endif %}
+    </article>
+  </div>
+
+  {% if (d.amount_warnings|default([])) is not empty or not d.date_quality.valid %}
+    <section class="dossier-attention" aria-label="Éléments à vérifier">
+      <h3>Éléments qui nécessitent une vérification</h3>
+      {% for warning in d.amount_warnings|default([]) %}<p>{{ warning }}</p>{% endfor %}
+      {% if not d.date_quality.valid %}<p>Date déclarée : {{ d.date_quality.reason }}.</p>{% endif %}
+      <p><small>Ce sont des signaux de qualité des données, pas des accusations. Les montants et dates originaux sont intégralement conservés.</small></p>
+    </section>
+  {% endif %}
+
+  <div class="dossier-columns">
+    <div class="dossier-main">
+      <section class="dossier-panel" aria-labelledby="dossier-identity-title">
+        <div class="dossier-section-head">
+          <div><p class="dossier-overline">01 · IDENTITÉ</p><h3 id="dossier-identity-title">Ce que déclare l'acheteur</h3></div>
+          <span class="dossier-state">Source DECP</span>
+        </div>
+        <dl class="dossier-facts">
+          <div><dt>Objet</dt><dd>{{ d.object }}</dd></div>
+          <div><dt>Acheteur (SIRET / SIREN)</dt><dd><code>{{ d.buyer_id }}</code></dd></div>
+          <div><dt>Référence du marché</dt><dd><code>{{ d.original_id }}</code></dd></div>
+          <div><dt>Notification ou signature</dt><dd>{{ d.notice_date }}</dd></div>
+          <div><dt>CPV</dt><dd>{{ d.cpv|default('Non renseigné', true) }}</dd></div>
+          <div><dt>Procédure</dt><dd>{{ d.procedure|default('Non renseignée', true) }}</dd></div>
+          <div><dt>Lieu d'exécution déclaré</dt><dd>{{ d.location_type|default('Non renseigné', true) }} · {{ d.location_code|default('Non renseigné', true) }}</dd></div>
+          {% if d.amount_amended_cents is not null %}
+            <div><dt>Modification publiée</dt><dd>{{ d.amount_amended_cents|decp_euros }} <small>· non additionnée</small></dd></div>
+          {% endif %}
+        </dl>
+        {% if d.participants is not empty %}
+          <details class="dossier-disclosure">
+            <summary>Consulter les {{ d.participants|length }} participant(s) identifiés</summary>
+            <ul>{% for p in d.participants %}<li>{{ p.role }} : {{ p.identifier_type }} <code>{{ p.identifier }}</code></li>{% endfor %}</ul>
+          </details>
+        {% endif %}
+      </section>
+
+      <section class="dossier-panel" aria-labelledby="dossier-concordance-title">
+        <div class="dossier-section-head">
+          <div><p class="dossier-overline">02 · CROISEMENT AUTOMATIQUE</p><h3 id="dossier-concordance-title">Avis officiels et concordance</h3></div>
+          {% set auto = d.automatic_concordance|default({}) %}
+          <span class="dossier-state">{{ (auto.confirmed|default([]))|length }} identifiant(s) concordant(s)</span>
+        </div>
+        <p>Populorum peut rapprocher hors ligne les déclarations DECP des avis de la DILA/BOAMP. Une concordance de référence et de SIRET rattache un avis à une <strong>procédure</strong> ; elle ne démontre ni l'identité d'un lot, ni le montant payé.</p>
+        {% if (auto.confirmed|default([])) is not empty %}
+          {% for n in auto.confirmed %}
+            <article class="dossier-source dossier-source--matched">
+              <p class="dossier-source-label">Identifiants concordants · Avis de procédure</p>
+              <h4><a href="{{ n.url }}" target="_blank" rel="noopener noreferrer">{{ n.title }}</a></h4>
+              <p>{{ n.basis }}</p>
+              {% if n.notice_total_eur|default('') %}
+                <p><strong>Montant global mentionné dans cet avis :</strong> {{ n.notice_total_eur }} EUR.
+                  <small>Périmètre de la procédure ; montant par lot et paiements non établis.</small></p>
+              {% endif %}
+              <small>BOAMP {{ n.idweb }} · {{ n.publication_date }} · vérifié dans le jeu publié le {{ n.last_seen_at }}</small>
+            </article>
+          {% endfor %}
+        {% endif %}
+        {% if (auto.candidates|default([])) is not empty %}
+          <details class="dossier-disclosure">
+            <summary>{{ auto.candidates|length }} autre(s) avis possible(s), sans concordance établie</summary>
+            {% for n in auto.candidates %}
+              <article class="dossier-source">
+                <p class="dossier-source-label">Piste documentaire non confirmée</p>
+                <a href="{{ n.url }}" target="_blank" rel="noopener noreferrer">{{ n.title }}</a>
+                <p>{{ n.basis }}</p>
+              </article>
+            {% endfor %}
+          </details>
+        {% endif %}
+        {% if (auto.confirmed|default([])) is empty and (auto.candidates|default([])) is empty %}
+          {% if auto.status|default('not_run') == 'ok' %}
+            <p class="dossier-empty">Recherche effectuée le {{ auto.checked_at }} : aucun avis suffisamment concordant dans les résultats consultés. Cela ne prouve pas l'absence d'avis.</p>
+          {% elseif auto.status|default('not_run') == 'failed' %}
+            <p class="dossier-empty">La dernière recherche BOAMP n'a pas abouti. Les données DECP restent accessibles.</p>
+          {% else %}
+            <p class="dossier-empty">Le rapprochement automatique n'a pas encore été exécuté pour cette fiche. Les preuves originales restent accessibles ci-dessous.</p>
+          {% endif %}
+        {% endif %}
+        <p class="dossier-note">Source : <a href="https://www.boamp.fr/pages/donnees-ouvertes-et-api/" target="_blank" rel="noopener noreferrer">API officielle BOAMP / DILA</a>. Les vérifications automatiques sont exécutées par lot, jamais pendant une requête web.</p>
+      </section>
+
+      <section class="dossier-panel" aria-labelledby="dossier-finance-title">
+        <div class="dossier-section-head">
+          <div><p class="dossier-overline">03 · EXÉCUTION FINANCIÈRE</p><h3 id="dossier-finance-title">Des annonces jusqu'aux paiements</h3></div>
+          <span class="dossier-state">{{ (d.financial_evidence|default([]))|length }} pièce(s) chiffrée(s)</span>
+        </div>
+        <p>Les pièces sont affichées individuellement, sans les additionner. Un plafond, une commande, une facture et un règlement sont des événements différents.</p>
+        {% set stages = [
+          {key:'ceiling',label:'Contrat signé / plafond'},
+          {key:'committed',label:'Engagement'},
+          {key:'ordered',label:'Commande'},
+          {key:'invoiced',label:'Facture'},
+          {key:'paid',label:'Paiement'}
+        ] %}
+        <ol class="dossier-finance-steps">
+          {% for stage in stages %}
+            {% set documents = (d.financial_evidence|default([]))|filter(e => e.stage == stage.key) %}
+            <li>
+              <div>
+                <strong>{{ stage.label }}</strong>
+                {% if documents is empty %}
+                  <span class="dossier-unknown">Non documenté dans Populorum</span>
+                {% else %}
+                  <span class="dossier-found">{{ documents|length }} pièce(s) avec référence</span>
+                  {% for proof in documents %}
+                    <article class="dossier-source">
+                      <strong>{{ proof.amount_cents|decp_euros }}</strong> · {{ proof.accounting_scope == 'cumulative' ? 'Cumul' : (proof.accounting_scope == 'period' ? 'Période' : 'Opération') }}
+                      · arrêté au {{ proof.as_of_date }}
+                      {% if proof.period_start %}<small>du {{ proof.period_start }} au {{ proof.period_end }}</small>{% endif %}
+                      <p><a href="{{ proof.source_url }}" rel="noopener noreferrer" target="_blank">{{ proof.document_title }}</a>
+                      · {{ proof.source_issuer }}</p>
+                      <blockquote>{{ proof.source_excerpt }}</blockquote>
+                    </article>
+                  {% endfor %}
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ol>
+        <p class="dossier-note">Les montants comptables sont disponibles seulement si un document précis a été associé à la fiche. Un avis BOAMP ou un fichier DECP n'établit jamais qu'un règlement a eu lieu.</p>
+      </section>
+
+      <section class="dossier-panel" aria-labelledby="dossier-history-title">
+        <div class="dossier-section-head">
+          <div><p class="dossier-overline">04 · MÉMOIRE DES PUBLICATIONS</p><h3 id="dossier-history-title">Une fiche, plusieurs publications</h3></div>
+          <span class="dossier-state">{{ d.history.references }} fichier(s)</span>
+        </div>
+        <p>Une nouvelle publication de ce même identifiant indexé ajoute un état à l'historique, pas un nouveau paiement ni automatiquement un nouveau contrat.</p>
+        {% if not d.history.complete %}<p class="dossier-note">Historique partiel : des observations doivent encore être reconstituées à partir des fichiers de consolidation.</p>{% endif %}
+        {% if d.history.items is not empty %}
+          <ol class="dossier-history">
+            {% for h in d.history.items %}
+              <li>
+                <div class="dossier-history-top">
+                  <strong>{{ h.filename }}</strong>
+                  <span>{{ h.declared_publication_date|default('Date interne inconnue', true) }}</span>
+                </div>
+                <p>
+                  {% if h.base_amount_cents is not null %}Montant publié : <strong>{{ h.base_amount_cents|decp_euros }}</strong>{% else %}Montant non communiqué{% endif %}
+                  {% if h.modification_amount_cents is not null %} · Modification : {{ h.modification_amount_cents|decp_euros }}{% endif %}
+                  {% if h.occurrences > 1 %} · {{ h.occurrences }} enregistrements dans ce fichier{% endif %}
+                </p>
+                <a href="{{ h.source_url }}" target="_blank" rel="noopener noreferrer">Ouvrir le fichier source ↗</a>
+              </li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <p class="dossier-empty">L'historique détaillé de cette fiche n'a pas encore été reconstruit.</p>
+        {% endif %}
+        {% if d.history.delta is not null %}
+          <p class="dossier-note">Différence entre première et dernière valeur publiées : <strong>{{ d.history.delta|decp_euros }}</strong>. Ce n'est pas une preuve de variation du coût réellement exécuté.</p>
+        {% endif %}
+      </section>
+
+      {% if d.events is not empty %}
+        <details class="dossier-panel dossier-disclosure">
+          <summary>Événements déclarés · modifications et sous-traitance ({{ d.events|length }})</summary>
+          <ul>{% for event in d.events %}
+            <li>{{ event.event_type == 'amendment' ? 'Modification' : 'Sous-traitance' }}
+              · {{ event.event_date|default('Date inconnue', true) }}
+              · {{ event.event_id }}
+              {% if event.amount_cents is not null %} · {{ event.amount_cents|decp_euros }}{% endif %}</li>
+          {% endfor %}</ul>
+        </details>
+      {% endif %}
+      {% if d.evidence is not empty %}
+        <section class="dossier-panel" aria-labelledby="dossier-evidence-title">
+          <div class="dossier-section-head"><div><p class="dossier-overline">05 · PIÈCES COMPLÉMENTAIRES</p><h3 id="dossier-evidence-title">Documents associés</h3></div></div>
+          {% for item in d.evidence %}
+            <article class="dossier-source">
+              <p class="dossier-source-label">{{ item.status == 'documented' ? 'Extrait documenté' : 'Correspondance candidate' }} · {{ item.category }}</p>
+              <h4><a href="{{ item.source_url }}" target="_blank" rel="noopener noreferrer">{{ item.document_title }}</a></h4>
+              {% if item.status == 'documented' %}<p>{{ item.statement }}</p><blockquote>{{ item.excerpt }}</blockquote>{% else %}<p>Ce document n'a pas été relié avec certitude à ce contrat.</p>{% endif %}
+              <small>{{ item.source_name }} · {{ item.source_type }}</small>
+            </article>
+          {% endfor %}
+        </section>
+      {% endif %}
+    </div>
+
+    <aside class="dossier-aside">
+      <section class="dossier-panel">
+        <p class="dossier-overline">SOURCES · ACCÈS DIRECT</p>
+        <h3>Remonter à l'origine</h3>
+        <p><strong>{{ d.sources|length }}</strong> fichier(s) de consolidation associé(s) à cette identité indexée.</p>
+        {% for src in d.sources %}
+          <div class="dossier-mini-source">
+            <a href="{{ src.source_url }}" target="_blank" rel="noopener noreferrer">{{ src.filename }}</a>
+            <small>SHA-256 <code>{{ src.sha256 }}</code></small>
+          </div>
+        {% else %}
+          <p>Source non renseignée.</p>
+        {% endfor %}
+        {% if d.source_declaration is not null %}
+          <details class="dossier-disclosure" id="declaration-originale">
+            <summary>Lire la déclaration JSON conservée</summary>
+            {% if d.original_declaration_source is not null %}
+              <p class="dossier-note">Empreinte de l'enregistrement : <code>{{ d.original_declaration_source.record_sha }}</code></p>
+            {% endif %}
+            <pre class="dossier-json">{{ d.source_declaration|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
+          </details>
+        {% endif %}
+      </section>
+
+      {% if d.reference_relations is defined %}
+        <section class="dossier-panel">
+          <p class="dossier-overline">LIENS ENTRE LES DOSSIERS</p>
+          <h3>Autres fiches portant la même référence</h3>
+          {% if d.reference_relations.indexed is defined and d.reference_relations.indexed == false %}
+            <p class="dossier-note">Recherche suspendue : l'index de rapprochement n'est pas installé sur cette base.</p>
+          {% elseif d.reference_relations.items is not empty %}
+            <ul class="dossier-related">
+              {% for r in d.reference_relations.items %}
+                <li><a href="{{ civic_path('site_market_detail', {key:r.contract_key}) }}">{{ r.object }}</a>
+                  <small>{{ r.notice_date }} · {{ r.cpv }}</small>
+                </li>
+              {% endfor %}
+            </ul>
+            <p class="dossier-note">Même référence ne signifie pas même lot : aucun regroupement financier automatique.</p>
+          {% else %}
+            <p>Aucune autre fiche de même référence n'est remontée par l'index.</p>
+          {% endif %}
+        </section>
+      {% endif %}
+    </aside>
+  </div>
+</section>

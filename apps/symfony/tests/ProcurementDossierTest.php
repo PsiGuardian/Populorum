@@ -11,6 +11,7 @@ final class ProcurementDossierTest extends TestCase
     private string $root;
     private string $national;
     private string $sidecar;
+    private string $automatic;
 
     protected function setUp(): void
     {
@@ -18,11 +19,13 @@ final class ProcurementDossierTest extends TestCase
         self::assertTrue(mkdir($this->root . '/data/research', 0700, true));
         $this->national = $this->root . '/data/research/public-procurement.sqlite';
         $this->sidecar = $this->root . '/data/research/procurement-financial-evidence.sqlite';
+        $this->automatic = $this->root . '/data/research/procurement-auto-concordance.sqlite';
     }
 
     protected function tearDown(): void
     {
         @unlink($this->sidecar);
+        @unlink($this->automatic);
         @unlink($this->national);
         @rmdir($this->root . '/data/research');
         @rmdir($this->root . '/data');
@@ -115,6 +118,24 @@ SQL);
                 'Source test', 'Document test', 'https://example.org/source', 'Extrait test', '2026-11-02']);
         $financial = null;
 
+        $boamp = new PDO('sqlite:' . $this->automatic, options: [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $boamp->exec(<<<'SQL'
+CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT);
+INSERT INTO metadata VALUES('schema','populorum-boamp-concordance-1');
+CREATE TABLE checks(contract_key TEXT PRIMARY KEY,checked_at TEXT,status TEXT,result_count INTEGER,message TEXT);
+CREATE TABLE reference_matches(contract_key TEXT,idweb TEXT,status TEXT,basis TEXT,
+ title TEXT,url TEXT,publication_date TEXT,notice_kind TEXT,notice_sha256 TEXT,notice_total_eur TEXT,
+ first_seen_at TEXT,last_seen_at TEXT);
+SQL);
+        $boamp->prepare('INSERT INTO checks VALUES (?,?,?,?,?)')
+            ->execute([$a, '2026-11-12T15:00:00Z', 'ok', 1, '']);
+        $boamp->prepare('INSERT INTO reference_matches VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
+            ->execute([$a, '26-123456', 'procedure_ids', 'Identifiants présents',
+                'Avis test', 'https://www.boamp.fr/pages/avis/?q=idweb:26-123456',
+                '2026-11-12', 'Résultat de marché', str_repeat('a', 64), '335600.00',
+                '2026-11-12', '2026-11-12']);
+        $boamp = null;
+
         $reader = new PublicProcurementData($this->root);
         $page = $reader->search([], 0);
         self::assertSame(3, $page['total'], 'Source publications must not multiply list rows');
@@ -130,6 +151,10 @@ SQL);
         self::assertTrue($detail['reference_relations']['indexed']);
         self::assertCount(1, $detail['reference_relations']['items']);
         self::assertSame($b, $detail['reference_relations']['items'][0]['contract_key']);
+        self::assertSame('ok', $detail['automatic_concordance']['status']);
+        self::assertCount(1, $detail['automatic_concordance']['confirmed']);
+        self::assertSame('335600.00', $detail['automatic_concordance']['confirmed'][0]['notice_total_eur']);
+        self::assertSame([], $detail['automatic_concordance']['candidates']);
         self::assertCount(1, $detail['financial_evidence']);
         self::assertSame('paid', $detail['financial_evidence'][0]['stage']);
         self::assertSame(150000, (int) $detail['financial_evidence'][0]['amount_cents']);

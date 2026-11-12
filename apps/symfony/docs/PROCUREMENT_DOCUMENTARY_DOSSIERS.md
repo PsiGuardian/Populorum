@@ -166,6 +166,66 @@ La démarche documentaire consiste à établir :
 Un avis BOAMP dont la correspondance est seulement textuelle reste
 **candidat** et ne devient jamais une pièce probante par automatisme.
 
+## v0.13.0 : fiche de concordance et avis BOAMP rapprochés automatiquement
+
+La page de détail n'affiche plus un menu de six ancres : elle présente
+directement les faits, les étapes documentées et les liens disponibles.
+L'observatoire national et la fiche individuelle sont des vues distinctes.
+Les sections vides ne produisent pas de faux liens documentaires.
+
+La concordance automatisée utilise exclusivement le **BOAMP officiel**
+(avis publiés par la DILA). Les avis sont recherchés en lot hors ligne,
+puis reliés à une fiche via un second index SQLite facultatif :
+\`data/research/procurement-auto-concordance.sqlite\`.
+
+Le lien vers un avis est qualifié précisément :
+
+- **Identifiants concordants** : le SIRET acheteur à 14 chiffres et la
+  référence d'origine du marché apparaissent *tous deux* dans le contenu
+  officiel de l'avis. Ceci identifie une **procédure**, pas un lot précis.
+- **Piste non confirmée** : même SIRET acheteur et intitulés suffisamment
+  proches, mais identifiant original absent. Ces pistes ne justifient
+  aucune affirmation sur l'attribution ou sur les montants.
+- **Aucun avis établi** : la recherche effectuée peut n'avoir trouvé
+  aucune annonce dans les résultats retournés. Cela ne prouve pas
+  qu'aucun avis existe.
+
+Si un montant EUR global \`TotalAmount\` est **unique** dans la
+déclaration BOAMP, il est affiché séparément comme **montant mentionné
+dans l'avis pour son périmètre**. Un montant multi-lots ne doit jamais
+être attribué automatiquement à un lot ou assimilé à une facture.
+Aucun paiement réel n'est déduit de BOAMP ou des DECP.
+
+Exemples depuis \`apps/symfony\` :
+
+\`\`\`bash
+# Une fiche ciblée : recommandée pour les anomalies financières
+python3 tools/reconcile_procurement_boamp.py \
+  --contract-key cf6d3a11656665868dfd8f105f1a4d17edd5ec38
+
+# Petit lot, limité et ré-exécutable ; pause respectueuse de l'API officielle
+python3 tools/reconcile_procurement_boamp.py --limit 10 --offset 0 --pause 1.2
+python3 tools/reconcile_procurement_boamp.py --limit 10 --offset 10 --pause 1.2
+
+# Derniers contrôles sans exposer les données privées
+sqlite3 -readonly data/research/procurement-auto-concordance.sqlite \
+  "SELECT status,COUNT(*) FROM checks GROUP BY status;"
+\`\`\`
+
+La base DECP nationale est **ouverte exclusivement en lecture seule**,
+les fichiers nationaux ne sont jamais téléchargés à nouveau,
+et les recherches réseau ne sont jamais faites pendant une visite.
+Les réponses des APIs sont bornées et les URL des preuves restreintes
+au domaine HTTPS BOAMP. Aucun service de paiement privé n'est
+interrogé. Les rapprochements ne sont pas des jugements sur l'acheteur.
+
+Le programme ne balaie pas les ~790 000 marchés à chaque exécution.
+Les lots automatiques ont une taille bornée \`--limit 1..50\` et une
+position explicite \`--offset\`; une exécution planifiée ou manuelle
+peut progresser par tranches sur le serveur ou la machine locale.
+Seules les fiches traitées affichent un historique du contrôle
+automatique. Le registre auxiliaire n'est pas inclus dans Git.
+
 ## Validation
 
 - `phpunit` : formatage sans flottants, liens de même référence sans

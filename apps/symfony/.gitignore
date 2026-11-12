@@ -14,6 +14,7 @@
 /data/research/decp-backups/
 /data/research/public-procurement*.sqlite*
 /data/research/procurement-financial-evidence.sqlite*
+/data/research/procurement-auto-concordance.sqlite*
 /data/geography/*.sqlite
 /data/geography/*.sqlite-wal
 /data/geography/*.sqlite-shm
