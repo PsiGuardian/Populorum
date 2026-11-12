@@ -427,7 +427,7 @@ final class PublicProcurementData
      */
     private function automaticConcordance(string $key): array
     {
-        $empty = ['status' => 'not_run', 'checked_at' => null, 'confirmed' => [], 'candidates' => [], 'history' => []];
+        $empty = ['status' => 'not_run', 'checked_at' => null, 'confirmed' => [], 'candidates' => [], 'history' => [], 'scan_history' => []];
         $file = $this->projectDir . '/data/research/procurement-auto-concordance.sqlite';
         if (!is_file($file)) {
             return $empty;
@@ -504,6 +504,21 @@ final class PublicProcurementData
                         $history = $timeline->fetchAll();
                     }
 
+                    // The scan log also covers zero-candidate contracts.
+                    // Historical databases lacking this table remain readable.
+                    $scanHistory = [];
+                    $hasScanHistory = $db->query("SELECT 1 FROM sqlite_master
+                        WHERE type='table' AND name='local_scan_history'")->fetchColumn();
+                    if ($hasScanHistory) {
+                        $scanTimeline = $db->prepare('SELECT scan_id,result,
+                            algorithm_version,algorithm_sha256,source_revision,
+                            corpus_status,scanned_notices,matched_notices,truncated,
+                            recorded_at FROM local_scan_history WHERE contract_key=?
+                            ORDER BY scan_id DESC LIMIT 10');
+                        $scanTimeline->execute([$key]);
+                        $scanHistory = $scanTimeline->fetchAll();
+                    }
+
                     return ['status' => $local['status'],
                         'checked_at' => $local['checked_at'],
                         'confirmed' => $confirmed,
@@ -512,7 +527,8 @@ final class PublicProcurementData
                         'scanned_notices' => (int) $local['scanned_notices'],
                         'truncated' => (bool) $local['truncated'],
                         'source_revision' => $local['source_revision'],
-                        'history' => $history];
+                        'history' => $history,
+                        'scan_history' => $scanHistory];
                 }
             }
 
