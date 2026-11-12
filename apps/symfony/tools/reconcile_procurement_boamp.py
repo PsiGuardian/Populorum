@@ -105,7 +105,7 @@ def classify(contract: dict, notice: dict) -> dict | None:
     reference = str(contract.get('original_id') or '').strip()
     if not re.fullmatch(r'[0-9]{14}',buyer):
         return None
-    if len(reference) < 6 or not re.search(r'[a-zA-Z]', reference):
+    if len(reference) < 6:
         return None
     idweb = notice.get('idweb')
     url = notice.get('url_avis')
@@ -134,12 +134,25 @@ def classify(contract: dict, notice: dict) -> dict | None:
     name_tokens = set(terms(reference_title))
     title_tokens = set(terms(title))
     overlap = len(name_tokens & title_tokens) / max(1,len(name_tokens | title_tokens))
-    if buyer_found and reference_found:
+    # A numerical reference may coincide with an amount or date. Do not
+    # certify it unless it is long and accompanied by a strong title match.
+    distinctive_reference = (
+        (any(c.isalpha() for c in reference) and any(c.isdigit() for c in reference))
+        or (reference.isdigit() and len(reference) >= 10 and overlap >= 0.50)
+    )
+    if buyer_found and reference_found and distinctive_reference:
         status = 'procedure_ids'
-        basis = 'Référence déclarée et SIRET acheteur présents dans le contenu de l’avis BOAMP'
-    elif buyer_found and overlap >= 0.72 and len(name_tokens & title_tokens) >= 3:
+        basis = 'Référence distinctive et SIRET cités dans le contenu de l’avis BOAMP'
+    elif buyer_found and overlap >= 0.35 and len(name_tokens & title_tokens) >= 3:
+        # Similar wording is ONLY a lead. BOAMP's public procedure reference
+        # often differs from the DECP identifier, and one buyer may publish
+        # several near-identical lots.
+        notice_years = re.findall(r'(?:19|20)[0-9]{2}', str(notice.get('dateparution') or ''))
+        contract_year = str(contract.get('notice_date') or '')[:4]
+        if notice_years and contract_year.isdigit() and abs(int(notice_years[-1]) - int(contract_year)) > 3:
+            return None
         status = 'candidate'
-        basis = 'SIRET acheteur présent et objets proches ; référence du contrat non retrouvée'
+        basis = 'SIRET cité dans l’avis et intitulé proche ; marché, année et lot à confirmer'
     else:
         return None
     pub = str(notice.get('dateparution') or '')[:40]
@@ -151,33 +164,45 @@ def classify(contract: dict, notice: dict) -> dict | None:
             'notice_total_eur':unique_notice_total(full) if status == 'procedure_ids' else ''}
 
 
-def fetch_candidates(object_title: str, reference: str, timeout: float = 20.0) -> list[dict]:
-    query_terms=list(dict.fromkeys(terms(object_title)))
-    if not query_terms and len(reference) >= 6:
-        query_terms = [reference]
-    if not query_terms:
-        return []
-    # Search index by title, then check both identifiers on the entire
-    # official notice. A semantic-only search NEVER becomes a confirmed match.
-    phrase=' '.join(query_terms[:3])[:110].replace("'","''")
-    params=urlencode({
-        'where':"search(objet, '"+phrase+"')",
-        'select':'idweb,objet,nomacheteur,dateparution,url_avis,nature_categorise_libelle,donnees',
-        'limit':8
+def search_expression(object_title: str, reference: str, buyer_id: str = '') -> str:
+    """A focused ODSQL query; no generic national first-page search for buyers.
+
+    Buyer-SIRET indexed in the official BOAMP "donnees" text, combined
+    with a distinctive title term. If a SIRET is unavailable, a generic
+    title query is NOT a trustworthy path to automatic concordance.
+    """
+    if not re.fullmatch(r'[0-9]{14}',buyer_id):
+        raise ValueError('SIRET acheteur à 14 chiffres obligatoire pour la concordance')
+    tokens = list(dict.fromkeys(terms(object_title)))
+    # Prevent searches on a year or generic procurement vocabulary alone.
+    words = [word for word in tokens if not word.isdigit() and len(word) >= 5]
+    if not words:
+        raise ValueError('Objet du marché insuffisamment distinctif')
+    distinctive = max(words, key=lambda w: (len(w), -words.index(w)))
+    return "search(donnees, '" + buyer_id + "') AND search(objet, '" + distinctive + "')"
+
+
+def fetch_candidates(object_title: str, reference: str, buyer_id: str = '', timeout: float = 20.0) -> list[dict]:
+    expression = search_expression(object_title, reference, buyer_id)
+    params = urlencode({
+        'where': expression,
+        'select': 'idweb,objet,nomacheteur,dateparution,url_avis,nature_categorise_libelle,donnees',
+        'limit': 30,
     })
-    request=Request(API+'?'+params,headers={
-        'User-Agent':'Populorum-BOAMP-Concordance/1.0 (public documents)',
-        'Accept':'application/json'})
-    with urlopen(request,timeout=timeout) as response:
+    request = Request(API + '?' + params, headers={
+        'User-Agent': 'Populorum-BOAMP-Concordance/1.1 (public documents)',
+        'Accept': 'application/json',
+    })
+    with urlopen(request, timeout=timeout) as response:
         if urlsplit(response.url).hostname != API_HOST or urlsplit(response.url).scheme != 'https':
             raise ValueError('Redirection hors de l’API BOAMP officielle')
-        body=response.read(5_000_001)
+        body = response.read(5_000_001)
     if len(body) > 5_000_000:
         raise ValueError('Réponse BOAMP trop volumineuse')
-    data=json.loads(body)
-    if not isinstance(data,dict) or not isinstance(data.get('results'),list):
+    data = json.loads(body)
+    if not isinstance(data, dict) or not isinstance(data.get('results'), list):
         raise ValueError('Schéma de réponse BOAMP inattendu')
-    return [x for x in data['results'] if isinstance(x,dict)]
+    return [x for x in data['results'] if isinstance(x, dict)]
 
 
 def store(sidecar: sqlite3.Connection, contract_key: str, matches: list[dict],
@@ -256,14 +281,15 @@ def main() -> None:
             for index, record in enumerate(records):
                 contract=dict(record)
                 try:
-                    notices=fetch_candidates(contract['object'],contract['original_id'])
+                    notices=fetch_candidates(contract['object'],contract['original_id'],contract['buyer_id'])
                     matches=[m for n in notices if (m:=classify(contract,n)) is not None]
                     # No double counting when the API repeats the same BOAMP notice.
                     matches=list({m['idweb']:m for m in matches}.values())
                     with sidecar:store(sidecar,contract['contract_key'],matches)
                     successes+=1
                     print(f"{index+1}/{len(records)} {contract['contract_key']}: "
-                          f"{len(matches)} avis lié(s), {sum(m['status']=='procedure_ids' for m in matches)} référence(s) concordante(s).",flush=True)
+                          f"{len(notices)} avis examinés ; {len(matches)} avis lié(s), "
+                          f"{sum(m['status']=='procedure_ids' for m in matches)} référence(s) concordante(s).",flush=True)
                 except (OSError,ValueError,KeyError,json.JSONDecodeError) as exc:
                     with sidecar:store(sidecar,contract['contract_key'],[],status='failed',message=str(exc))
                     print(f"{contract['contract_key']}: recherche indisponible ({exc})",flush=True)

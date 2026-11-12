@@ -243,6 +243,48 @@ cherchées au chargement d'une page.
 Seules les fiches traitées affichent un historique du contrôle
 automatique. Le registre auxiliaire n'est pas inclus dans Git.
 
+## Qualité des correspondances BOAMP (v0.13.3)
+
+Les premières requêtes de v0.13.2 réussissaient techniquement mais pouvaient
+renvoyer **0 correspondance** parce qu'elles examinaient les 8 premiers
+avis d'une recherche sur des intitulés très génériques. Par exemple, une
+recherche « fourniture dispositifs médicaux » renvoie plusieurs milliers
+d'avis ; l'absence du contrat parmi les huit premiers ne prouve rien.
+
+Le rapprochement utilise désormais **le SIRET publié dans le contenu BOAMP**
+ET un mot distinctif de l'objet dans la clause ODSQL.
+Le résultat reste borné à 30 avis par interrogation. Le nombre d'avis
+examinés figure dans le journal d'import.
+
+Dans le dossier CHU Grenoble, une recherche combinée du SIRET
+`26380030200014` et du terme « implantables » a renvoyé quatre avis
+lors des essais du 12 novembre 2026. La référence `AO25DMISP`
+n'apparaissait pas dans les avis trouvés ; leur rapprochement
+éventuel est une **piste documentaire**, pas une identification
+juridique du même lot ni une preuve de règlement.
+
+Les références DECP composées uniquement de chiffres ne sont plus
+ignorées par la classification, mais une séquence numérique courte
+présente dans un avis ne suffit pas à **confirmer** la référence
+juridique : elle peut être un prix ou un autre identifiant.
+Les avis peuvent concerner plusieurs lots et d'autres périodes ;
+les hypothèses non confirmées restent séparées des concordances.
+
+**Limite actuelle** : une requête ciblée demeure une recherche
+partielle sur un nombre borné d'avis. Les contrôles enregistrés avec
+`status=ok` signifient seulement que l'API a répondu, non que tous
+les avis possibles ont été examinés. Pour viser une couverture
+nationale fiable, importer à terme les exports BOAMP hors ligne,
+puis effectuer des rapprochements locaux fondés sur les
+identifiants et les références des lots, avec historiques.
+
+Après mise à jour, les anciens contrôles à 0 peuvent être recalculés
+sans modifier les DECP ni le curseur de reprise :
+
+```bash
+python3 tools/reconcile_procurement_boamp.py --limit 25 --offset 0 --pause 1.5
+```
+
 ## Validation
 
 - `phpunit` : formatage sans flottants, liens de même référence sans

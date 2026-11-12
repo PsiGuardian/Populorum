@@ -8,7 +8,7 @@ import sys
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates
+from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression
 
 
 def fixture():
@@ -42,13 +42,20 @@ def test_http_request_contract():
     def fake_open(request, timeout):
         args = parse_qs(urlsplit(request.full_url).query)
         assert args['select'] == ['idweb,objet,nomacheteur,dateparution,url_avis,nature_categorise_libelle,donnees']
-        assert args['where'][0].startswith('search(objet, ')
+        assert args['where'] == ["search(donnees, '26380030200014') AND search(objet, 'implantables')"]
         assert timeout <= 30
         return FakeResponse()
 
     with patch('reconcile_procurement_boamp.urlopen', fake_open):
-        result = fetch_candidates('Fourniture de dispositifs médicaux spécialisés', 'AO25DMISP')
+        result = fetch_candidates('Fourniture de dispositifs médicaux implantables et spécialisés', 'AO25DMISP', '26380030200014')
     assert len(result) == 1 and result[0]['idweb'] == '26-123456'
+    try:
+        search_expression('Produits', '202500007', '12345')
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('SIRET invalide autorisé')
+
 
 
 def main():
@@ -71,6 +78,15 @@ def main():
     assert mid is not None and mid['status']=='candidate',mid
     rejected=dict(notice,DONNEES={'acheteur':{'identifiant':'11111111111111'},
                                    'procedure':{'reference':'AO25DMISP'}})
+    purely_numeric=dict(contract,original_id='202500001234')
+    assert classify(purely_numeric,notice) is not None
+    short_numeric=dict(contract,original_id='123456')
+    numeric_notice=dict(notice,DONNEES={'acheteur':{'identifiant':'26380030200014'},
+                                        'rubrique':{'prix':'123456'}})
+    number_guess=classify(short_numeric,numeric_notice)
+    assert number_guess is not None and number_guess['status']=='candidate'
+
+
     assert classify(contract,rejected) is None
     other_buyer=dict(contract,buyer_id='11111111111111')
     assert classify(other_buyer,notice) is None
