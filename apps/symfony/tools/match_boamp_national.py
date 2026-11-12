@@ -177,7 +177,7 @@ def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Con
         if count%250==0:
             # Batched commits avoid hundreds of thousands of fsyncs on HDDs.
             sidecar.commit()
-            print('Rapprochement local :',count,'contrats examinés,'
+            print('Rapprochement local :',count,'contrats examinés,',
                   links,'avis reliés,',truncated,'couvertures partielles',
                   flush=True)
     sidecar.commit()
