@@ -267,9 +267,6 @@ final class PublicProcurementData
         });
         foreach ($rows as &$row) {
             $row['date_quality'] = self::dateQuality((string) $row['notice_date']);
-        $row['amount_warnings'] = self::amountWarnings(
-            $row['amount_initial_cents'], (string) $row['location_type'], (string) $row['location_code'],
-        );
             $row['amount_warnings'] = self::amountWarnings(
                 $row['amount_initial_cents'], (string) $row['location_type'], (string) $row['location_code'],
             );
@@ -358,7 +355,7 @@ final class PublicProcurementData
      * Documentary references with the same buyer, kind and published identifier.
      * They are NOT asserted to be the same legal contract or the same lot.
      */
-    private function relatedReferences(\\PDO $db, array $row): array
+    private function relatedReferences(\PDO $db, array $row): array
     {
         if (trim((string) $row['original_id']) === '' || trim((string) $row['buyer_id']) === '') {
             return ['items' => [], 'more' => false];
@@ -387,10 +384,10 @@ final class PublicProcurementData
             return [];
         }
         try {
-            $db = new \\PDO('sqlite:file:' . $file . '?mode=ro', null, null, [
-                \\PDO::ATTR_ERRMODE => \\PDO::ERRMODE_EXCEPTION,
-                \\PDO::ATTR_TIMEOUT => 2,
-                \\PDO::ATTR_DEFAULT_FETCH_MODE => \\PDO::FETCH_ASSOC,
+            $db = new \PDO('sqlite:file:' . $file . '?mode=ro', null, null, [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_TIMEOUT => 2,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
             ]);
             $db->exec('PRAGMA query_only=ON');
             if ($db->query("SELECT value FROM metadata WHERE key='schema'")->fetchColumn() !== 'populorum-procurement-financial-1') {
@@ -404,7 +401,7 @@ final class PublicProcurementData
             $stmt->execute([$key]);
 
             return $stmt->fetchAll();
-        } catch (\\PDOException) {
+        } catch (\PDOException) {
             // A missing or incompatible optional sidecar must never hide DECP.
             return [];
         }
