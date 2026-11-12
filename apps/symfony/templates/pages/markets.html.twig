@@ -140,7 +140,12 @@
       <h3>Autres fiches portant la même référence d'acheteur</h3>
       <p class="budget-muted">Même acheteur, même catégorie et même identifiant de marché déclaré.
         Une référence peut être réutilisée pour plusieurs lots ; <strong>ces fiches ne sont pas fusionnées sans preuve de leur identité juridique.</strong></p>
-      {% if marketDetails.reference_relations.items is empty %}
+      {% if not marketDetails.reference_relations.indexed %}
+        <p class="budget-gap"><strong>Recherche de références apparentées momentanément désactivée.</strong>
+          Cette base nationale a été créée avant l'ajout de l'index de rapprochement.
+          Les marchés, leurs publications et leurs pièces restent entièrement consultables.
+          Un index SQL local facultatif permet d'activer cette recherche sans réimporter les DECP.</p>
+      {% elseif marketDetails.reference_relations.items is empty %}
         <p>Aucune autre fiche portant cette référence n'est présente dans l'index.</p>
       {% else %}
         <ul>
