@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Service\PublicProcurementData;
+use App\Twig\ProcurementMoneyExtension;
 use PHPUnit\Framework\TestCase;
 
 final class ProcurementDossierTest extends TestCase
@@ -26,6 +27,15 @@ final class ProcurementDossierTest extends TestCase
         @rmdir($this->root . '/data/research');
         @rmdir($this->root . '/data');
         @rmdir($this->root);
+    }
+
+    public function testNoFloatingPointLossOnExtremeDeclaredAmounts(): void
+    {
+        self::assertSame('99 999 999 999 999,99 €', ProcurementMoneyExtension::formatCents('9999999999999999'));
+        self::assertSame('99 999 999 999,00 €', ProcurementMoneyExtension::formatCents(9999999999900));
+        self::assertSame('-1 234,50 €', ProcurementMoneyExtension::formatCents(-123450));
+        self::assertSame('0,01 €', ProcurementMoneyExtension::formatCents(1));
+        self::assertSame('Non communiqué', ProcurementMoneyExtension::formatCents(null));
     }
 
     public function testAmountFlagsAreNonDestructiveResearchHints(): void
