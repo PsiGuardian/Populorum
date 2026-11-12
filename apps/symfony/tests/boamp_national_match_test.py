@@ -156,7 +156,57 @@ def test_append_only_decision_versioning():
                 ('observed','boamp-local-v1.1-decision-history')]
 
 
+def test_scan_history_including_zero_candidates():
+    """Every contract has a trace, including no-match/partial checks."""
+    contract={'contract_key':'e'*40,'buyer_id':'21690264300016',
+        'original_id':'202412345678',
+        'object':'Fourniture de matériel pour mairie',
+        'notice_date':'6666-01-01',
+        'cpv':'45200000','kind':'market',
+        'location_type':None,'location_code':None}
+    with sqlite3.connect(':memory:') as side:
+        side.row_factory=sqlite3.Row
+        side.executescript(LOCAL_SCHEMA)
+        save(side,contract['contract_key'],[],0,False,'17',
+             source_complete=False,contract=contract,rule_hash='a'*64)
+        result=side.execute('SELECT * FROM local_scan_history').fetchone()
+        assert result['result']=='indetermine'
+        assert result['scanned_notices']==0 and result['matched_notices']==0
+        assert result['corpus_status']=='partial'
+        assert result['algorithm_sha256']=='a'*64
+        assert side.execute('SELECT COUNT(*) FROM local_decision_history').fetchone()[0]==0
+        # Repeated identical scans produce no duplicate history.
+        save(side,contract['contract_key'],[],0,False,'17',
+             source_complete=False,contract=contract,rule_hash='a'*64)
+        assert side.execute('SELECT COUNT(*) FROM local_scan_history').fetchone()[0]==1
+        # A change in inspected source coverage must become a new snapshot.
+        save(side,contract['contract_key'],[],12,False,'18',
+             source_complete=False,contract=contract,rule_hash='a'*64)
+        assert side.execute('SELECT COUNT(*) FROM local_scan_history').fetchone()[0]==2
+        # Even a complete scan with zero retained candidates is NOT
+        # proof the contract has no documentary relation in other sources.
+        save(side,contract['contract_key'],[],12,False,'18',
+             source_complete=True,contract=contract,rule_hash='a'*64)
+        last=side.execute('SELECT * FROM local_scan_history ORDER BY scan_id DESC LIMIT 1').fetchone()
+        assert last['result']=='indetermine'
+        assert last['corpus_status']=='checked'
+        assert side.execute('SELECT COUNT(*) FROM local_scan_history').fetchone()[0]==3
+        new_contract=dict(contract,object='Fourniture de matériel pour une école')
+        save(side,contract['contract_key'],[],12,False,'18',
+             source_complete=True,contract=new_contract,rule_hash='a'*64)
+        assert side.execute('SELECT COUNT(*) FROM local_scan_history').fetchone()[0]==4
+        save(side,contract['contract_key'],[],12,False,'18',
+             source_complete=True,contract=new_contract,rule_hash='b'*64)
+        assert side.execute('SELECT COUNT(*) FROM local_scan_history').fetchone()[0]==5
+        # A partial capped scan has to retain the truncation marker.
+        save(side,contract['contract_key'],[],4,True,'18',
+             source_complete=True,contract=new_contract,rule_hash='b'*64)
+        last=side.execute('SELECT * FROM local_scan_history ORDER BY scan_id DESC LIMIT 1').fetchone()
+        assert last['truncated']==1 and last['corpus_status']=='partial'
+
+
 def main():
+    test_scan_history_including_zero_candidates()
     test_append_only_decision_versioning()
     test_short_place_from_cog_not_common_name()
     test_normandie_local_with_invalid_decp_year()
