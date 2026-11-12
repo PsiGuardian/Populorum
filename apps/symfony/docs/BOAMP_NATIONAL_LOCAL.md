@@ -76,6 +76,49 @@ python3 tools/import_boamp_national.py --file /chemin/boamp.jsonl
 python3 tools/import_boamp_national.py --file /chemin/boamp.jsonl.gz
 ```
 
+## Rattrapage historique ciblé : audit des 25 marchés
+
+**Le JSONL non filtré de la vue OpenDataSoft ne constitue pas forcément
+l'ensemble des archives historiques DILA.** Un export observé le 12 novembre
+2026 contenait surtout des avis 2026 et seulement une petite portion de 2025.
+Il était marqué `partial` : 13 avis connus sur 17 manquaient à la base
+locale. On ne doit ni les déclarer inexistants ni évaluer la qualité du
+moteur de rapprochement sur ce corpus lacunaire.
+
+Pour valider uniquement les **25 mêmes marchés DECP**, il est possible de
+demander **15 avis déjà identifiés** (les 13 manquants des anciens
+rapprochements, plus deux avis normands retrouvés par contre-recherche).
+L'option `--ids` interroge chaque identifiant BOAMP via l'API officielle,
+à raison d'au plus **50 IDWEB par invocation**, avec une pause entre
+requêtes ; elle ne lance **aucune requête par contrat DECP** et n'écrit que
+dans `boamp-national.sqlite`.
+
+```bash
+python3 tools/import_boamp_national.py --ids \
+  24-48133 25-14275 23-45168 23-81447 25-78808 25-92465 \
+  23-174016 23-62572 24-94095 24-1573 23-139287 \
+  24-129485 25-19472 24-31681 24-80963
+
+python3 tools/match_boamp_national.py --offset 0 --limit 25
+python3 tools/audit_procurement_concordance.py \
+  --offset 0 --limit 25 --local \
+  --output var/boamp-audit-local-25.txt
+```
+
+L'option `--ids` est un **outil de diagnostic et de rattrapage borné**.
+Un avis absent de l'API ponctuelle peut rester accessible dans les archives
+DILA : aucun cas n'est classé « sans lien » sur cette base.
+Les imports ciblés ne font jamais passer la couverture historique à
+`complete`, même si tous les ID ont répondu.
+
+Pour la couverture nationale historique, traiter ultérieurement les archives
+officielles **par année/lot ou par période**, et non faire une requête pour
+chacun des 745 076 marchés DECP. Archives DILA :
+https://echanges.dila.gouv.fr/OPENDATA/BOAMP/FluxHistorique/Boamp_v240/
+(2022–2025, distinctes de l'export courant). Leur XML n'est pas le même
+format que le JSONL OpenDataSoft ; prévoir un import dédié avec preuve de
+provenance, validation du schéma et journal des avis ignorés.
+
 ## Concordance locale, sans aucun appel réseau
 
 ```bash
