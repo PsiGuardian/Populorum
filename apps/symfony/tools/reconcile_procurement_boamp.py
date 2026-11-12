@@ -94,6 +94,9 @@ def classify(contract: dict, notice: dict) -> dict | None:
     # ODS uses DONNEES for the actual notice content; avoid matching text
     # from other returned records and never synthesize a provenance link.
     full = notice.get('donnees') or notice.get('DONNEES') or {}
+    if isinstance(full,str):
+        try:full=json.loads(full)
+        except (ValueError,TypeError):return None
     if not isinstance(full,(dict,list)):
         return None
     raw = json.dumps(full,ensure_ascii=False,sort_keys=True,separators=(',',':'))
@@ -134,8 +137,8 @@ def fetch_candidates(object_title: str, reference: str, timeout: float = 20.0) -
     phrase=' '.join(query_terms[:3])[:110].replace("'","''")
     params=urlencode({
         'where':"search(objet, '"+phrase+"')",
-        'select':'idweb,objet,nomacheteur,dateparution,url_avis,nature_categorise_libelle,donnees',
-        'limit':10
+        'select':'idweb,objet,nomacheteur,dateparution,url_avis,nature_categorise_libelle,DONNEES',
+        'limit':8
     })
     request=Request(API+'?'+params,headers={
         'User-Agent':'Populorum-BOAMP-Concordance/1.0 (public documents)',
@@ -179,11 +182,12 @@ def main() -> None:
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--contract-key',help='Clé d’une fiche DECP à contrôler')
     p.add_argument('--limit',type=int,default=10,help='Nombre de contrats interrogés (1 à 50)')
+    p.add_argument('--offset',type=int,default=0,help='Position de reprise dans la liste chronologique des contrats')
     p.add_argument('--pause',type=float,default=1.0,help='Délai entre requêtes (>=1 seconde)')
     p.add_argument('--decp',type=Path,default=NATIONAL)
     p.add_argument('--db',type=Path,default=SIDECAR)
     opts=p.parse_args()
-    if opts.limit < 1 or opts.limit > 50 or opts.pause < 1:
+    if opts.limit < 1 or opts.limit > 50 or opts.pause < 1 or opts.offset < 0 or opts.offset > 1000000:
         p.error('limit entre 1 et 50 ; pause >=1 seconde')
     if opts.contract_key is not None and not re.fullmatch(r'[a-f0-9]{40}',opts.contract_key):
         p.error('contract-key : 40 caractères hexadécimaux')
@@ -203,16 +207,14 @@ def main() -> None:
                 records=decp.execute("""SELECT contract_key,buyer_id,original_id,object FROM contracts
                                      WHERE contract_key=?""",(opts.contract_key,)).fetchall()
             else:
-                # Resume automatically; do not need to rerun already checked rows.
-                records=decp.execute("""SELECT contract_key,buyer_id,original_id,object FROM contracts c
-                  WHERE c.kind='market' AND LENGTH(c.original_id)>=6
+                # Stable key-based ordering for bounded, explicit batch resumes.
+                # The caller can advance --offset between runs. Never scan the
+                # entire national database from a web request.
+                records=decp.execute("""SELECT contract_key,buyer_id,original_id,object
+                  FROM contracts c WHERE c.kind='market' AND LENGTH(c.original_id)>=6
                     AND c.buyer_id GLOB '[0-9]*' AND LENGTH(c.buyer_id)=14
-                    AND NOT EXISTS (
-                      SELECT 1 FROM main.metadata WHERE 0
-                    )
-                  ORDER BY c.notice_date DESC,c.contract_key LIMIT ?""",(opts.limit,)).fetchall()
-                # The national connection cannot see the sidecar. Filter using
-                # already-checked keys in Python, bounded by a larger candidate page.
+                  ORDER BY c.notice_date DESC,c.contract_key ASC LIMIT ? OFFSET ?""",
+                  (opts.limit,opts.offset)).fetchall()
             successes=0
             for index, record in enumerate(records):
                 contract=dict(record)
