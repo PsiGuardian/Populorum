@@ -162,7 +162,7 @@ def fetch_candidates(object_title: str, reference: str, timeout: float = 20.0) -
     phrase=' '.join(query_terms[:3])[:110].replace("'","''")
     params=urlencode({
         'where':"search(objet, '"+phrase+"')",
-        'select':'idweb,objet,nomacheteur,dateparution,url_avis,nature_categorise_libelle,DONNEES',
+        'select':'idweb,objet,nomacheteur,dateparution,url_avis,nature_categorise_libelle,donnees',
         'limit':8
     })
     request=Request(API+'?'+params,headers={
