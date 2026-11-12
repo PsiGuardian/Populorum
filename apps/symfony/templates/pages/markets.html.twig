@@ -42,8 +42,8 @@
     <div id="identite-contrat"></div>
     <p><strong>Référence :</strong> {{ marketDetails.original_id }} · <strong>Acheteur :</strong> {{ marketDetails.buyer_id }} · <strong>Notification / signature :</strong> {% if marketDetails.date_quality.valid %}{{ marketDetails.notice_date }}{% else %}<code>{{ marketDetails.notice_date|default('date absente') }}</code> · <strong>À vérifier : {{ marketDetails.date_quality.reason }}</strong>. Motif détecté automatiquement par Populorum ; aucune justification de l'acheteur n'est identifiable dans les champs de date indexés.{% endif %}</p>
     <p><strong>Valeur contractuelle conservée dans l’index :</strong>
-        {% if marketDetails.amount_initial_cents is not null %}{{ (marketDetails.amount_initial_cents / 100)|number_format(2, ',', ' ') }} €{% else %}Non communiqué{% endif %}
-        {% if marketDetails.amount_amended_cents is not null %} · <strong>Montant renseigné dans une modification (non additionnable) :</strong> {{ (marketDetails.amount_amended_cents / 100)|number_format(2, ',', ' ') }} €{% endif %}
+        {% if marketDetails.amount_initial_cents is not null %}{{ marketDetails.amount_initial_cents|decp_euros }}{% else %}Non communiqué{% endif %}
+        {% if marketDetails.amount_amended_cents is not null %} · <strong>Montant renseigné dans une modification (non additionnable) :</strong> {{ marketDetails.amount_amended_cents|decp_euros }}{% endif %}
     </p>
     <p><strong>Lieu d'exécution :</strong> {{ marketDetails.location_type|default('non renseigné') }} : {{ marketDetails.location_code|default('non renseigné') }} · <strong>CPV :</strong> {{ marketDetails.cpv|default('non renseigné') }} · <strong>Procédure :</strong> {{ marketDetails.procedure|default('non renseignée') }}</p>
     {% if marketDetails.amount_warnings is not empty %}
@@ -62,7 +62,7 @@
         Chaque pièce chiffrée est affichée séparément avec sa source, sa date et son périmètre. Les périodes peuvent se chevaucher :
         <strong>aucun montant n'est automatiquement additionné.</strong></p>
       <p><strong>Montant déclaré dans les DECP :</strong>
-        {% if marketDetails.amount_initial_cents is not null %}{{ (marketDetails.amount_initial_cents / 100)|number_format(2, ',', ' ') }} €
+        {% if marketDetails.amount_initial_cents is not null %}{{ marketDetails.amount_initial_cents|decp_euros }}
         {% else %}Non communiqué{% endif %}
         <small>· sans preuve de règlement</small></p>
       {% set financialLabels = {
@@ -81,7 +81,7 @@
               {% for proof in marketDetails.financial_evidence %}
                 <tr>
                   <td>{{ financialLabels[proof.stage]|default('Autre') }}</td>
-                  <td><strong>{{ (proof.amount_cents / 100)|number_format(2, ',', ' ') }} €</strong></td>
+                  <td><strong>{{ proof.amount_cents|decp_euros }}</strong></td>
                   <td>
                     {{ proof.accounting_scope == 'cumulative' ? 'Cumul déclaré' : (proof.accounting_scope == 'period' ? 'Période' : 'Opération individuelle') }}
                     · arrêté au {{ proof.as_of_date }}
@@ -104,8 +104,8 @@
     </section>
     {% if marketDetails.concession_finance is defined and marketDetails.concession_finance %}
         <h3>Informations de concession</h3>
-        <p>Subvention publique déclarée : {% if marketDetails.concession_finance.subsidy_cents is not null %}{{ (marketDetails.concession_finance.subsidy_cents / 100)|number_format(2, ',', ' ') }} €{% else %}non disponible{% endif %}.
-            Investissements d'exécution déclarés : {% if marketDetails.concession_finance.investment_cents is not null %}{{ (marketDetails.concession_finance.investment_cents / 100)|number_format(2, ',', ' ') }} €{% else %}non disponibles{% endif %}.</p>
+        <p>Subvention publique déclarée : {% if marketDetails.concession_finance.subsidy_cents is not null %}{{ marketDetails.concession_finance.subsidy_cents|decp_euros }}{% else %}non disponible{% endif %}.
+            Investissements d'exécution déclarés : {% if marketDetails.concession_finance.investment_cents is not null %}{{ marketDetails.concession_finance.investment_cents|decp_euros }}{% else %}non disponibles{% endif %}.</p>
         <p class="budget-muted">Les données annuelles et les modifications peuvent se chevaucher ; ne pas additionner à la valeur globale du contrat.</p>
     {% endif %}
     <section class="budget-explain" id="publications-contrat" aria-label="Évolution des valeurs déclarées dans les fichiers DECP">
@@ -118,9 +118,9 @@
       {% endif %}
       {% if marketDetails.history.first is not null %}
         <div class="budget-kpis">
-          <article><small>Première valeur publiée dans les fichiers indexés</small><strong>{{ (marketDetails.history.first / 100)|number_format(2, ',', ' ') }} €</strong></article>
-          <article><small>Dernière valeur publiée dans les fichiers indexés</small><strong>{{ (marketDetails.history.last / 100)|number_format(2, ',', ' ') }} €</strong></article>
-          <article><small>Écart entre les deux déclarations</small><strong>{% if marketDetails.history.delta is not null %}{{ (marketDetails.history.delta / 100)|number_format(2, ',', ' ') }} €{% else %}Non calculable{% endif %}</strong></article>
+          <article><small>Première valeur publiée dans les fichiers indexés</small><strong>{{ marketDetails.history.first|decp_euros }}</strong></article>
+          <article><small>Dernière valeur publiée dans les fichiers indexés</small><strong>{{ marketDetails.history.last|decp_euros }}</strong></article>
+          <article><small>Écart entre les deux déclarations</small><strong>{% if marketDetails.history.delta is not null %}{{ marketDetails.history.delta|decp_euros }}{% else %}Non calculable{% endif %}</strong></article>
         </div>
       {% endif %}
       {% if marketDetails.history.items is not empty %}
@@ -128,8 +128,8 @@
       {% for observation in marketDetails.history.items %}
         <tr><td><a href="{{ observation.source_url }}" rel="noopener noreferrer" target="_blank">{{ observation.filename }}</a>{% if 'data.gouv.fr/datasets/' in observation.source_url %}<small> · Catalogue, URL du fichier non connue</small>{% endif %}{% if observation.occurrences > 1 %}<small> · {{ observation.occurrences }} enregistrements</small>{% endif %}</td>
           <td>{{ observation.declared_publication_date|default('Non communiquée', true) }}</td>
-          <td>{% if observation.base_amount_cents is not null %}{{ (observation.base_amount_cents / 100)|number_format(2, ',', ' ') }} €{% else %}Non communiqué{% endif %}</td>
-          <td>{% if observation.modification_amount_cents is not null %}{{ (observation.modification_amount_cents / 100)|number_format(2, ',', ' ') }} €{% else %}—{% endif %}</td></tr>
+          <td>{% if observation.base_amount_cents is not null %}{{ observation.base_amount_cents|decp_euros }}{% else %}Non communiqué{% endif %}</td>
+          <td>{% if observation.modification_amount_cents is not null %}{{ observation.modification_amount_cents|decp_euros }}{% else %}—{% endif %}</td></tr>
       {% endfor %}
       </tbody></table></div>
       {% else %}<p>Observations non encore disponibles pour ce contrat.</p>{% endif %}
@@ -147,7 +147,7 @@
             <li>
               <a href="{{ civic_path('site_market_detail', {key:related.contract_key}) }}#contrat-detail">{{ related.object }}</a>
               · {{ related.notice_date }} · CPV {{ related.cpv }}
-              {% if related.amount_initial_cents is not null %} · valeur déclarée {{ (related.amount_initial_cents / 100)|number_format(2, ',', ' ') }} €{% endif %}
+              {% if related.amount_initial_cents is not null %} · valeur déclarée {{ related.amount_initial_cents|decp_euros }}{% endif %}
             </li>
           {% endfor %}
         </ul>
@@ -196,7 +196,7 @@
         {% for event in marketDetails.events %}<tr>
             <td>{{ event.event_type == 'amendment' ? 'Modification' : 'Sous-traitance' }}</td>
             <td>{{ event.event_date|default('—') }}</td><td>{{ event.identifier|default(event.event_id) }}</td>
-            <td>{% if event.amount_cents is not null %}{{ (event.amount_cents / 100)|number_format(2, ',', ' ') }} €{% else %}Non communiqué{% endif %}</td>
+            <td>{% if event.amount_cents is not null %}{{ event.amount_cents|decp_euros }}{% else %}Non communiqué{% endif %}</td>
         </tr>{% endfor %}</tbody></table></div>
     {% else %}<p>Aucun événement documenté dans les fichiers importés.</p>{% endif %}
     {% if marketDetails.source_declaration is not null %}
@@ -256,7 +256,7 @@
           <article style="border-bottom:1px solid #8885;padding:.85rem 0">
             <p class="budget-eyebrow">{{ contract.kind == 'market' ? 'MARCHÉ PUBLIC' : 'CONCESSION' }} · {% if contract.date_quality.valid %}{{ contract.notice_date }}{% else %}<span title="Signalement automatique — {{ contract.date_quality.reason }}">{{ contract.date_quality.raw|default('Date non renseignée') }} · À vérifier : {{ contract.date_quality.reason }}</span>{% endif %} · {{ contract.nature }}</p>
             <h3><a href="{{ civic_path('site_market_detail', {key:contract.contract_key}) }}#contrat-detail">{{ contract.object }}</a></h3>
-            <p><strong>{% if contract.amount_initial_cents is not null %}{{ (contract.amount_initial_cents / 100)|number_format(2, ',', ' ') }} € (valeur contractuelle déclarée){% else %}Montant non communiqué{% endif %}</strong>
+            <p><strong>{% if contract.amount_initial_cents is not null %}{{ contract.amount_initial_cents|decp_euros }} (valeur contractuelle déclarée){% else %}Montant non communiqué{% endif %}</strong>
               · <strong>{{ contract.source_count }} fichier(s) indexé(s)</strong> · Acheteur {{ contract.buyer_id }} · Lieu : {{ contract.location_type }} {{ contract.location_code }} · CPV {{ contract.cpv }}.</p>
             {% if contract.amount_warnings is not empty %}
               <p class="budget-gap"><strong>Contrôle documentaire suggéré :</strong>
