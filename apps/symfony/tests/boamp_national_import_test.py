@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import sqlite3
 import sys
+from urllib.parse import parse_qs,urlsplit
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 from import_boamp_national import (SCHEMA,normalize,notice_sirets,import_jsonl,
     export_url,json_object,SCHEMA_VERSION)
@@ -27,8 +28,8 @@ def main():
     assert normalize(row)['idweb']=='25-92465'
     assert normalize(row)['source_sha'] != normalize(notice('b'))['source_sha']
     assert '21770111900018' in notice_sirets(row)
-    assert 'idweb = ' in export_url(None,True)
-    assert 'dateparution >=' in export_url('2026-11-01')
+    assert 'idweb = ' in parse_qs(urlsplit(export_url(None,True)).query)['where'][0]
+    assert 'dateparution >=' in parse_qs(urlsplit(export_url('2026-11-01')).query)['where'][0]
     assert json_object({'record':{'fields':row}})==row
     assert normalize({'idweb':'25-92465','url_avis':'https://evil.example/notice'}) is None
     with sqlite3.connect(':memory:') as db:
