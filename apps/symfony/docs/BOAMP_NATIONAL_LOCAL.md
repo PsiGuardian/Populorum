@@ -50,6 +50,14 @@ python3 tools/import_boamp_national.py --download --since 2024-01-01
 python3 tools/import_boamp_national.py --download --full
 ```
 
+**Important :** `--probe`, `--since` et `--file` peuvent produire un index
+**incomplet**. Même si ces commandes réussissent, une fiche DECP sans avis
+associé doit rester **indéterminée**. Seul un import `--download --full`
+sans avis ignoré établit le marqueur de couverture nationale complète.
+Un export contenant des URL non officielles ou des IDWEB invalides
+reste consultable partiellement, mais son journal d'import porte
+`status=partial`. Aucun rapprochement négatif n'en découle.
+
 L'import est **en streaming** : pas de chargement complet du BOAMP
 en mémoire. Les transactions sont validées par lots ; un second passage
 déduplique les avis et conserve leurs versions différentes.
@@ -107,8 +115,16 @@ plusieurs lots ; toute relation ambiguë reste candidate.
 Le traitement des très gros acheteurs est borné à 4 000 avis citant leur
 SIRET par défaut. Si ce plafond est atteint, la fiche indique
 **recherche partielle** : ce n'est pas une conclusion d'absence de lien.
-Pour les cas complexes, augmenter `--max-notices-per-buyer` dans les
-bornes autorisées ou auditer les avis officiellement.
+Pour les très gros acheteurs, utiliser `--max-notices-per-buyer 0` pour
+**examiner tous les avis indexés** sans limite numérique par acheteur
+(au prix d'une consommation mémoire supplémentaire), ou auditer les
+avis officiellement. Une recherche sans plafond local n'est exhaustive
+que par rapport à la **couverture réelle de l'index BOAMP**.
+
+Les `local_checks` affichent `partial` si le corpus initial ne provient
+pas d'un export intégral officiel réussi, **même quand le seuil de
+4 000 avis n'a pas été atteint**. Le champ `truncated` signale,
+indépendamment, le plafond atteint chez un acheteur.
 
 ## Actualisations incrémentales
 
@@ -135,7 +151,7 @@ sqlite3 -readonly data/research/procurement-auto-concordance.sqlite \
    SELECT status, COUNT(*) FROM local_matches WHERE active=1 GROUP BY status;"
 ```
 
-Les anomalies de dates DECP (par exemple 6666, 5054, 2926) sont
+Les anomalies de dates DECP (par exemple 6666, 5054, 3036) sont
 conservées et ne doivent pas suffire à éliminer une piste. Un avis
 BOAMP n'est **pas** une preuve de paiement ou un plafond signé
 pour un lot donné.
