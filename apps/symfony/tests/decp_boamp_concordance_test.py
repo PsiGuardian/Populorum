@@ -8,7 +8,7 @@ import sys
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression, title_terms, terms
+from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression, title_terms, terms, geographic_text, corroborated_short_commune
 from audit_procurement_concordance import contracts as audit_contracts, run as audit_report, official_query as audit_official_query
 
 
@@ -164,7 +164,51 @@ def test_normandie_title_plural():
         assert classify(contract,other_subject) is None
 
 
+def test_short_communes_need_explicit_context_and_decp_code():
+    # The real COG 2026 contains Gap (unique code 05061), but 9 distinct
+    # municipalities named Le Pin; only unique names may be augmented.
+    contract={
+        'contract_key':'f'*40,
+        'buyer_id':'20005340300057',
+        'original_id':'20261234',
+        'object':'Réfection toiture bibliothèque à Gap',
+        'notice_date':'2025-06-10',
+        'location_type':'Code commune',
+        'location_code':'05061',
+    }
+    notice={
+        'idweb':'25-76543',
+        'objet':'Réfection toiture médiathèque dans la commune de Gap',
+        'url_avis':'https://www.boamp.fr/pages/avis/?q=idweb:25-76543',
+        'dateparution':'2025-07-03',
+        'donnees':{'acheteur':{'siret':'20005340300057'},
+                   'reference':'DIFFERENT-NUMBER'}
+    }
+    geo={'05061':'Gap'}
+    assert geographic_text("Cap-d'Ail")=='cap d ail'
+    assert corroborated_short_commune(contract,notice['objet'],geo)=='05061'
+    assert classify(contract,notice) is None, 'No silent change without COG'
+    match=classify(contract,notice,short_communes=geo)
+    assert match is not None and match['status']=='candidate',match
+    assert 'code INSEE 05061' in match['basis']
+    assert match['notice_total_eur']==''
+    assert classify({**contract,'location_code':'05062'},notice,geo) is None
+    assert classify({**contract,'location_type':'Code postal'},notice,geo) is None
+    assert classify(contract,{**notice,'objet':'Réfection toiture médiathèque GAP'},geo) is None
+    assert classify(contract,{**notice,'objet':'Fabrication de dispositifs pour Gap'},geo) is None
+    assert classify(contract,{
+        **notice,'donnees':{'acheteur':{'siret':'11111111111111'}}
+    },geo) is None
+
+    ambiguous={**contract,'location_code':'03208',
+               'object':'Réfection toiture bibliothèque au Le Pin'}
+    another={**notice,'objet':'Réfection toiture médiathèque dans la commune de Le Pin'}
+    assert classify(ambiguous,another,geo) is None, (
+        'Ambiguous Le Pin must never acquire an INSEE code from text')
+
+
 def main():
+    test_short_communes_need_explicit_context_and_decp_code()
     test_normandie_title_plural()
     assert following_offset(40,10,10)==50
     assert following_offset(50,7,10)==0
