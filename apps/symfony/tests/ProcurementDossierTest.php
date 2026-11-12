@@ -32,6 +32,20 @@ final class ProcurementDossierTest extends TestCase
         @rmdir($this->root);
     }
 
+    public function testDossierDisclosesMethodErrorsAndPossibleDgfipAccess(): void
+    {
+        $template = file_get_contents(__DIR__ . '/../templates/partials/procurement-dossier.html.twig');
+        self::assertIsString($template);
+        self::assertStringContainsString('Origine des données, algorithme et limites', $template);
+        self::assertStringContainsString('35 %', $template);
+        self::assertStringContainsString('indice de Jaccard', $template);
+        self::assertStringContainsString('des erreurs de rapprochement', $template);
+        self::assertStringContainsString('Hélios / PES V2', $template);
+        self::assertStringContainsString('convention', $template);
+        self::assertStringContainsString('aucune API publique nationale', $template);
+        self::assertStringContainsString('https://www.impots.gouv.fr/comment-acceder-aux-api-de-la-dgfip', $template);
+    }
+
     public function testNoFloatingPointLossOnExtremeDeclaredAmounts(): void
     {
         self::assertSame('99 999 999 999 999,99 €', ProcurementMoneyExtension::formatCents('9999999999999999'));
