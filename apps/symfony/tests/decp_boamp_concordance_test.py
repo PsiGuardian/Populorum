@@ -8,7 +8,7 @@ import sys
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression
+from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression, title_terms, terms
 from audit_procurement_concordance import contracts as audit_contracts, run as audit_report, official_query as audit_official_query
 
 
@@ -126,7 +126,42 @@ def test_audit_official_query_params():
         assert count==30 and items==[]
 
 
+def test_normandie_title_plural():
+    decp_title=("Acquisition de mobiliers d'hébergement pour les chambres "
+        "d'internats des établissements publics d'enseignement normands")
+    boamp_title=("Acquisition de mobiliers d'hébergement pour les chambres "
+        "d'internat à destination des lycées de Normandie (EPLE)")
+    raw_a=set(terms(decp_title))
+    raw_b=set(terms(boamp_title))
+    assert len(raw_a & raw_b)==4
+    assert len(raw_a & raw_b)/len(raw_a | raw_b)<0.35
+    a=title_terms(decp_title)
+    b=title_terms(boamp_title)
+    assert 'internat' in a and 'internat' in b
+    assert len(a & b)>=5
+    assert len(a & b)/len(a | b)>=0.35
+
+    contract={'contract_key':'a'*40,'buyer_id':'20005340300057',
+              'original_id':'20260211','object':decp_title,
+              'notice_date':''}
+    for idweb in ('24-31681','24-80963'):
+        notice={'idweb':idweb,'objet':boamp_title,'dateparution':'2024-05-15',
+            'url_avis':'https://www.boamp.fr/pages/avis/?q=idweb:'+idweb,
+            'donnees':{'SIRET':'20005340300057',
+                       'reference':'different-public-procedure-number'}}
+        result=classify(contract,notice)
+        assert result is not None and result['status']=='candidate',idweb
+        # No invented contract-level proof: the original DECP reference
+        # does not appear in the BOAMP notice.
+        assert result['notice_total_eur']==''
+        other_buyer=dict(notice,donnees={'SIRET':'11111111111111'})
+        assert classify(contract,other_buyer) is None
+        other_subject=dict(notice,objet='Acquisition de logiciels de comptabilité')
+        assert classify(contract,other_subject) is None
+
+
 def main():
+    test_normandie_title_plural()
     assert following_offset(40,10,10)==50
     assert following_offset(50,7,10)==0
     test_http_request_contract()
