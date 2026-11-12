@@ -333,6 +333,23 @@ ni `procurement-auto-concordance.sqlite`, ni le curseur de reprise.
 Il ne contacte aucun service privé et n'affirme jamais que la
 correspondance constitue un règlement effectif.
 
+## BOAMP national : rapprochement local plutôt que 745 076 requêtes HTTP
+
+La concordance nationale dispose d'un véritable index BOAMP SQLite
+séparé de la base DECP. L'export DILA officiel JSONL est importé en
+streaming avec conservation des versions, puis rapproché **localement**
+et par lots avec l'index DECP existant.
+
+L'ancienne interrogation par avis reste utilisable pour un cas précis,
+mais n'est **plus** la méthode recommandée pour un parcours national.
+
+Documentation et commandes :
+[BOAMP_NATIONAL_LOCAL.md](BOAMP_NATIONAL_LOCAL.md).
+
+Aucune base DECP, aucun fichier de vote ou compte citoyen n'est
+modifié par ces programmes. Aucun règlement financier n'est déduit
+d'un avis de marché.
+
 ## Validation
 
 - `phpunit` : formatage sans flottants, liens de même référence sans

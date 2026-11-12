@@ -1,4 +1,9 @@
-# Populorum — installation neuve complète (v0.13.4-clean)
+# Populorum — installation neuve complète (v0.14.0-clean)
+
+**Référentiel BOAMP national (facultatif, séparé des DECP) :**
+le guide [BOAMP_NATIONAL_LOCAL.md](apps/symfony/docs/BOAMP_NATIONAL_LOCAL.md)
+décrit l'import officiel JSONL et la concordance locale sans une requête
+HTTP par contrat. L'import BOAMP n'est pas obligatoire pour lancer Populorum.
 
 **Installation neuve exclusivement :** partir d'un dossier entièrement vide, sans réutiliser une installation, une base SQLite ou un ancien cache. **Ce guide est autonome :** téléchargement de l'application, installation Symfony, téléchargement facultatif des bases nationales, contrôles et démarrage. Les commandes se lancent directement dans le terminal ; aucun installateur de distribution ni script ponctuel n'est nécessaire.
 
@@ -37,7 +42,7 @@ INSTALL_ROOT="$HOME/Téléchargements/populorum-v0121-neuf"
 mkdir "$INSTALL_ROOT"  # Échoue si ce dossier existe : ne pas fusionner deux installations.
 cd "$INSTALL_ROOT"
 
-VERSION="v0.13.4-clean"
+VERSION="v0.14.0-clean"
 SOURCE="https://github.com/PsiGuardian/Populorum/releases/download/$VERSION"
 curl -fL --retry 3 -O "$SOURCE/Populorum-$VERSION.tar.gz"
 curl -fL --retry 3 -O "$SOURCE/SHA256SUMS.txt"
@@ -46,7 +51,7 @@ tar -xzf "Populorum-$VERSION.tar.gz"
 cd "Populorum-$VERSION/apps/symfony"
 ```
 
-L'archive ne contient ni `vendor/`, ni bases privées, ni clés de production. En cas d'échec du SHA-256, ne pas installer. Cette version devient téléchargeable après publication réussie de la release `v0.13.4-clean`.
+L'archive ne contient ni `vendor/`, ni bases privées, ni clés de production. En cas d'échec du SHA-256, ne pas installer. Cette version devient téléchargeable après publication réussie de la release `v0.14.0-clean`.
 
 ## 3. Installer Symfony (données de démonstration incluses)
 
