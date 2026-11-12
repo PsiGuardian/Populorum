@@ -204,6 +204,11 @@ def store(sidecar: sqlite3.Connection, contract_key: str, matches: list[dict],
       (contract_key,now,status,len(matches),message[:500]))
 
 
+def following_offset(start: int, processed: int, requested: int) -> int:
+    """Progress bounded batches; start a new cycle at the end of the catalog."""
+    return 0 if processed < requested else start + processed
+
+
 def main() -> None:
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--contract-key',help='Clé d’une fiche DECP à contrôler')
@@ -266,7 +271,7 @@ def main() -> None:
             if opts.resume:
                 # Progress even when a source API request fails; its failure
                 # remains stored in checks and can be retried explicitly.
-                new_offset = 0 if len(records) < opts.limit else start_offset + len(records)
+                new_offset = following_offset(start_offset,len(records),opts.limit)
                 with sidecar:
                     sidecar.execute("""INSERT INTO metadata(key,value) VALUES('next_offset',?)
                       ON CONFLICT(key) DO UPDATE SET value=excluded.value""",
