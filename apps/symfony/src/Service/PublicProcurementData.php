@@ -449,7 +449,7 @@ final class PublicProcurementData
                 return $empty;
             }
             $query = $db->prepare('SELECT idweb,status,basis,title,url,publication_date,notice_kind,
-                       notice_sha256,first_seen_at,last_seen_at
+                       notice_sha256,notice_total_eur,first_seen_at,last_seen_at
                        FROM reference_matches WHERE contract_key=?
                        ORDER BY status, last_seen_at DESC,idweb LIMIT 40');
             $query->execute([$key]);
