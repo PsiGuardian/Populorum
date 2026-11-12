@@ -62,6 +62,7 @@ CREATE TABLE contracts (
  source_name TEXT,source_sha TEXT
 );
 CREATE INDEX buyer_test ON contracts(buyer_id,kind,notice_date);
+CREATE INDEX contracts_buyer_reference ON contracts(buyer_id,kind,original_id,notice_date DESC,contract_key ASC);
 CREATE TABLE imports(sha256 TEXT PRIMARY KEY,filename TEXT,source_url TEXT,imported_at TEXT);
 CREATE TABLE contract_sources(contract_key TEXT,source_sha TEXT);
 CREATE TABLE contract_publications(contract_key TEXT,source_sha TEXT,declared_publication_date TEXT,
@@ -126,6 +127,7 @@ SQL);
         self::assertNotNull($detail);
         self::assertSame(2, $detail['history']['references']);
         self::assertSame(2, $detail['history']['observed']);
+        self::assertTrue($detail['reference_relations']['indexed']);
         self::assertCount(1, $detail['reference_relations']['items']);
         self::assertSame($b, $detail['reference_relations']['items'][0]['contract_key']);
         self::assertCount(1, $detail['financial_evidence']);
@@ -133,5 +135,15 @@ SQL);
         self::assertSame(150000, (int) $detail['financial_evidence'][0]['amount_cents']);
         // Related lots are not reclassified as multiple payments of the same contract.
         self::assertSame([], $reader->detail($b)['financial_evidence']);
+        // Pre-upgrade production databases may lack the optional index.
+        // The expensive relation lookup is deferred, never run as a table scan.
+        $maintenance = new PDO('sqlite:' . $this->national);
+        $maintenance->exec('DROP INDEX contracts_buyer_reference');
+        $maintenance = null;
+        $oldDetail = $reader->detail($a);
+        self::assertFalse($oldDetail['reference_relations']['indexed']);
+        self::assertSame([], $oldDetail['reference_relations']['items']);
+        self::assertCount(2, $oldDetail['history']['items']);
+        self::assertCount(1, $oldDetail['financial_evidence']);
     }
 }
