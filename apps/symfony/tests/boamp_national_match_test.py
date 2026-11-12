@@ -15,7 +15,34 @@ def sample_notice(ref='24VRA0101',obj='Fourniture De Panneaux De Signalisation V
         'dateparution':'2024-03-13','url_avis':'https://www.boamp.fr/pages/avis/?q=idweb:24-30283',
         'donnees':{'SIRET':'21690264300016','ID':ref,'source':'Test officiel simulé'}}
 
+def test_normandie_local_with_invalid_decp_year():
+    """Realistic indexed BOAMP notices and a malformed 2926 DECP year."""
+    contract={'contract_key':'n'*40,'buyer_id':'20005340300057',
+        'original_id':'20260211','notice_date':'2926-10-12',
+        'object':("Acquisition de mobiliers d'hébergement pour les chambres "
+                  "d'internats des établissements publics d'enseignement normands")}
+    title=("Acquisition de mobiliers d'hébergement pour les chambres "
+           "d'internat à destination des lycées de Normandie (EPLE)")
+    with sqlite3.connect(':memory:') as boamp:
+        boamp.row_factory=sqlite3.Row
+        boamp.executescript(BOAMP_SCHEMA)
+        boamp.execute("INSERT INTO metadata VALUES('schema',?)",(SCHEMA_VERSION,))
+        for idweb in ('24-31681','24-80963'):
+            notice={'idweb':idweb,'objet':title,'dateparution':'2024-05-15',
+                'url_avis':'https://www.boamp.fr/pages/avis/?q=idweb:'+idweb,
+                'donnees':{'SIRET':'20005340300057',
+                           'reference':'different-public-procedure-number'}}
+            import_jsonl(boamp,io.BytesIO((json.dumps(notice)+'\n').encode()),
+                        'https://official.example/historical')
+        candidate_notices,overflow=postings(boamp,contract['buyer_id'])
+        assert not overflow and len(candidate_notices)==2
+        linked=evaluate(contract,candidate_notices,overflow,boamp)
+        assert sorted(x['idweb'] for x in linked)==['24-31681','24-80963']
+        assert all(x['status']=='candidate' for x in linked)
+
+
 def main():
+    test_normandie_local_with_invalid_decp_year()
     with sqlite3.connect(':memory:') as boamp, sqlite3.connect(':memory:') as decp, sqlite3.connect(':memory:') as side:
         for db in (boamp,decp,side):db.row_factory=sqlite3.Row
         boamp.executescript(BOAMP_SCHEMA)
