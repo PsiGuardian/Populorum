@@ -85,7 +85,79 @@ def test_short_place_from_cog_not_common_name():
         else:raise AssertionError('Wrong COG vintage must fail')
 
 
+def test_append_only_decision_versioning():
+    """Reclassification, no-longer-observed, replay and legacy are traceable."""
+    contract={
+        'contract_key':'f'*40,'buyer_id':'21690264300016',
+        'original_id':'24VRA0101',
+        'object':'Fourniture de panneaux de signalisation verticale et accessoires',
+        'notice_date':'2089-03-13','cpv':'34992200',
+        'kind':'market','location_type':None,'location_code':None}
+    with sqlite3.connect(':memory:') as side:
+        side.row_factory=sqlite3.Row
+        side.executescript(LOCAL_SCHEMA)
+        original={
+            'idweb':'24-30283','notice_sha':'a'*64,
+            'status':'procedure_ids','basis':'SIRET et référence cités',
+            'title':'Signalisation','url':'https://www.boamp.fr/pages/avis/?q=idweb:24-30283',
+            'publication_date':'2024-03-13','notice_kind':'Avis',
+            'rule_evidence':{'buyer_siret_cited':True,'title_jaccard':0.9}}
+        save(side,contract['contract_key'],[original],15,False,'17',
+             source_complete=False,contract=contract,rule_hash='1'*64)
+        first=side.execute('SELECT * FROM local_decision_history').fetchall()
+        assert len(first)==1
+        assert first[0]['event_type']=='observed'
+        assert first[0]['classification']=='procedure_ids'
+        assert first[0]['algorithm_sha256']=='1'*64
+        assert json.loads(first[0]['factors_json'])['title_jaccard']==0.9
+        assert first[0]['corpus_status']=='partial'
+        # Replaying identical rules + inputs + source does not inflate history.
+        save(side,contract['contract_key'],[original],15,False,'17',
+             source_complete=False,contract=contract,rule_hash='1'*64)
+        assert side.execute('SELECT COUNT(*) FROM local_decision_history').fetchone()[0]==1
+        changed=dict(original,status='candidate',basis='Même avis, titre seulement',
+                     rule_evidence={'buyer_siret_cited':True,'title_jaccard':0.4})
+        save(side,contract['contract_key'],[changed],15,False,'17',
+             source_complete=False,contract=contract,rule_hash='2'*64)
+        rows=side.execute("""SELECT classification,algorithm_sha256 FROM
+            local_decision_history ORDER BY event_id""").fetchall()
+        assert [r['classification'] for r in rows]==['procedure_ids','candidate']
+        assert rows[-1]['algorithm_sha256']=='2'*64
+        # No longer selected in a PARTIAL archive is not a proof of absence.
+        save(side,contract['contract_key'],[],15,False,'18',
+             source_complete=False,contract=contract,rule_hash='2'*64)
+        last=side.execute("""SELECT * FROM local_decision_history
+            ORDER BY event_id DESC LIMIT 1""").fetchone()
+        assert last['event_type']=='not_observed'
+        assert 'lien non exclu' in last['basis']
+        assert side.execute("SELECT active FROM local_matches").fetchone()[0]==0
+        save(side,contract['contract_key'],[],15,False,'18',
+             source_complete=False,contract=contract,rule_hash='2'*64)
+        assert side.execute('SELECT COUNT(*) FROM local_decision_history').fetchone()[0]==3
+        save(side,contract['contract_key'],[changed],15,False,'18',
+             source_complete=False,contract=contract,rule_hash='2'*64)
+        assert side.execute('SELECT COUNT(*) FROM local_decision_history').fetchone()[0]==4
+        # An earlier sidecar must not be retroactively attributed to v1.
+        with sqlite3.connect(':memory:') as legacy:
+            legacy.row_factory=sqlite3.Row
+            legacy.executescript(LOCAL_SCHEMA)
+            legacy.execute("""INSERT INTO local_matches VALUES
+              (?,?,?,?,?,?,?,?,?,?,?,?)""",
+              (contract['contract_key'],original['idweb'],original['notice_sha'],
+               original['status'],original['basis'],original['title'],original['url'],
+               original['publication_date'],original['notice_kind'],
+               '2026-01-01','2026-01-01',1))
+            save(legacy,contract['contract_key'],[original],15,False,'18',
+                 source_complete=False,contract=contract,rule_hash='2'*64)
+            captured=legacy.execute("""SELECT event_type,algorithm_version FROM
+                 local_decision_history ORDER BY event_id""").fetchall()
+            assert [(r['event_type'],r['algorithm_version']) for r in captured]==[
+                ('legacy_snapshot','legacy-unversioned'),
+                ('observed','boamp-local-v1.1-decision-history')]
+
+
 def main():
+    test_append_only_decision_versioning()
     test_short_place_from_cog_not_common_name()
     test_normandie_local_with_invalid_decp_year()
     with sqlite3.connect(':memory:') as boamp, sqlite3.connect(':memory:') as decp, sqlite3.connect(':memory:') as side:
