@@ -1,0 +1,127 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Service\PublicProcurementData;
+use PHPUnit\Framework\TestCase;
+
+final class ProcurementDossierTest extends TestCase
+{
+    private string $root;
+    private string $national;
+    private string $sidecar;
+
+    protected function setUp(): void
+    {
+        $this->root = sys_get_temp_dir() . '/populorum-procurement-dossier-' . bin2hex(random_bytes(8));
+        self::assertTrue(mkdir($this->root . '/data/research', 0700, true));
+        $this->national = $this->root . '/data/research/public-procurement.sqlite';
+        $this->sidecar = $this->root . '/data/research/procurement-financial-evidence.sqlite';
+    }
+
+    protected function tearDown(): void
+    {
+        @unlink($this->sidecar);
+        @unlink($this->national);
+        @rmdir($this->root . '/data/research');
+        @rmdir($this->root . '/data');
+        @rmdir($this->root);
+    }
+
+    public function testAmountFlagsAreNonDestructiveResearchHints(): void
+    {
+        self::assertSame([], PublicProcurementData::amountWarnings(40000000, 'Code commune', '76351'));
+        $suspicious = PublicProcurementData::amountWarnings(9999999999900, 'Code postal', '38');
+        self::assertCount(2, $suspicious);
+        self::assertStringContainsString('chiffres 9', $suspicious[0]);
+        self::assertStringContainsString('code postal', $suspicious[1]);
+        self::assertNotEmpty(PublicProcurementData::amountWarnings(1000000000000));
+        self::assertNotEmpty(PublicProcurementData::amountWarnings(-200));
+    }
+
+    public function testPublicationsAndPossibleRelatedLotsDoNotMultiplyOrMergeAmounts(): void
+    {
+        $db = new PDO('sqlite:' . $this->national, options: [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $db->exec(<<<'SQL'
+CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT);
+INSERT INTO metadata VALUES ('schema','populorum-decp-2');
+CREATE TABLE contracts (
+ contract_key TEXT PRIMARY KEY, kind TEXT,buyer_id TEXT,original_id TEXT,
+ object TEXT,cpv TEXT,nature TEXT,notice_date TEXT,amount_initial_cents INTEGER,
+ amount_amended_cents INTEGER,location_type TEXT,location_code TEXT,
+ source_name TEXT,source_sha TEXT
+);
+CREATE INDEX buyer_test ON contracts(buyer_id,kind,notice_date);
+CREATE TABLE imports(sha256 TEXT PRIMARY KEY,filename TEXT,source_url TEXT,imported_at TEXT);
+CREATE TABLE contract_sources(contract_key TEXT,source_sha TEXT);
+CREATE TABLE contract_publications(contract_key TEXT,source_sha TEXT,declared_publication_date TEXT,
+ notice_date TEXT,base_amount_cents INTEGER,modification_amount_cents INTEGER,occurrences INTEGER);
+CREATE TABLE changes(contract_key TEXT,event_type TEXT,event_id TEXT,event_date TEXT,
+ published_date TEXT,amount_cents INTEGER,identifier TEXT,extra TEXT);
+CREATE TABLE participants(contract_key TEXT,role TEXT,identifier_type TEXT,identifier TEXT);
+CREATE TABLE procurement_evidence(contract_key TEXT,category TEXT,source_type TEXT,source_name TEXT,
+ source_url TEXT,document_title TEXT,statement TEXT,excerpt TEXT,published_at TEXT,recorded_at TEXT,status TEXT);
+CREATE TABLE contract_records(contract_key TEXT,source_sha TEXT,kind TEXT,ordinal INTEGER,record_sha TEXT,record_zlib BLOB);
+CREATE TABLE concession_finance(contract_key TEXT,subsidy_cents INTEGER);
+SQL);
+        $a = str_repeat('a', 40);
+        $b = str_repeat('b', 40);
+        $c = str_repeat('c', 40);
+        $stmt = $db->prepare('INSERT INTO contracts
+            (contract_key,kind,buyer_id,original_id,object,cpv,nature,notice_date,
+             amount_initial_cents,location_type,location_code,source_sha)
+             VALUES(?,?,?,?,?,?,?,?,?,?,?,?)');
+        $stmt->execute([$a,'market','26380030200014','AO25DMISP','Lot 1 implant',
+            '33140000','Marché','2025-05-20',9999999999900,'Code postal','38','first']);
+        $stmt->execute([$b,'market','26380030200014','AO25DMISP','Lot 2 implant',
+            '33140000','Marché','2025-05-20',50000000,'Code département','38','first']);
+        $stmt->execute([$c,'market','other-buyer','AO25DMISP','Autre acheteur',
+            '33140000','Marché','2025-05-20',30000000,'Code département','38','first']);
+        $db->exec(<<<'SQL'
+INSERT INTO imports VALUES('first','decp-2025-06.json','https://example.org/first','2025-06-20');
+INSERT INTO imports VALUES('second','decp-2026-01.json','https://example.org/second','2026-02-01');
+SQL);
+        $db->prepare('INSERT INTO contract_sources VALUES (?,?)')->execute([$a,'first']);
+        $db->prepare('INSERT INTO contract_sources VALUES (?,?)')->execute([$a,'second']);
+        $db->prepare('INSERT INTO contract_publications VALUES (?,?,?,?,?,?,?)')
+            ->execute([$a,'first','2025-06-01','2025-05-20',9999999999900,null,1]);
+        $db->prepare('INSERT INTO contract_publications VALUES (?,?,?,?,?,?,?)')
+            ->execute([$a,'second','2026-01-01','2025-05-20',9999999999900,null,1]);
+        $db = null;
+
+        $financial = new PDO('sqlite:' . $this->sidecar, options: [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $financial->exec(<<<'SQL'
+CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT);
+INSERT INTO metadata VALUES ('schema','populorum-procurement-financial-1');
+CREATE TABLE financial_evidence(
+ contract_key TEXT,stage TEXT,amount_cents INTEGER,accounting_scope TEXT,as_of_date TEXT,
+ period_start TEXT,period_end TEXT,document_date TEXT,source_issuer TEXT,
+ document_title TEXT,source_url TEXT,source_excerpt TEXT,recorded_at TEXT
+);
+SQL);
+        $financial->prepare('INSERT INTO financial_evidence VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)')
+            ->execute([$a,'paid',150000,'cumulative','2026-11-01','','','2026-11-02',
+                'Source test','Document test','https://example.org/source','Extrait test','2026-11-02']);
+        $financial = null;
+
+        $reader = new PublicProcurementData($this->root);
+        $page = $reader->search([], 0);
+        self::assertSame(3, $page['total'], 'Source publications must not multiply list rows');
+        self::assertCount(3, $page['items']);
+        $aResult = array_column($page['items'], null, 'contract_key')[$a];
+        self::assertSame(2, (int) $aResult['source_count']);
+        self::assertSame(9999999999900, (int) $aResult['amount_initial_cents']);
+
+        $detail = $reader->detail($a);
+        self::assertNotNull($detail);
+        self::assertSame(2, $detail['history']['references']);
+        self::assertSame(2, $detail['history']['observed']);
+        self::assertCount(1, $detail['reference_relations']['items']);
+        self::assertSame($b, $detail['reference_relations']['items'][0]['contract_key']);
+        self::assertCount(1, $detail['financial_evidence']);
+        self::assertSame('paid', $detail['financial_evidence'][0]['stage']);
+        self::assertSame(150000, (int) $detail['financial_evidence'][0]['amount_cents']);
+        // Related lots are not reclassified as multiple payments of the same contract.
+        self::assertSame([], $reader->detail($b)['financial_evidence']);
+    }
+}
