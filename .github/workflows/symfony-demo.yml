@@ -64,6 +64,10 @@ jobs:
              ('buyer_content', "search(donnees, '26380030200014')"),
              ('title_implant', "search(objet, 'implantables')"),
              ('buyer_and_title', "search(nomacheteur, 'Grenoble') AND search(objet, 'dispositifs')"),
+             ('siret_and_implants', "search(donnees, '26380030200014') AND search(objet, 'implantables')"),
+             ('siret_and_medical', "search(donnees, '26380030200014') AND search(objet, 'medicaux')"),
+             ('siret_and_dispositifs', "search(donnees, '26380030200014') AND search(objet, 'dispositifs')"),
+             ('siret_and_2025', "search(donnees, '26380030200014') AND search(objet, '2025')"),
           ]
           for name,where in requests:
               u=root+'?'+urlencode({'where':where,'limit':12,
