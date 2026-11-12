@@ -18,6 +18,55 @@ Conserver l'attribution à la DILA, l'URL et la date de chaque export.
 Les avis peuvent contenir des données personnelles ; la publication
 d'une copie brute doit respecter les conditions de réutilisation.
 
+## Historique des contrôles, y compris sans candidat
+
+Le premier rapport versionné (12 novembre 2026) comportait 38 événements
+liés aux **19 avis retenus** parmi **25 contrats examinés** : 19
+\`legacy_snapshot\` et 19 \`observed\`. Les **16 contrats sans candidat**
+n'avaient aucune entrée dans le journal des décisions, alors que le
+contrôle avait été exécuté. Cette situation n'est pas une preuve
+d'absence de lien.
+
+Le nouveau journal distinct **\`local_scan_history\`** corrige cette
+limite sans créer d'« avis BOAMP fictif » pour les recherches vides.
+À partir du prochain rapprochement, il conserve pour chaque contrat :
+
+- le nombre d'avis effectivement inspectés et retenus, la limitation
+  éventuelle de lecture et l'état de couverture du corpus ;
+- la révision BOAMP, la version et le SHA-256 des fichiers de règles ;
+- le SHA-256 des entrées DECP utilisées et celui de la liste des avis
+  retenus, afin de distinguer modifications de règles, de documents,
+  d'entrées et de résultats ;
+- la date **réelle de la nouvelle exécution** et un résultat
+  \`indetermine\` lorsqu'aucun candidat n'est retenu, ou
+  \`pistes_observees\` si des pistes documentaires existent.
+
+Deux exécutions identiques (mêmes règles, données d'entrée, révision
+BOAMP, couverture et résultats) ne génèrent qu'un seul événement.
+Un changement pertinent crée un nouveau relevé, sans écraser
+l'ancien. Le journal historique \`local_decision_history\` est conservé
+séparément pour les changements avis par avis.
+
+Le contenu ancien de \`local_checks\` n'est **pas rétroactivement
+présenté comme une exécution de l'algorithme actuel** : le premier
+\`local_scan_history\` ne sera créé qu'au prochain passage réel.
+Même si le corpus est marqué \`checked\`, **un résultat sans candidat
+n'est jamais une preuve de non-correspondance**, puisque les documents
+non publiés et les autres plateformes peuvent manquer.
+
+Depuis \`apps/symfony\` :
+
+\`\`\`bash
+python3 tools/match_boamp_national.py --offset 0 --limit 25 --max-notices-per-buyer 0
+python3 tools/audit_procurement_concordance.py --offset 0 --limit 25 \
+  --local --history --output var/boamp-25-scans-versionnes.txt
+\`\`\`
+
+Sur les 25 mêmes contrats, le prochain rapport doit afficher **25
+relevés de contrôle** : **9 contrats avec au moins un avis retenu**
+(19 avis au total) et **16 contrats sans candidat**. Le détail de chaque décision sur avis demeure accessible
+et l'historique des contrôles est également affiché sur les fiches.
+
 ## Journal des décisions et traçabilité des versions de l'algorithme
 
 À partir de cette évolution, le moteur local BOAMP **n'écrase plus la
