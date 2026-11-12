@@ -427,7 +427,7 @@ final class PublicProcurementData
      */
     private function automaticConcordance(string $key): array
     {
-        $empty = ['status' => 'not_run', 'checked_at' => null, 'confirmed' => [], 'candidates' => [], 'conflicts' => [], 'history' => [], 'scan_history' => []];
+        $empty = ['status' => 'not_run', 'checked_at' => null, 'confirmed' => [], 'candidates' => [], 'conflicts' => [], 'phase_alerts' => [], 'history' => [], 'scan_history' => []];
         $file = $this->projectDir . '/data/research/procurement-auto-concordance.sqlite';
         if (!is_file($file)) {
             return $empty;
@@ -462,6 +462,7 @@ final class PublicProcurementData
                     $confirmed = [];
                     $candidates = [];
                     $conflicts = [];
+                    $phaseAlerts = [];
                     $ids = [];
                     foreach ($localQuery->fetchAll() as $notice) {
                         $ids[$notice['idweb']] = true;
@@ -469,6 +470,8 @@ final class PublicProcurementData
                             $confirmed[] = $notice;
                         } elseif ($notice['status'] === 'object_conflict') {
                             $conflicts[] = $notice;
+                        } elseif ($notice['status'] === 'phase_conflict') {
+                            $phaseAlerts[] = $notice;
                         } else {
                             $candidates[] = $notice;
                         }
@@ -527,6 +530,7 @@ final class PublicProcurementData
                         'confirmed' => $confirmed,
                         'candidates' => $candidates,
                         'conflicts' => $conflicts,
+                        'phase_alerts' => $phaseAlerts,
                         'source' => 'index_national_local',
                         'scanned_notices' => (int) $local['scanned_notices'],
                         'truncated' => (bool) $local['truncated'],
