@@ -148,9 +148,9 @@ def main() -> None:
     with sqlite3.connect(f'file:{args.decp.resolve()}?mode=ro', uri=True) as national:
         with sqlite3.connect(args.db, timeout=30) as financial:
             financial.execute('PRAGMA busy_timeout=30000')
+            financial.executescript(SCHEMA)
             financial.execute('BEGIN IMMEDIATE')
             try:
-                financial.executescript(SCHEMA)
                 count = import_entries(financial, national, entries)
                 financial.commit()
             except BaseException:
