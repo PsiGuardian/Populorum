@@ -18,6 +18,7 @@ import re
 import sqlite3
 import unicodedata
 
+from reconcile_procurement_boamp import title_terms
 
 ROOT=Path(__file__).resolve().parents[1]
 GEOGRAPHY=ROOT/'data/geography/communes-2026.sqlite'
@@ -101,6 +102,7 @@ def inspect(path:Path,minimum:int=34000)->tuple[list[dict],dict]:
         plural_groups[plural].add(code)
         all_rows.append({
             'code_insee':code,'commune_officielle':name,
+            'cle_moteur_titres':' '.join(sorted(title_terms(name))),
             'libelle_normalise':full,'cle_lexicale':strict,
             'cle_pluriel':plural,
             'termes_modifies':' '.join(sorted(tokens-inflected)),
@@ -136,6 +138,8 @@ def inspect(path:Path,minimum:int=34000)->tuple[list[dict],dict]:
         'libelles_officiels_avec_homonymes':exact_name_collisions,
         'cles_lexicales_ambigues':aliases_ambiguous,
         'cles_vides':sum(not row['cle_lexicale'] for row in all_rows),
+        'communes_sans_mot_distinctif_dans_moteur_titres':sum(
+            not row['cle_moteur_titres'] for row in all_rows),
         'libelles_affectes_par_normalisation':plural_impacted,
         'communes_ambigues_supplementaires_apres_pluriels':new_plural_ambiguities,
         'annee':2026,
@@ -148,7 +152,7 @@ def write_results(rows:list[dict],summary:dict,report:Path,table:Path)->None:
     table.parent.mkdir(parents=True,exist_ok=True)
     with table.open('w',encoding='utf-8',newline='') as output:
         columns=['code_insee','commune_officielle','libelle_normalise',
-                 'cle_lexicale','cle_pluriel','termes_modifies','termes_crees',
+                 'cle_lexicale','cle_pluriel','cle_moteur_titres','termes_modifies','termes_crees',
                  'homonymes_nom_officiel','homonymes_cle_lexicale',
                  'autres_codes_cle_lexicale','homonymes_cle_pluriel',
                  'autres_codes_cle_pluriel','ambiguite_introduite_par_pluriel']
@@ -164,6 +168,7 @@ def write_results(rows:list[dict],summary:dict,report:Path,table:Path)->None:
         output.write('L’analyse des pluriels est une HEURISTIQUE : ne valide aucun gentilé ni alias.\n')
         output.write('Les compteurs d’homonymie désignent des COMMUNES touchées, pas des groupes.\n')
         output.write('Les gentilés ne figurent pas dans le COG : aucun gentilé artificiel généré.\n')
+        output.write('Clé moteur titres : calcul sur le NOM SEUL, sans tout le contexte d’un marché.\n')
         output.write('Normands/Normandie désigne une région et un adjectif, pas un pluriel de commune.\n\n')
         for key,val in summary.items():
             output.write(f'{key} : {val}\n')
@@ -180,6 +185,10 @@ def write_results(rows:list[dict],summary:dict,report:Path,table:Path)->None:
         for r in examples[:20]:
             output.write(f"{r['code_insee']} | {r['commune_officielle']} | "
                          f"autres codes : {' '.join(r['autres_codes_cle_lexicale'].split()[:12])}\n")
+        output.write('\nNOMS PERDUS PAR LE FILTRE DU MOTEUR DE TITRES (max. 12 exemples)\n')
+        missing=[r for r in rows if not r['cle_moteur_titres']]
+        for r in missing[:12]:
+            output.write(f"{r['code_insee']} | {r['commune_officielle']} | clé géographique : {r['cle_lexicale']}\n")
         output.write('\nLes variantes lexicales ambiguës ne doivent jamais devenir des identifiants géographiques.\n')
         output.write('Utiliser le code INSEE lorsqu’il est explicitement déclaré ; sinon garder une piste incertaine.\n')
         output.write('Détail exhaustif (une ligne par commune) : '+str(table)+'\n')
