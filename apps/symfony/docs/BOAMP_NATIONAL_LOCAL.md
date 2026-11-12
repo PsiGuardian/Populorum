@@ -7,6 +7,70 @@ liens DECP↔BOAMP sont calculés localement, hors des requêtes du site.
 **Ce système ne prouve aucun paiement.** Les montants déclarés, les
 annonces d'attribution et les pièces comptables sont distincts.
 
+## Périmètre contractuel : travaux vs maîtrise d’œuvre (v1.3)
+
+L'audit des 25 mêmes contrats a mis en évidence **Chessy** :
+la DECP signale une opération « Pièce d'eau et aménagements écologiques »
+avec le **CPV 45232454-1** (famille 45 : travaux), tandis que les
+avis BOAMP **23-45168** et **23-81447** annoncent une **maîtrise
+d’œuvre** pour le parc du château de Chessy. Ce sont possiblement
+des étapes d'un même programme d'aménagement, mais **un marché de
+maîtrise d’œuvre ne constitue pas, à lui seul, le marché de travaux
+d'un lot**.
+
+La règle conservatrice **\`boamp-local-v1.3-phase-scope-review\`**
+s'applique uniquement aux résultats auparavant \`candidate\` :
+
+1. Le contrat DECP comporte un CPV de travaux \`45......\`, à huit
+   chiffres, avec son éventuelle clé de contrôle.
+2. L'intitulé BOAMP emploie **explicitement « maîtrise d’œuvre »**.
+3. Le DECP ne mentionne pas lui-même la maîtrise d’œuvre ; les
+   intitulés mixtes (travaux **et** maîtrise d’œuvre, marché global
+   de conception-réalisation) restent indéterminés sur ce point.
+4. **Aucune référence DECP exacte n'est citée dans le document
+   BOAMP**. Les rapprochements \`procedure_ids\` demeurent prioritaires.
+
+Le résultat passe de \`candidate\` à **\`phase_conflict\`** : un
+**avis apparenté à une autre phase**, à contrôler, **hors du compteur
+des candidats directs au contrat de travaux**. Cette distinction
+n'invalide pas le programme auquel l'avis appartient et ne permet
+jamais de prouver une absence de lien. L'avis et son URL restent
+dans \`local_matches\`, visibles dans la fiche publique et l'audit.
+La transition est conservée par \`local_decision_history\`, et les
+anciens candidats de \`reference_matches\` ne sont pas réintroduits
+en doublon.
+
+Sur le lot de référence, on attend, **à vérifier localement** :
+
+| Type | Avant | Après |
+| --- | ---: | ---: |
+| Candidats | 17 | 15 |
+| Références de procédure concordantes | 1 | 1 |
+| Conflits d'objet | 1 | 1 |
+| Phases contractuelles distinctes | 0 | 2 |
+| Contrats examinés | 25 | 25 |
+
+Les avis **25-78808** et **25-92465**, relatifs aux aménagements
+paysagers et, dans le second, au **lot n° 3 « Pièce d'eau et
+aménagements écologiques »**, doivent rester candidats. Une
+mention de lot **n'établit pas encore** à elle seule que le lot
+attribué dans les DECP correspond à l'avis.
+
+La démarche est **volontairement non exhaustive**. Le CPV lui-même
+peut être erroné, des intitulés peuvent réunir plusieurs prestations,
+des variantes linguistiques peuvent échapper à ce contrôle, et les
+archives BOAMP demeurent \`partial\`. Les dates DECP aberrantes sont
+conservées sans correction ni exclusion chronologique artificielle.
+Aucun avis ne valide une facture, un mandat ou un paiement.
+
+Pour recontrôler les 25 contrats sans réseau BOAMP :
+
+\`\`\`bash
+python3 tools/match_boamp_national.py --offset 0 --limit 25 --max-notices-per-buyer 0
+python3 tools/audit_procurement_concordance.py --offset 0 --limit 25 \
+  --local --history --output var/boamp-25-phases-versionnees.txt
+\`\`\`
+
 ## Réduction des faux positifs : conflit entre objets centraux de projet
 
 L'audit des 25 contrats a identifié un cas concret à **Tiercé**.
