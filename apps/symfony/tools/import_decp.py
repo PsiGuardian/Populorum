@@ -115,6 +115,9 @@ CREATE TABLE IF NOT EXISTS concession_finance(
  contract_key TEXT PRIMARY KEY,subsidy_cents INTEGER,investment_cents INTEGER,
  investment_note TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS contracts_buyer ON contracts(buyer_id,kind,notice_date);
+-- Exact buyer/type/reference matches require a dedicated index to avoid a
+-- slow scan of high-volume buyers when a documentary contract is opened.
+CREATE INDEX IF NOT EXISTS contracts_buyer_reference ON contracts(buyer_id,kind,original_id,notice_date DESC,contract_key ASC);
 CREATE INDEX IF NOT EXISTS contracts_date ON contracts(notice_date,contract_key);
 CREATE INDEX IF NOT EXISTS contracts_geo ON contracts(location_type,location_code);
 -- The national page sorts by date DESC but contract key ASC. Its pre-v2
