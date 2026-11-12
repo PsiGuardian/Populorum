@@ -292,6 +292,9 @@ final class PublicProcurementData
         $stmt->execute([$key]);
         $row['participants'] = $stmt->fetchAll();
         $row['date_quality'] = self::dateQuality((string) $row['notice_date']);
+        $row['amount_warnings'] = self::amountWarnings(
+            $row['amount_initial_cents'], (string) $row['location_type'], (string) $row['location_code'],
+        );
         $stmt = $db->prepare('SELECT event_type,event_id,event_date,published_date,amount_cents,identifier,extra FROM changes WHERE contract_key=? ORDER BY event_date,event_id LIMIT 300');
         $stmt->execute([$key]);
         $row['events'] = $stmt->fetchAll();
