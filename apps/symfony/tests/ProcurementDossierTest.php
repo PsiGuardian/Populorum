@@ -52,6 +52,8 @@ final class ProcurementDossierTest extends TestCase
         self::assertIsString($template);
         self::assertStringContainsString('Historique des décisions algorithmiques', $template);
         self::assertStringContainsString('algorithm_version', $template);
+        self::assertStringContainsString('auto.scan_history', $template);
+        self::assertStringContainsString('aucun avis retenu', $template);
         self::assertStringContainsString('factors_json', $template);
         self::assertStringContainsString('legacy_snapshot', $template);
         self::assertStringContainsString('les archives peuvent être incomplètes', $template);
