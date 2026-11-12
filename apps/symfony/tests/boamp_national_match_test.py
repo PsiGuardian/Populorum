@@ -205,7 +205,67 @@ def test_scan_history_including_zero_candidates():
         assert last['truncated']==1 and last['corpus_status']=='partial'
 
 
+def test_tierce_conflict_keeps_audit_trail():
+    """Same buyer/city, but two different creation projects cannot count alike."""
+    contract={'contract_key':'c'*40,'buyer_id':'20006895500018',
+              'original_id':'2025ovgx20000000','notice_date':'2925-07-04',
+              'object':("Concours de maitrise d'œuvre restreint pour la "
+                        "création d'un pôle enfance à Tiercé - Phase offre")}
+    true_title=("Concours de maitrise d'œuvre restreint pour "
+                "la création d'un pôle enfance à Tiercé.")
+    wrong_title=("Concours de maitrise d'œuvre restreint pour "
+                 "la création d'une maison de l'économie à Tiercé.")
+    with sqlite3.connect(':memory:') as boamp, sqlite3.connect(':memory:') as side:
+        boamp.row_factory=side.row_factory=sqlite3.Row
+        boamp.executescript(BOAMP_SCHEMA)
+        boamp.execute("INSERT INTO metadata VALUES('schema',?)",(SCHEMA_VERSION,))
+        side.executescript(LOCAL_SCHEMA)
+        for ident,title in [('24-48133',true_title),('25-14275',wrong_title)]:
+            payload={'idweb':ident,'objet':title,'dateparution':'2025-02-07',
+                     'url_avis':'https://www.boamp.fr/pages/avis/?q=idweb:'+ident,
+                     'donnees':{'SIRET':'20006895500018','ref':'different'}}
+            import_jsonl(boamp,io.BytesIO((json.dumps(payload)+'\n').encode()),
+                         'https://official.example/2-projects')
+        postings_list,over=postings(boamp,contract['buyer_id'])
+        assert len(postings_list)==2 and not over
+        examined=evaluate(contract,postings_list,over,boamp)
+        found={r['idweb']:r for r in examined}
+        assert found['24-48133']['status']=='candidate'
+        assert found['25-14275']['status']=='object_conflict'
+        assert 'Objets de création distincts' in found['25-14275']['basis']
+        assert found['25-14275']['rule_evidence']['project_conflict']['reason_code']=='creation_targets_disjoint'
+        # A previously selected candidate is NEVER deleted without an audit.
+        prior=dict(found['25-14275'],status='candidate',
+                   basis='Ancienne similarité automatique')
+        save(side,contract['contract_key'],[found['24-48133'],prior],
+             2,False,'17',source_complete=False,
+             contract=contract,rule_hash='a'*64)
+        save(side,contract['contract_key'],examined,
+             2,False,'17',source_complete=False,
+             contract=contract,rule_hash='b'*64)
+        active=side.execute("""SELECT idweb,status FROM local_matches
+             WHERE active=1 ORDER BY idweb""").fetchall()
+        assert [(r['idweb'],r['status']) for r in active]==[
+            ('24-48133','candidate'),('25-14275','object_conflict')]
+        assert side.execute("""SELECT matched_notices FROM local_checks
+            WHERE contract_key=?""",(contract['contract_key'],)).fetchone()[0]==1
+        history=side.execute("""SELECT classification FROM local_decision_history
+            WHERE contract_key=? AND idweb='25-14275'
+            ORDER BY event_id""",(contract['contract_key'],)).fetchall()
+        assert [r['classification'] for r in history]==[
+            'candidate','object_conflict']
+        assert side.execute("""SELECT result,matched_notices FROM
+            local_scan_history ORDER BY scan_id DESC LIMIT 1""").fetchone()==(
+            'pistes_observees',1)
+        before=side.execute('SELECT COUNT(*) FROM local_decision_history').fetchone()[0]
+        save(side,contract['contract_key'],examined,
+             2,False,'17',source_complete=False,
+             contract=contract,rule_hash='b'*64)
+        assert side.execute('SELECT COUNT(*) FROM local_decision_history').fetchone()[0]==before
+
+
 def main():
+    test_tierce_conflict_keeps_audit_trail()
     test_scan_history_including_zero_candidates()
     test_append_only_decision_versioning()
     test_short_place_from_cog_not_common_name()
