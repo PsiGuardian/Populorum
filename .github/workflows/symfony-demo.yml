@@ -125,7 +125,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           allowed = {'.gitignore','bootstrap.php','decp_archive.py','decp_index_health.py','decp_pipeline.py',
-            'verify_decp_history.py','backfill_decp_history.py','import_decp.py','import_procurement_evidence.py','enrich_procurement_boamp.py','import_budget_national.py',
+            'verify_decp_history.py','backfill_decp_history.py','import_decp.py','import_procurement_evidence.py','import_procurement_financial_evidence.py','enrich_procurement_boamp.py','import_budget_national.py',
             'import_codes_postaux.py','import_communes_insee.py',
             'recount.php','verify-export.php','import_ssmsi_national.py','import_policy_catalog.py','enrich_senate_dossiers.py'}
           present = {p.name for p in Path('tools').iterdir() if p.is_file()}
