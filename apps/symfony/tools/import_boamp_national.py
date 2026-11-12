@@ -199,10 +199,18 @@ def upsert_notice(db:sqlite3.Connection,notice:dict,source_url:str,now:str)->boo
 
 def iter_jsonl(stream:io.BufferedIOBase,max_record_bytes:int=16_000_000):
     """JSONL streaming: no full export materialization or all-records list."""
-    for line_no,raw in enumerate(stream,1):
+    line_no=0
+    while True:
+        # A bounded readline avoids allocating an arbitrarily large line
+        # before checking the maximum record size.
+        raw=stream.readline(max_record_bytes+1)
+        if not raw:
+            break
+        line_no+=1
         if len(raw)>max_record_bytes:
             raise ValueError('Ligne BOAMP trop volumineuse : '+str(line_no))
-        if not raw.strip():continue
+        if not raw.strip():
+            continue
         try:
             obj=json.loads(raw)
         except (ValueError,UnicodeDecodeError) as e:
@@ -216,7 +224,7 @@ def import_jsonl(db:sqlite3.Connection,stream,source_url:str,
     if batch_size<1 or batch_size>2000:raise ValueError('batch size 1..2000')
     started=utc_now()
     stream_hash=hashlib.sha256()
-    seen=added=0
+    seen=added=skipped=0
     # Commit in small units so long exports can be interrupted and re-run.
     # No modifications whatsoever to public-procurement.sqlite.
     for record in iter_jsonl(stream):
@@ -228,6 +236,10 @@ def import_jsonl(db:sqlite3.Connection,stream,source_url:str,
         if notice is not None:
             if upsert_notice(db,notice,source_url,utc_now()):
                 added+=1
+        else:
+            # A skipped announcement makes the index incomplete, even if
+            # the HTTP export was delivered without transport errors.
+            skipped+=1
         seen+=1
         if seen%batch_size==0:
             db.commit()
@@ -243,8 +255,12 @@ def import_jsonl(db:sqlite3.Connection,stream,source_url:str,
     db.execute("""INSERT INTO imports(source_url,started_at,finished_at,
       records,versions_added,stream_sha256,status)
       VALUES(?,?,?,?,?,?,?)""",
-      (source_url,started,utc_now(),seen,added,stream_hash.hexdigest(),'complete' if max_records is None else 'sample'))
+      (source_url,started,utc_now(),seen,added,stream_hash.hexdigest(),
+       'partial' if skipped or not seen else ('complete' if max_records is None else 'sample')))
     db.commit()
+    if skipped:
+        print('ATTENTION :',skipped,'avis sans identifiant ou URL BOAMP sûre ; '
+              'export indexé partiellement, absence de lien indéterminée.',flush=True)
     return seen,added,stream_hash.hexdigest()
 
 
