@@ -26,6 +26,7 @@ import re
 import shutil
 import sqlite3
 import sys
+import time
 from urllib.parse import urlencode,urlsplit
 from urllib.request import Request,urlopen
 import zlib
@@ -34,6 +35,7 @@ ROOT=Path(__file__).resolve().parents[1]
 DEFAULT_DB=ROOT/'data/research/boamp-national.sqlite'
 OFFICIAL_HOST='boamp-datadila.opendatasoft.com'
 EXPORT='https://'+OFFICIAL_HOST+'/api/explore/v2.1/catalog/datasets/boamp/exports/jsonl'
+RECORDS='https://'+OFFICIAL_HOST+'/api/explore/v2.1/catalog/datasets/boamp/records'
 SCHEMA_VERSION='populorum-boamp-national-1'
 SCHEMA="""
 CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);
@@ -264,6 +266,34 @@ def import_jsonl(db:sqlite3.Connection,stream,source_url:str,
     return seen,added,stream_hash.hexdigest()
 
 
+def notice_by_id(idweb:str)->tuple[str,dict|None]:
+    """Fetch one documented BOAMP notice missing from a bounded audit.
+
+    This is a targeted *historical audit backfill*, not the national
+    archival importer or evidence of complete historical coverage.
+    """
+    if not re.fullmatch(r'[0-9]{2}-[0-9]{3,8}',idweb):
+        raise ValueError('IDWEB invalide')
+    url=RECORDS+'?'+urlencode({'where':"idweb = '"+idweb+"'",'limit':1})
+    req=Request(url,headers={
+        'Accept':'application/json',
+        'User-Agent':'Populorum-BOAMP-HistoricalAudit/1.0 (official public open data)',
+    })
+    with urlopen(req,timeout=45) as response:
+        dst=urlsplit(response.url)
+        if dst.scheme!='https' or dst.hostname!=OFFICIAL_HOST:
+            raise ValueError('Redirection hors de la source BOAMP officielle')
+        payload=response.read(16_000_001)
+    if len(payload)>16_000_000:
+        raise ValueError('Avis BOAMP trop volumineux : '+idweb)
+    document=json.loads(payload)
+    if not isinstance(document,dict) or not isinstance(document.get('results'),list):
+        raise ValueError('Schéma API BOAMP inattendu')
+    matching=[row for row in document['results']
+              if isinstance(row,dict) and str(json_object(row).get('idweb') or '')==idweb]
+    return url,matching[0] if matching else None
+
+
 def stream_from_url(url:str):
     request=Request(url,headers={
         'Accept':'application/x-ndjson,application/jsonl,application/json',
@@ -294,6 +324,8 @@ def main():
     choice.add_argument('--download',action='store_true',help='Exporter BOAMP officiel')
     choice.add_argument('--file',type=Path,help='JSONL officiel préalablement téléchargé (.gz accepté)')
     choice.add_argument('--stats',action='store_true')
+    choice.add_argument('--ids',nargs='+',metavar='IDWEB',
+                        help='Compléter un audit par identifiants BOAMP précis (max 50)')
     p.add_argument('--full',action='store_true',help='Premier export complet, potentiellement volumineux')
     p.add_argument('--since',help='Inclure tous les avis depuis cette date (AAAA-MM-JJ)')
     p.add_argument('--probe',action='store_true',help='Test de lecture d’un avis officiel')
@@ -302,6 +334,8 @@ def main():
     args=p.parse_args()
     if not 1<=args.min_free_gb<=100:
         p.error('--min-free-gb doit être entre 1 et 100')
+    if args.ids and (len(args.ids)>50 or any(not re.fullmatch(r'[0-9]{2}-[0-9]{3,8}',s) for s in args.ids)):
+        p.error('Au maximum 50 IDWEB au format 25-92465')
     if args.download and sum([bool(args.full),bool(args.since),bool(args.probe)])!=1:
         p.error('Avec --download, indiquer exactement --full, --since ou --probe')
     if (args.full or args.since or args.probe) and not args.download:
@@ -324,6 +358,33 @@ def main():
     if shutil.disk_usage(args.db.parent).free < args.min_free_gb*1024**3:
         p.error('Espace disque insuffisant pour l’import (voir --min-free-gb)')
     with open_db(args.db) as db:
+        if args.ids:
+            found=added=missing=0
+            ids=list(dict.fromkeys(args.ids))
+            for n,idweb in enumerate(ids,1):
+                url,record=notice_by_id(idweb)
+                if record is None:
+                    missing+=1
+                    print('ABSENT de l’API de recherche (archives DILA à consulter):',idweb,
+                          flush=True)
+                else:
+                    data=source_json(record)+b'\n'
+                    _,new_versions,_=import_jsonl(db,io.BytesIO(data),url,
+                        max_records=1,db_file=args.db,min_free_gb=args.min_free_gb)
+                    if db.execute('SELECT 1 FROM notices WHERE idweb=?',(idweb,)).fetchone():
+                        found+=1
+                        added+=new_versions
+                        print('INDEXÉ:',idweb,'| nouvelles versions:',new_versions,flush=True)
+                    else:
+                        missing+=1
+                        print('NON INDEXÉ (source incomplète ou URL invalide):',idweb,
+                              flush=True)
+                if n<len(ids):
+                    time.sleep(1.0)
+            print('Rattrapage ciblé:',found,'avis présents sur',len(ids),
+                  '| nouveaux instantanés:',added,'| non récupérés:',missing)
+            print('Couverture historique nationale toujours PARTIELLE.')
+            return
         if args.file:
             if not args.file.is_file():p.error('Fichier JSONL introuvable')
             open_fn=gzip.open if args.file.suffix=='.gz' else open
