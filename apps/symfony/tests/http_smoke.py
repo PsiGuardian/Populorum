@@ -266,6 +266,46 @@ def main() -> None:
             with closing(profile_browser.open(url + '/compte-test', timeout=28)) as response:
                 assert 'Alex Fictif' in response.read().decode('utf-8'), 'Revisit failed without cookie'
             print('PASS IP-only beta profile POST/revisit, no account cookie', flush=True)
+            # Regression: beta residence (Passa) is NOT an implicit site filter.
+            # A real browser session may select Passa and then return to France
+            # while the same IP-bound beta profile continues to reside in Passa.
+            territorial_cookies = http.cookiejar.CookieJar()
+            territorial_browser = urllib.request.build_opener(
+                urllib.request.HTTPCookieProcessor(territorial_cookies))
+            with closing(territorial_browser.open(url + '/', timeout=28)) as response:
+                france_html = response.read(5_000_000).decode('utf-8', 'replace')
+            assert 'Périmètre : France entière' in france_html, 'Beta residence silently overrides France'
+            assert 'Alex Fictif' in france_html, 'Beta profile not active in national view'
+            choose_form = re.search(
+                r'<form[^>]*action="/territoire/choisir"[^>]*>.*?</form>',
+                france_html, re.S)
+            assert choose_form, 'Municipality selector missing for beta visitor'
+            csrf = re.search(r'name="_token" value="([^"]+)"', choose_form.group(0))
+            assert csrf, 'Missing territory CSRF token'
+            data = urlencode({'_token': csrf.group(1), 'code': '66134',
+                              'code_type': 'insee', 'destination': 'home'}).encode()
+            with closing(territorial_browser.open(urllib.request.Request(
+                url + '/territoire/choisir', data=data, method='POST'), timeout=28)) as response:
+                passa_html = response.read(5_000_000).decode('utf-8', 'replace')
+            assert 'Périmètre : Passa (66134)' in passa_html, 'Explicit Passa choice failed'
+            choose_form = re.search(
+                r'<form[^>]*action="/territoire/choisir"[^>]*>.*?</form>',
+                passa_html, re.S)
+            assert choose_form
+            csrf = re.search(r'name="_token" value="([^"]+)"', choose_form.group(0))
+            assert csrf
+            data = urlencode({'_token': csrf.group(1), 'code': 'FR',
+                              'destination': 'home'}).encode()
+            with closing(territorial_browser.open(urllib.request.Request(
+                url + '/territoire/choisir', data=data, method='POST'), timeout=28)) as response:
+                reset_html = response.read(5_000_000).decode('utf-8', 'replace')
+            assert 'Périmètre : France entière' in reset_html, 'FR did not clear navigation'
+            assert 'Alex Fictif' in reset_html, 'FR reset destroyed beta profile'
+            with closing(territorial_browser.open(url + '/compte-test', timeout=28)) as response:
+                profile_after_reset = response.read().decode('utf-8', 'replace')
+            assert 'Alex Fictif' in profile_after_reset and 'Passa' in profile_after_reset, (
+                'Beta residence was changed by navigation reset')
+            print('PASS beta residence Passa, optional Passa navigation, return to France', flush=True)
             for page_path, heading in (
                 ('/chemins', 'Explorer les propositions de loi'),
                 ('/consultations', 'Voter sur les propositions de loi'),
