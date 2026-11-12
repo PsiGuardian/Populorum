@@ -292,6 +292,9 @@ final class PublicProcurementData
         $stmt->execute([$key]);
         $row['participants'] = $stmt->fetchAll();
         $row['date_quality'] = self::dateQuality((string) $row['notice_date']);
+        $row['amount_warnings'] = self::amountWarnings(
+            $row['amount_initial_cents'], (string) $row['location_type'], (string) $row['location_code'],
+        );
         $stmt = $db->prepare('SELECT event_type,event_id,event_date,published_date,amount_cents,identifier,extra FROM changes WHERE contract_key=? ORDER BY event_date,event_id LIMIT 300');
         $stmt->execute([$key]);
         $row['events'] = $stmt->fetchAll();
@@ -301,7 +304,7 @@ final class PublicProcurementData
         $row['history'] = $this->publicationHistory($db, $key);
         // Similar buyer-issued references are linked for investigation, never
         // silently merged: different lots can reuse an identical original ID.
-        $row['reference_relations'] = $this->relatedReferences($db, $row);
+        $row['reference_relations'] = PerformanceTrace::measure('decp_related_references', fn () => $this->relatedReferences($db, $row));
         $row['financial_evidence'] = $this->financialEvidence($key);
         // Statements are curated and source-linked, never inferred from the DECP
         // contract amount. Candidate BOAMP matches cannot assert any factual claim.
@@ -358,7 +361,17 @@ final class PublicProcurementData
     private function relatedReferences(\PDO $db, array $row): array
     {
         if (trim((string) $row['original_id']) === '' || trim((string) $row['buyer_id']) === '') {
-            return ['items' => [], 'more' => false];
+            return ['items' => [], 'more' => false, 'indexed' => true];
+        }
+
+        // This optional enrichment must never turn a detail request into a
+        // multi-second scan of the national DECP index (hundreds of thousands
+        // of contracts). Pre-v0.12.5 databases lack the composite index.
+        $indexed = (bool) $db->query("SELECT 1 FROM sqlite_master
+            WHERE type='index' AND tbl_name='contracts'
+              AND name='contracts_buyer_reference' LIMIT 1")->fetchColumn();
+        if (!$indexed) {
+            return ['items' => [], 'more' => false, 'indexed' => false];
         }
         $query = $db->prepare('SELECT contract_key,object,original_id,notice_date,cpv,
                     amount_initial_cents,location_type,location_code
@@ -369,7 +382,7 @@ final class PublicProcurementData
         $items = $query->fetchAll();
         $more = count($items) > 30;
 
-        return ['items' => array_slice($items, 0, 30), 'more' => $more];
+        return ['items' => array_slice($items, 0, 30), 'more' => $more, 'indexed' => true];
     }
 
     /**
