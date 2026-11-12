@@ -18,6 +18,58 @@ Conserver l'attribution à la DILA, l'URL et la date de chaque export.
 Les avis peuvent contenir des données personnelles ; la publication
 d'une copie brute doit respecter les conditions de réutilisation.
 
+## Journal des décisions et traçabilité des versions de l'algorithme
+
+À partir de cette évolution, le moteur local BOAMP **n'écrase plus la
+justification des rapprochements sans laisser de trace de son classement**.
+La base auxiliaire
+\`data/research/procurement-auto-concordance.sqlite\`
+accueille en plus la table **append-only**
+\`local_decision_history\`, créée automatiquement au prochain rapprochement :
+
+- **Identité documentaire** : clé de contrat DECP, identifiant officiel
+  BOAMP \`idweb\`, SHA-256 du document BOAMP retenu, révision du corpus
+  et état de sa couverture (\`checked\` ou \`partial\`).
+- **Identité des règles** : nom de version
+  \`boamp-local-v1.1-decision-history\` et SHA-256 calculé sur les fichiers
+  effectifs \`reconcile_procurement_boamp.py\` et
+  \`match_boamp_national.py\`.
+- **Entrées** : SHA-256 des champs de contrat DECP utilisés (SIRET,
+  référence, intitulé, date, CPV et lieu déclaré).
+- **Motifs** : statut \`candidate\`, \`procedure_ids\` ou
+  \`not_observed\`, motif textuel et facteurs JSON réellement calculés :
+  SIRET et référence cités, score de Jaccard brut et normalisé, nombre
+  de termes communs, seuil, éventuel indice INSEE de nom court.
+- **Transitions** : ajout d'un événement à la première observation
+  versionnée, lors d'un changement de classement, de règles, d'entrée
+  ou de document source ; retrait temporaire de l'avis si une nouvelle
+  recherche ne le retrouve pas. Les réexécutions à règles, sources
+  et facteurs identiques ne créent pas de doublons de décision.
+
+**Ne jamais assimiler \`not_observed\` à un rejet certain :** les archives
+peuvent être partielles ou absentes. Les changements de version sont
+des observations algorithmiques, pas une conclusion juridique sur les
+marchés, les lots ou leur paiement.
+
+Les anciens enregistrements \`local_matches\`, créés avant l'introduction
+du journal, restent consultables. À la première réexécution, un
+événement \`legacy_snapshot\` sauvegarde leur statut connu avec la
+mention \`legacy-unversioned\`. **L'algorithme exact et ses facteurs
+historiques ne peuvent pas être reconstitués** et ne sont pas inventés.
+
+Contrôler toujours seulement les mêmes 25 contrats de référence :
+
+\`\`\`bash
+python3 tools/match_boamp_national.py --offset 0 --limit 25 --max-notices-per-buyer 0
+python3 tools/audit_procurement_concordance.py --offset 0 --limit 25 \
+  --local --history --output var/boamp-25-historique.txt
+\`\`\`
+
+La fiche publique du marché présente un historique borné aux 25 événements
+les plus récents ; l'audit CLI aux 40 plus récents par contrat. Les lignes
+plus anciennes ne sont pas supprimées de SQLite. Les autres bases
+(DECP et BOAMP) sont **uniquement lues**, jamais modifiées.
+
 ## Origine des rapprochements : démarche de transparence publique
 
 **Les liens DECP↔BOAMP publiés par Populorum sont des déductions
