@@ -68,10 +68,10 @@ def get_contracts(db:sqlite3.Connection,limit:int,offset:int,key:str|None)->list
 def postings(db:sqlite3.Connection,siret:str,max_candidates:int=MAX_LOCAL)->tuple[list[dict],bool]:
     if not re.fullmatch(r'[0-9]{14}',siret):
         return [],False
-    query=db.execute("""SELECT n.idweb,n.title,n.source_sha,v.compressed_json,
-                        n.publication_date FROM notice_sirets s
-      JOIN notices n ON n.idweb=s.idweb
-      JOIN notice_versions v ON v.idweb=n.idweb AND v.source_sha=n.source_sha
+    # Keep only small metadata in the buyer LRU: whole BOAMP eForms
+    # documents can be large and would otherwise exhaust laptop RAM.
+    query=db.execute("""SELECT n.idweb,n.title,n.source_sha,n.publication_date
+      FROM notice_sirets s JOIN notices n ON n.idweb=s.idweb
       WHERE s.siret=? LIMIT ?""",(siret,max_candidates+1))
     rows=[dict(r) for r in query]
     return rows[:max_candidates],len(rows)>max_candidates
@@ -82,7 +82,8 @@ def valid_date(year:object)->bool:
     except (ValueError,TypeError):return False
 
 
-def evaluate(contract:dict,notices:list[dict],truncated:bool)->list[dict]:
+def evaluate(contract:dict,notices:list[dict],truncated:bool,
+             boamp:sqlite3.Connection)->list[dict]:
     """Classify all local notice candidates, keep only non-fraudulent claims."""
     # A malformed or futuristic DECP date cannot exclude an otherwise
     # similar official notice. Preserve it in DECP and do not 'repair' it.
@@ -91,8 +92,14 @@ def evaluate(contract:dict,notices:list[dict],truncated:bool)->list[dict]:
         candidate['notice_date']=''
     matches=[]
     for row in notices:
+        # Fetch one compressed document at a time. The buyer cache never
+        # accumulates large document BLOBs, including during long full scans.
+        packed=boamp.execute('SELECT compressed_json FROM notice_versions '
+            'WHERE idweb=? AND source_sha=?',(row['idweb'],row['source_sha'])).fetchone()
+        if packed is None:
+            continue
         try:
-            source=json.loads(zlib.decompress(row['compressed_json']))
+            source=json.loads(zlib.decompress(packed[0]))
         except (ValueError,zlib.error,TypeError):
             continue
         if not isinstance(source,dict):
@@ -148,12 +155,16 @@ def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Con
         else:
             buyer_cache.move_to_end(buyer)
         notices,over=buyer_cache[buyer]
-        matched=evaluate(c,notices,over)
+        matched=evaluate(c,notices,over,boamp)
         with sidecar:
             save(sidecar,str(c['contract_key']),matched,len(notices),over,str(source_revision))
         count+=1
         links+=len(matched)
         truncated+=over
+        if count%250==0:
+            print('Rapprochement local :',count,'contrats examinés,',
+                  links,'avis reliés,',truncated,'couvertures partielles',
+                  flush=True)
     return {'contracts':count,'matches':links,'partial':truncated}
 
 
