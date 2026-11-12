@@ -79,6 +79,46 @@ def title_terms(value: str) -> set[str]:
     return normalized
 
 
+def geographic_text(value: str) -> str:
+    """Exact geographical phrase comparison, including names <4 letters."""
+    norm = unicodedata.normalize(
+        'NFKD', value.casefold().replace('œ','oe').replace('æ','ae'))
+    norm = ''.join(ch for ch in norm if not unicodedata.combining(ch))
+    return ' '.join(re.findall(r'[a-z0-9]+',norm))
+
+
+def corroborated_short_commune(contract: dict, notice_title: str,
+                              known: dict[str,str] | None) -> str:
+    """Limited extra candidate signal: official DECP commune and both titles.
+
+    The known mapping holds INSEE 2026 codes with unique short official names,
+    loaded from the local COG. Names shared by municipalities are excluded.
+    A BOAMP title does not provide an authoritative INSEE municipality code.
+    """
+    if not known or contract.get('location_type') != 'Code commune':
+        return ''
+    code = str(contract.get('location_code') or '').upper()
+    place = known.get(code)
+    if not place:
+        return ''
+    name = geographic_text(place)
+    contract_title = geographic_text(str(contract.get('object') or ''))
+    boamp_title = geographic_text(notice_title)
+    if not name or not contract_title or not boamp_title:
+        return ''
+    bounded = r'(?<![a-z0-9])' + re.escape(name) + r'(?![a-z0-9])'
+    if not re.search(bounded,contract_title):
+        return ''
+    # Require a plausible location expression in the published BOAMP title.
+    # Ordinary uses of 'gap', 'die', 'bar' must not count as place evidence.
+    contextual = (r'(?<![a-z0-9])(?:a|au|aux|de|du|des|sur|dans|'
+                  r'commune de|ville de)\s+' + re.escape(name) +
+                  r'(?![a-z0-9])')
+    if not re.search(contextual,boamp_title):
+        return ''
+    return code
+
+
 def exact_token(needle: str, haystack: str) -> bool:
     if not needle:
         return False
@@ -111,7 +151,7 @@ def unique_notice_total(payload: object) -> str:
     return next(iter(totals)) if len(totals)==1 else ''
 
 
-def classify(contract: dict, notice: dict) -> dict | None:
+def classify(contract: dict, notice: dict, short_communes: dict[str,str] | None = None) -> dict | None:
     """Return source-linked association, never a payment or a lot-level award.
 
     Claims procedure IDs only when both SIRET and full procedure reference
@@ -158,6 +198,19 @@ def classify(contract: dict, notice: dict) -> dict | None:
     raw_title_tokens = set(terms(title))
     raw_overlap = len(raw_name_tokens & raw_title_tokens) / max(
         1,len(raw_name_tokens | raw_title_tokens))
+    # A short municipality name must NEVER rescue unrelated titles by itself.
+    # Only two already shared substantive terms, an explicitly declared
+    # INSEE commune on the DECP side and the official short name in both
+    # titles may supply one EXTRA CANDIDATE TOKEN, never confirmed evidence.
+    geo_code = ''
+    if buyer_found and len(name_tokens & title_tokens) >= 2:
+        geo_code = corroborated_short_commune(contract,title,short_communes)
+        if geo_code:
+            geo_token = 'commune-insee:' + geo_code
+            name_tokens.add(geo_token)
+            title_tokens.add(geo_token)
+            overlap = len(name_tokens & title_tokens) / max(
+                1,len(name_tokens | title_tokens))
     # A numerical reference may coincide with an amount or date. Do not
     # certify it unless it is long and accompanied by a strong title match.
     distinctive_reference = (
@@ -181,6 +234,10 @@ def classify(contract: dict, notice: dict) -> dict | None:
             return None
         status = 'candidate'
         basis = 'SIRET cité dans l’avis et intitulé proche ; marché, année et lot à confirmer'
+        if geo_code:
+            basis += (' ; indice géographique complémentaire : code INSEE ' +
+                      geo_code + ' déclaré côté DECP, nom officiel court '
+                      'présent dans les deux titres ; non certifiant')
     else:
         return None
     pub = str(notice.get('dateparution') or '')[:40]

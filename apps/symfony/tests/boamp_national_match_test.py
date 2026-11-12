@@ -6,9 +6,10 @@ import json
 from pathlib import Path
 import sqlite3
 import sys
+from tempfile import TemporaryDirectory
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 from import_boamp_national import SCHEMA as BOAMP_SCHEMA,SCHEMA_VERSION,import_jsonl,EXPORT
-from match_boamp_national import (LOCAL_SCHEMA,process,source_ready,evaluate,postings,save,complete_official_export)
+from match_boamp_national import (LOCAL_SCHEMA,process,source_ready,evaluate,postings,save,complete_official_export,short_unique_communes)
 
 def sample_notice(ref='24VRA0101',obj='Fourniture De Panneaux De Signalisation Verticale Et Accessoires'):
     return {'idweb':'24-30283','objet':obj,'nomacheteur':'Commune de test',
@@ -41,7 +42,51 @@ def test_normandie_local_with_invalid_decp_year():
         assert all(x['status']=='candidate' for x in linked)
 
 
+def test_short_place_from_cog_not_common_name():
+    with TemporaryDirectory() as tmp:
+        path=Path(tmp)/'cog.sqlite'
+        with sqlite3.connect(path) as geo:
+            geo.executescript("""
+                CREATE TABLE metadata(key TEXT,value TEXT);
+                INSERT INTO metadata VALUES('vintage','2026');
+                CREATE TABLE communes(code TEXT,name TEXT);
+                INSERT INTO communes VALUES('05061','Gap');
+                INSERT INTO communes VALUES('03208','Le Pin');
+                INSERT INTO communes VALUES('14504','Le Pin');
+                INSERT INTO communes VALUES('01057','Boz');
+                INSERT INTO communes VALUES('01001','L Abergement Clémenciat');
+            """)
+        short=short_unique_communes(path)
+        assert short=={'05061':'Gap','01057':'Boz'}
+        with sqlite3.connect(':memory:') as boamp:
+            boamp.row_factory=sqlite3.Row
+            boamp.executescript(BOAMP_SCHEMA)
+            boamp.execute("INSERT INTO metadata VALUES('schema',?)",(SCHEMA_VERSION,))
+            n={'idweb':'25-76543','objet':'Réfection toiture médiathèque dans la commune de Gap',
+               'dateparution':'2025-07-03',
+               'url_avis':'https://www.boamp.fr/pages/avis/?q=idweb:25-76543',
+               'donnees':{'SIRET':'20005340300057'}}
+            import_jsonl(boamp,io.BytesIO((json.dumps(n)+'\n').encode()),
+                         'https://official.example/cog-test')
+            candidates,over=postings(boamp,'20005340300057')
+            contract={'contract_key':'f'*40,'buyer_id':'20005340300057',
+                      'original_id':'20261234',
+                      'object':'Réfection toiture bibliothèque à Gap',
+                      'notice_date':'2025-06-10',
+                      'location_type':'Code commune','location_code':'05061'}
+            assert evaluate(contract,candidates,over,boamp)==[]
+            matches=evaluate(contract,candidates,over,boamp,short)
+            assert len(matches)==1 and matches[0]['status']=='candidate'
+            assert 'code INSEE 05061' in matches[0]['basis']
+        with sqlite3.connect(path) as geo:
+            geo.execute("UPDATE metadata SET value='2025' WHERE key='vintage'")
+        try:short_unique_communes(path)
+        except ValueError:pass
+        else:raise AssertionError('Wrong COG vintage must fail')
+
+
 def main():
+    test_short_place_from_cog_not_common_name()
     test_normandie_local_with_invalid_decp_year()
     with sqlite3.connect(':memory:') as boamp, sqlite3.connect(':memory:') as decp, sqlite3.connect(':memory:') as side:
         for db in (boamp,decp,side):db.row_factory=sqlite3.Row
