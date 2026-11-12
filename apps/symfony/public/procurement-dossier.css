@@ -1,0 +1,58 @@
+/* Populorum — dossier documentaire des marchés. Sans JS, adaptable aux écrans étroits. */
+.procurement-dossier{--dossier-line:rgba(128,136,145,.3);--dossier-subtle:rgba(120,145,165,.065);color:inherit}
+.procurement-dossier .dossier-back{margin:0 0 1.5rem;font-size:.86rem}
+.procurement-dossier .dossier-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:1.3rem;flex-wrap:wrap;border-bottom:1px solid var(--dossier-line);padding-bottom:1.4rem}
+.procurement-dossier .dossier-hero>div{flex:2 1 28rem;min-width:0}
+.procurement-dossier .dossier-hero h2{font-size:clamp(1.45rem,2.7vw,2.25rem);line-height:1.2;margin:.2rem 0 .8rem}
+.procurement-dossier .dossier-reference{margin:0;font-size:.88rem;line-height:1.9}
+.procurement-dossier .dossier-reference code,.procurement-dossier .dossier-key code{font-size:.82rem;overflow-wrap:anywhere}
+.procurement-dossier .dossier-key{flex:1 1 12rem;text-align:right;font-size:.7rem;opacity:.75;line-height:1.5;overflow-wrap:anywhere;margin:0}
+.procurement-dossier .dossier-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:1.25rem 0 1.5rem}
+.procurement-dossier .dossier-stat{display:flex;flex-direction:column;gap:.5rem;min-width:0;padding:1.1rem;background:var(--dossier-subtle);border:1px solid var(--dossier-line);border-radius:12px}
+.procurement-dossier .dossier-stat small{font-weight:650;opacity:.82}
+.procurement-dossier .dossier-stat strong{font-variant-numeric:tabular-nums;font-size:clamp(1rem,1.8vw,1.42rem);overflow-wrap:anywhere;line-height:1.25}
+.procurement-dossier .dossier-stat span{font-size:.79rem;line-height:1.5;opacity:.78}
+.procurement-dossier .dossier-columns{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(14rem,.9fr);gap:1.15rem;align-items:start}
+.procurement-dossier .dossier-main,.procurement-dossier .dossier-aside{display:grid;gap:1.1rem;min-width:0}
+.procurement-dossier .dossier-panel{padding:1.2rem 1.3rem;background:var(--dossier-subtle);border:1px solid var(--dossier-line);border-radius:13px;min-width:0;overflow-wrap:anywhere}
+.procurement-dossier .dossier-panel>p{margin:.4rem 0 1.1rem}
+.procurement-dossier .dossier-panel h3{font-size:1.15rem;line-height:1.3;margin:.2rem 0 .55rem}
+.procurement-dossier .dossier-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.7rem;flex-wrap:wrap;margin-bottom:.75rem}
+.procurement-dossier .dossier-overline{letter-spacing:.1em;font-weight:750;font-size:.69rem;opacity:.68;text-transform:uppercase;margin:0 0 .35rem}
+.procurement-dossier .dossier-state{border:1px solid var(--dossier-line);border-radius:50px;padding:.3rem .55rem;font-size:.72rem;font-weight:650;white-space:normal}
+.procurement-dossier .dossier-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem 1rem;margin:.9rem 0}
+.procurement-dossier .dossier-facts>div{min-width:0}
+.procurement-dossier .dossier-facts dt{font-size:.74rem;opacity:.72;margin:0 0 .2rem}
+.procurement-dossier .dossier-facts dd{font-size:.93rem;margin:0;overflow-wrap:anywhere}
+.procurement-dossier .dossier-source{padding:.85rem 1rem;border-left:3px solid #758897;border-radius:0 9px 9px 0;background:rgba(120,145,165,.055);margin:.7rem 0}
+.procurement-dossier .dossier-source--matched{border-left-color:#268d78}
+.procurement-dossier .dossier-source h4{margin:.15rem 0 .4rem}
+.procurement-dossier .dossier-source p{margin:.3rem 0}
+.procurement-dossier .dossier-source small{font-size:.73rem;opacity:.75}
+.procurement-dossier .dossier-source-label{font-size:.72rem;font-weight:750;letter-spacing:.03em}
+.procurement-dossier .dossier-finance-steps{list-style:none;counter-reset:finance;display:grid;gap:.75rem;padding:0;margin:1rem 0}
+.procurement-dossier .dossier-finance-steps>li{counter-increment:finance;display:flex;gap:.75rem}
+.procurement-dossier .dossier-finance-steps>li:before{content:counter(finance);display:grid;place-items:center;flex:0 0 1.7rem;height:1.7rem;border:1px solid var(--dossier-line);border-radius:50%;font-weight:700;font-size:.72rem}
+.procurement-dossier .dossier-finance-steps>li>div{min-width:0;flex:1;border-bottom:1px solid var(--dossier-line);padding-bottom:.7rem}
+.procurement-dossier .dossier-finance-steps strong{display:block;margin-bottom:.3rem}
+.procurement-dossier .dossier-unknown,.procurement-dossier .dossier-found{font-size:.82rem;opacity:.77}
+.procurement-dossier .dossier-history{padding:0;list-style:none;margin:.9rem 0;display:grid;gap:.1rem}
+.procurement-dossier .dossier-history>li{position:relative;margin-left:.45rem;padding:0 0 1.2rem 1.3rem;border-left:1px solid var(--dossier-line)}
+.procurement-dossier .dossier-history>li:before{content:"";position:absolute;width:.6rem;height:.6rem;left:-.35rem;top:.35rem;background:#528ca3;border-radius:50%}
+.procurement-dossier .dossier-history-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem}
+.procurement-dossier .dossier-history-top span{font-size:.79rem;opacity:.7}
+.procurement-dossier .dossier-history p{margin:.35rem 0}
+.procurement-dossier .dossier-empty,.procurement-dossier .dossier-note{font-size:.83rem;line-height:1.6;opacity:.78}
+.procurement-dossier .dossier-attention{padding:1rem 1.2rem;border-left:4px solid #bf985d;background:rgba(190,145,75,.08);margin-bottom:1.2rem;border-radius:0 10px 10px 0}
+.procurement-dossier .dossier-attention h3{font-size:1.02rem;margin:0 0 .6rem}
+.procurement-dossier .dossier-attention p{margin:.3rem 0}
+.procurement-dossier .dossier-mini-source{display:grid;gap:.2rem;border-bottom:1px solid var(--dossier-line);padding:.6rem 0}
+.procurement-dossier .dossier-mini-source small{font-size:.7rem;overflow-wrap:anywhere;opacity:.75}
+.procurement-dossier .dossier-json{font-size:.74rem;max-height:25rem;max-width:100%;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:.7rem;border:1px solid var(--dossier-line);border-radius:8px}
+.procurement-dossier .dossier-disclosure{margin-top:1rem}
+.procurement-dossier .dossier-disclosure summary{cursor:pointer;font-weight:650}
+.procurement-dossier .dossier-related{margin:0;padding-left:1rem;display:grid;gap:.65rem}
+.procurement-dossier .dossier-related li small{display:block;font-size:.72rem;opacity:.72}
+.procurement-dossier blockquote{margin:.4rem 0;font-size:.82rem;padding-left:.6rem;border-left:2px solid var(--dossier-line)}
+@media(max-width:950px){.procurement-dossier .dossier-columns{grid-template-columns:1fr}.procurement-dossier .dossier-key{text-align:left}}
+@media(max-width:680px){.procurement-dossier .dossier-summary,.procurement-dossier .dossier-facts{grid-template-columns:1fr}.procurement-dossier .dossier-panel{padding:1rem}.procurement-dossier .dossier-stat{padding:.85rem}}
