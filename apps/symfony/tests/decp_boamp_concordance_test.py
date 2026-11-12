@@ -143,7 +143,7 @@ def test_normandie_title_plural():
 
     contract={'contract_key':'a'*40,'buyer_id':'20005340300057',
               'original_id':'20260211','object':decp_title,
-              'notice_date':''}
+              'notice_date':'2926-10-12'}
     for idweb in ('24-31681','24-80963'):
         notice={'idweb':idweb,'objet':boamp_title,'dateparution':'2024-05-15',
             'url_avis':'https://www.boamp.fr/pages/avis/?q=idweb:'+idweb,
@@ -151,6 +151,10 @@ def test_normandie_title_plural():
                        'reference':'different-public-procedure-number'}}
         result=classify(contract,notice)
         assert result is not None and result['status']=='candidate',idweb
+        # Invalid DECP year 2926 is preserved but must not eliminate
+        # a well-documented candidate. A plausible but distant year can.
+        plausible_old=dict(contract,notice_date='2018-10-12')
+        assert classify(plausible_old,notice) is None
         # No invented contract-level proof: the original DECP reference
         # does not appear in the BOAMP notice.
         assert result['notice_total_eur']==''
