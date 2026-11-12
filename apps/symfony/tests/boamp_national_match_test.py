@@ -7,8 +7,8 @@ from pathlib import Path
 import sqlite3
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from import_boamp_national import SCHEMA as BOAMP_SCHEMA,SCHEMA_VERSION,import_jsonl
-from match_boamp_national import (LOCAL_SCHEMA,process,source_ready,evaluate,postings,save)
+from import_boamp_national import SCHEMA as BOAMP_SCHEMA,SCHEMA_VERSION,import_jsonl,EXPORT
+from match_boamp_national import (LOCAL_SCHEMA,process,source_ready,evaluate,postings,save,complete_official_export)
 
 def sample_notice(ref='24VRA0101',obj='Fourniture De Panneaux De Signalisation Verticale Et Accessoires'):
     return {'idweb':'24-30283','objet':obj,'nomacheteur':'Commune de test',
@@ -35,6 +35,7 @@ def main():
         count,updated,_=import_jsonl(boamp,io.BytesIO(contents),'https://official.example/export')
         assert (count,updated)==(1,1)
         source_ready(boamp)
+        assert not complete_official_export(boamp), 'Un import partiel ne couvre pas le BOAMP national'
         side.executescript(LOCAL_SCHEMA)
         records=[dict(r) for r in decp.execute('SELECT * FROM contracts')]
         report=process(decp,boamp,side,records)
@@ -45,6 +46,12 @@ def main():
         assert found[0]['status']=='procedure_ids'
         assert found[1]['status']=='candidate'
         # Future/garbled date does not suppress a documentary link.
+        assert side.execute("SELECT status FROM local_checks WHERE contract_key=?",('a'*40,)).fetchone()[0]=='partial'
+        # A documented, successful full official export is the only source
+        # eligible to make a non-truncated local scan 'checked'.
+        import_jsonl(boamp,io.BytesIO(contents),EXPORT)
+        assert complete_official_export(boamp)
+        process(decp,boamp,side,records)
         assert side.execute("SELECT status FROM local_checks WHERE contract_key=?",('a'*40,)).fetchone()[0]=='checked'
         assert side.execute("SELECT matched_notices FROM local_checks WHERE contract_key=?",('c'*40,)).fetchone()[0]==0
         process(decp,boamp,side,records)
@@ -62,6 +69,8 @@ def main():
         second=dict(row,idweb='24-1573',
                     url_avis='https://www.boamp.fr/pages/avis/?q=idweb:24-1573')
         import_jsonl(boamp,io.BytesIO((json.dumps(second)+'\n').encode()),'https://official.example/export')
+        entries_all,no_cap=postings(boamp,'21690264300016',0)
+        assert len(entries_all)==1 and not no_cap
         entries,overflow=postings(boamp,'21690264300016',1)
         assert len(entries)==1 and overflow
         limited=process(decp,boamp,side,records,max_candidates=1)
