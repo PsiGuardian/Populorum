@@ -19,7 +19,7 @@ from pathlib import Path
 import re
 import sqlite3
 import zlib
-from import_boamp_national import DEFAULT_DB as BOAMP,SCHEMA_VERSION as BOAMP_SCHEMA
+from import_boamp_national import DEFAULT_DB as BOAMP,SCHEMA_VERSION as BOAMP_SCHEMA,EXPORT
 from reconcile_procurement_boamp import (NATIONAL, SIDECAR, SCHEMA as OLD_SCHEMA,
                                         SCHEMA_VERSION as OLD_VERSION,
                                         classify,terms)
@@ -54,6 +54,13 @@ def source_ready(db:sqlite3.Connection)->None:
         raise ValueError('Index BOAMP vide ; importer le flux officiel au préalable')
 
 
+def complete_official_export(db:sqlite3.Connection)->bool:
+    """A probe or date-filtered export is never an exhaustive BOAMP index."""
+    return db.execute("""SELECT 1 FROM imports
+      WHERE status='complete' AND source_url=? AND records>0 LIMIT 1""",
+      (EXPORT,)).fetchone() is not None
+
+
 def get_contracts(db:sqlite3.Connection,limit:int,offset:int,key:str|None)->list[dict]:
     base='SELECT contract_key,buyer_id,original_id,object,notice_date,cpv,kind FROM contracts '
     if key:
@@ -70,10 +77,14 @@ def postings(db:sqlite3.Connection,siret:str,max_candidates:int=MAX_LOCAL)->tupl
         return [],False
     # Keep only small metadata in the buyer LRU: whole BOAMP eForms
     # documents can be large and would otherwise exhaust laptop RAM.
-    query=db.execute("""SELECT n.idweb,n.title,n.source_sha,n.publication_date
+    sql="""SELECT n.idweb,n.title,n.source_sha,n.publication_date
       FROM notice_sirets s JOIN notices n ON n.idweb=s.idweb
-      WHERE s.siret=? LIMIT ?""",(siret,max_candidates+1))
-    rows=[dict(r) for r in query]
+      WHERE s.siret=? ORDER BY n.publication_date DESC,n.idweb"""
+    if max_candidates == 0:
+        # Explicit exhaustive local scan. Memory can increase for very
+        # large buyers; no evidence is silently excluded by a row cap.
+        return [dict(r) for r in db.execute(sql,(siret,))],False
+    rows=[dict(r) for r in db.execute(sql+" LIMIT ?",(siret,max_candidates+1))]
     return rows[:max_candidates],len(rows)>max_candidates
 
 
@@ -115,7 +126,8 @@ def evaluate(contract:dict,notices:list[dict],truncated:bool,
 
 
 def save(sidecar:sqlite3.Connection,contract_key:str,matches:list[dict],
-         inspected:int,truncated:bool,source_revision:str)->None:
+         inspected:int,truncated:bool,source_revision:str,
+         source_complete:bool=True)->None:
     now=utc_now()
     # Previously linked documents are retained as historical observations.
     # On rescans they may become inactive but are never discarded.
@@ -136,7 +148,7 @@ def save(sidecar:sqlite3.Connection,contract_key:str,matches:list[dict],
       truncated=excluded.truncated,source_revision=excluded.source_revision,
       status=excluded.status""",
       (contract_key,now,inspected,len(matches),int(truncated),source_revision,
-       'partial' if truncated else 'checked'))
+       'partial' if truncated or not source_complete else 'checked'))
 
 
 def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Connection,
@@ -147,6 +159,7 @@ def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Con
     # per market. Memory remains capped by a modest LRU cache.
     buyer_cache:OrderedDict[str,tuple[list[dict],bool]]=OrderedDict()
     source_revision=boamp.execute('SELECT COALESCE(MAX(import_id),0) FROM imports').fetchone()[0]
+    source_complete=complete_official_export(boamp)
     for c in records:
         buyer=str(c.get('buyer_id') or '')
         if buyer not in buyer_cache:
@@ -156,16 +169,20 @@ def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Con
             buyer_cache.move_to_end(buyer)
         notices,over=buyer_cache[buyer]
         matched=evaluate(c,notices,over,boamp)
-        with sidecar:
-            save(sidecar,str(c['contract_key']),matched,len(notices),over,str(source_revision))
+        save(sidecar,str(c['contract_key']),matched,len(notices),over,
+             str(source_revision),source_complete=source_complete)
         count+=1
         links+=len(matched)
         truncated+=over
         if count%250==0:
-            print('Rapprochement local :',count,'contrats examinés,',
+            # Batched commits avoid hundreds of thousands of fsyncs on HDDs.
+            sidecar.commit()
+            print('Rapprochement local :',count,'contrats examinés,'
                   links,'avis reliés,',truncated,'couvertures partielles',
                   flush=True)
-    return {'contracts':count,'matches':links,'partial':truncated}
+    sidecar.commit()
+    return {'contracts':count,'matches':links,'partial':truncated,
+            'partial_source':not source_complete}
 
 
 def main()->None:
@@ -179,8 +196,8 @@ def main()->None:
     p.add_argument('--boamp',type=Path,default=BOAMP)
     p.add_argument('--sidecar',type=Path,default=SIDECAR)
     args=p.parse_args()
-    if not 1<=args.limit<=50000 or args.offset<0 or not 1<=args.max_notices_per_buyer<=MAX_LOCAL:
-        p.error('limit 1..50000, offset >= 0, max-notices-per-buyer 1..4000')
+    if not 1<=args.limit<=50000 or args.offset<0 or not 0<=args.max_notices_per_buyer<=MAX_LOCAL:
+        p.error('limit 1..50000, offset >= 0, max-notices-per-buyer 0 (illimité) ou 1..4000')
     if args.contract_key and not re.fullmatch(r'[a-f0-9]{40}',args.contract_key):
         p.error('Clé contrat : 40 chiffres hexadécimaux')
     if args.resume and (args.contract_key or args.offset):
@@ -212,7 +229,8 @@ def main()->None:
             side.commit()
             print('Position de reprise locale:',new_offset)
     print('Contrats:',outcome['contracts'],'| Avis liés:',outcome['matches'],
-          '| Recherches incomplètes (trop d’avis):',outcome['partial'])
+          '| Recherches incomplètes (trop d’avis):',outcome['partial'],
+          '| Source BOAMP partielle:',outcome['partial_source'])
     print('Aucune requête HTTP. Aucune modification DECP/BOAMP. Aucun paiement supposé.')
 
 
