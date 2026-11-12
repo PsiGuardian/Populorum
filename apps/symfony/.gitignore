@@ -15,6 +15,7 @@
 /data/research/public-procurement*.sqlite*
 /data/research/procurement-financial-evidence.sqlite*
 /data/research/procurement-auto-concordance.sqlite*
+/data/research/boamp-national.sqlite*
 /data/geography/*.sqlite
 /data/geography/*.sqlite-wal
 /data/geography/*.sqlite-shm
