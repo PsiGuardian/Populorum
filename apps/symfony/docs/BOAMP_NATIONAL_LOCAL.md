@@ -151,6 +151,21 @@ mkdir -p var/log
 ) 9>var/boamp-local-match.lock
 ```
 
+### Tolérance morphologique des intitulés
+
+Le rapprochement documentaire normalise légèrement les pluriels français
+dans **la comparaison des titres** (par exemple `internats` → `internat`,
+`chambres` → `chambre`). Le seuil de similarité reste à **35 %**,
+et le SIRET de l'acheteur doit toujours apparaître dans le contenu de
+l'avis. Les termes utilisés pour interroger l'API officielle ne changent pas.
+
+Ce traitement permet de classer les deux avis normands `24-31681` et
+`24-80963` comme **candidats** pour le marché de mobilier d'internat.
+**Ce ne sont pas des concordances de procédure confirmées**, car la
+référence DECP n'a pas été retrouvée dans les avis. La normalisation
+des titres ne peut jamais transformer une référence numérique
+ordinaire en preuve d'identité contractuelle.
+
 Les SIRET extraits sont **tous les SIRET cités dans les avis**, pas une
 preuve que chacun est celui de l'acheteur. Un même marché peut avoir
 plusieurs lots ; toute relation ambiguë reste candidate.
