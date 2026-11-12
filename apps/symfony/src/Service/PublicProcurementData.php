@@ -442,6 +442,64 @@ final class PublicProcurementData
             if ($db->query("SELECT value FROM metadata WHERE key='schema'")->fetchColumn() !== 'populorum-boamp-concordance-1') {
                 return $empty;
             }
+            // Prefer the locally indexed national BOAMP corpus when this
+            // contract was processed. Never download notices during HTTP.
+            $hasLocal = $db->query("SELECT 1 FROM sqlite_master
+                WHERE type='table' AND name='local_checks'")->fetchColumn();
+            if ($hasLocal) {
+                $localCheck = $db->prepare('SELECT checked_at,status,scanned_notices,
+                    matched_notices,truncated,source_revision
+                    FROM local_checks WHERE contract_key=?');
+                $localCheck->execute([$key]);
+                $local = $localCheck->fetch();
+                if ($local) {
+                    $localQuery = $db->prepare("SELECT idweb,status,basis,title,url,
+                        publication_date,notice_kind,notice_sha AS notice_sha256,
+                        '' AS notice_total_eur,first_seen_at,last_seen_at
+                        FROM local_matches WHERE contract_key=? AND active=1
+                        ORDER BY status,last_seen_at DESC,idweb LIMIT 80");
+                    $localQuery->execute([$key]);
+                    $confirmed = [];
+                    $candidates = [];
+                    $ids = [];
+                    foreach ($localQuery->fetchAll() as $notice) {
+                        $ids[$notice['idweb']] = true;
+                        if ($notice['status'] === 'procedure_ids') {
+                            $confirmed[] = $notice;
+                        } else {
+                            $candidates[] = $notice;
+                        }
+                    }
+                    // Old API-derived evidence must not disappear merely
+                    // because a national import was subsequently performed.
+                    $legacyQuery = $db->prepare('SELECT idweb,status,basis,title,url,
+                        publication_date,notice_kind,notice_sha256,notice_total_eur,
+                        first_seen_at,last_seen_at FROM reference_matches
+                        WHERE contract_key=? ORDER BY status,last_seen_at DESC LIMIT 80');
+                    $legacyQuery->execute([$key]);
+                    foreach ($legacyQuery->fetchAll() as $notice) {
+                        if (isset($ids[$notice['idweb']])) {
+                            continue;
+                        }
+                        $notice['basis'] = 'Ancien rapprochement individuel : ' . $notice['basis'];
+                        if ($notice['status'] === 'procedure_ids') {
+                            $confirmed[] = $notice;
+                        } else {
+                            $candidates[] = $notice;
+                        }
+                    }
+
+                    return ['status' => $local['status'],
+                        'checked_at' => $local['checked_at'],
+                        'confirmed' => $confirmed,
+                        'candidates' => $candidates,
+                        'source' => 'index_national_local',
+                        'scanned_notices' => (int) $local['scanned_notices'],
+                        'truncated' => (bool) $local['truncated'],
+                        'source_revision' => $local['source_revision']];
+                }
+            }
+
             $query = $db->prepare('SELECT checked_at,status FROM checks WHERE contract_key=?');
             $query->execute([$key]);
             $check = $query->fetch();
