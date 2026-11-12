@@ -1,0 +1,161 @@
+#!/usr/bin/env python3
+"""Audit the morphological behaviour of BOAMP title matching on ALL INSEE communes.
+
+This script does not declare or invent municipality demonyms and does not
+modify any database. It checks the entire locally installed COG 2026 catalog
+for ambiguities created by singular/plural token normalization.
+
+From apps/symfony:
+  python3 tools/audit_boamp_commune_morphology.py
+  python3 tools/audit_boamp_commune_morphology.py --report var/cog-report.txt --rows var/cog-communes.tsv
+"""
+from __future__ import annotations
+import argparse
+from collections import defaultdict
+import csv
+from pathlib import Path
+import re
+import sqlite3
+import unicodedata
+
+from reconcile_procurement_boamp import terms,title_terms
+
+ROOT=Path(__file__).resolve().parents[1]
+GEOGRAPHY=ROOT/'data/geography/communes-2026.sqlite'
+DEFAULT_REPORT=ROOT/'var/boamp-cog-2026-report.txt'
+DEFAULT_ROWS=ROOT/'var/boamp-cog-2026-communes.tsv'
+
+
+def clean(value:str)->str:
+    raw=unicodedata.normalize('NFKD',value.casefold().replace('œ','oe').replace('æ','ae'))
+    raw=''.join(c for c in raw if not unicodedata.combining(c))
+    return ' '.join(re.findall(r'[a-z0-9]+',raw))
+
+
+def inspect(path:Path,minimum:int=34000)->tuple[list[dict],dict]:
+    if not path.is_file():
+        raise ValueError('Référentiel INSEE absent : installer communes-2026.sqlite '
+                         '(php bin/console app:geography:install --env=demo)')
+    uri='file:'+str(path.resolve())+'?mode=ro'
+    with sqlite3.connect(uri,uri=True) as db:
+        db.row_factory=sqlite3.Row
+        tables={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        if not {'metadata','communes'}.issubset(tables):
+            raise ValueError('Référentiel INSEE incomplet : tables communes/metadata manquantes')
+        vintage=db.execute("SELECT value FROM metadata WHERE key='vintage'").fetchone()
+        if vintage is None or vintage[0]!='2026':
+            raise ValueError('Millésime COG 2026 requis (aucun mélange de millésimes)')
+        records=db.execute('SELECT code,name FROM communes ORDER BY code').fetchall()
+    if len(records)<minimum:
+        raise ValueError(f'COG insuffisant : {len(records)} communes < {minimum}')
+
+    canonical=defaultdict(set)
+    normalized_terms=defaultdict(set)
+    all_rows=[]
+    for r in records:
+        code=str(r['code'])
+        name=str(r['name'])
+        if not re.fullmatch(r'(?:[0-9]{5}|2[AB][0-9]{3})',code):
+            raise ValueError('Code INSEE invalide : '+code)
+        if not name.strip():
+            raise ValueError('Libellé de commune vide : '+code)
+        full=clean(name)
+        raw=set(terms(name))
+        norm=title_terms(name)
+        key=' '.join(sorted(norm))
+        canonical[full].add(code)
+        normalized_terms[key].add(code)
+        all_rows.append({
+            'code_insee':code,'commune_officielle':name,
+            'libelle_normalise':full,'cle_lexicale':key,
+            'termes_modifies':' '.join(sorted(raw-norm)),
+            'termes_crees':' '.join(sorted(norm-raw)),
+        })
+
+    distinct=len({r['code_insee'] for r in all_rows})
+    if distinct!=len(all_rows):
+        raise ValueError('Codes INSEE dupliqués')
+
+    aliases_ambiguous=0
+    plural_impacted=0
+    exact_name_collisions=0
+    for row in all_rows:
+        same_name=canonical[row['libelle_normalise']]
+        same_terms=normalized_terms[row['cle_lexicale']]
+        row['homonymes_nom_officiel']=len(same_name)
+        row['homonymes_cle_lexicale']=len(same_terms)
+        row['autres_codes_cle_lexicale']=' '.join(sorted(same_terms-{row['code_insee']}))
+        if len(same_name)>1:exact_name_collisions+=1
+        if len(same_terms)>1:aliases_ambiguous+=1
+        if row['termes_modifies'] or row['termes_crees']:plural_impacted+=1
+
+    summary={
+        'communes':len(all_rows),
+        'codes_uniques':distinct,
+        'libelles_officiels_avec_homonymes':exact_name_collisions,
+        'cles_lexicales_ambigues':aliases_ambiguous,
+        'libelles_affectes_par_normalisation':plural_impacted,
+        'annee':2026,
+    }
+    return all_rows,summary
+
+
+def write_results(rows:list[dict],summary:dict,report:Path,table:Path)->None:
+    report.parent.mkdir(parents=True,exist_ok=True)
+    table.parent.mkdir(parents=True,exist_ok=True)
+    with table.open('w',encoding='utf-8',newline='') as output:
+        columns=['code_insee','commune_officielle','libelle_normalise',
+                 'cle_lexicale','termes_modifies','termes_crees',
+                 'homonymes_nom_officiel','homonymes_cle_lexicale',
+                 'autres_codes_cle_lexicale']
+        writer=csv.DictWriter(output,fieldnames=columns,delimiter='\t')
+        writer.writeheader()
+        writer.writerows(rows)
+    with report.open('w',encoding='utf-8') as output:
+        output.write('AUDIT GEOGRAPHIQUE BOAMP / INSEE COG 2026\n')
+        output.write('Source : https://www.insee.fr/fr/information/8740222\n')
+        output.write('Périmètre : toutes les communes du millésime 2026 (TYPECOM=COM).\n')
+        output.write('AUCUNE association contractuelle ne peut être prouvée par une forme de nom.\n')
+        output.write('Les gentilés ne figurent pas dans le COG : aucun gentilé artificiel généré.\n')
+        output.write('Normands/Normandie désigne une région et un adjectif, pas un pluriel de commune.\n\n')
+        for key,val in summary.items():
+            output.write(f'{key} : {val}\n')
+        output.write('\nNOMS SENSIBLES / AMBIGUITES (max. 40 exemples)\n')
+        examples=[r for r in rows if r['homonymes_cle_lexicale']>1]
+        examples.sort(key=lambda r:(-r['homonymes_cle_lexicale'],r['code_insee']))
+        for r in examples[:40]:
+            output.write(f"{r['code_insee']} | {r['commune_officielle']} | "
+                         f"codes partageant la clé lexicale : {r['autres_codes_cle_lexicale']}\n")
+        output.write('\nLes variantes lexicales ambiguës ne doivent jamais devenir des identifiants géographiques.\n')
+        output.write('Utiliser le code INSEE lorsqu’il est explicitement déclaré ; sinon garder une piste incertaine.\n')
+        output.write('Détail exhaustif (une ligne par commune) : '+str(table)+'\n')
+
+
+def main()->None:
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--geography',type=Path,default=GEOGRAPHY)
+    parser.add_argument('--report',type=Path,default=DEFAULT_REPORT)
+    parser.add_argument('--rows',type=Path,default=DEFAULT_ROWS)
+    parser.add_argument('--min-communes',type=int,default=34000)
+    args=parser.parse_args()
+    if args.min_communes<1:
+        parser.error('--min-communes doit être positif')
+    if args.report.resolve()==args.rows.resolve():
+        parser.error('Rapport et tableau doivent être deux fichiers distincts')
+    if args.report.resolve()==args.geography.resolve() or args.rows.resolve()==args.geography.resolve():
+        parser.error('Interdiction de réécrire la base INSEE')
+    try:
+        rows,summary=inspect(args.geography,args.min_communes)
+        write_results(rows,summary,args.report,args.rows)
+    except (sqlite3.Error,ValueError,OSError) as error:
+        parser.exit(1,'ERREUR : '+str(error)+'\n')
+    print('COG 2026 contrôlé :',summary['communes'],'communes ;',
+          summary['cles_lexicales_ambigues'],'clés lexicales ambiguës ;',
+          summary['libelles_affectes_par_normalisation'],'libellés concernés par la morphologie.')
+    print('Rapport :',args.report)
+    print('Détail de chaque commune :',args.rows)
+    print('Bases INSEE, BOAMP et DECP non modifiées.')
+
+
+if __name__=='__main__':
+    main()
