@@ -148,7 +148,7 @@ def second_look(contract: dict) -> list[str]:
 def run(db: sqlite3.Connection,sidecar: sqlite3.Connection,rows: list[dict],online: bool,local: bool=False,history: bool=False) -> str:
     output=['AUDIT DOCUMENTAIRE BOAMP - DECP','Toute absence de correspondance signifie INDETERMINE, jamais aucun lien.','']
     checks=potential=confirmed=0
-    local_checks=local_potential=local_confirmed=local_conflicts=0
+    local_checks=local_potential=local_confirmed=local_conflicts=local_phase=0
     for i,row in enumerate(rows,1):
         check,refs=known(sidecar,row['contract_key'])
         checks+=bool(check)
@@ -181,6 +181,7 @@ def run(db: sqlite3.Connection,sidecar: sqlite3.Connection,rows: list[dict],onli
                 local_potential+=sum(x['status']=='candidate' for x in local_refs)
                 local_confirmed+=sum(x['status']=='procedure_ids' for x in local_refs)
                 local_conflicts+=sum(x['status']=='object_conflict' for x in local_refs)
+                local_phase+=sum(x['status']=='phase_conflict' for x in local_refs)
                 output.append('    Couverture '+single_line(local_check['status'])+
                     ' | avis inspectés '+str(local_check['scanned_notices'])+
                     ' | plafond atteint '+str(bool(local_check['truncated']))+
@@ -192,6 +193,9 @@ def run(db: sqlite3.Connection,sidecar: sqlite3.Connection,rows: list[dict],onli
                     if r['status']=='object_conflict':
                         output.append('      AVERTISSEMENT : ancien candidat API éventuellement reclassé ; '
                                       'conflit lexical indicatif, et non absence prouvée de lien.')
+                    if r['status']=='phase_conflict':
+                        output.append('      AVERTISSEMENT : maîtrise d’œuvre distincte des travaux DECP '
+                                      '(CPV 45) ; même opération possible, lien direct non attesté.')
                 if not local_refs:
                     output.append('    INDETERMINE : aucun avis lié dans la couverture disponible.')
                 if local_check['status']=='partial':
@@ -242,7 +246,8 @@ def run(db: sqlite3.Connection,sidecar: sqlite3.Connection,rows: list[dict],onli
         output.append('LOCAL : '+str(local_checks)+' contrats examinés ; '+
              str(local_confirmed)+' concordances de procédure ; '+
              str(local_potential)+' candidats ; '+
-             str(local_conflicts)+' avis à conflit d’objet ; couverture partielle possible.')
+             str(local_conflicts)+' avis à conflit d’objet ; '+
+             str(local_phase)+' avis à phase distincte ; couverture partielle possible.')
     return '\n'.join(output)+'\n'
 
 

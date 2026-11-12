@@ -23,7 +23,7 @@ import zlib
 from import_boamp_national import DEFAULT_DB as BOAMP,SCHEMA_VERSION as BOAMP_SCHEMA,EXPORT
 from reconcile_procurement_boamp import (NATIONAL, SIDECAR, SCHEMA as OLD_SCHEMA,
                                         SCHEMA_VERSION as OLD_VERSION,
-                                        classify,terms,title_terms,geographic_text,project_object_conflict,ROOT)
+                                        classify,terms,title_terms,geographic_text,project_object_conflict,distinct_procurement_phase,ROOT)
 
 LOCAL_SCHEMA="""
 CREATE TABLE IF NOT EXISTS local_checks(
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS local_scan_history(
 CREATE INDEX IF NOT EXISTS local_scan_history_contract
  ON local_scan_history(contract_key,scan_id DESC);
 """
-ALGORITHM_VERSION='boamp-local-v1.2-object-conflict-review'
+ALGORITHM_VERSION='boamp-local-v1.3-phase-scope-review'
 MAX_LOCAL=4000
 GEOGRAPHY=ROOT / 'data/geography/communes-2026.sqlite'
 
@@ -262,11 +262,24 @@ def evaluate(contract:dict,notices:list[dict],truncated:bool,
                     flag['boamp_target']+
                     " ». Indice contradictoire, pas preuve d'absence de lien.")
                 document['rule_evidence']['project_conflict']=flag
+            else:
+                phase=distinct_procurement_phase(
+                    candidate,str(document['title']))
+                if phase is not None:
+                    document['status']='phase_conflict'
+                    document['basis']=(
+                        "Périmètres de marché à distinguer : le CPV DECP "+
+                        phase['decp_cpv']+
+                        " décrit des travaux, mais l'avis BOAMP annonce une "
+                        "maîtrise d’œuvre. Même opération possible, "
+                        "marché et lot non attestés ; à examiner.")
+                    document['rule_evidence']['procurement_phase']=phase
         document['notice_sha']=row['source_sha']
         matches.append(document)
     # Source exactness outranks title similarity; never merge distinct lots.
     matches.sort(key=lambda m:(0 if m['status']=='procedure_ids' else
-                            1 if m['status']=='candidate' else 2,m['idweb']))
+                            1 if m['status']=='candidate' else
+                            2 if m['status']=='phase_conflict' else 3,m['idweb']))
     return matches
 
 

@@ -264,7 +264,87 @@ def test_tierce_conflict_keeps_audit_trail():
         assert side.execute('SELECT COUNT(*) FROM local_decision_history').fetchone()[0]==before
 
 
+def test_chessy_design_not_same_works_market():
+    """Two 2023 design notices are not counted as 2025 lot-3 works leads."""
+    contract={
+        'contract_key':'d'*40,'buyer_id':'21770111900018',
+        'original_id':'2025300000000000','notice_date':'2505-11-27',
+        'object':("Pièce d'eau et aménagements écologiques - "
+                  "Aménagement paysager du parc du château de Chessy"),
+        'cpv':'45232454-1','kind':'market'}
+    design=("Maitrise d'oeuvre pour des travaux d'aménagement paysagers "
+            "au parc du château de Chessy")
+    titles=[
+        ('23-45168',design),('23-81447',design),
+        ('25-78808',"Aménagement paysager du parc du château de Chessy"),
+        ('25-92465',"Aménagement paysager du parc du château de Chessy "
+                    "Lot n°1 : Aménagement paysagers et plantations "
+                    "Lot n°2 : VRD "
+                    "Lot n°3 : Pièce d'eau et aménagements écologiques"),
+    ]
+    with sqlite3.connect(':memory:') as boamp, sqlite3.connect(':memory:') as side:
+        boamp.row_factory=side.row_factory=sqlite3.Row
+        boamp.executescript(BOAMP_SCHEMA)
+        boamp.execute("INSERT INTO metadata VALUES('schema',?)",(SCHEMA_VERSION,))
+        side.executescript(LOCAL_SCHEMA)
+        for ident,title in titles:
+            record={'idweb':ident,'objet':title,'dateparution':'2025-08-14',
+                'url_avis':'https://www.boamp.fr/pages/avis/?q=idweb:'+ident,
+                'donnees':{'SIRET':contract['buyer_id'],'reference':'autre'}}
+            import_jsonl(boamp,io.BytesIO((json.dumps(record)+'\n').encode()),
+                         'https://official.example/chessy')
+        seen,capped=postings(boamp,contract['buyer_id'])
+        assert len(seen)==4 and not capped
+        new=evaluate(contract,seen,capped,boamp)
+        result={x['idweb']:x for x in new}
+        assert {k:v['status'] for k,v in result.items()}=={
+            '23-45168':'phase_conflict','23-81447':'phase_conflict',
+            '25-78808':'candidate','25-92465':'candidate'}
+        assert all('procurement_phase' in result[k]['rule_evidence']
+                   for k in ('23-45168','23-81447'))
+        assert all('procurement_phase' not in result[k]['rule_evidence']
+                   for k in ('25-78808','25-92465'))
+        old=[dict(x,status='candidate',
+                  basis='Ancienne piste même projet sans distinction de phase')
+             for x in new]
+        save(side,contract['contract_key'],old,13,False,'17',
+             source_complete=False,contract=contract,rule_hash='a'*64)
+        save(side,contract['contract_key'],new,13,False,'17',
+             source_complete=False,contract=contract,rule_hash='b'*64)
+        selected=side.execute("""SELECT idweb,status FROM local_matches
+            WHERE contract_key=? AND active=1 ORDER BY idweb""",
+            (contract['contract_key'],)).fetchall()
+        assert [(r['idweb'],r['status']) for r in selected]==[
+            ('23-45168','phase_conflict'),('23-81447','phase_conflict'),
+            ('25-78808','candidate'),('25-92465','candidate')]
+        count=side.execute("""SELECT matched_notices FROM local_checks
+            WHERE contract_key=?""",(contract['contract_key'],)).fetchone()[0]
+        assert count==2
+        recorded=side.execute("""SELECT idweb,classification FROM
+            local_decision_history WHERE contract_key=? AND
+            algorithm_sha256=? ORDER BY idweb""",
+            (contract['contract_key'],'b'*64)).fetchall()
+        assert [(r['idweb'],r['classification']) for r in recorded]==[
+            ('23-45168','phase_conflict'),('23-81447','phase_conflict'),
+            ('25-78808','candidate'),('25-92465','candidate')]
+        events=side.execute('SELECT COUNT(*) FROM local_decision_history').fetchone()[0]
+        save(side,contract['contract_key'],new,13,False,'17',
+             source_complete=False,contract=contract,rule_hash='b'*64)
+        assert side.execute('SELECT COUNT(*) FROM local_decision_history').fetchone()[0]==events
+        # An exact procedure reference outranks a title-based phase warning.
+        proc=dict(contract,original_id='AO25CHESSYLOT3')
+        exact={'idweb':'23-45168','objet':design,
+               'url_avis':'https://www.boamp.fr/pages/avis/?q=idweb:23-45168',
+               'dateparution':'2025-01-01',
+               'donnees':{'SIRET':contract['buyer_id'],
+                          'reference':'AO25CHESSYLOT3'}}
+        from reconcile_procurement_boamp import classify
+        verified=classify(proc,exact)
+        assert verified is not None and verified['status']=='procedure_ids'
+
+
 def main():
+    test_chessy_design_not_same_works_market()
     test_tierce_conflict_keeps_audit_trail()
     test_scan_history_including_zero_candidates()
     test_append_only_decision_versioning()

@@ -96,6 +96,7 @@
             <p><strong>Statut « candidat » :</strong> SIRET cité et au moins trois termes communs, avec une similarité d'au moins <strong>35 %</strong>. <strong>Statut « identifiants concordants » :</strong> SIRET et référence distinctive cités dans l'avis ; une référence purement numérique exige en plus une forte concordance lexicale, calculée sans assouplissement morphologique. Ces statuts concernent une <em>piste de procédure</em>, jamais l'attribution certaine d'un lot ou un paiement.</p>
             <p><strong>Communes aux noms courts :</strong> lorsqu'un code INSEE est explicitement déclaré côté DECP et que le nom officiel est unique dans le COG 2026, un seul indice lexical supplémentaire peut être utilisé pour classer un <em>candidat</em>. Il faut aussi retrouver ce nom dans les deux intitulés, un contexte géographique dans l'avis BOAMP, au moins deux termes substantiels déjà communs et le SIRET cité. Les 35 % de similarité restent obligatoires. Les noms homonymes, tels que « Le Pin », ne bénéficient pas de cette règle. <strong>Le BOAMP n'atteste pas pour autant le code INSEE : aucune commune ni aucun marché n'est certifié par cette déduction.</strong></p>
             <p><strong>Contradictions de projets :</strong> si deux titres parlent explicitement de la « création » de deux objets distinctifs sans terme commun (par exemple « pôle enfance » et « maison de l'économie »), l'avis reste consultable mais quitte les candidats automatiques pour un examen contradictoire. Cette règle étroite ne s'applique pas aux concordances de références contractuelles explicites, ni aux simples différences de vocabulaire ou aux travaux comportant plusieurs objets. Elle peut elle aussi commettre des erreurs.</p>
+            <p><strong>Phases contractuelles distinctes :</strong> un lot de travaux (CPV DECP commençant par 45) peut appartenir à la même opération qu'un avis de maîtrise d’œuvre, sans être le même marché. Le moteur classe à part les avis mentionnant explicitement cette maîtrise d’œuvre lorsque le DECP porte sur des travaux, sauf référence contractuelle expressément concordante ou intitulé ambigu. Ce classement est une alerte documentaire, jamais une démonstration d'absence de lien.</p>
             <p><strong>Précautions :</strong> un SIRET cité peut désigner un autre intervenant que l'acheteur ; une référence peut être réutilisée ou mentionnée dans un autre contexte ; la normalisation linguistique peut confondre des opérations ; les archives peuvent être incomplètes et les dates DECP aberrantes sont conservées mais ne servent pas à exclure automatiquement une piste. Les gentilés (par exemple « normands » / « Normandie ») ne constituent pas des identifiants géographiques officiels. <strong>Une absence de candidat ne signifie pas une absence de lien.</strong></p>
             <p><strong>Méthode vérifiable :</strong> <a href="https://github.com/PsiGuardian/Populorum/blob/main/apps/symfony/tools/reconcile_procurement_boamp.py" target="_blank" rel="noopener noreferrer">code du classement</a> · <a href="https://github.com/PsiGuardian/Populorum/blob/main/apps/symfony/docs/BOAMP_NATIONAL_LOCAL.md" target="_blank" rel="noopener noreferrer">protocole, limites et importations</a>.</p>
           </div>
@@ -139,6 +140,19 @@
             {% for n in auto.conflicts %}
               <article class="dossier-source">
                 <p class="dossier-source-label">Objet distinctif contradictoire à vérifier · BOAMP {{ n.idweb }}</p>
+                <a href="{{ n.url }}" target="_blank" rel="noopener noreferrer">{{ n.title }}</a>
+                <p>{{ n.basis }}</p>
+              </article>
+            {% endfor %}
+          </details>
+        {% endif %}
+        {% if (auto.phase_alerts|default([])) is not empty %}
+          <details class="dossier-disclosure">
+            <summary>{{ auto.phase_alerts|length }} avis concernant possiblement une autre phase du projet (hors candidats)</summary>
+            <p class="dossier-note">Un contrat de travaux (CPV commençant par 45) ne constitue pas automatiquement le même marché que la prestation de maîtrise d’œuvre d'une opération portant sur le même site. Le signal découle du CPV DECP et des mots explicites de l'intitulé BOAMP. Il ne démontre ni l'absence de lien entre les opérations, ni l'identité d'un lot ou d'une dépense.</p>
+            {% for n in auto.phase_alerts %}
+              <article class="dossier-source">
+                <p class="dossier-source-label">Phase contractuelle à distinguer · BOAMP {{ n.idweb }}</p>
                 <a href="{{ n.url }}" target="_blank" rel="noopener noreferrer">{{ n.title }}</a>
                 <p>{{ n.basis }}</p>
               </article>

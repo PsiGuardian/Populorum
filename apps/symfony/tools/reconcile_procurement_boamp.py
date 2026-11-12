@@ -165,6 +165,51 @@ def project_object_conflict(decp_title: str, boamp_title: str) -> dict | None:
     }
 
 
+def distinct_procurement_phase(contract: dict, boamp_title: str) -> dict | None:
+    """Conservative *review flag* for work contract vs design-services notice.
+
+    CPV 45... declares works on the DECP side. An explicit BOAMP title
+    'maîtrise d'œuvre' normally describes a separate services contract,
+    even when both documents concern the same infrastructure or place.
+
+    The outcome does NOT establish legal non-identity; a title alone can
+    omit context, and an official procedure reference always wins.
+    """
+    cpv = re.sub(r'[^0-9]', '', str(contract.get('cpv') or ''))
+    if not re.fullmatch(r'45[0-9]{6}[0-9]?',cpv):
+        return None
+    decp_title = geographic_text(str(contract.get('object') or ''))
+    notice_title = geographic_text(boamp_title)
+    if not decp_title or not notice_title:
+        return None
+    design = r'\bmaitrise d oeuvre\b'
+    # A mixed works/design market or a DECP explicitly including design
+    # cannot be distinguished with this title-only rule.
+    if re.search(design,decp_title):
+        return None
+    if re.search(r'\b(conception realisation|marche global)\b',notice_title):
+        return None
+    if not re.search(design,notice_title):
+        return None
+    if re.search(r'\bmaitrise d oeuvre et (?:des |de |les )?travaux\b',
+                 notice_title):
+        return None
+    if re.search(r'\btravaux et (?:la |de )?maitrise d oeuvre\b',
+                 notice_title):
+        return None
+    # A title with both phases outside the standard "pour des travaux"
+    # phrase is ambiguous; leave it among ordinary candidates.
+    return {
+        'reason_code': 'decp_works_vs_boamp_design_services',
+        'decp_cpv': str(contract.get('cpv') or ''),
+        'decp_phase_hint': 'travaux (CPV 45)',
+        'boamp_phase_hint': 'maîtrise d’œuvre (intitulé BOAMP)',
+        'method': 'decp_cpv_45_and_explicit_boamp_design_title',
+        'legal_link_excluded': False,
+        'lot_identity_established': False,
+    }
+
+
 def exact_token(needle: str, haystack: str) -> bool:
     if not needle:
         return False

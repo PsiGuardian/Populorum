@@ -8,7 +8,7 @@ import sys
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression, title_terms, terms, geographic_text, corroborated_short_commune, project_object_conflict
+from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression, title_terms, terms, geographic_text, corroborated_short_commune, project_object_conflict, distinct_procurement_phase
 from audit_procurement_concordance import contracts as audit_contracts, run as audit_report, official_query as audit_official_query, decision_timeline, scan_timeline
 
 
@@ -240,7 +240,40 @@ def test_tierce_project_conflict_is_narrow():
         same,"Travaux de construction d'un pôle enfance à Tiercé") is None
 
 
+def test_chessy_works_vs_design_services():
+    works={'object':("Pièce d'eau et aménagements écologiques - "
+                     "Aménagement paysager du parc du château de Chessy"),
+           'cpv':'45232454-1','kind':'market'}
+    previous=("Maitrise d'oeuvre pour des travaux d'aménagement paysagers "
+              "au parc du château de Chessy")
+    flag=distinct_procurement_phase(works,previous)
+    assert flag is not None
+    assert flag['reason_code']=='decp_works_vs_boamp_design_services'
+    assert flag['decp_cpv']=='45232454-1'
+    assert flag['legal_link_excluded'] is False
+    assert flag['lot_identity_established'] is False
+    # Not a different phase just because the notice has several lots
+    # or is about the whole works procedure.
+    assert distinct_procurement_phase(
+        works,"Aménagement paysager du parc du château de Chessy "
+              "Lot n°3 : Pièce d'eau et aménagements écologiques") is None
+    # Ambiguous/mixed titles must stay candidates for deeper checks.
+    assert distinct_procurement_phase(
+        works,"Travaux et maîtrise d'œuvre pour le parc de Chessy") is None
+    assert distinct_procurement_phase(
+        works,"Marché global de conception-réalisation "
+              "avec maîtrise d'œuvre au parc de Chessy") is None
+    assert distinct_procurement_phase(
+        {**works,'cpv':'71000000-8'}, previous) is None
+    assert distinct_procurement_phase(
+        {**works,'object':"Maîtrise d'œuvre et travaux au parc de Chessy"},
+        previous) is None
+    assert distinct_procurement_phase(
+        {**works,'cpv':'4523245'},previous) is None
+
+
 def main():
+    test_chessy_works_vs_design_services()
     test_short_communes_need_explicit_context_and_decp_code()
     test_normandie_title_plural()
     assert following_offset(40,10,10)==50

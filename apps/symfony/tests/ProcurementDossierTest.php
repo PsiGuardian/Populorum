@@ -54,6 +54,8 @@ final class ProcurementDossierTest extends TestCase
         self::assertStringContainsString('algorithm_version', $template);
         self::assertStringContainsString('auto.scan_history', $template);
         self::assertStringContainsString('auto.conflicts', $template);
+        self::assertStringContainsString('auto.phase_alerts', $template);
+        self::assertStringContainsString('Phases contractuelles distinctes', $template);
         self::assertStringContainsString('Contradictions de projets', $template);
         self::assertStringContainsString('aucun avis retenu', $template);
         self::assertStringContainsString('factors_json', $template);
@@ -217,6 +219,20 @@ SQL);
                 'Concours pour la création d’une maison de l’économie à Tiercé',
                 'https://www.boamp.fr/pages/avis/?q=idweb:25-14275',
                 '2025-02-07', 'Avis', '2026-11-12', '2026-11-12', 1]);
+        // Prior online matches cannot override a newer phase warning.
+        $localDb->prepare('INSERT INTO reference_matches VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
+            ->execute([$a, '23-45168', 'candidate',
+                'Ancien rapprochement documentaire non contextualisé',
+                'Maitrise d œuvre de travaux au parc de Chessy',
+                'https://www.boamp.fr/pages/avis/?q=idweb:23-45168',
+                '2023-04-06', 'Avis', str_repeat('d', 64), '',
+                '2026-11-12', '2026-11-12']);
+        $localDb->prepare('INSERT INTO local_matches VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
+            ->execute([$a, '23-45168', str_repeat('d', 64), 'phase_conflict',
+                'Avis maîtrise d œuvre distinct du contrat de travaux',
+                'Maitrise d œuvre de travaux au parc de Chessy',
+                'https://www.boamp.fr/pages/avis/?q=idweb:23-45168',
+                '2023-04-06', 'Avis', '2026-11-12', '2026-11-12', 1]);
         $localDb = null;
         $localDetail = $reader->detail($a);
         self::assertSame('checked', $localDetail['automatic_concordance']['status']);
@@ -224,6 +240,8 @@ SQL);
         self::assertSame(20, $localDetail['automatic_concordance']['scanned_notices']);
         self::assertCount(1, $localDetail['automatic_concordance']['candidates']);
         self::assertCount(1, $localDetail['automatic_concordance']['conflicts']);
+        self::assertCount(1, $localDetail['automatic_concordance']['phase_alerts']);
+        self::assertSame('23-45168', $localDetail['automatic_concordance']['phase_alerts'][0]['idweb']);
         self::assertSame('25-14275', $localDetail['automatic_concordance']['conflicts'][0]['idweb']);
         self::assertCount(1, $localDetail['automatic_concordance']['confirmed']);
         self::assertSame('26-123456', $localDetail['automatic_concordance']['confirmed'][0]['idweb']);
