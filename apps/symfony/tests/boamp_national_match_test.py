@@ -254,8 +254,8 @@ def test_tierce_conflict_keeps_audit_trail():
             ORDER BY event_id""",(contract['contract_key'],)).fetchall()
         assert [r['classification'] for r in history]==[
             'candidate','object_conflict']
-        assert side.execute("""SELECT result,matched_notices FROM
-            local_scan_history ORDER BY scan_id DESC LIMIT 1""").fetchone()==(
+        assert tuple(side.execute("""SELECT result,matched_notices FROM
+            local_scan_history ORDER BY scan_id DESC LIMIT 1""").fetchone())==(
             'pistes_observees',1)
         before=side.execute('SELECT COUNT(*) FROM local_decision_history').fetchone()[0]
         save(side,contract['contract_key'],examined,
