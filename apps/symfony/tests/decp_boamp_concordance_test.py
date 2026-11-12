@@ -9,7 +9,7 @@ from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression, title_terms, terms, geographic_text, corroborated_short_commune
-from audit_procurement_concordance import contracts as audit_contracts, run as audit_report, official_query as audit_official_query
+from audit_procurement_concordance import contracts as audit_contracts, run as audit_report, official_query as audit_official_query, decision_timeline
 
 
 def fixture():
@@ -108,6 +108,9 @@ def test_audit_read_only():
         assert 'CANDIDATE BOAMP 26-123456' in with_local
         assert 'LOCAL : 1 contrats examinés' in with_local
         assert national.execute('SELECT COUNT(*) FROM contracts').fetchone()[0]==2
+        assert decision_timeline(sidecar,good_contract['contract_key'])==[]
+        with_history=audit_report(national,sidecar,selected,False,True,True)
+        assert 'Aucun événement versionné disponible' in with_history
 
 
 def test_audit_official_query_params():

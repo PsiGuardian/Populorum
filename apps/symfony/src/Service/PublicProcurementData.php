@@ -427,7 +427,7 @@ final class PublicProcurementData
      */
     private function automaticConcordance(string $key): array
     {
-        $empty = ['status' => 'not_run', 'checked_at' => null, 'confirmed' => [], 'candidates' => []];
+        $empty = ['status' => 'not_run', 'checked_at' => null, 'confirmed' => [], 'candidates' => [], 'history' => []];
         $file = $this->projectDir . '/data/research/procurement-auto-concordance.sqlite';
         if (!is_file($file)) {
             return $empty;
@@ -489,6 +489,21 @@ final class PublicProcurementData
                         }
                     }
 
+                    // Display the verified algorithm-version timeline, if installed.
+                    // Older sidecars have no such table and remain readable.
+                    $history = [];
+                    $hasHistory = $db->query("SELECT 1 FROM sqlite_master
+                        WHERE type='table' AND name='local_decision_history'")->fetchColumn();
+                    if ($hasHistory) {
+                        $timeline = $db->prepare('SELECT idweb,event_type,classification,
+                            algorithm_version,algorithm_sha256,notice_sha,source_revision,
+                            corpus_status,basis,factors_json,recorded_at
+                            FROM local_decision_history WHERE contract_key=?
+                            ORDER BY event_id DESC LIMIT 25');
+                        $timeline->execute([$key]);
+                        $history = $timeline->fetchAll();
+                    }
+
                     return ['status' => $local['status'],
                         'checked_at' => $local['checked_at'],
                         'confirmed' => $confirmed,
@@ -496,7 +511,8 @@ final class PublicProcurementData
                         'source' => 'index_national_local',
                         'scanned_notices' => (int) $local['scanned_notices'],
                         'truncated' => (bool) $local['truncated'],
-                        'source_revision' => $local['source_revision']];
+                        'source_revision' => $local['source_revision'],
+                        'history' => $history];
                 }
             }
 

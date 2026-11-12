@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 from collections import Counter,OrderedDict
 from datetime import datetime,timezone
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -38,7 +39,22 @@ CREATE TABLE IF NOT EXISTS local_matches(
  last_seen_at TEXT NOT NULL,active INTEGER NOT NULL CHECK(active IN (0,1)),
  PRIMARY KEY(contract_key,idweb,notice_sha));
 CREATE INDEX IF NOT EXISTS local_matches_contract ON local_matches(contract_key,active,status);
+-- Append-only observations: previous decisions and unobserved matches are
+-- never overwritten. Legacy rows are explicitly marked as unverifiable v0.
+CREATE TABLE IF NOT EXISTS local_decision_history(
+ event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+ contract_key TEXT NOT NULL,idweb TEXT NOT NULL,notice_sha TEXT NOT NULL,
+ algorithm_version TEXT NOT NULL,algorithm_sha256 TEXT NOT NULL,
+ contract_sha256 TEXT NOT NULL,event_type TEXT NOT NULL,
+ classification TEXT NOT NULL,basis TEXT NOT NULL,
+ factors_json TEXT NOT NULL,source_revision TEXT NOT NULL,
+ corpus_status TEXT NOT NULL,recorded_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS local_history_contract
+ ON local_decision_history(contract_key,event_id DESC);
+CREATE INDEX IF NOT EXISTS local_history_notice
+ ON local_decision_history(contract_key,idweb,event_id DESC);
 """
+ALGORITHM_VERSION='boamp-local-v1.1-decision-history'
 MAX_LOCAL=4000
 GEOGRAPHY=ROOT / 'data/geography/communes-2026.sqlite'
 
@@ -66,6 +82,39 @@ def short_unique_communes(path:Path)->dict[str,str]:
         and not title_terms(str(name))
         and re.fullmatch(r'(?:[0-9]{5}|2[AB][0-9]{3})',str(code).upper())
     }
+
+
+def algorithm_sha256()->str:
+    """SHA-256 of both actual rule and runner sources (not a guessed version)."""
+    digest=hashlib.sha256()
+    for name in ('reconcile_procurement_boamp.py','match_boamp_national.py'):
+        payload=(ROOT/'tools'/name).read_bytes()
+        digest.update(name.encode('utf-8')+b'\0')
+        digest.update(payload)
+    return digest.hexdigest()
+
+
+def contract_sha256(contract:dict)->str:
+    fields=('contract_key','buyer_id','original_id','object','notice_date',
+            'cpv','kind','location_type','location_code')
+    payload={field:contract.get(field) for field in fields}
+    return hashlib.sha256(json.dumps(payload,ensure_ascii=False,
+        sort_keys=True,separators=(',',':')).encode('utf-8')).hexdigest()
+
+
+def append_history(sidecar:sqlite3.Connection,contract_key:str,
+                   notice_id:str,notice_sha:str,version:str,
+                   algorithm_hash:str,contract_hash:str,event_type:str,
+                   classification:str,basis:str,factors:dict,
+                   source_revision:str,coverage:str,now:str)->None:
+    sidecar.execute("""INSERT INTO local_decision_history
+     (contract_key,idweb,notice_sha,algorithm_version,algorithm_sha256,
+      contract_sha256,event_type,classification,basis,factors_json,
+      source_revision,corpus_status,recorded_at)
+     VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+     (contract_key,notice_id,notice_sha,version,algorithm_hash,contract_hash,
+      event_type,classification,basis,json.dumps(factors,ensure_ascii=False,
+      sort_keys=True,separators=(',',':')),source_revision,coverage,now))
 
 
 def utc_now()->str:
@@ -154,12 +203,72 @@ def evaluate(contract:dict,notices:list[dict],truncated:bool,
 
 def save(sidecar:sqlite3.Connection,contract_key:str,matches:list[dict],
          inspected:int,truncated:bool,source_revision:str,
-         source_complete:bool=True)->None:
+         source_complete:bool=True,contract:dict|None=None,
+         rule_hash:str|None=None)->None:
+    """Preserve every algorithm decision transition, including withdrawals.
+
+    When a prior result was stored before this feature, preserve its known
+    label as a legacy snapshot, never fabricate its method or its scoring.
+    A partially covered archive causes 'not_observed', NOT a disproof.
+    """
     now=utc_now()
-    # Previously linked documents are retained as historical observations.
-    # On rescans they may become inactive but are never discarded.
-    sidecar.execute('UPDATE local_matches SET active=0 WHERE contract_key=?',(contract_key,))
+    coverage='partial' if truncated or not source_complete else 'checked'
+    version=ALGORITHM_VERSION
+    fingerprint=rule_hash or algorithm_sha256()
+    contract_hash=contract_sha256(contract or {'contract_key':contract_key})
+    old=sidecar.execute("""SELECT idweb,notice_sha,status,basis
+        FROM local_matches WHERE contract_key=? AND active=1
+        ORDER BY idweb,notice_sha""",(contract_key,)).fetchall()
+
+    # One-time capture of pre-versioning evidence. Exact previous method,
+    # parameters and date cannot be reconstructed from older sidecars.
+    for row in old:
+        exists=sidecar.execute("""SELECT 1 FROM local_decision_history
+            WHERE contract_key=? AND idweb=? LIMIT 1""",
+            (contract_key,row['idweb'])).fetchone()
+        if exists is None:
+            append_history(sidecar,contract_key,row['idweb'],row['notice_sha'],
+                           'legacy-unversioned','','','legacy_snapshot',
+                           row['status'],row['basis'],{},'unknown','unknown',now)
+
+    # A withdrawal here means "not observed in this recheck". It does not
+    # mean the historic BOAMP notice was false or did not exist.
+    new_ids={row['idweb'] for row in matches}
+    for row in old:
+        if row['idweb'] in new_ids:
+            continue
+        append_history(sidecar,contract_key,row['idweb'],row['notice_sha'],
+                       version,fingerprint,contract_hash,'not_observed',
+                       'not_observed',
+                       'Avis non retenu dans ce nouveau passage ; lien non exclu',
+                       {'source_coverage':coverage,'reason':'not_observed_in_current_scan'},
+                       source_revision,coverage,now)
+
+    # Retain historic source versions, but only present the current scan.
+    sidecar.execute('UPDATE local_matches SET active=0 WHERE contract_key=?',
+                    (contract_key,))
     for match in matches:
+        previous=sidecar.execute("""SELECT event_type,classification,basis,
+            notice_sha,algorithm_sha256,contract_sha256,factors_json
+            FROM local_decision_history
+            WHERE contract_key=? AND idweb=? ORDER BY event_id DESC LIMIT 1""",
+            (contract_key,match['idweb'])).fetchone()
+        factors=match.get('rule_evidence') or {}
+        factors_json=json.dumps(factors,ensure_ascii=False,sort_keys=True,
+                                separators=(',',':'))
+        is_same=(previous is not None and
+                 previous['event_type']=='observed' and
+                 previous['classification']==match['status'] and
+                 previous['basis']==match['basis'] and
+                 previous['notice_sha']==match['notice_sha'] and
+                 previous['algorithm_sha256']==fingerprint and
+                 previous['contract_sha256']==contract_hash and
+                 previous['factors_json']==factors_json)
+        if not is_same:
+            append_history(sidecar,contract_key,match['idweb'],
+                           match['notice_sha'],version,fingerprint,
+                           contract_hash,'observed',match['status'],
+                           match['basis'],factors,source_revision,coverage,now)
         sidecar.execute("""INSERT INTO local_matches(contract_key,idweb,notice_sha,status,basis,
           title,url,publication_date,notice_kind,first_seen_at,last_seen_at,active)
           VALUES(?,?,?,?,?,?,?,?,?,?,?,1)
@@ -175,8 +284,7 @@ def save(sidecar:sqlite3.Connection,contract_key:str,matches:list[dict],
       truncated=excluded.truncated,source_revision=excluded.source_revision,
       status=excluded.status""",
       (contract_key,now,inspected,len(matches),int(truncated),source_revision,
-       'partial' if truncated or not source_complete else 'checked'))
-
+       coverage))
 
 def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Connection,
             records:list[dict],max_candidates:int=MAX_LOCAL,
@@ -188,6 +296,7 @@ def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Con
     buyer_cache:OrderedDict[str,tuple[list[dict],bool]]=OrderedDict()
     source_revision=boamp.execute('SELECT COALESCE(MAX(import_id),0) FROM imports').fetchone()[0]
     source_complete=complete_official_export(boamp)
+    rule_hash=algorithm_sha256()
     for c in records:
         buyer=str(c.get('buyer_id') or '')
         if buyer not in buyer_cache:
@@ -198,7 +307,8 @@ def process(decp:sqlite3.Connection,boamp:sqlite3.Connection,sidecar:sqlite3.Con
         notices,over=buyer_cache[buyer]
         matched=evaluate(c,notices,over,boamp,short_communes=short_communes)
         save(sidecar,str(c['contract_key']),matched,len(notices),over,
-             str(source_revision),source_complete=source_complete)
+             str(source_revision),source_complete=source_complete,
+             contract=c,rule_hash=rule_hash)
         count+=1
         links+=len(matched)
         truncated+=over
@@ -265,6 +375,8 @@ def main()->None:
     print('Contrats:',outcome['contracts'],'| Avis liés:',outcome['matches'],
           '| Recherches incomplètes (trop d’avis):',outcome['partial'],
           '| Source BOAMP partielle:',outcome['partial_source'])
+    print('Algorithme :',ALGORITHM_VERSION,'| SHA-256 règles :',algorithm_sha256())
+    print('Journal historique append-only : local_decision_history.')
     print('Aucune requête HTTP. Aucune modification DECP/BOAMP. Aucun paiement supposé.')
 
 

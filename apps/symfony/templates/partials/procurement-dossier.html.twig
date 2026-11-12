@@ -142,6 +142,30 @@
             <p class="dossier-empty">Le rapprochement automatique n'a pas encore été exécuté pour cette fiche. Les preuves originales restent accessibles ci-dessous.</p>
           {% endif %}
         {% endif %}
+        {% if (auto.history|default([])) is not empty %}
+          <details class="dossier-disclosure">
+            <summary>Historique des décisions algorithmiques ({{ auto.history|length }} événements récents)</summary>
+            <p class="dossier-note">Journal ajouté sans modification des déclarations DECP ni des avis BOAMP. Une décision ancienne dite « historique non versionné » conserve son statut, mais son algorithme exact ne peut être reconstitué. « Non retrouvé » signifie seulement que l'avis n'a pas été sélectionné lors du dernier passage ; les archives peuvent être incomplètes.</p>
+            {% for e in auto.history %}
+              <article class="dossier-source">
+                <p class="dossier-source-label">Avis BOAMP {{ e.idweb }} · {{ e.event_type }} · {{ e.classification }}</p>
+                <p>Version {{ e.algorithm_version }}{% if e.algorithm_sha256 %} · empreinte règles <code>{{ e.algorithm_sha256|slice(0,16) }}</code>{% endif %}</p>
+                <p>{{ e.basis }}</p>
+                {% if e.event_type != 'legacy_snapshot' %}
+                  <details class="dossier-disclosure">
+                    <summary>Facteurs et provenance de cette décision</summary>
+                    <small>Observation : {{ e.recorded_at }} · import BOAMP {{ e.source_revision }} · couverture {{ e.corpus_status }} · empreinte de l'avis <code>{{ e.notice_sha|slice(0,16) }}</code></small>
+                    <pre>{{ e.factors_json }}</pre>
+                  </details>
+                {% else %}
+                  <p class="dossier-note">Reprise d'une décision déjà présente avant la création du journal ; calcul original non conservé.</p>
+                {% endif %}
+              </article>
+            {% endfor %}
+          </details>
+        {% elseif auto.source|default('') == 'index_national_local' %}
+          <p class="dossier-note">Historique des décisions versionnées non encore disponible pour cette fiche.</p>
+        {% endif %}
         <p class="dossier-note">Source : <a href="https://www.boamp.fr/pages/donnees-ouvertes-et-api/" target="_blank" rel="noopener noreferrer">API officielle BOAMP / DILA</a>. Les vérifications automatiques sont exécutées par lot, jamais pendant une requête web.</p>
       </section>
 
