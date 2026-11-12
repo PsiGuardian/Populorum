@@ -137,6 +137,31 @@ final class PublicProcurementData
         return ['valid' => true, 'raw' => $raw, 'reason' => ''];
     }
 
+    /**
+     * A warning is a research lead, not a correction or an exclusion.
+     * Exact source amounts, even anomalous ones, must remain visible.
+     */
+    public static function amountWarnings(int|string|null $cents, string $locationType = '', string $locationCode = ''): array
+    {
+        $warnings = [];
+        if ($cents !== null) {
+            $euros = intdiv((int) $cents, 100);
+            if ($euros < 0) {
+                $warnings[] = 'Montant négatif déclaré : vérifier la nature de la correction ou de la saisie.';
+            }
+            if ($euros >= 1000000000 && preg_match('/9{7,}/', (string) $euros) === 1) {
+                $warnings[] = 'Suite de chiffres 9 dans un montant très élevé : vérifier un éventuel montant conventionnel ou une saisie atypique.';
+            } elseif ($euros >= 10000000000) {
+                $warnings[] = 'Montant supérieur à dix milliards d’euros : vérifier son périmètre et la pièce contractuelle.';
+            }
+        }
+        if ($locationType === 'Code postal' && preg_match('/\\A[0-9]{5}\\z/D', $locationCode) !== 1) {
+            $warnings[] = 'Le lieu est déclaré comme code postal, mais son format n’est pas celui d’un code postal français à cinq chiffres.';
+        }
+
+        return $warnings;
+    }
+
     /** Server-side pagination; query fields are never interpolated into SQL. */
     public function search(array $filters, int $offset = 0, int $limit = 30): array
     {
@@ -242,6 +267,12 @@ final class PublicProcurementData
         });
         foreach ($rows as &$row) {
             $row['date_quality'] = self::dateQuality((string) $row['notice_date']);
+        $row['amount_warnings'] = self::amountWarnings(
+            $row['amount_initial_cents'], (string) $row['location_type'], (string) $row['location_code'],
+        );
+            $row['amount_warnings'] = self::amountWarnings(
+                $row['amount_initial_cents'], (string) $row['location_type'], (string) $row['location_code'],
+            );
         }
         unset($row);
 
@@ -271,6 +302,10 @@ final class PublicProcurementData
         $stmt->execute([$key]);
         $row['sources'] = $stmt->fetchAll();
         $row['history'] = $this->publicationHistory($db, $key);
+        // Similar buyer-issued references are linked for investigation, never
+        // silently merged: different lots can reuse an identical original ID.
+        $row['reference_relations'] = $this->relatedReferences($db, $row);
+        $row['financial_evidence'] = $this->financialEvidence($key);
         // Statements are curated and source-linked, never inferred from the DECP
         // contract amount. Candidate BOAMP matches cannot assert any factual claim.
         $stmt = $db->prepare('SELECT category,source_type,source_name,source_url,document_title,
@@ -317,6 +352,62 @@ final class PublicProcurementData
         }
 
         return $row;
+    }
+
+    /**
+     * Documentary references with the same buyer, kind and published identifier.
+     * They are NOT asserted to be the same legal contract or the same lot.
+     */
+    private function relatedReferences(\\PDO $db, array $row): array
+    {
+        if (trim((string) $row['original_id']) === '' || trim((string) $row['buyer_id']) === '') {
+            return ['items' => [], 'more' => false];
+        }
+        $query = $db->prepare('SELECT contract_key,object,original_id,notice_date,cpv,
+                    amount_initial_cents,location_type,location_code
+                FROM contracts
+                WHERE buyer_id=? AND kind=? AND original_id=? AND contract_key<>?
+                ORDER BY notice_date DESC,contract_key LIMIT 31');
+        $query->execute([$row['buyer_id'], $row['kind'], $row['original_id'], $row['contract_key']]);
+        $items = $query->fetchAll();
+        $more = count($items) > 30;
+
+        return ['items' => array_slice($items, 0, 30), 'more' => $more];
+    }
+
+    /**
+     * Optional, independent ledger of separately sourced financial documents.
+     * Never infer a payment from DECP amounts, calculate a sum of snapshots,
+     * or write to the original national DECP database.
+     */
+    private function financialEvidence(string $key): array
+    {
+        $file = $this->projectDir . '/data/research/procurement-financial-evidence.sqlite';
+        if (!is_file($file)) {
+            return [];
+        }
+        try {
+            $db = new \\PDO('sqlite:file:' . $file . '?mode=ro', null, null, [
+                \\PDO::ATTR_ERRMODE => \\PDO::ERRMODE_EXCEPTION,
+                \\PDO::ATTR_TIMEOUT => 2,
+                \\PDO::ATTR_DEFAULT_FETCH_MODE => \\PDO::FETCH_ASSOC,
+            ]);
+            $db->exec('PRAGMA query_only=ON');
+            if ($db->query("SELECT value FROM metadata WHERE key='schema'")->fetchColumn() !== 'populorum-procurement-financial-1') {
+                return [];
+            }
+            $stmt = $db->prepare('SELECT stage,amount_cents,accounting_scope,as_of_date,
+                    period_start,period_end,document_date,source_issuer,
+                    document_title,source_url,source_excerpt,recorded_at
+                    FROM financial_evidence WHERE contract_key=?
+                    ORDER BY as_of_date DESC,recorded_at DESC LIMIT 100');
+            $stmt->execute([$key]);
+
+            return $stmt->fetchAll();
+        } catch (\\PDOException) {
+            // A missing or incompatible optional sidecar must never hide DECP.
+            return [];
+        }
     }
 
     /** Comparison of contract *snapshots*; not a financial commitment/payments reconciliation.
