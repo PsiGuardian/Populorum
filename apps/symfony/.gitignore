@@ -13,6 +13,7 @@
 /data/research/decp-sources/
 /data/research/decp-backups/
 /data/research/public-procurement*.sqlite*
+/data/research/procurement-financial-evidence.sqlite*
 /data/geography/*.sqlite
 /data/geography/*.sqlite-wal
 /data/geography/*.sqlite-shm
