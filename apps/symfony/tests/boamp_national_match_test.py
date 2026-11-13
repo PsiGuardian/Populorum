@@ -291,6 +291,20 @@ def test_chessy_design_not_same_works_market():
             record={'idweb':ident,'objet':title,'dateparution':'2025-08-14',
                 'url_avis':'https://www.boamp.fr/pages/avis/?q=idweb:'+ident,
                 'donnees':{'SIRET':contract['buyer_id'],'reference':'autre'}}
+            if ident=='25-92465':
+                # Synthetic eForms-shaped data, not a claim about the actual
+                # published Chessy notice. The original notice remains
+                # immutable and no DECP/BOAMP identity is established.
+                record['donnees']['EFORMS']={'ContractAwardNotice':{
+                    'ext:UBLExtensions':{'ext:UBLExtension':{
+                        'ext:ExtensionContent':{'efext:EformsExtension':{
+                            'efac:NoticeResult':{'efac:LotResult':{
+                                'cbc:ID':'RES-0003',
+                                'efac:TenderLot':{'cbc:ID':'LOT-0003'},
+                                'efac:LotTender':{'cbc:ID':'TEN-0003'},
+                                'efac:SettledContract':{'cbc:ID':'CON-0003'},
+                                'cbc:TenderResultCode':{'#text':'selec-w'}
+                            }}}}}}}}
             import_jsonl(boamp,io.BytesIO((json.dumps(record)+'\n').encode()),
                          'https://official.example/chessy')
         seen,capped=postings(boamp,contract['buyer_id'])
@@ -313,6 +327,17 @@ def test_chessy_design_not_same_works_market():
         assert 'lot BOAMP n°3' in result['25-92465']['basis']
         assert 'lot_scope' not in result['25-78808']['rule_evidence']
         assert 'lot_scope' not in result['23-45168']['rule_evidence']
+        eforms=result['25-92465']['rule_evidence']['eforms_award_lot_results']
+        assert len(eforms['links'])==1
+        assert eforms['links'][0]['eforms_lot_id']=='LOT-0003'
+        assert eforms['links'][0]['eforms_result_id']=='RES-0003'
+        assert eforms['links'][0]['eforms_settled_contract_id']=='CON-0003'
+        assert eforms['identifiers_unique_within_notice_only']
+        assert not eforms['decp_contract_identity_established']
+        assert not eforms['invoice_or_payment_established']
+        assert 'eForms BOAMP' in result['25-92465']['basis']
+        assert 'eforms_award_lot_results' not in result['25-78808']['rule_evidence']
+
 
         old=[dict(x,status='candidate',
                   basis='Ancienne piste même projet sans distinction de phase')
@@ -337,6 +362,12 @@ def test_chessy_design_not_same_works_market():
         assert [(r['idweb'],r['classification']) for r in recorded]==[
             ('23-45168','phase_conflict'),('23-81447','phase_conflict'),
             ('25-78808','candidate'),('25-92465','candidate')]
+        source_json=side.execute("""SELECT factors_json FROM local_decision_history
+            WHERE contract_key=? AND idweb='25-92465'
+            AND algorithm_sha256=?""",
+            (contract['contract_key'],'b'*64)).fetchone()[0]
+        assert json.loads(source_json)['eforms_award_lot_results']['links'][0][
+            'eforms_lot_id']=='LOT-0003'
         events=side.execute('SELECT COUNT(*) FROM local_decision_history').fetchone()[0]
         save(side,contract['contract_key'],new,13,False,'17',
              source_complete=False,contract=contract,rule_hash='b'*64)
