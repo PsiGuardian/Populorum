@@ -8,7 +8,7 @@ import sys
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression, title_terms, terms, geographic_text, corroborated_short_commune, project_object_conflict, distinct_procurement_phase
+from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression, title_terms, terms, geographic_text, corroborated_short_commune, project_object_conflict, distinct_procurement_phase, boamp_heading_lots, decp_declared_lot_number, lot_title_evidence
 from audit_procurement_concordance import contracts as audit_contracts, run as audit_report, official_query as audit_official_query, decision_timeline, scan_timeline
 
 
@@ -272,7 +272,56 @@ def test_chessy_works_vs_design_services():
         {**works,'cpv':'4523245'},previous) is None
 
 
+def test_explicit_lot_heading_does_not_certify_award():
+    chessy={
+        'original_id':'2025300000000000',  # Not a lot identifier!
+        'object':("Pièce d'eau et aménagements écologiques - "
+                  "Aménagement paysager du parc du château de Chessy"),
+        'cpv':'45232454-1'}
+    notice=("Aménagement paysager du parc du château de Chessy "
+            "Lot n°1 : Aménagement paysagers et plantations "
+            "Lot n°2 : VRD "
+            "Lot n°3 : Pièce d'eau et aménagements écologiques")
+    lot=lot_title_evidence(chessy,notice)
+    assert lot is not None
+    assert [x['number'] for x in lot['advertised_lots']]==['1','2','3']
+    assert lot['method']=='unique_lot_title_similarity'
+    assert lot['possible_boamp_lot_number']=='3'
+    assert lot['title_jaccard']==1.0
+    assert lot['decp_explicit_lot_number'] is None
+    assert not lot['legal_lot_identity_confirmed']
+    assert not lot['award_or_payment_confirmed']
+    assert not lot['advertised_lots_exhaustive']
+    assert decp_declared_lot_number(chessy) is None
+    # The entire project name alone does not imply an awarded lot.
+    ambiguous=dict(chessy,object='Aménagement paysager du parc du château de Chessy')
+    unresolved=lot_title_evidence(ambiguous,notice)
+    assert unresolved is not None
+    assert unresolved['method']=='indeterminate_title_only'
+    assert 'possible_boamp_lot_number' not in unresolved
+    # Both documents mentioning lot 3 is a stated number, not a legal link.
+    explicit=dict(chessy,object="Lot 03 - Pièce d'eau et aménagements écologiques")
+    same=lot_title_evidence(explicit,notice)
+    assert same['method']=='explicit_lot_number_correspondence'
+    assert same['decp_explicit_lot_number']=='3'
+    assert same['possible_boamp_lot_number']=='3'
+    # If the lot number isn't enumerated, don't infer a legal exclusion.
+    other=dict(chessy,object='LOT 12 PLOMBERIE')
+    absent=lot_title_evidence(other,notice)
+    assert absent['method']=='decp_lot_number_absent_from_published_heading'
+    assert 'possible_boamp_lot_number' not in absent
+    assert not absent['advertised_lots_exhaustive']
+    # Malformed or contradictory BOAMP headings are not reliable lot lists.
+    assert boamp_heading_lots("Lot n°3 : Eau Lot n°3 : Eau") == []
+    assert boamp_heading_lots("Lot n°3 :  Lot n°4 : VRD") == []
+    assert boamp_heading_lots("Aucun lot décrit") == []
+    assert lot_title_evidence(chessy,"Aménagement paysager du parc de Chessy") is None
+    conflict=dict(chessy,object="LOT 2 et LOT 3 : même marché")
+    assert decp_declared_lot_number(conflict) is None
+
+
 def main():
+    test_explicit_lot_heading_does_not_certify_award()
     test_chessy_works_vs_design_services()
     test_short_communes_need_explicit_context_and_decp_code()
     test_normandie_title_plural()
