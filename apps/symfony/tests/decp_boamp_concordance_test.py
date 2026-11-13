@@ -8,7 +8,7 @@ import sys
 from unittest.mock import patch
 from urllib.parse import parse_qs, urlsplit
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression, title_terms, terms, geographic_text, corroborated_short_commune, project_object_conflict, distinct_procurement_phase, boamp_heading_lots, decp_declared_lot_number, lot_title_evidence
+from reconcile_procurement_boamp import classify, SCHEMA, store, exact_token, unique_notice_total, following_offset, fetch_candidates, search_expression, title_terms, terms, geographic_text, corroborated_short_commune, project_object_conflict, distinct_procurement_phase, boamp_heading_lots, decp_declared_lot_number, lot_title_evidence, eforms_award_lot_result_evidence
 from audit_procurement_concordance import contracts as audit_contracts, run as audit_report, official_query as audit_official_query, decision_timeline, scan_timeline
 
 
@@ -320,7 +320,76 @@ def test_explicit_lot_heading_does_not_certify_award():
     assert decp_declared_lot_number(conflict) is None
 
 
+def test_official_eforms_result_links_have_notice_local_scope():
+    example={'idweb':'26-109517','donnees':{'EFORMS':{'ContractAwardNotice':{
+        'ext:UBLExtensions':{'ext:UBLExtension':{'ext:ExtensionContent':{
+            'efext:EformsExtension':{'efac:NoticeResult':{
+                'efac:LotResult':[
+                    {'cbc:ID':{'@schemeName':'result','#text':'RES-0001'},
+                     'cbc:TenderResultCode':{'@listName':'winner-selection-status',
+                                              '#text':'selec-w'},
+                     'efac:TenderLot':{'cbc:ID':'LOT-0003'},
+                     'efac:LotTender':{'cbc:ID':'TEN-0001'},
+                     'efac:SettledContract':{'cbc:ID':'CON-0001'}},
+                    {'cbc:ID':'RES-0002',
+                     'cbc:TenderResultCode':{'#text':'clos-nw'},
+                     'efac:TenderLot':{'cbc:ID':'LOT-0004'}}
+                ]}}}}}}}}}
+    proof=eforms_award_lot_result_evidence(example)
+    assert proof is not None
+    assert proof['notice_idweb']=='26-109517'
+    assert proof['method']=='dila_eforms_contract_award_notice_result'
+    assert len(proof['links'])==2
+    assert proof['links'][0]=={
+        'eforms_result_id':'RES-0001','eforms_lot_id':'LOT-0003',
+        'eforms_tender_id':'TEN-0001',
+        'eforms_settled_contract_id':'CON-0001',
+        'winner_selection_code':'selec-w'}
+    assert proof['links'][1]['eforms_settled_contract_id'] is None
+    assert proof['links'][1]['winner_selection_code']=='clos-nw'
+    assert proof['identifiers_unique_within_notice_only']
+    assert not proof['decp_contract_identity_established']
+    assert not proof['lot_award_established_from_this_join']
+    assert not proof['invoice_or_payment_established']
+    # Even a DECP original ID numerically/textually equal to a local
+    # CON/LOT/RES/TEN ID must NOT become a procedure_ids proof.
+    for internal in ('LOT-0003','CON-0001','RES-0001','TEN-0001'):
+        fake={'contract_key':'b'*40,'buyer_id':'26380030200014',
+              'original_id':internal,
+              'object':'Prestations de nettoyage mécanisé des voiries et parkings'}
+        publication={'idweb':'26-109517',
+                     'objet':'Prestations de nettoyage mécanisé des voiries et parkings',
+                     'url_avis':'https://www.boamp.fr/pages/avis/?q=idweb:26-109517',
+                     'donnees':{
+                        'acheteur':{'SIRET':'26380030200014'},
+                        'EFORMS':example['donnees']['EFORMS']}}
+        matched=classify(fake,publication)
+        assert matched is not None
+        assert matched['status']=='candidate',internal
+    # Same internal LOT-0003 in other notices cannot be joined by itself.
+    another={**example,'idweb':'26-109518'}
+    found=eforms_award_lot_result_evidence(another)
+    assert found['notice_idweb']!='26-109517'
+    assert found['links'][0]['eforms_lot_id']=='LOT-0003'
+    # Unstructured text, wrong XML paths and other notice types do not pass.
+    assert eforms_award_lot_result_evidence({
+        'idweb':'26-109517','donnees':{'EFORMS':{'ContractNotice':{
+            'ext:UBLExtensions':example['donnees']['EFORMS']['ContractAwardNotice']['ext:UBLExtensions']}}}}) is None
+    assert eforms_award_lot_result_evidence({
+        'idweb':'26-109517','donnees':{'EFORMS':{'ContractAwardNotice':{
+            'efac:NoticeResult':{'efac:LotResult':{'cbc:ID':'RES-0001',
+                'efac:TenderLot':{'cbc:ID':'LOT-0003'}}}}}}}) is None
+    broken=json.loads(json.dumps(example))
+    first=broken['donnees']['EFORMS']['ContractAwardNotice']['ext:UBLExtensions'][
+        'ext:UBLExtension']['ext:ExtensionContent']['efext:EformsExtension'][
+        'efac:NoticeResult']['efac:LotResult'][0]
+    first['efac:TenderLot']={'cbc:ID':'LOT-0003-SUFFIX'}
+    result=eforms_award_lot_result_evidence(broken)
+    assert len(result['links'])==1 and result['links'][0]['eforms_lot_id']=='LOT-0004'
+
+
 def main():
+    test_official_eforms_result_links_have_notice_local_scope()
     test_explicit_lot_heading_does_not_certify_award()
     test_chessy_works_vs_design_services()
     test_short_communes_need_explicit_context_and_decp_code()

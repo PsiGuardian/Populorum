@@ -23,7 +23,7 @@ import zlib
 from import_boamp_national import DEFAULT_DB as BOAMP,SCHEMA_VERSION as BOAMP_SCHEMA,EXPORT
 from reconcile_procurement_boamp import (NATIONAL, SIDECAR, SCHEMA as OLD_SCHEMA,
                                         SCHEMA_VERSION as OLD_VERSION,
-                                        classify,terms,title_terms,geographic_text,project_object_conflict,distinct_procurement_phase,lot_title_evidence,ROOT)
+                                        classify,terms,title_terms,geographic_text,project_object_conflict,distinct_procurement_phase,lot_title_evidence,eforms_award_lot_result_evidence,ROOT)
 
 LOCAL_SCHEMA="""
 CREATE TABLE IF NOT EXISTS local_checks(
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS local_scan_history(
 CREATE INDEX IF NOT EXISTS local_scan_history_contract
  ON local_scan_history(contract_key,scan_id DESC);
 """
-ALGORITHM_VERSION='boamp-local-v1.4-lot-title-evidence'
+ALGORITHM_VERSION='boamp-local-v1.5-eforms-award-lot-result-evidence'
 MAX_LOCAL=4000
 GEOGRAPHY=ROOT / 'data/geography/communes-2026.sqlite'
 
@@ -291,6 +291,16 @@ def evaluate(contract:dict,notices:list[dict],truncated:bool,
                         " ; indice documentaire de lot BOAMP n°"+number+
                         " ("+qualifier+
                         ") ; aucune attribution ni identité de lot certifiée")
+        # Structured links are explicitly *inside the BOAMP eForms notice*:
+        # RES / LOT / TEN / CON identifiers are not global contract IDs.
+        # No legal link to a DECP record and no payment are inferred.
+        structured=eforms_award_lot_result_evidence(source)
+        if structured is not None:
+            document['rule_evidence']['eforms_award_lot_results']=structured
+            document['basis']+=(
+                " ; eForms BOAMP : "+str(len(structured['links']))+
+                " relation(s) résultat–lot dans cet avis ; identifiants "
+                "internes, aucun lien direct au lot DECP établi")
         document['notice_sha']=row['source_sha']
         matches.append(document)
     # Source exactness outranks title similarity; never merge distinct lots.

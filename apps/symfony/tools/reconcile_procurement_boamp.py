@@ -324,6 +324,121 @@ def lot_title_evidence(contract:dict,boamp_title:str)->dict | None:
     return result
 
 
+_EFORMS_ID_FORMATS={
+    'lot':re.compile(r'LOT-[0-9]{4,6}'),
+    'result':re.compile(r'RES-[0-9]{4,6}'),
+    'tender':re.compile(r'TEN-[0-9]{4,6}'),
+    'contract':re.compile(r'CON-[0-9]{4,6}'),
+}
+
+
+def _single_ubl_id(value:object,prefix:str)->str | None:
+    """Exact UBL cbc:ID only. No substring scans of descriptions."""
+    if not isinstance(value,dict):
+        return None
+    ident=value.get('cbc:ID')
+    if isinstance(ident,dict):
+        ident=ident.get('#text')
+    if isinstance(ident,str) and _EFORMS_ID_FORMATS[prefix].fullmatch(ident):
+        return ident
+    return None
+
+
+def _limited_objects(value:object,limit:int)->list[dict] | None:
+    if isinstance(value,dict):
+        return [value]
+    if isinstance(value,list) and len(value)<=limit and all(
+            isinstance(item,dict) for item in value):
+        return value
+    return None
+
+
+def eforms_award_lot_result_evidence(notice:dict)->dict | None:
+    """Extract *intra-notice* eForms UBL links, never a DECP identity.
+
+    DILA exposes UBL ContractAwardNotice with NoticeResult/LotResult
+    TenderLot->LOT, LotResult->RES, optional LotTender->TEN and
+    SettledContract->CON. They are scoped to that notice only.
+    No blind recursive search, suffix guessing or award assertions.
+    """
+    if not isinstance(notice,dict):
+        return None
+    full=notice.get('donnees') or notice.get('DONNEES') or {}
+    if isinstance(full,str):
+        try:full=json.loads(full)
+        except (ValueError,TypeError):return None
+    if not isinstance(full,dict):
+        return None
+    eforms=full.get('EFORMS')
+    if not isinstance(eforms,dict):
+        return None
+    root=eforms.get('ContractAwardNotice')
+    if not isinstance(root,dict):
+        return None
+    extensions=root.get('ext:UBLExtensions')
+    if not isinstance(extensions,dict):
+        return None
+    items=_limited_objects(extensions.get('ext:UBLExtension'),16)
+    if items is None:
+        return None
+    results=[]
+    seen=set()
+    for extension in items:
+        content=extension.get('ext:ExtensionContent')
+        if not isinstance(content,dict):
+            continue
+        e=content.get('efext:EformsExtension')
+        if not isinstance(e,dict):
+            continue
+        notice_result=e.get('efac:NoticeResult')
+        if not isinstance(notice_result,dict):
+            continue
+        lot_results=_limited_objects(notice_result.get('efac:LotResult'),128)
+        if lot_results is None:
+            continue
+        for item in lot_results:
+            lot_id=_single_ubl_id(item.get('efac:TenderLot'),'lot')
+            result_id=_single_ubl_id(item,'result')
+            if lot_id is None or result_id is None:
+                continue
+            tender_id=_single_ubl_id(item.get('efac:LotTender'),'tender')
+            contract_id=_single_ubl_id(item.get('efac:SettledContract'),'contract')
+            result_code=item.get('cbc:TenderResultCode')
+            if isinstance(result_code,dict):
+                result_code=result_code.get('#text')
+            if not isinstance(result_code,str) or not re.fullmatch(
+                    r'[a-z0-9-]{1,32}',result_code):
+                result_code=None
+            row={
+                'eforms_result_id':result_id,
+                'eforms_lot_id':lot_id,
+                'eforms_tender_id':tender_id,
+                'eforms_settled_contract_id':contract_id,
+                'winner_selection_code':result_code,
+            }
+            signature=tuple(row.values())
+            if signature not in seen:
+                seen.add(signature)
+                results.append(row)
+    if not results:
+        return None
+    return {
+        'method':'dila_eforms_contract_award_notice_result',
+        'notice_idweb':str(notice.get('idweb') or ''),
+        'source_path':('donnees.EFORMS.ContractAwardNotice.'
+                       'ext:UBLExtensions.ext:UBLExtension.'
+                       'ext:ExtensionContent.efext:EformsExtension.'
+                       'efac:NoticeResult.efac:LotResult'),
+        'links':sorted(results,key=lambda x:(x['eforms_lot_id'],
+                                              x['eforms_result_id'])),
+        'links_exhaustive':False,
+        'identifiers_unique_within_notice_only':True,
+        'decp_contract_identity_established':False,
+        'lot_award_established_from_this_join':False,
+        'invoice_or_payment_established':False,
+    }
+
+
 def exact_token(needle: str, haystack: str) -> bool:
     if not needle:
         return False
@@ -418,10 +533,15 @@ def classify(contract: dict, notice: dict, short_communes: dict[str,str] | None 
                 1,len(name_tokens | title_tokens))
     # A numerical reference may coincide with an amount or date. Do not
     # certify it unless it is long and accompanied by a strong title match.
-    distinctive_reference = (
+    # UBL eForms RES/LOT/TEN/CON are document-scoped identifiers, NOT
+    # distinctive DECP procedure IDs. Matching such a token in the notice
+    # cannot independently prove a shared administrative reference.
+    internal_eforms_id = bool(re.fullmatch(
+        r'(?:RES|LOT|TEN|CON)-[0-9]{4,6}',reference,re.IGNORECASE))
+    distinctive_reference = (not internal_eforms_id and (
         (any(c.isalpha() for c in reference) and any(c.isdigit() for c in reference))
         or (reference.isdigit() and len(reference) >= 10 and raw_overlap >= 0.50)
-    )
+    ))
     if buyer_found and reference_found and distinctive_reference:
         status = 'procedure_ids'
         basis = 'Référence distinctive et SIRET cités dans le contenu de l’avis BOAMP'

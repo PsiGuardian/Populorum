@@ -7,30 +7,101 @@ liens DECP↔BOAMP sont calculés localement, hors des requêtes du site.
 **Ce système ne prouve aucun paiement.** Les montants déclarés, les
 annonces d'attribution et les pièces comptables sont distincts.
 
+## Résultats de lots structurés eForms, sans rapprochement automatique à DECP (v1.5)
+
+Le rapport utilisateur v1.4 du 13 novembre 2026 confirme sur les mêmes
+**25 contrats** : **15 candidats locaux**, **1 procédure à identifiants
+concordants**, **1 conflit d'objet**, **2 avis d'une autre phase**.
+L'avis BOAMP `25-92465` conserve un **indice textuel** pour le lot n°3
+à Chessy ; aucune identité contractuelle n'est établie.
+
+Sur le BOAMP officiel, certains avis d'attribution européens utilisent le
+format **eForms UBL**. Exemple documenté dans les données publiées par la
+DILA : `DONNEES.EFORMS.ContractAwardNotice` peut contenir des chemins
+`efac:NoticeResult.efac:LotResult` avec les identifiants
+`RES-0001` (résultat), `LOT-0001` (lot), `TEN-0001` (offre),
+`CON-0001` (contrat signalé), ainsi qu'un code de résultat.
+Source : https://boamp-datadila.opendatasoft.com/explore/dataset/boamp/api/
+
+La version **`boamp-local-v1.5-eforms-award-lot-result-evidence`**
+extrait **uniquement des liens structurés documentés** dans la branche
+`donnees.EFORMS.ContractAwardNotice.ext:UBLExtensions...efac:NoticeResult.efac:LotResult`.
+Les clés UBL sont lues à leur emplacement exact : aucun balayage
+descriptions/chaînes arbitraires, aucune reconnaissance implicite
+des suffixes numériques, et aucune inférence de bénéficiaire ni de prix.
+Les documents ne présentant pas le schéma attendu conservent leurs
+classements et aucune relation n'est inventée.
+
+Un résultat observable est conservé dans
+`local_decision_history.factors_json.eforms_award_lot_results` :
+l'identifiant de l'avis BOAMP, les couples `RES`–`LOT`, leurs éventuelles
+références `TEN` et `CON`, le code de résultat brut, le chemin du champ
+d'origine et l'empreinte SHA-256 déjà associée à la version de l'avis.
+Les drapeaux de prudence précisent :
+`identifiers_unique_within_notice_only=true`,
+`decp_contract_identity_established=false`,
+`lot_award_established_from_this_join=false` et
+`invoice_or_payment_established=false`.
+
+**Point fondamental :** un identifiant tel que `LOT-0001` ou
+`CON-0001` ne devient PAS une clé nationale reliant des avis
+différents. **La règle de concordance de procédure rejette expressément les références DECP**
+`RES-0001`, `LOT-0001`, `TEN-0001` et `CON-0001` (et les autres
+identifiants de ces quatre familles) comme justificatifs suffisants :
+une chaîne égale dans les deux documents ne devient donc jamais à
+elle seule une preuve d'identité de procédure.
+
+Ces identifiants n'ont de sens que dans le contexte
+de leur avis/document. Un avis indiquant « lauréat sélectionné »
+ne constitue pas une facture ni une preuve de paiement.
+Cette version ne modifie ni le statut d'un candidat ni le
+nombre de candidats. Si de telles données structurées existent
+dans la copie officielle, leur provenance est affichée comme
+un **contexte documentaire interne au BOAMP** ; aucun lien de
+marché ni de lot DECP n'est créé sur ce seul fondement.
+
+Ce test est fondé sur des **fixtures eForms représentatives**
+et doit encore être confronté aux documents réellement présents
+dans le corpus local de l'utilisateur ; il ne présume pas
+que l'avis de Chessy dispose de ces champs.
+
+Après installation, recontrôler le même échantillon en lecture seule
+sur les données DECP et BOAMP :
+
+```bash
+python3 tools/match_boamp_national.py --offset 0 --limit 25 --max-notices-per-buyer 0
+python3 tools/audit_procurement_concordance.py --offset 0 --limit 25 --local --history --output var/boamp-25-eforms-v1-5.txt
+```
+
+Le prochain rapprochement déterministe devra comparer les références
+de procédure explicitement publiées entre DECP, avis et résultat
+contractuel, en conservant toutes les hypothèses comme non établies
+tant qu'il n'existe pas une clé réellement partagée.
+
 ## Lots explicitement publiés : indices textuels vérifiables (v1.4)
 
 Le rapport local v1.3 du 13 novembre 2026 confirme **25 contrats,
 399 avis consultés lors des contrôles, 15 candidats, une concordance
 d’identifiants, un conflit d’objet et deux alertes de phase**. Il reste
-16 contrats sans piste retenue, et la couverture BOAMP est \`partial\`.
+16 contrats sans piste retenue, et la couverture BOAMP est `partial`.
 
-La version **\`boamp-local-v1.4-lot-title-evidence\`** introduit un
+La version **`boamp-local-v1.4-lot-title-evidence`** introduit un
 premier indice d'identification d'un lot, **sans changer les statuts,
 sans importer de nouveaux avis, sans certifier de lot ni de paiement**.
 
 Source et méthode :
 
-1. Dans l'intitulé **\`objet\`** de l'avis BOAMP officiel tel
+1. Dans l'intitulé **`objet`** de l'avis BOAMP officiel tel
    qu'importé et conservé avec son empreinte SHA-256, relever
    uniquement les segments explicites du type
-   \`Lot n°1 : ... Lot n°2 : ... Lot n°3 : ...\`.
+   `Lot n°1 : ... Lot n°2 : ... Lot n°3 : ...`.
    Rejeter les listes ambiguës, les numéros répétés, les libellés
    vides ou démesurés. Ce titre **ne prouve pas l'exhaustivité**
    des lots de l'avis ni une attribution.
 2. Dans l'intitulé et la référence **DECP**, ne reconnaître un
    numéro de lot que s'il est **introduit par « lot »**. Par
-   exemple \`2025300000000000\` n'est pas interprété comme un
-   numéro ; \`Lot 03 - ...\` peut déclarer le n°3.
+   exemple `2025300000000000` n'est pas interprété comme un
+   numéro ; `Lot 03 - ...` peut déclarer le n°3.
 3. S'il existe une mention numérotée de lot des deux côtés, la
    signaler comme **coïncidence documentaire de numéro**, sans
    prouver que la procédure, l'attribution et le titulaire sont
@@ -42,27 +113,27 @@ Source et méthode :
    lots est comparé au fragment spécifique de l'intitulé DECP
    avant la séparation « - », si celui-ci est exploitable.
 5. Les documents vagues ou contradictoires produisent un état
-   \`indeterminate_title_only\` ou une mention de numéro DECP
+   `indeterminate_title_only` ou une mention de numéro DECP
    absent de l'intitulé BOAMP : **jamais une preuve négative**.
 
 **Chessy (lot 3)** : DECP mentionne « Pièce d'eau et
 aménagements écologiques - Aménagement paysager du parc du château
-de Chessy » avec la référence \`2025300000000000\`. L'avis
-BOAMP \`25-92465\` énumère notamment le « Lot n°3 : Pièce d'eau
+de Chessy » avec la référence `2025300000000000`. L'avis
+BOAMP `25-92465` énumère notamment le « Lot n°3 : Pièce d'eau
 et aménagements écologiques ». Le fragment DECP correspond au
 titre de ce lot, donc l'algorithme peut afficher **« indice
 documentaire de lot BOAMP n°3 »**, *non certifiant*.
 Le numéro n'est **pas attesté côté DECP**, l'avis n'atteste pas
 l'identité juridique du marché attribué, et aucun paiement ne
-peut être déduit. L'avis \`25-78808\`, sans liste explicite dans
+peut être déduit. L'avis `25-78808`, sans liste explicite dans
 son titre, reste candidat sans numéro de lot inventé.
 
-Les données calculées restent dans \`local_decision_history.factors_json\`
-avec \`lot_scope.method\`, les numéros et intitulés source, le
+Les données calculées restent dans `local_decision_history.factors_json`
+avec `lot_scope.method`, les numéros et intitulés source, le
 fragment DECP comparé, le score calculé et les drapeaux
-\`legal_lot_identity_confirmed=false\`,
-\`award_or_payment_confirmed=false\` et
-\`advertised_lots_exhaustive=false\`. Une mention courte et
+`legal_lot_identity_confirmed=false`,
+`award_or_payment_confirmed=false` et
+`advertised_lots_exhaustive=false`. Une mention courte et
 explicitement non certifiante est ajoutée au motif visible sur
 la fiche et dans l'audit. Les deux sources DECP et BOAMP sont
 strictement en **lecture seule**.
@@ -83,13 +154,13 @@ par simple ajout d'un seuil statistique.
 
 Contrôle sans réseau, sur les **mêmes 25 contrats** :
 
-\`\`\`bash
+```bash
 python3 tests/decp_boamp_concordance_test.py
 python3 tests/boamp_national_match_test.py
 python3 tools/match_boamp_national.py --offset 0 --limit 25 --max-notices-per-buyer 0
 python3 tools/audit_procurement_concordance.py --offset 0 --limit 25 \
   --local --history --output var/boamp-25-lots-v1-4.txt
-\`\`\`
+```
 
 ## Périmètre contractuel : travaux vs maîtrise d’œuvre (v1.3)
 
@@ -102,26 +173,26 @@ des étapes d'un même programme d'aménagement, mais **un marché de
 maîtrise d’œuvre ne constitue pas, à lui seul, le marché de travaux
 d'un lot**.
 
-La règle conservatrice **\`boamp-local-v1.3-phase-scope-review\`**
-s'applique uniquement aux résultats auparavant \`candidate\` :
+La règle conservatrice **`boamp-local-v1.3-phase-scope-review`**
+s'applique uniquement aux résultats auparavant `candidate` :
 
-1. Le contrat DECP comporte un CPV de travaux \`45......\`, à huit
+1. Le contrat DECP comporte un CPV de travaux `45......`, à huit
    chiffres, avec son éventuelle clé de contrôle.
 2. L'intitulé BOAMP emploie **explicitement « maîtrise d’œuvre »**.
 3. Le DECP ne mentionne pas lui-même la maîtrise d’œuvre ; les
    intitulés mixtes (travaux **et** maîtrise d’œuvre, marché global
    de conception-réalisation) restent indéterminés sur ce point.
 4. **Aucune référence DECP exacte n'est citée dans le document
-   BOAMP**. Les rapprochements \`procedure_ids\` demeurent prioritaires.
+   BOAMP**. Les rapprochements `procedure_ids` demeurent prioritaires.
 
-Le résultat passe de \`candidate\` à **\`phase_conflict\`** : un
+Le résultat passe de `candidate` à **`phase_conflict`** : un
 **avis apparenté à une autre phase**, à contrôler, **hors du compteur
 des candidats directs au contrat de travaux**. Cette distinction
 n'invalide pas le programme auquel l'avis appartient et ne permet
 jamais de prouver une absence de lien. L'avis et son URL restent
-dans \`local_matches\`, visibles dans la fiche publique et l'audit.
-La transition est conservée par \`local_decision_history\`, et les
-anciens candidats de \`reference_matches\` ne sont pas réintroduits
+dans `local_matches`, visibles dans la fiche publique et l'audit.
+La transition est conservée par `local_decision_history`, et les
+anciens candidats de `reference_matches` ne sont pas réintroduits
 en doublon.
 
 Sur le lot de référence, on attend, **à vérifier localement** :
@@ -143,29 +214,29 @@ attribué dans les DECP correspond à l'avis.
 La démarche est **volontairement non exhaustive**. Le CPV lui-même
 peut être erroné, des intitulés peuvent réunir plusieurs prestations,
 des variantes linguistiques peuvent échapper à ce contrôle, et les
-archives BOAMP demeurent \`partial\`. Les dates DECP aberrantes sont
+archives BOAMP demeurent `partial`. Les dates DECP aberrantes sont
 conservées sans correction ni exclusion chronologique artificielle.
 Aucun avis ne valide une facture, un mandat ou un paiement.
 
 Pour recontrôler les 25 contrats sans réseau BOAMP :
 
-\`\`\`bash
+```bash
 python3 tools/match_boamp_national.py --offset 0 --limit 25 --max-notices-per-buyer 0
 python3 tools/audit_procurement_concordance.py --offset 0 --limit 25 \
   --local --history --output var/boamp-25-phases-versionnees.txt
-\`\`\`
+```
 
 ## Réduction des faux positifs : conflit entre objets centraux de projet
 
 L'audit des 25 contrats a identifié un cas concret à **Tiercé**.
 Le DECP concerne un concours pour la création d'un **pôle enfance**.
-Le BOAMP \`24-48133\` porte sur le pôle enfance, tandis que l'avis
-\`25-14275\` porte sur la création d'une **maison de l'économie**.
+Le BOAMP `24-48133` porte sur le pôle enfance, tandis que l'avis
+`25-14275` porte sur la création d'une **maison de l'économie**.
 Le SIRET et plusieurs mots génériques concordent ; le second avis
 recevait 50 % de similarité Jaccard, bien qu'il décrive un projet distinct.
 
-La règle **\`boamp-local-v1.2-object-conflict-review\`** ne modifie
-ni les 35 % de seuil Jaccard, ni la preuve \`procedure_ids\`.
+La règle **`boamp-local-v1.2-object-conflict-review`** ne modifie
+ni les 35 % de seuil Jaccard, ni la preuve `procedure_ids`.
 Après avoir déterminé les candidats, le moteur local compare une seule
 construction linguistique suffisamment explicite :
 
@@ -177,16 +248,16 @@ construction linguistique suffisamment explicite :
 - Une référence contractuelle DECP **explicitement trouvée** dans
   l'avis n'est jamais invalidée par ce contrôle lexical.
 
-La discordance fait passer la publication de \`candidate\` à
-**\`object_conflict\`**. Le lien n'est **plus compté parmi les
+La discordance fait passer la publication de `candidate` à
+**`object_conflict`**. Le lien n'est **plus compté parmi les
 candidats automatiques**, mais l'avis BOAMP, son URL et la
 justification sont **conservés et affichés** dans un groupe dédié.
-Le journal \`local_decision_history\` garde la transition
-\`candidate → object_conflict\`, sans inventer d'identité juridique.
+Le journal `local_decision_history` garde la transition
+`candidate → object_conflict`, sans inventer d'identité juridique.
 
-Les anciennes recherches individuelles \`reference_matches\` restent
+Les anciennes recherches individuelles `reference_matches` restent
 dans SQLite ; lorsqu'une publication figure aussi dans
-\`local_matches\` avec le statut \`object_conflict\`, sa vieille
+`local_matches` avec le statut `object_conflict`, sa vieille
 classification de candidat n'est pas réintroduite dans la fiche
 publique. L'audit des recherches historiques conserve néanmoins
 l'information de son classement antérieur.
@@ -220,12 +291,12 @@ d'une copie brute doit respecter les conditions de réutilisation.
 
 Le premier rapport versionné (12 novembre 2026) comportait 38 événements
 liés aux **19 avis retenus** parmi **25 contrats examinés** : 19
-\`legacy_snapshot\` et 19 \`observed\`. Les **16 contrats sans candidat**
+`legacy_snapshot` et 19 `observed`. Les **16 contrats sans candidat**
 n'avaient aucune entrée dans le journal des décisions, alors que le
 contrôle avait été exécuté. Cette situation n'est pas une preuve
 d'absence de lien.
 
-Le nouveau journal distinct **\`local_scan_history\`** corrige cette
+Le nouveau journal distinct **`local_scan_history`** corrige cette
 limite sans créer d'« avis BOAMP fictif » pour les recherches vides.
 À partir du prochain rapprochement, il conserve pour chaque contrat :
 
@@ -236,29 +307,29 @@ limite sans créer d'« avis BOAMP fictif » pour les recherches vides.
   retenus, afin de distinguer modifications de règles, de documents,
   d'entrées et de résultats ;
 - la date **réelle de la nouvelle exécution** et un résultat
-  \`indetermine\` lorsqu'aucun candidat n'est retenu, ou
-  \`pistes_observees\` si des pistes documentaires existent.
+  `indetermine` lorsqu'aucun candidat n'est retenu, ou
+  `pistes_observees` si des pistes documentaires existent.
 
 Deux exécutions identiques (mêmes règles, données d'entrée, révision
 BOAMP, couverture et résultats) ne génèrent qu'un seul événement.
 Un changement pertinent crée un nouveau relevé, sans écraser
-l'ancien. Le journal historique \`local_decision_history\` est conservé
+l'ancien. Le journal historique `local_decision_history` est conservé
 séparément pour les changements avis par avis.
 
-Le contenu ancien de \`local_checks\` n'est **pas rétroactivement
+Le contenu ancien de `local_checks` n'est **pas rétroactivement
 présenté comme une exécution de l'algorithme actuel** : le premier
-\`local_scan_history\` ne sera créé qu'au prochain passage réel.
-Même si le corpus est marqué \`checked\`, **un résultat sans candidat
+`local_scan_history` ne sera créé qu'au prochain passage réel.
+Même si le corpus est marqué `checked`, **un résultat sans candidat
 n'est jamais une preuve de non-correspondance**, puisque les documents
 non publiés et les autres plateformes peuvent manquer.
 
-Depuis \`apps/symfony\` :
+Depuis `apps/symfony` :
 
-\`\`\`bash
+```bash
 python3 tools/match_boamp_national.py --offset 0 --limit 25 --max-notices-per-buyer 0
 python3 tools/audit_procurement_concordance.py --offset 0 --limit 25 \
   --local --history --output var/boamp-25-scans-versionnes.txt
-\`\`\`
+```
 
 Sur les 25 mêmes contrats, le prochain rapport doit afficher **25
 relevés de contrôle** : **9 contrats avec au moins un avis retenu**
@@ -270,21 +341,21 @@ et l'historique des contrôles est également affiché sur les fiches.
 À partir de cette évolution, le moteur local BOAMP **n'écrase plus la
 justification des rapprochements sans laisser de trace de son classement**.
 La base auxiliaire
-\`data/research/procurement-auto-concordance.sqlite\`
+`data/research/procurement-auto-concordance.sqlite`
 accueille en plus la table **append-only**
-\`local_decision_history\`, créée automatiquement au prochain rapprochement :
+`local_decision_history`, créée automatiquement au prochain rapprochement :
 
 - **Identité documentaire** : clé de contrat DECP, identifiant officiel
-  BOAMP \`idweb\`, SHA-256 du document BOAMP retenu, révision du corpus
-  et état de sa couverture (\`checked\` ou \`partial\`).
+  BOAMP `idweb`, SHA-256 du document BOAMP retenu, révision du corpus
+  et état de sa couverture (`checked` ou `partial`).
 - **Identité des règles** : nom de version
-  \`boamp-local-v1.1-decision-history\` et SHA-256 calculé sur les fichiers
-  effectifs \`reconcile_procurement_boamp.py\` et
-  \`match_boamp_national.py\`.
+  `boamp-local-v1.1-decision-history` et SHA-256 calculé sur les fichiers
+  effectifs `reconcile_procurement_boamp.py` et
+  `match_boamp_national.py`.
 - **Entrées** : SHA-256 des champs de contrat DECP utilisés (SIRET,
   référence, intitulé, date, CPV et lieu déclaré).
-- **Motifs** : statut \`candidate\`, \`procedure_ids\` ou
-  \`not_observed\`, motif textuel et facteurs JSON réellement calculés :
+- **Motifs** : statut `candidate`, `procedure_ids` ou
+  `not_observed`, motif textuel et facteurs JSON réellement calculés :
   SIRET et référence cités, score de Jaccard brut et normalisé, nombre
   de termes communs, seuil, éventuel indice INSEE de nom court.
 - **Transitions** : ajout d'un événement à la première observation
@@ -293,24 +364,24 @@ accueille en plus la table **append-only**
   recherche ne le retrouve pas. Les réexécutions à règles, sources
   et facteurs identiques ne créent pas de doublons de décision.
 
-**Ne jamais assimiler \`not_observed\` à un rejet certain :** les archives
+**Ne jamais assimiler `not_observed` à un rejet certain :** les archives
 peuvent être partielles ou absentes. Les changements de version sont
 des observations algorithmiques, pas une conclusion juridique sur les
 marchés, les lots ou leur paiement.
 
-Les anciens enregistrements \`local_matches\`, créés avant l'introduction
+Les anciens enregistrements `local_matches`, créés avant l'introduction
 du journal, restent consultables. À la première réexécution, un
-événement \`legacy_snapshot\` sauvegarde leur statut connu avec la
-mention \`legacy-unversioned\`. **L'algorithme exact et ses facteurs
+événement `legacy_snapshot` sauvegarde leur statut connu avec la
+mention `legacy-unversioned`. **L'algorithme exact et ses facteurs
 historiques ne peuvent pas être reconstitués** et ne sont pas inventés.
 
 Contrôler toujours seulement les mêmes 25 contrats de référence :
 
-\`\`\`bash
+```bash
 python3 tools/match_boamp_national.py --offset 0 --limit 25 --max-notices-per-buyer 0
 python3 tools/audit_procurement_concordance.py --offset 0 --limit 25 \
   --local --history --output var/boamp-25-historique.txt
-\`\`\`
+```
 
 La fiche publique du marché présente un historique borné aux 25 événements
 les plus récents ; l'audit CLI aux 40 plus récents par contrat. Les lignes
@@ -437,7 +508,7 @@ le **code INSEE n'y est pas attesté**, il est déclaré côté DECP
 et le nom est simplement lu dans un intitulé.
 
 Le catalogue de noms courts est lu au lancement de
-\`tools/match_boamp_national.py\`, et reste **facultatif**.
+`tools/match_boamp_national.py`, et reste **facultatif**.
 Si la base INSEE n'est pas installée, les rapprochements fonctionnent
 comme auparavant, sans bonification géographique.
 
