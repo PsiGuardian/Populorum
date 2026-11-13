@@ -533,10 +533,15 @@ def classify(contract: dict, notice: dict, short_communes: dict[str,str] | None 
                 1,len(name_tokens | title_tokens))
     # A numerical reference may coincide with an amount or date. Do not
     # certify it unless it is long and accompanied by a strong title match.
-    distinctive_reference = (
+    # UBL eForms RES/LOT/TEN/CON are document-scoped identifiers, NOT
+    # distinctive DECP procedure IDs. Matching such a token in the notice
+    # cannot independently prove a shared administrative reference.
+    internal_eforms_id = bool(re.fullmatch(
+        r'(?:RES|LOT|TEN|CON)-[0-9]{4,6}',reference,re.IGNORECASE))
+    distinctive_reference = (not internal_eforms_id and (
         (any(c.isalpha() for c in reference) and any(c.isdigit() for c in reference))
         or (reference.isdigit() and len(reference) >= 10 and raw_overlap >= 0.50)
-    )
+    ))
     if buyer_found and reference_found and distinctive_reference:
         status = 'procedure_ids'
         basis = 'Référence distinctive et SIRET cités dans le contenu de l’avis BOAMP'
