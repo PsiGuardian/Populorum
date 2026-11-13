@@ -57,6 +57,7 @@ final class ProcurementDossierTest extends TestCase
         self::assertStringContainsString('auto.phase_alerts', $template);
         self::assertStringContainsString('Phases contractuelles distinctes', $template);
         self::assertStringContainsString('Indices de lot (intitulé BOAMP uniquement)', $template);
+        self::assertStringContainsString('Résultats de lots structurés eForms', $template);
         self::assertStringContainsString('Contradictions de projets', $template);
         self::assertStringContainsString('aucun avis retenu', $template);
         self::assertStringContainsString('factors_json', $template);
