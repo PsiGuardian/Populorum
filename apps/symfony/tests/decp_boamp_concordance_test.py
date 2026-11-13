@@ -351,6 +351,21 @@ def test_official_eforms_result_links_have_notice_local_scope():
     assert not proof['decp_contract_identity_established']
     assert not proof['lot_award_established_from_this_join']
     assert not proof['invoice_or_payment_established']
+    # Even a DECP original ID numerically/textually equal to a local
+    # CON/LOT/RES/TEN ID must NOT become a procedure_ids proof.
+    for internal in ('LOT-0003','CON-0001','RES-0001','TEN-0001'):
+        fake={'contract_key':'b'*40,'buyer_id':'26380030200014',
+              'original_id':internal,
+              'object':'Prestations de nettoyage des voiries'}
+        publication={'idweb':'26-109517',
+                     'objet':'Prestations de nettoyage des voiries',
+                     'url_avis':'https://www.boamp.fr/pages/avis/?q=idweb:26-109517',
+                     'donnees':{
+                        'acheteur':{'SIRET':'26380030200014'},
+                        'EFORMS':example['donnees']['EFORMS']}}
+        matched=classify(fake,publication)
+        assert matched is not None
+        assert matched['status']=='candidate',internal
     # Same internal LOT-0003 in other notices cannot be joined by itself.
     another={**example,'idweb':'26-109518'}
     found=eforms_award_lot_result_evidence(another)
