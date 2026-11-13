@@ -23,7 +23,7 @@ import zlib
 from import_boamp_national import DEFAULT_DB as BOAMP,SCHEMA_VERSION as BOAMP_SCHEMA,EXPORT
 from reconcile_procurement_boamp import (NATIONAL, SIDECAR, SCHEMA as OLD_SCHEMA,
                                         SCHEMA_VERSION as OLD_VERSION,
-                                        classify,terms,title_terms,geographic_text,project_object_conflict,distinct_procurement_phase,ROOT)
+                                        classify,terms,title_terms,geographic_text,project_object_conflict,distinct_procurement_phase,lot_title_evidence,ROOT)
 
 LOCAL_SCHEMA="""
 CREATE TABLE IF NOT EXISTS local_checks(
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS local_scan_history(
 CREATE INDEX IF NOT EXISTS local_scan_history_contract
  ON local_scan_history(contract_key,scan_id DESC);
 """
-ALGORITHM_VERSION='boamp-local-v1.3-phase-scope-review'
+ALGORITHM_VERSION='boamp-local-v1.4-lot-title-evidence'
 MAX_LOCAL=4000
 GEOGRAPHY=ROOT / 'data/geography/communes-2026.sqlite'
 
@@ -274,6 +274,23 @@ def evaluate(contract:dict,notices:list[dict],truncated:bool,
                         "maîtrise d’œuvre. Même opération possible, "
                         "marché et lot non attestés ; à examiner.")
                     document['rule_evidence']['procurement_phase']=phase
+        # Only an explicitly published BOAMP lot list may supply a lot
+        # number. A title-level match is NEVER a lot award, contract ID,
+        # signed amount or payment. No decision status is upgraded here.
+        if document['status'] in ('candidate','procedure_ids'):
+            lot=lot_title_evidence(candidate,str(source.get('objet') or ''))
+            if lot is not None:
+                document['rule_evidence']['lot_scope']=lot
+                number=lot.get('possible_boamp_lot_number')
+                if number and document['status']=='candidate':
+                    method=lot['method']
+                    qualifier=('même numéro explicitement déclaré côté DECP'
+                               if method=='explicit_lot_number_correspondence'
+                               else 'similarité unique des intitulés')
+                    document['basis']+=(
+                        " ; indice documentaire de lot BOAMP n°"+number+
+                        " ("+qualifier+
+                        ") ; aucune attribution ni identité de lot certifiée")
         document['notice_sha']=row['source_sha']
         matches.append(document)
     # Source exactness outranks title similarity; never merge distinct lots.

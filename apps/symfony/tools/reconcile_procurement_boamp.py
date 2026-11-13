@@ -210,6 +210,120 @@ def distinct_procurement_phase(contract: dict, boamp_title: str) -> dict | None:
     }
 
 
+# Lot numbers and descriptions in an official BOAMP HEADING only. A title
+# is not the official award/lot record. Keep this evidence non-certifying.
+_BOAMP_LOT_HEADER = re.compile(
+    r'(?<!\w)lots?\s+(?:n\s*[°ºo.]?\s*)?0*([0-9]{1,3})\s*[:\-–—]\s*',
+    re.IGNORECASE)
+_DECP_LOT_LABEL = re.compile(
+    r'(?<!\w)lots?\s*(?:n\s*[°ºo.]?\s*)?0*([0-9]{1,3})(?![0-9])',
+    re.IGNORECASE)
+
+
+def boamp_heading_lots(heading: str) -> list[dict]:
+    """Read explicit lot markers and their adjacent titles, not inferred lots.
+
+    Reject an ambiguous source heading (duplicate numbers, empty lot
+    description, too many lots, malformed labels). Never parse unrelated
+    eForms keys or presume that a title enumerates every awarded lot.
+    """
+    if not isinstance(heading,str) or len(heading)>1200:
+        return []
+    matches=list(_BOAMP_LOT_HEADER.finditer(heading))
+    if not matches or len(matches)>24:
+        return []
+    found=[]
+    seen=set()
+    for index,m in enumerate(matches):
+        n=int(m.group(1))
+        if not 1<=n<=999 or n in seen:
+            return []
+        raw=heading[m.end():matches[index+1].start()
+                    if index+1<len(matches) else len(heading)]
+        title=raw.strip(' \t\r\n,;.:–—-')
+        if len(title)<3 or len(title)>240:
+            return []
+        seen.add(n)
+        found.append({'number':str(n),'title':title})
+    return found
+
+
+def decp_declared_lot_number(contract:dict) -> str | None:
+    """Return a number only if explicitly and consistently labelled a lot.
+
+    Arbitrary digits inside DECP IDs or procedure references are NEVER
+    decoded as lot numbers.
+    """
+    nums=set()
+    for value in (contract.get('object'),contract.get('original_id')):
+        if not isinstance(value,str) or len(value)>3000:
+            continue
+        nums.update(str(int(m.group(1))) for m in
+                    _DECP_LOT_LABEL.finditer(value)
+                    if 1<=int(m.group(1))<=999)
+    return next(iter(nums)) if len(nums)==1 else None
+
+
+def lot_title_evidence(contract:dict,boamp_title:str)->dict | None:
+    """Provenance-backed documentary clue, NEVER a legal lot attribution.
+
+    An exact shared *lot label* and a unique strong *title resemblance*
+    are different signals. Preserve that distinction and ambiguity.
+    """
+    lots=boamp_heading_lots(boamp_title)
+    if not lots:
+        return None
+    explicit=decp_declared_lot_number(contract)
+    focus=str(contract.get('object') or '')[:2500]
+    numbered=_DECP_LOT_LABEL.search(focus)
+    if numbered:
+        focus=focus[numbered.end():].lstrip(' \t\r\n:-.–—')
+    # The first fragment often names the DECP's specific lot while the
+    # remainder describes the entire infrastructure (Chessy is an example).
+    # Use this only for a title clue, never for a verified identity.
+    fragment=re.split(r'\s+[-–—]\s+',focus,maxsplit=1)[0]
+    if len(title_terms(fragment))>=2:
+        focus=fragment
+    tokens=title_terms(focus)
+    scored=[]
+    for entry in lots:
+        title_tokens=title_terms(entry['title'])
+        shared=tokens & title_tokens
+        score=len(shared)/max(1,len(tokens|title_tokens))
+        scored.append((score,len(shared),entry,sorted(shared)))
+    scored.sort(key=lambda item:(-item[0],-item[1],int(item[2]['number'])))
+    chosen=None
+    method='indeterminate_title_only'
+    if explicit:
+        chosen=next((row for row in scored
+                     if row[2]['number']==explicit),None)
+        method=('explicit_lot_number_correspondence' if chosen else
+                'decp_lot_number_absent_from_published_heading')
+    elif (scored and scored[0][0]>=0.67 and scored[0][1]>=2
+          and (len(scored)==1 or scored[0][0]-scored[1][0]>=0.20)):
+        chosen=scored[0]
+        method='unique_lot_title_similarity'
+    result={
+        'method':method,
+        'evidence_source':'BOAMP published notice heading (objet)',
+        'decp_source':'DECP contract object and original_id',
+        'decp_explicit_lot_number':explicit,
+        'decp_compared_title_fragment':focus[:180],
+        'advertised_lots':lots,
+        'advertised_lots_exhaustive':False,
+        'legal_lot_identity_confirmed':False,
+        'award_or_payment_confirmed':False,
+    }
+    if chosen:
+        result.update({
+            'possible_boamp_lot_number':chosen[2]['number'],
+            'possible_boamp_lot_title':chosen[2]['title'],
+            'title_jaccard':round(chosen[0],6),
+            'shared_title_terms':chosen[3],
+        })
+    return result
+
+
 def exact_token(needle: str, haystack: str) -> bool:
     if not needle:
         return False

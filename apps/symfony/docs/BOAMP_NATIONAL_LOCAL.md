@@ -7,6 +7,90 @@ liens DECP↔BOAMP sont calculés localement, hors des requêtes du site.
 **Ce système ne prouve aucun paiement.** Les montants déclarés, les
 annonces d'attribution et les pièces comptables sont distincts.
 
+## Lots explicitement publiés : indices textuels vérifiables (v1.4)
+
+Le rapport local v1.3 du 13 novembre 2026 confirme **25 contrats,
+399 avis consultés lors des contrôles, 15 candidats, une concordance
+d’identifiants, un conflit d’objet et deux alertes de phase**. Il reste
+16 contrats sans piste retenue, et la couverture BOAMP est \`partial\`.
+
+La version **\`boamp-local-v1.4-lot-title-evidence\`** introduit un
+premier indice d'identification d'un lot, **sans changer les statuts,
+sans importer de nouveaux avis, sans certifier de lot ni de paiement**.
+
+Source et méthode :
+
+1. Dans l'intitulé **\`objet\`** de l'avis BOAMP officiel tel
+   qu'importé et conservé avec son empreinte SHA-256, relever
+   uniquement les segments explicites du type
+   \`Lot n°1 : ... Lot n°2 : ... Lot n°3 : ...\`.
+   Rejeter les listes ambiguës, les numéros répétés, les libellés
+   vides ou démesurés. Ce titre **ne prouve pas l'exhaustivité**
+   des lots de l'avis ni une attribution.
+2. Dans l'intitulé et la référence **DECP**, ne reconnaître un
+   numéro de lot que s'il est **introduit par « lot »**. Par
+   exemple \`2025300000000000\` n'est pas interprété comme un
+   numéro ; \`Lot 03 - ...\` peut déclarer le n°3.
+3. S'il existe une mention numérotée de lot des deux côtés, la
+   signaler comme **coïncidence documentaire de numéro**, sans
+   prouver que la procédure, l'attribution et le titulaire sont
+   identiques.
+4. Sinon, ne proposer un *lot plausible par titre* que lorsque
+   **un seul lot** dépasse 67 % de similarité lexicale Jaccard,
+   possède au moins deux mots communs et dépasse le deuxième
+   meilleur score d'au moins 20 points. Un titre à plusieurs
+   lots est comparé au fragment spécifique de l'intitulé DECP
+   avant la séparation « - », si celui-ci est exploitable.
+5. Les documents vagues ou contradictoires produisent un état
+   \`indeterminate_title_only\` ou une mention de numéro DECP
+   absent de l'intitulé BOAMP : **jamais une preuve négative**.
+
+**Chessy (lot 3)** : DECP mentionne « Pièce d'eau et
+aménagements écologiques - Aménagement paysager du parc du château
+de Chessy » avec la référence \`2025300000000000\`. L'avis
+BOAMP \`25-92465\` énumère notamment le « Lot n°3 : Pièce d'eau
+et aménagements écologiques ». Le fragment DECP correspond au
+titre de ce lot, donc l'algorithme peut afficher **« indice
+documentaire de lot BOAMP n°3 »**, *non certifiant*.
+Le numéro n'est **pas attesté côté DECP**, l'avis n'atteste pas
+l'identité juridique du marché attribué, et aucun paiement ne
+peut être déduit. L'avis \`25-78808\`, sans liste explicite dans
+son titre, reste candidat sans numéro de lot inventé.
+
+Les données calculées restent dans \`local_decision_history.factors_json\`
+avec \`lot_scope.method\`, les numéros et intitulés source, le
+fragment DECP comparé, le score calculé et les drapeaux
+\`legal_lot_identity_confirmed=false\`,
+\`award_or_payment_confirmed=false\` et
+\`advertised_lots_exhaustive=false\`. Une mention courte et
+explicitement non certifiante est ajoutée au motif visible sur
+la fiche et dans l'audit. Les deux sources DECP et BOAMP sont
+strictement en **lecture seule**.
+
+Le bilan de l'audit distingue désormais en toutes lettres les
+**anciennes recherches API non reclassées** (16 candidats dans
+ce jeu d'essai) du **classement BOAMP local actuel**
+(15 candidats avant et après ce correctif). Ces chiffres ne
+doivent pas être additionnés.
+
+**Étape ultérieure** : recouper les identifiants de lots
+structurés présents dans les eForms ou les avis d'attribution,
+l'identifiant propre du marché/lot et le titulaire déclaré,
+lorsque ces champs existent réellement dans les sources et
+portent une référence commune vérifiable. Une correspondance
+de titre ne doit jamais devenir une attribution « certifiée »
+par simple ajout d'un seuil statistique.
+
+Contrôle sans réseau, sur les **mêmes 25 contrats** :
+
+\`\`\`bash
+python3 tests/decp_boamp_concordance_test.py
+python3 tests/boamp_national_match_test.py
+python3 tools/match_boamp_national.py --offset 0 --limit 25 --max-notices-per-buyer 0
+python3 tools/audit_procurement_concordance.py --offset 0 --limit 25 \
+  --local --history --output var/boamp-25-lots-v1-4.txt
+\`\`\`
+
 ## Périmètre contractuel : travaux vs maîtrise d’œuvre (v1.3)
 
 L'audit des 25 mêmes contrats a mis en évidence **Chessy** :
