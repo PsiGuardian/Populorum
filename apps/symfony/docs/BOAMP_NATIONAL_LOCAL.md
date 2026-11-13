@@ -45,7 +45,13 @@ Les drapeaux de prudence précisent :
 
 **Point fondamental :** un identifiant tel que `LOT-0001` ou
 `CON-0001` ne devient PAS une clé nationale reliant des avis
-différents. Ces identifiants n'ont de sens que dans le contexte
+différents. **La règle de concordance de procédure rejette expressément les références DECP**
+`RES-0001`, `LOT-0001`, `TEN-0001` et `CON-0001` (et les autres
+identifiants de ces quatre familles) comme justificatifs suffisants :
+une chaîne égale dans les deux documents ne devient donc jamais à
+elle seule une preuve d'identité de procédure.
+
+Ces identifiants n'ont de sens que dans le contexte
 de leur avis/document. Un avis indiquant « lauréat sélectionné »
 ne constitue pas une facture ni une preuve de paiement.
 Cette version ne modifie ni le statut d'un candidat ni le
