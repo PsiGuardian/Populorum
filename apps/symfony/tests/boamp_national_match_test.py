@@ -304,6 +304,16 @@ def test_chessy_design_not_same_works_market():
                    for k in ('23-45168','23-81447'))
         assert all('procurement_phase' not in result[k]['rule_evidence']
                    for k in ('25-78808','25-92465'))
+        # Lot n°3 appears in the BOAMP *heading*, not in the DECP
+        # procedure reference: retain a non-certifying documentary hint.
+        lot=result['25-92465']['rule_evidence']['lot_scope']
+        assert lot['method']=='unique_lot_title_similarity'
+        assert lot['possible_boamp_lot_number']=='3'
+        assert lot['legal_lot_identity_confirmed'] is False
+        assert 'lot BOAMP n°3' in result['25-92465']['basis']
+        assert 'lot_scope' not in result['25-78808']['rule_evidence']
+        assert 'lot_scope' not in result['23-45168']['rule_evidence']
+
         old=[dict(x,status='candidate',
                   basis='Ancienne piste même projet sans distinction de phase')
              for x in new]
