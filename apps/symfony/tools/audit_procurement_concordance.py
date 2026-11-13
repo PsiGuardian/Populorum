@@ -240,7 +240,8 @@ def run(db: sqlite3.Connection,sidecar: sqlite3.Connection,rows: list[dict],onli
             output.extend(second_look(row))
         output.append('')
     output.extend(['BILAN : '+str(len(rows))+' contrats ; '+str(checks)+' controles disponibles ; '+
-                   str(confirmed)+' concordances procedures ; '+str(potential)+' candidats.',
+                   str(confirmed)+' concordances procedures ; '+str(potential)+
+                   ' candidats provenant des recherches API historiques (non reclassés localement).',
                    'Aucun montant BOAMP ne prouve un paiement ni ne valide automatiquement un lot.'])
     if local:
         output.append('LOCAL : '+str(local_checks)+' contrats examinés ; '+
