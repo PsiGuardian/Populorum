@@ -356,9 +356,9 @@ def test_official_eforms_result_links_have_notice_local_scope():
     for internal in ('LOT-0003','CON-0001','RES-0001','TEN-0001'):
         fake={'contract_key':'b'*40,'buyer_id':'26380030200014',
               'original_id':internal,
-              'object':'Prestations de nettoyage des voiries'}
+              'object':'Prestations de nettoyage mécanisé des voiries et parkings'}
         publication={'idweb':'26-109517',
-                     'objet':'Prestations de nettoyage des voiries',
+                     'objet':'Prestations de nettoyage mécanisé des voiries et parkings',
                      'url_avis':'https://www.boamp.fr/pages/avis/?q=idweb:26-109517',
                      'donnees':{
                         'acheteur':{'SIRET':'26380030200014'},
